@@ -1,0 +1,9 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea
+*.iml
+
+### Eclipse template
+.settings/
+# Eclipse Core
+.project
+
