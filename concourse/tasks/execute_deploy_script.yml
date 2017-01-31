@@ -26,7 +26,8 @@ run:
   args:
   - -exc
   - |
-    script-resource/${SCRIPT_LOCATION}/deploy.sh
+    cd script-resource/${SCRIPT_LOCATION}
+    ./deploy.sh
 
 params:
   SCRIPT_LOCATION:
