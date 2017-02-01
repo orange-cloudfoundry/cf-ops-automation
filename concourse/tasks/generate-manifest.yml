@@ -1,0 +1,23 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: governmentpaas/spruce}
+inputs:
+  - name: scripts-resource
+  - name: credentials-resource
+  - name: additional-resource
+outputs:
+  - name: generated-files
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    spruce --version
+    CURRENT_DIR=$(pwd)
+    OUTPUT_DIR=${CURRENT_DIR}/generated-files/
+    scripts-resource/scripts/manifest/generate-manifest.sh ${YML_FILES} >${OUTPUT_DIR}/${OUTPUT_FILENAME}
+params:
+  YML_FILES:
+  OUTPUT_FILENAME:
