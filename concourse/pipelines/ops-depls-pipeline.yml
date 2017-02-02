@@ -1,0 +1,64 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+resources:
+
+- name: at-noon
+  type: cron-resource
+  source:
+    expression: "30 12 * * 1-5"
+    location: "Europe/Paris"
+
+- name: secrets
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-bootstrap
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+
+jobs:
+
+- name: execute-deploy-script
+  plan:
+    - aggregate:
+      - get: at-noon
+        trigger: true
+      - get: secrets
+        params: { submodules: none}
+      - get: paas-bootstrap
+        params: { submodules: none}
+    - task: run-deploy.sh
+      input_mapping: {script-resource: paas-bootstrap}
+      file: paas-bootstrap/concourse/tasks/execute_deploy_script.yml
+      params:
+        SCRIPT_LOCATION: ops-depls
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
