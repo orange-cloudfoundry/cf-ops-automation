@@ -111,7 +111,7 @@ jobs:
         trigger: true
         passed: [cf-manual-approval]
     - task: terraform-apply
-      input_mapping: {secret-state-resource: secret,spec-resource: paas-bootstrap}
+      input_mapping: {secret-state-resource: secrets,spec-resource: paas-bootstrap}
       output_mapping: {generated-files: terraform-cf}
       file: paas-bootstrap/concourse/tasks/terraform_apply_cloudfoundry.yml
       params:
@@ -144,7 +144,7 @@ jobs:
             git config --global user.email "codex.clara-cloud-ops@orange.com"
             git config --global user.name "Orange Cloud foundry SKC CI Server"
 
-            FINAL_RELEASE_REPO=updated-terraform-state-secret
+            FINAL_RELEASE_REPO=updated-terraform-state-secrets
 
             git clone reference-resource ${FINAL_RELEASE_REPO}
             cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
@@ -171,7 +171,7 @@ jobs:
     - put: secrets
       get_params: {submodules: none}
       params:
-        - repository: updated-bosh-ops-secrets
+        - repository: updated-terraform-state-secrets
         - rebase: true
 
 
