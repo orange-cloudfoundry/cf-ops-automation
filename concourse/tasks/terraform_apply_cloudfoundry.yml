@@ -19,6 +19,7 @@ image_resource:
   source: {repository: hashicorp/terraform, tag: 0.8.5}
 
 inputs:
+  - name: secret-state-resource
   - name: spec-resource
 
 outputs:
@@ -32,10 +33,10 @@ run:
     sh -c "$(curl -fsSL https://raw.github.com/orange-cloudfoundry/terraform-provider-cloudfoundry/master/bin/install.sh)"
     terraform version
     CURRENT_DIR=$(pwd)
-    find spec-resource/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
+    find secret-state-resource/${SECRET_STATE_FILE_PATH}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
     cd generated-files/
     terraform apply  ../spec-resource/$SPEC_PATH
 
 params:
   SPEC_PATH:
-  STATE_FILE_DIR:
+  SECRET_STATE_FILE_PATH:
