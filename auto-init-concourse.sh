@@ -12,5 +12,5 @@ echo "Load master-depls-pipeline"
 fly -t cw-pp-micro set-pipeline -p master-depls-pipeline -c micro-depls/concourse-master/pipelines/master-depls-pipeline.yml  -l micro-depls/concourse-master/pipelines/credentials-master-depls-pipeline.yml -l master-depls/master-depls-versions.yml
 
 echo "Load ops-depls-pipeline"
-fly -t cw-pp-micro set-pipeline -p ops-depls-pipeline -c master-depls/concourse-ops/pipelines/ops-depls-pipeline.yml  -l master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml -l ops-depls/ops-depls-versions.yml
+fly -t cw-pp-micro set-pipeline -p ops-depls-pipeline -c concourse/pipelines/ops-depls-pipeline.yml  -l master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml -l ops-depls/ops-depls-versions.yml
 
