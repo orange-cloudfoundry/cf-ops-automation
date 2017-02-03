@@ -1,0 +1,359 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+  - name: bosh-config
+    type: docker-image
+    source:
+      repository: dellemcdojo/bosh-config-resource
+
+resources:
+
+
+- name: at-noon
+  type: cron-resource
+  source:
+    expression: "15 12 * * 1-5"
+    location: "Europe/Paris"
+
+- name: master-bosh-runtime-config
+  type: bosh-config
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    type: runtime-config
+
+- name: master-bosh-cloud-config
+  type: bosh-config
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    type: cloud-config
+
+
+- name: secrets
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-bootstrap
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+
+- name: os-conf-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry/os-conf-release
+
+- name: networking-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry/networking-release
+
+- name: cf-haproxy-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/cf-haproxy-boshrelease
+
+- name: bosh-openstack-cpi-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-incubator/bosh-openstack-cpi-release
+
+- name: bosh
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry/bosh
+
+
+- name: deploy-gin-efa-relay
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: gin-efa-relay
+
+- name: deploy-bosh-ops
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: bosh-ops
+
+- name: bosh-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: {{stemcell-name}}
+
+jobs:
+
+- name: execute-deploy-script
+  plan:
+#      - get: secrets
+    - get: at-noon
+      trigger: true
+
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - task: run-deploy.sh
+      input_mapping: {script-resource: paas-bootstrap}
+      file: paas-bootstrap/concourse/tasks/execute_deploy_script.yml
+      params:
+        SCRIPT_LOCATION: master-depls
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: update-master-bosh-cloud-config
+  plan:
+    - get: secrets
+      params: { submodules: none}
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - get: os-conf-release
+      version: { version: {{os-conf-version}} }
+    - put: master-bosh-cloud-config
+      params:
+        manifest: paas-bootstrap/master-depls/cloud-config.yml
+        releases:
+          - os-conf-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: update-master-bosh-runtime-config
+  plan:
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - get: os-conf-release
+      version: { version: {{os-conf-version}} }
+    - put: master-bosh-runtime-config
+      params:
+        manifest: paas-bootstrap/master-depls/runtime-config.yml
+        releases:
+          - os-conf-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: deploy-gin-efa-relay
+  plan:
+    - aggregate:
+      - get: bosh-stemcell
+        version: { version: {{stemcell-version}} }
+      - get: networking-release
+        version: { version: {{networking-release-version}} }
+      - get: cf-haproxy-release
+        version: { version: {{cf-haproxy-boshrelease-version}} }
+      - get: secrets
+        params: { submodules: none}
+      - get: paas-bootstrap
+        params: { submodules: none}
+#        passed: [execute-deploy-script]
+    - put: deploy-gin-efa-relay
+      params:
+        manifest: paas-bootstrap/master-depls/gin-efa-relay/gin-efa-relay.yml
+        stemcells:
+        - bosh-stemcell/stemcell.tgz
+        releases:
+        - networking-release/release.tgz
+        - cf-haproxy-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: deploy-bosh-ops
+  plan:
+    - aggregate:
+      - get: bosh-stemcell
+        version: { version: {{stemcell-version}} }
+      - get: bosh
+        version: { version: {{bosh-version}} }
+      - get: bosh-openstack-cpi-release
+        version: { version: {{bosh-openstack-cpi-release-version}} }
+      - get: secrets
+        params: { submodules: none}
+      - get: paas-bootstrap
+        params: { submodules: none}
+#        passed: [execute-deploy-script]
+    - task: generate-bosh-ops-manifest
+      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: secrets}
+      output_mapping: {generated-files: bosh-ops-manifest}
+      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/master-depls/bosh-ops/template
+        YML_FILES: |
+            ./credentials-resource/master-depls/bosh-ops/template/bosh-ops-tpl.yml
+            ./credentials-resource/master-depls/bosh-ops/template/meta.yml
+            ./credentials-resource/master-depls/bosh-ops/template/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        OUTPUT_FILENAME: bosh-ops.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+#    - task: diff-bosh-ops-manifest
+#      input_mapping: {reference-resource: paas-bootstrap, generated-resource: bosh-ops-manifest}
+#      config:
+#        platform: linux
+#        image_resource:
+#          type: docker-image
+#          source: {repository: alpine, tag: "3.5"}
+#        inputs:
+#          - name: reference-resource
+#          - name: generated-resource
+#        run:
+#          path: sh
+#          args:
+#          - -exc
+#          - |
+#            diff -ad $REFERENCE_FILE $OTHER_FILE
+#      params:
+#        REFERENCE_FILE: "reference-resource/master-depls/bosh-ops/bosh-ops-generated.yml"
+#        OTHER_FILE: "generated-resource/bosh-ops.yml"
+#      on_failure:
+#        put: failure-alert
+#        params:
+#          channel: {{slack-channel}}
+#          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+#          username: Concourse
+
+    - put: deploy-bosh-ops
+      params:
+#        manifest: paas-bootstrap/master-depls/bosh-ops/bosh-ops.yml
+        manifest: bosh-ops-manifest/bosh-ops.yml
+        stemcells:
+        - bosh-stemcell/stemcell.tgz
+        releases:
+        - bosh/release.tgz
+        - bosh-openstack-cpi-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+#    - task: diff-bosh-ops-manifest
+#      input_mapping: {reference-resource: paas-bootstrap, generated-resource: deploy-bosh-ops}
+#      config:
+#        platform: linux
+#        image_resource:
+#          type: docker-image
+#          source: {repository: alpine, tag: "3.5"}
+#        inputs:
+#          - name: reference-resource
+#          - name: generated-resource
+#        run:
+#          path: sh
+#          args:
+#          - -exc
+#          - |
+#            diff -ad $REFERENCE_FILE $OTHER_FILE
+#      params:
+#        REFERENCE_FILE: "reference-resource/master-depls/bosh-ops/bosh-ops.yml"
+#        OTHER_FILE: "generated-resource/manifest.yml"
+#      on_failure:
+#        put: failure-alert
+#        params:
+#          channel: {{slack-channel}}
+#          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+#          username: Concourse
+    - task: update-bosh-ops-files
+      input_mapping: {reference-resource: secrets, generated-resource: deploy-bosh-ops}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: reference-resource
+          - name: generated-resource
+        outputs:
+          - name: updated-bosh-ops-secrets
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            git config --global user.email "codex.clara-cloud-ops@orange.com"
+            git config --global user.name "Orange Cloud foundry SKC CI Server"
+
+            FINAL_RELEASE_REPO=updated-bosh-ops-secrets
+
+            git clone reference-resource ${FINAL_RELEASE_REPO}
+            cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
+
+            cd ${FINAL_RELEASE_REPO}
+            git add ${OLD_FILE}
+            CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
+            if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
+            then
+              git commit -m "Bosh-ops generated manifest auto update"
+            else
+              echo "No change detected, skip commit"
+            fi
+      params:
+        OLD_FILE: "master-depls/bosh-ops/bosh-ops-generated.yml"
+        NEW_FILE: "manifest.yml"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - put: secrets
+      get_params: {submodules: none}
+      params:
+        - repository: updated-bosh-ops-secrets
+        - rebase: true
+
