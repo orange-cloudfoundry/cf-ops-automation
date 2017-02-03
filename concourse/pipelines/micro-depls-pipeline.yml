@@ -1,0 +1,194 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+  - name: bosh-config
+    type: docker-image
+    source:
+      repository: dellemcdojo/bosh-config-resource
+
+resources:
+
+
+- name: at-noon
+  type: cron-resource
+  source:
+    expression: "0 12 * * 1-5"
+    location: "Europe/Paris"
+
+- name: micro-bosh-runtime-config
+  type: bosh-config
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    type: runtime-config
+
+- name: micro-bosh-cloud-config
+  type: bosh-config
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    type: cloud-config
+
+
+- name: secrets
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-bootstrap
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+
+
+#- name: bosh-stemcell
+#  type: bosh-io-stemcell
+#  source:
+#    name: {{stemcell-name}}
+
+- name: os-conf-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry/os-conf-release
+
+jobs:
+
+
+- name: execute-deploy-script
+  plan:
+#      - get: secrets
+    - get: at-noon
+      trigger: true
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - task: micro-bosh-cloud-config
+      input_mapping: {script-resource: paas-bootstrap}
+      file: paas-bootstrap/concourse/tasks/execute_deploy_script.yml
+      params:
+        SCRIPT_LOCATION: micro-depls
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: update-micro-bosh-cloud-config
+  plan:
+    - get: secrets
+      params: { submodules: none}
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - get: os-conf-release
+      version: { version: {{os-conf-version}} }
+    - put: micro-bosh-cloud-config
+      params:
+        manifest: paas-bootstrap/micro-depls/cloud-config.yml
+        releases:
+          - os-conf-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: update-micro-bosh-runtime-config
+  plan:
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - get: os-conf-release
+      version: { version: {{os-conf-version}} }
+    - put: micro-bosh-runtime-config
+      params:
+        manifest: paas-bootstrap/micro-depls/runtime-config.yml
+        releases:
+          - os-conf-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+- name: setup-micro-depls-terraform
+  plan:
+    - get: at-noon
+      trigger: true
+    - get: secrets
+      params: { submodules: [inception/bosh-openstack-environment-templates] }
+    - get: paas-bootstrap
+      params: { submodules: [inception/bosh-openstack-environment-templates] }
+    - task: terraform-apply
+      input_mapping: {spec-resource: paas-bootstrap}
+      output_mapping: {generated-files: terraform}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: hashicorp/terraform, tag: 0.8.4}
+        inputs:
+          - name: spec-resource
+        outputs:
+          - name: generated-files
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            terraform version
+            CURRENT_DIR=$(pwd)
+            find spec-resource/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
+            cd generated-files/
+            terraform apply  ../spec-resource/$SPEC_PATH
+#            cp terraform-tfvars/* generated-files/
+        params:
+          SPEC_PATH: "micro-depls/terraform-config/spec"
+          STATE_FILE_DIR: "micro-depls/terraform-config"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+
+
+#          - get: buildpacks-ci
+#          - get: bosh-stemcell
+#          - get: cf-bosh-release
+#            version: { version: {-{cf-version}} }
+#        - put: cf-deployment
+#          params:
+#            manifest: {-{cf-manifest-location}}
+#            stemcells: ['bosh-stemcell/stemcell.tgz']
+#            releases:
+#              - cf-bosh-release/release.tgz

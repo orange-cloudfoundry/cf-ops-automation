@@ -1,0 +1,181 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+resources:
+
+
+- name: at-noon
+  type: cron-resource
+  source:
+    expression: "0 12 * * 1-5"
+    location: "Europe/Paris"
+
+
+#- name: iaas-terraform-specs
+#  type: git
+#  source:
+#    uri: {{pipeline-credentials-uri}}
+#    branch: master
+#    skip_ssl_verification: true
+#    paths: ["micro-depls/terraform-config/"]
+
+
+- name: secrets
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-bootstrap
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+
+jobs:
+
+
+- name: create-micro-bosh
+  plan:
+    - get: at-noon
+      trigger: true
+    - get: secrets
+      params: { submodules: [inception/bosh-openstack-environment-templates] }
+    - get: paas-bootstrap
+      params: { submodules: [inception/bosh-openstack-environment-templates] }
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: paas-bootstrap/micro-depls/concourse-micro/tasks/generate-terraform-config.yml
+      params:
+        YML_FILES: |
+            ./credentials-resource/inception/template/terraform-tpl.tfvars
+            ./credentials-resource/inception/template/meta.yml
+            ./credentials-resource/inception/template/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - task: terraform-apply
+      input_mapping: {spec-resource: paas-bootstrap}
+      output_mapping: {generated-files: terraform}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: hashicorp/terraform, tag: 0.8.4}
+        inputs:
+          - name: spec-resource
+          - name: terraform-tfvars
+        outputs:
+          - name: generated-files
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            terraform version
+            CURRENT_DIR=$(pwd)
+            find spec-resource/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
+            cp terraform-tfvars/* generated-files/
+            cd generated-files
+            terraform apply ../spec-resource/$SPEC_PATH
+        params:
+          SPEC_PATH: "inception/bosh-openstack-environment-templates/bosh-init-tf"
+          STATE_FILE_DIR: "inception"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - task: extract_terraform_outputs
+      input_mapping: {script-resource: paas-bootstrap, state-file-resource: terraform}
+      output_mapping: {result-dir: terraform-outputs}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: ruby, tag: 2.3.1-slim}
+        inputs:
+          - name: script-resource
+          - name: state-file-resource
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            script-resource/scripts/terraform/extract_terraform_state_to_yaml.rb <${STATE_FILE} >${OUTPUT_FILE}
+            cat ${OUTPUT_FILE}
+      params:
+        STATE_FILE: "state-file-resource/terraform.tfstate"
+        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
+    - task: generate-micro-bosh-config
+      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: terraform-outputs}
+      output_mapping: {generated-files: micro-bosh}
+      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      params:
+        YML_FILES: |
+            ./credentials-resource/inception/template/micro-bosh-tpl.yml
+            ./credentials-resource/inception/template/meta.yml
+            ./credentials-resource/inception/template/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+            ./additional-resource/bosh.terraform-outputs.yml
+        OUTPUT_FILENAME: micro-bosh.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - task: diff-micro-bosh-config
+      input_mapping: {reference-resource: paas-bootstrap, generated-resource: micro-bosh}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: alpine, tag: "3.5"}
+        inputs:
+          - name: reference-resource
+          - name: generated-resource
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            diff -ad $REFERENCE_FILE $OTHER_FILE
+      params:
+        REFERENCE_FILE: "reference-resource/inception/micro-bosh.yml"
+        OTHER_FILE: "generated-resource/micro-bosh.yml"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
