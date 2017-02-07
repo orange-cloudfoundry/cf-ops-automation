@@ -86,6 +86,16 @@ resources:
   source:
     repository: cloudfoundry/bosh
 
+- name: prometheus-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/prometheus-boshrelease
+
+- name: route-registrar-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/route-registrar-boshrelease
+
 
 - name: deploy-gin-efa-relay
   type: bosh-deployment
@@ -102,6 +112,14 @@ resources:
     username: {{bosh-username}}
     password: {{bosh-password}}
     deployment: bosh-ops
+
+- name: deploy-prometheus-exporter-ops
+  type: bosh-deployment
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: prometheus-exporter-ops
 
 - name: bosh-stemcell
   type: bosh-io-stemcell
@@ -355,5 +373,104 @@ jobs:
       get_params: {submodules: none}
       params:
         - repository: updated-bosh-ops-secrets
+        - rebase: true
+
+- name: deploy-bosh-prometheus-exporter
+  plan:
+    - aggregate:
+      - get: bosh-stemcell
+        version: { version: {{stemcell-version}} }
+      - get: prometheus-release
+        version: { version: {{prometheus-boshrelease-version}} }
+      - get: route-registrar-release
+        version: { version: {{route-registrar-boshrelease-version}} }
+      - get: secrets
+        params: { submodules: none}
+      - get: paas-bootstrap
+        params: { submodules: none}
+    - task: generate-prometheus-ops-manifest
+      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: secrets}
+      output_mapping: {generated-files: release-manifest}
+      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/master-depls/prometheus-exporter-ops/template
+        YML_FILES: |
+            ./credentials-resource/master-depls/prometheus-exporter-ops/template/prometheus-exporter-ops-tpl.yml
+            ./credentials-resource/master-depls/prometheus-exporter-ops/template/meta.yml
+            ./credentials-resource/master-depls/prometheus-exporter-ops/template/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        OUTPUT_FILENAME: prometheus-exporter-ops.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - put: deploy-prometheus-exporter-ops
+      params:
+        manifest: release-manifest/prometheus-exporter-ops.yml
+        stemcells:
+        - bosh-stemcell/stemcell.tgz
+        releases:
+        - prometheus-release/release.tgz
+        - route-registrar-release/release.tgz
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - task: update-prometheus-exporter-ops-files
+      input_mapping: {reference-resource: secrets, generated-resource: deploy-prometheus-exporter-ops}
+      output_mapping: {updated-git-resource: updated-prometheus-exporter-ops-secrets}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: reference-resource
+          - name: generated-resource
+        outputs:
+          - name: updated-git-resource
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            git config --global user.email "codex.clara-cloud-ops@orange.com"
+            git config --global user.name "Orange Cloud Foundry SKC CI Server"
+
+            FINAL_RELEASE_REPO=updated-git-resource
+
+            git clone reference-resource ${FINAL_RELEASE_REPO}
+            cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
+
+            cd ${FINAL_RELEASE_REPO}
+            git add ${OLD_FILE}
+            CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
+            if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
+            then
+              git commit -m "$COMMIT_MESSAGE"
+            else
+              echo "No change detected, skip commit"
+            fi
+      params:
+        OLD_FILE: "master-depls/prometheus-exporter-ops/prometheus-exporter-ops-generated.yml"
+        NEW_FILE: "manifest.yml"
+        COMMIT_MESSAGE: "Prometheus-ops-exporter generated manifest auto update"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - put: secrets
+      get_params: {submodules: none}
+      params:
+        - repository: updated-prometheus-exporter-ops-secrets
         - rebase: true
 
