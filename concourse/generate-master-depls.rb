@@ -45,10 +45,10 @@ end
 full_config = version_reference
 puts full_config
 
-flyrc  = YAML.load_file(File.expand_path('~/.flyrc'))
-target_name= ENV['TARGET_NAME'] || "cw-pp-micro"
-target = flyrc['targets'][target_name]
-concourse_url= target['api']
+#flyrc  = YAML.load_file(File.expand_path('~/.flyrc'))
+#target_name= ENV['TARGET_NAME'] || "cw-pp-micro"
+#target = flyrc['targets'][target_name]
+#concourse_url= target['api']
 
 PIPELINE_PREFIX = ENV['PIPELINE_PREFIX'] || ''
 
