@@ -11,27 +11,22 @@ require 'ostruct'
 # Argument parsing
 OPTIONS = {}
 opt_parser = OptionParser.new do |opts|
-  opts.banner = "Usage: ./bin/update-all-the-pipelines [options]"
+  opts.banner = "Usage: ./#{opts.program_name} <options>"
 
-  opts.on("--without=WITHOUT", "-wWITHOUT", "Don't update matched pipelines") do |without_string|
-    OPTIONS[:without] = without_string
+  opts.on("-d", "--depls DEPLOYMENT", "Specify a deployment name to generate template for. MANDATORY") do |deployment_string|
+    OPTIONS[:depls]= deployment_string
   end
 
-  opts.on("--match=MATCH", "-mMATCH", "Only update matched pipelines") do |match_string|
-    OPTIONS[:match] = match_string
-  end
-
-  opts.on("--template=TEMPLATE", "-tTEMPLATE", "Only update pipelines from the specified template") do |template_string|
-    OPTIONS[:template] = template_string
-  end
 end
 opt_parser.parse!
 
 
-depls = 'master-depls'
+depls = OPTIONS[:depls]
+
+opt_parser.abort("#{opt_parser}") if depls == nil
 
 
-version_reference = YAML.load_file( '../' + depls + '/master-depls-versions.yml' )
+version_reference = YAML.load_file( "../#{depls}/#{depls}-versions.yml" )
 
 #public_config = YAML.load_file("../master-depls/master-depls-versions.yml")
 
