@@ -69,9 +69,16 @@ resources:
 
 <% uniq_releases.each do |release, info|  %>
 - name: <%= release %>
+  <% if info["base_location"].include?("bosh.io") %>
   type: bosh-io-release
   source:
     repository: <%= info["repository"] %>
+  <% else %>
+  type: github-release
+  source:
+    user: <%= info["repository"].split('/').first %>
+    repository: <%= info["repository"].split('/').last %>
+  <% end %>
 <% end %>
 
 
