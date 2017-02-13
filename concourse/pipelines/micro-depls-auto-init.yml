@@ -1,0 +1,213 @@
+---
+resource_types:
+- name: concourse-pipeline
+  type: docker-image
+  source:
+    repository: robdimsdale/concourse-pipeline-resource
+    tag: latest-final
+#    repository: orangeopensource/concourse-pipeline-resource
+#    tag: latest
+
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+#    repository: orangecloudfoundry/slack-notification-resource
+
+resources:
+- name: {{concourse-pipeline-name}}
+  type: concourse-pipeline
+  source:
+    insecure: {{concourse-insecure}}
+    teams:
+    - name: main
+      username: {{concourse-username}}
+      password: {{concourse-password}}
+
+
+- name: depls
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: pipeline-credentials
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+#    paths: [ci/deploy/]
+
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: cw-vdr-api.elpaaso.net
+      cert: |
+        -----BEGIN CERTIFICATE-----
+        MIID5DCCAsygAwIBAgIJALFDFbMFvkjgMA0GCSqGSIb3DQEBCwUAMIGQMQswCQYD
+        VQQGEwJGUjELMAkGA1UECAwCRlIxCzAJBgNVBAcMAkZSMQ8wDQYDVQQKDAZPUkFO
+        R0UxDTALBgNVBAsMBElTQUQxHzAdBgNVBAMMFmN3LXZkci1hcGkuZWxwYWFzby5u
+        ZXQxJjAkBgkqhkiG9w0BCQEWF3p6Y2xhcmFjbG91ZEBvcmFuZ2UuY29tMB4XDTE2
+        MDYyODEyNTE1MFoXDTE3MDYyODEyNTE1MFowgZAxCzAJBgNVBAYTAkZSMQswCQYD
+        VQQIDAJGUjELMAkGA1UEBwwCRlIxDzANBgNVBAoMBk9SQU5HRTENMAsGA1UECwwE
+        SVNBRDEfMB0GA1UEAwwWY3ctdmRyLWFwaS5lbHBhYXNvLm5ldDEmMCQGCSqGSIb3
+        DQEJARYXenpjbGFyYWNsb3VkQG9yYW5nZS5jb20wggEiMA0GCSqGSIb3DQEBAQUA
+        A4IBDwAwggEKAoIBAQDBQRiVjEIEFCtPB+IbNdhj9DTWDJnbJW1/tiAOFA41I+9d
+        E3sI2vzPTKJqExKGHra3XPy5yLt3vv495hKUyofyvP1C6ydQFinWYm0JdosV/4yj
+        6H1Nffu/WAOdK4QMPHwV8AjFdkbVqe0YnbY+O917s3V/6rLjHe0fUZiWtSfuS4XH
+        AiX8UDChke0U6hH20PjtWDkvfwLsynJWIXelafpHpiXOj0NMFLjOECb5Hli93hFg
+        3V/F81vSEfrK/92kKx+tO9uObFOn95jI+cLhwGdH/cxQZi22G+U89PZfaUhIupoY
+        dz/XkTnjNg98ZXN8AjVrnQYj+DS7Jx88Ly8+CIaTAgMBAAGjPzA9MCMGA1UdEQQc
+        MBqCGCouY3ctdmRyLWFwaS5lbHBhYXNvLm5ldDAJBgNVHRMEAjAAMAsGA1UdDwQE
+        AwIF4DANBgkqhkiG9w0BAQsFAAOCAQEACOs0/xtBQG8jKOK9nBAn/L0Jx1AIUJVm
+        /6dKwUZqa9Sa4qOZJzOAqajo8ARUrbvaMlJgpEmeLdS5I6ZbmcXFCUXWGC0mNWzT
+        ZtaSxeGZ3/ZQ/y32zF4d0oGGY1MUB7Vpzv1sOLsYLSBxNWusHXFXDw1DnwSRHa6y
+        C+4vwp/ws57ct0mi2zcjTg88ykg0dZF6hCZ9xZRstQff2qb/999FN3gZiqE0FY8J
+        0xzjQk6T9H2VX/4oF5FSE3FdImGWSaEtjhdwgyc4IzwqpgH57fBliE4ghGUHJi02
+        FdcT6eOeIxS8tg+wM0FXko5qCQQaOQoItsonwByiAJPZpngnilWnkA==
+        -----END CERTIFICATE-----
+    - domain: cw-vdr-apps.elpaaso.net
+      cert: |
+        -----BEGIN CERTIFICATE-----
+        MIIFAzCCAuugAwIBAgIBATANBgkqhkiG9w0BAQsFADARMQ8wDQYDVQQDEwZhcHBz
+        Q0EwHhcNMTYxMDA2MTA0NTM2WhcNMjYxMDA2MTA0NTQ2WjARMQ8wDQYDVQQDEwZh
+        cHBzQ0EwggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDZdCMwz3G0oq8s
+        /TPHwG9hN5zmWLKjY/HcZL+Z+g3vLo0vBXrSQaIpgNiMHRisvIZhqZplNHD75HAT
+        UW1bHSlbuEK2inhvQrppxeBUngHta77n/lb4hLnoM5SpoYIC2aSasxF667TNCsmm
+        7t1tRQm5RprrMG4ZI6aaSwYPsEnmcbcgPEKuIoKPRrI4B6WsC1c1fr50fAlVz677
+        BgT/Jv6JDtcdDJQ5z+UZ8BB/+hqPbL7gyfHF8zO6fyB36IVrOBnsdZoL3ByIcNUS
+        SklN4MeV075y3jv7oWupX/QdClWDx49t/fEEzwBntmPurzO8Zo8h9utsk/N75JiM
+        DP330IBxttgVZW7MZaU/N+pD/1PUWkeej97frBOQyjFHF8eF/rhhNv+Dp/0HiFT+
+        XnrYA5u46BdiqUjDltrLSGsjRMAJ9vVAyYl/db9EZs/R/DRgzhP+MJ550UbIdlXE
+        Eo35hnN+6b4RrzDReoRBHOWKKuoMb8W6Yn6dEpODOTHXUo4qOvLEuaGV/sRKa4Zp
+        lymQ9607Fjs8Qy12KZG3PCxU7/Ea0go6ftMZYZrX8b0QjWE+EuPrkh1X4D9VoxIB
+        /PahXTrNjqhKuSqu3yaEkcaCjP6w/5JIjlsFBdRL0iljtQiaXrn92oNhpLGHWv5T
+        AIME90A6XpE3dAdxPZDH2oPP82LPtQIDAQABo2YwZDAOBgNVHQ8BAf8EBAMCAQYw
+        EgYDVR0TAQH/BAgwBgEB/wIBADAdBgNVHQ4EFgQUfNvs8LTTEX0dnlDkhv/yJ6mG
+        Qn0wHwYDVR0jBBgwFoAUfNvs8LTTEX0dnlDkhv/yJ6mGQn0wDQYJKoZIhvcNAQEL
+        BQADggIBAAEj+R3bv65g4+lNiB5a6Z79T+LDJHhBCObQqV2THqnh/RL564mY05MH
+        soT8zVLO6RomKQesU2duaXYY9Gp8z44oLB4O1k6J8oFEyNQVXJsQbViX3MhRWBG5
+        px24rEDDFBmjwsYlplRxzv9jym4HvV5TofdbKPf4m2ffoTFcmd4dmvZPEU5IZsnE
+        ImM4Gk2gx+SVG+RPvzU8yNv9yCX1ve1wY/ceikNX+LhA8YqOXyPizeYgdTnhXS9t
+        8FmkdHCSq3XtL38+HIvIz0ygXo4ootyTB70lu+kVgBDnP0XRgPcnKjhjhMNNCtVj
+        PRtjaM/1ZOO+1RZ1zbD1SuZIgrMSwjiBYxt6SSDTzlNRRD1xdz3v6KQq6FL4+LMt
+        tWEg8hFNzjfq2Xw5j+4RGQndhMe91+ROwGSaXD0NJhVxcUvRYm0lKx/XUkn3ZBZ6
+        N27IoJ95SKOdgzsNgxTAx87bBdBwlJ0y4SJfdIVfONeVY5Yd67KyI3sDh/px7yPa
+        vLT9O0yHaBb5NR/JamloCXN/+Ln8udlK0Lm3cJ2RNGDqX+OsNeaqsWvEcf91n0qD
+        Xpvd9ktKY8PAjTzhozx56KDBEGzIOVcWQ1BN2ICSmDStySuhiYRbOuJ4Q1meBdFM
+        bl6a1U0UDcvrhdshRH0J513CA0A5mDRwX1laAUN81sPEs9+lZAxQ
+        -----END CERTIFICATE-----
+
+
+
+#- name: auto-init-pipeline
+#  type: git
+#  source:
+#    uri: {{pipeline-credentials-uri}}
+#    branch: master
+#    skip_ssl_verification: true
+#    paths: ["ci/pipeline.yml","ci/credentials.yml"]
+
+jobs:
+#- name: auto-update-auto-init
+#  plan:
+#  - get: auto-init-pipeline
+#    params: { submodules: none}
+#    trigger: true
+#    attempts: 3
+#  - put: {{concourse-pipeline-name}}
+#    params:
+#      pipelines:
+#      - name: auto-init
+#        team: main
+#        config_file: auto-init-pipeline/ci/pipeline.yml
+#        vars_files:
+#        - auto-init-pipeline/ci/credentials.yml
+#    on_failure:
+#      put: failure-alert
+#      params:
+#        channel: {{slack-channel}}
+#        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+#        text: |
+#          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[ElPaaSo Sandbox Pipeline]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#        username: Concourse
+#  - put: failure-alert
+#    params:
+#      channel: {{slack-channel}}
+#      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+#      text: |
+#        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[ElPaaSo Sandbox Pipeline]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#      username: Concourse
+
+
+- name: load-master-depls
+  plan:
+  - aggregate:
+    - get: depls
+      params: { submodules: none}
+      trigger: true
+      attempts: 3
+    - get: pipeline-credentials
+      params: { submodules: none}
+      trigger: false
+      attempts: 3
+  - task: generate-master-depls-pipeline
+    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    output_mapping: {result-dir: concourse-master-depls-pipeline}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: script-resource
+        - name: secrets
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cp -r script-resource/* result-dir
+          cp -rf secrets/* result-dir
+          cd result-dir/concourse
+          ./generate-depls.rb --depls master-depls
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+
+  - put: {{concourse-pipeline-name}}
+    params:
+      pipelines:
+      - name: master-depls-generated
+        team: main
+        config_file: concourse-master-depls-pipeline/concourse/pipelines/master-depls-generated.yml
+        vars_files:
+        - pipeline-credentials/micro-depls/concourse-master/pipelines/credentials-master-depls-pipeline.yml
+        - pipeline-credentials/master-depls/master-depls-versions.yml
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        username: Concourse
+#  - put: failure-alert
+#    params:
+#      channel: {{slack-channel}}
+#      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+#      text: |
+#        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#      username: Concourse
+
