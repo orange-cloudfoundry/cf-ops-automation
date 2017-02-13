@@ -104,9 +104,11 @@ jobs:
     - aggregate:
       - get: bosh-stemcell
         version: { version: {{stemcell-version}} }
+        trigger: true
       <% boshrelease["releases"].each do |release, info| %>
       - get: <%= release %>
         version: { version: {{<%= release %>-version}} }
+        trigger: true
       <% end %>
       - get: secrets
         params: { submodules: none}
@@ -183,7 +185,7 @@ jobs:
               echo "No change detected, skip commit"
             fi
       params:
-        OLD_FILE: <%= depls %>/<%= name %>/<%= name %>-generated.yml
+        OLD_FILE: <%= depls %>/<%= name %>/<%= name %>.yml
         NEW_FILE: "manifest.yml"
         COMMIT_MESSAGE: "<%= name %> generated manifest auto update"
       on_failure:
