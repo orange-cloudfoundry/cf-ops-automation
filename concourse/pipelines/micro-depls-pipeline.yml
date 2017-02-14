@@ -147,31 +147,12 @@ jobs:
     - get: paas-bootstrap
       params: { submodules: [inception/bosh-openstack-environment-templates] }
     - task: terraform-apply
-      input_mapping: {spec-resource: paas-bootstrap}
+      input_mapping: {secret-state-resource: secrets,spec-resource: paas-bootstrap}
       output_mapping: {generated-files: terraform}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source: {repository: hashicorp/terraform, tag: 0.8.4}
-        inputs:
-          - name: spec-resource
-        outputs:
-          - name: generated-files
-        run:
-          path: sh
-          args:
-          - -exc
-          - |
-            terraform version
-            CURRENT_DIR=$(pwd)
-            find spec-resource/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
-            cd generated-files/
-            terraform apply  ../spec-resource/$SPEC_PATH
-#            cp terraform-tfvars/* generated-files/
-        params:
-          SPEC_PATH: "micro-depls/terraform-config/spec"
-          STATE_FILE_DIR: "micro-depls/terraform-config"
+      file: paas-bootstrap/concourse/tasks/terraform_apply.yml
+      params:
+        SPEC_PATH: "micro-depls/terraform-config/spec"
+        STATE_FILE_DIR: "micro-depls/terraform-config"
       on_failure:
         put: failure-alert
         params:
@@ -192,3 +173,34 @@ jobs:
 #            stemcells: ['bosh-stemcell/stemcell.tgz']
 #            releases:
 #              - cf-bosh-release/release.tgz
+
+- name: launch-docker-bosh-cli
+  plan:
+    - get: secrets
+      params: { submodules: [inception/bosh-openstack-environment-templates] }
+    - get: paas-bootstrap
+      params: { submodules: [inception/bosh-openstack-environment-templates] }
+    - task: bosh-cli
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: orangecloudfoundry/orange-cf-bosh-cli}
+        inputs:
+          - name: paas-bootstrap
+          - name: secrets
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            su - bosh -c "bosh --version"
+            spruce --version
+            terraform --version
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
