@@ -9,7 +9,7 @@ for template in $(ls $YML_TEMPLATE_DIR/*$SUFFIX)
 do
     filename=$(basename $template)
     echo "Processing $filename"
-    output_filename=${template%$SUFFIX}.yml
+    output_filename=${filename%$SUFFIX}.yml
     scripts-resource/scripts/manifest/spruce-manifest.sh $template ${YML_FILES} >${OUTPUT_DIR}/${output_filename}
 done
 

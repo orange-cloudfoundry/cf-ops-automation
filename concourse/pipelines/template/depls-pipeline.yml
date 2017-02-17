@@ -141,10 +141,9 @@ jobs:
         SPRUCE_FILE_BASE_PATH: scripts-resource/<%= depls %>/<%= name %>/template
         YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/<%= name %>/template
         YML_FILES: |
-            ./credentials-resource/<%= depls %>/<%= name %>/secret/meta.yml
-            ./credentials-resource/<%= depls %>/<%= name %>/secret/secrets.yml
+            ./credentials-resource/<%= depls %>/<%= name %>/secrets/meta.yml
+            ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
-        OUTPUT_FILENAME: <%= name %>.yml
       on_failure:
         put: failure-alert
         params:
