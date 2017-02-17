@@ -47,29 +47,6 @@ resources:
 
 jobs:
 
-- name: execute-deploy-script
-  plan:
-    - aggregate:
-      - get: at-noon
-        trigger: true
-      - get: secrets
-        params: { submodules: none}
-      - get: paas-bootstrap
-        params: { submodules: none}
-    - task: run-deploy.sh
-      input_mapping: {script-resource: paas-bootstrap}
-      file: paas-bootstrap/concourse/tasks/execute_deploy_script.yml
-      params:
-        SCRIPT_LOCATION: ops-depls
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
-
-
 - name: check-terraform-cf-consistency
   plan:
     - get: paas-bootstrap
