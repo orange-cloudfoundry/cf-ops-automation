@@ -143,7 +143,6 @@ jobs:
     - get: at-noon
       trigger: true
     - get: secrets
-#      params: { submodules: [inception/bosh-openstack-environment-templates] }
     - get: paas-bootstrap
       params: { submodules: [inception/bosh-openstack-environment-templates] }
     - task: terraform-apply
@@ -177,7 +176,6 @@ jobs:
 - name: launch-docker-bosh-cli
   plan:
     - get: secrets
-      params: { submodules: [inception/bosh-openstack-environment-templates] }
     - get: paas-bootstrap
       params: { submodules: [inception/bosh-openstack-environment-templates] }
     - task: bosh-cli
