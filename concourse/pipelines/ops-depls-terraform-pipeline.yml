@@ -25,10 +25,10 @@ resources:
     branch: master
     skip_ssl_verification: true
 
-- name: paas-template-uri
+- name: paas-templates
   type: git
   source:
-    uri: {{paas-template-uri}}
+    uri: {{paas-templates-uri}}
     branch: master
     skip_ssl_verification: true
 
@@ -50,7 +50,7 @@ jobs:
 
 - name: check-terraform-cf-consistency
   plan:
-    - get: paas-template-uri
+    - get: paas-templates
       params: { submodules: none}
     - get: at-noon
       trigger: true
@@ -58,8 +58,8 @@ jobs:
       params: { submodules: none}
 #      trigger: true
     - task: terraform-plan
-      input_mapping: {spec-resource: paas-template-uri}
-      file: paas-template-uri/concourse/tasks/terraform_plan_cloudfoundry.yml
+      input_mapping: {spec-resource: paas-templates}
+      file: paas-templates/concourse/tasks/terraform_plan_cloudfoundry.yml
       params:
         SPEC_PATH: "ops-depls/cloudfoundry/terraform-config/spec"
         STATE_FILE_DIR: "ops-depls/cloudfoundry/terraform-config/"
@@ -80,7 +80,7 @@ jobs:
 - name: enforce-terraform-cf-consistency
   plan:
     - aggregate:
-      - get: paas-template-uri
+      - get: paas-templates
         params: { submodules: none}
       - get: secrets
         params: { submodules: none}
@@ -89,9 +89,9 @@ jobs:
         trigger: true
         passed: [cf-manual-approval]
     - task: terraform-apply
-      input_mapping: {secret-state-resource: secrets,spec-resource: paas-template-uri}
+      input_mapping: {secret-state-resource: secrets,spec-resource: paas-templates}
       output_mapping: {generated-files: terraform-cf}
-      file: paas-template-uri/concourse/tasks/terraform_apply_cloudfoundry.yml
+      file: paas-templates/concourse/tasks/terraform_apply_cloudfoundry.yml
       params:
         SPEC_PATH: "ops-depls/cloudfoundry/terraform-config/spec"
         SECRET_STATE_FILE_PATH: "ops-depls/cloudfoundry/terraform-config"
