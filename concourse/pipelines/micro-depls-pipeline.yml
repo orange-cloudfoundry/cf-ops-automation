@@ -149,10 +149,10 @@ jobs:
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets,spec-resource: paas-bootstrap}
       output_mapping: {generated-files: terraform}
-      file: paas-bootstrap/concourse/tasks/terraform_apply.yml
+      file: paas-bootstrap/concourse/tasks/terraform_apply_cloudfoundry.yml
       params:
         SPEC_PATH: "micro-depls/terraform-config/spec"
-        STATE_FILE_DIR: "micro-depls/terraform-config"
+        SECRET_STATE_FILE_PATH: "micro-depls/terraform-config"
       on_failure:
         put: failure-alert
         params:
