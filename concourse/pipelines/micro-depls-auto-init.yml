@@ -28,7 +28,7 @@ resources:
 - name: depls
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{paas-templates-uri}}
     branch: master
     skip_ssl_verification: true
 
