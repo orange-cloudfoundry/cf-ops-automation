@@ -34,7 +34,7 @@ resources:
 - name: paas-bootstrap
   type: git
   source:
-    uri: {{paas-template-uri}}
+    uri: {{paas-templates-uri}}
     branch: master
     skip_ssl_verification: true
 
