@@ -1,9 +1,17 @@
 #!/bin/sh
 
-set -eu
+spruce --version
+CURRENT_DIR=$(pwd)
+OUTPUT_DIR=${CURRENT_DIR}/generated-files/
 
-spruce merge \
-  --prune meta \
-  --prune secrets \
-  --prune terraform_outputs \
-  "$@"
+SUFFIX=-tpl.yml
+for template in $(ls $YML_TEMPLATE_DIR/*$SUFFIX)
+do
+    filename=$(basename $template)
+    echo "Processing $filename"
+    output_filename=${template%$SUFFIX}.yml
+    scripts-resource/scripts/manifest/spruce-manifest.sh $template ${YML_FILES} >${OUTPUT_DIR}/${output_filename}
+done
+
+
+
