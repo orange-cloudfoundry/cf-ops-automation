@@ -145,7 +145,7 @@ jobs:
 #      username: Concourse
 
 
-- name: load-master-depls
+- name: update-pipeline-master-depls-generated
   plan:
   - aggregate:
     - get: depls
@@ -210,4 +210,64 @@ jobs:
 #      text: |
 #        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
 #      username: Concourse
+
+
+- name: update-pipeline-ops-depls-generated
+  plan:
+  - aggregate:
+    - get: depls
+      params: { submodules: none}
+      trigger: true
+      attempts: 3
+    - get: pipeline-credentials
+      params: { submodules: none}
+      trigger: false
+      attempts: 3
+  - task: generate-ops-depls-pipeline
+    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    output_mapping: {result-dir: concourse-ops-depls-pipeline}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: script-resource
+        - name: secrets
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cp -r script-resource/* result-dir
+          cp -rf secrets/* result-dir
+          cd result-dir/concourse
+          ./generate-depls.rb --depls ops-depls
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+
+  - put: {{concourse-pipeline-name}}
+    params:
+      pipelines:
+      - name: ops-depls-generated
+        team: main
+        config_file: concourse-ops-depls-pipeline/concourse/pipelines/ops-depls-generated.yml
+        vars_files:
+        - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
+        - pipeline-credentials/ops-depls/ops-depls-versions.yml
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        username: Concourse
 
