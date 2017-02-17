@@ -34,7 +34,14 @@ resources:
 - name: paas-bootstrap
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{paas-template-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-repo
+  type: git
+  source:
+    uri: {{paas-repo-uri}}
     branch: master
     skip_ssl_verification: true
 
@@ -88,7 +95,8 @@ jobs:
   plan:
     - get: at-noon
       trigger: true
-
+    - get: paas-repo
+      params: { submodules: none}
     - get: paas-bootstrap
       params: { submodules: none}
     - task: run-deploy.sh
@@ -114,7 +122,11 @@ jobs:
         trigger: true
       <% boshrelease["releases"].each do |release, info| %>
       - get: <%= release %>
+        <% if info["base_location"].include?("bosh.io") %>
         version: { version: {{<%= release %>-version}} }
+        <% else %>
+        version: { tag: v{{<%= release %>-version}} }
+        <% end %>
         trigger: true
       <% end %>
       - get: secrets
@@ -126,11 +138,11 @@ jobs:
       output_mapping: {generated-files: release-manifest}
       file: paas-bootstrap/concourse/tasks/generate-manifest.yml
       params:
-        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/<%= name %>/template
+        SPRUCE_FILE_BASE_PATH: scripts-resource/<%= depls %>/<%= name %>/template
+        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/<%= name %>/template
         YML_FILES: |
-            ./credentials-resource/<%= depls %>/<%= name %>/template/<%= name %>-tpl.yml
-            ./credentials-resource/<%= depls %>/<%= name %>/template/meta.yml
-            ./credentials-resource/<%= depls %>/<%= name %>/template/secrets.yml
+            ./credentials-resource/<%= depls %>/<%= name %>/secret/meta.yml
+            ./credentials-resource/<%= depls %>/<%= name %>/secret/secrets.yml
             ./credentials-resource/shared/secrets.yml
         OUTPUT_FILENAME: <%= name %>.yml
       on_failure:
@@ -209,9 +221,3 @@ jobs:
         - rebase: true
 
 <% end %>
-
-
-
-
-
-

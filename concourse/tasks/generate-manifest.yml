@@ -10,14 +10,8 @@ inputs:
 outputs:
   - name: generated-files
 run:
-  path: sh
-  args:
-  - -exc
-  - |
-    spruce --version
-    CURRENT_DIR=$(pwd)
-    OUTPUT_DIR=${CURRENT_DIR}/generated-files/
-    scripts-resource/scripts/manifest/generate-manifest.sh ${YML_FILES} >${OUTPUT_DIR}/${OUTPUT_FILENAME}
+  path: script-resource/scripts/manifest/generate-manifest.sh
 params:
+  YML_TEMPLATE_DIR:
+  SPRUCE_FILE_BASE_PATH:
   YML_FILES:
-  OUTPUT_FILENAME:
