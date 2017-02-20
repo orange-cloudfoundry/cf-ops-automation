@@ -114,34 +114,39 @@ resources:
 #    paths: ["ci/pipeline.yml","ci/credentials.yml"]
 
 jobs:
-#- name: auto-update-auto-init
-#  plan:
-#  - get: auto-init-pipeline
-#    params: { submodules: none}
-#    trigger: true
-#    attempts: 3
-#  - put: {{concourse-pipeline-name}}
-#    params:
-#      pipelines:
-#      - name: auto-init
-#        team: main
-#        config_file: auto-init-pipeline/ci/pipeline.yml
-#        vars_files:
-#        - auto-init-pipeline/ci/credentials.yml
-#    on_failure:
-#      put: failure-alert
-#      params:
-#        channel: {{slack-channel}}
-#        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
-#        text: |
-#          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[ElPaaSo Sandbox Pipeline]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-#        username: Concourse
+- name: auto-update-auto-init
+  plan:
+  - aggregate:
+    - get: depls
+      params: { submodules: none}
+      trigger: true
+      attempts: 3
+    - get: pipeline-credentials
+      params: { submodules: none}
+      trigger: false
+      attempts: 3
+  - put: {{concourse-pipeline-name}}
+    params:
+      pipelines:
+      - name: auto-init
+        team: main
+        config_file: depls/concourse/pipelines/micro-depls-auto-init.yml
+        vars_files:
+        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        username: Concourse
 #  - put: failure-alert
 #    params:
 #      channel: {{slack-channel}}
 #      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
 #      text: |
-#        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[ElPaaSo Sandbox Pipeline]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
 #      username: Concourse
 
 
