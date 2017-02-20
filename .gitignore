@@ -2,6 +2,10 @@
 .idea
 *.iml
 
+**/secrets/*
+**/secrets.yml
+shared/
+
 ### Eclipse template
 .settings/
 # Eclipse Core
