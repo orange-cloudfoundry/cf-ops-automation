@@ -32,7 +32,7 @@ resources:
     branch: master
     skip_ssl_verification: true
 
-- name: paas-bootstrap
+- name: paas-template
   type: git
   source:
     uri: {{paas-templates-uri}}
@@ -59,6 +59,22 @@ resources:
 <% require 'yaml' %>
 
 <% all_dependencies.each do |name,boshrelease| %>
+- name: secrets-<%= name %>
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    path: ["<%= depls %>/<%= name %>","shared"]
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-template-<%= name %>
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    path: ["<%= depls %>/<%= name %>"]
+    branch: master
+    skip_ssl_verification: true
+
 - name: deploy-<%= name %>
   type: bosh-deployment
   source:
@@ -98,11 +114,11 @@ jobs:
       trigger: true
     - get: paas-repo
       params: { submodules: none}
-    - get: paas-bootstrap
+    - get: paas-template
       params: { submodules: none}
     - task: run-deploy.sh
-      input_mapping: {script-resource: paas-bootstrap}
-      file: paas-bootstrap/concourse/tasks/execute_deploy_script.yml
+      input_mapping: {script-resource: paas-template}
+      file: paas-template/concourse/tasks/execute_deploy_script.yml
       params:
         SCRIPT_LOCATION: <%= depls %>
       on_failure:
@@ -130,14 +146,16 @@ jobs:
         <% end %>
         trigger: true
       <% end %>
-      - get: secrets
+      - get: secrets-<%= name %>
         params: { submodules: none}
-      - get: paas-bootstrap
+        trigger: true
+      - get: paas-template-<%= name %>
+        trigger: true
         params: { submodules: none}
     - task: generate-<%= name %>-manifest
-      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: secrets}
+      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: secrets-<%= name %>}
       output_mapping: {generated-files: release-manifest}
-      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      file: paas-template-<%= name %>/concourse/tasks/generate-manifest.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/<%= name %>/
         YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/<%= name %>/template
@@ -169,44 +187,13 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: update-<%= name %>-files
-      input_mapping: {reference-resource: secrets, generated-resource: deploy-<%= name %>}
+      input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: deploy-<%= name %>}
       output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
-        inputs:
-          - name: reference-resource
-          - name: generated-resource
-        outputs:
-          - name: updated-git-resource
-        run:
-          path: sh
-          args:
-          - -exc
-          - |
-            git config --global user.email "codex.clara-cloud-ops@orange.com"
-            git config --global user.name "Orange Cloud Foundry SKC CI Server"
-
-            FINAL_RELEASE_REPO=updated-git-resource
-
-            git clone reference-resource ${FINAL_RELEASE_REPO}
-            cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
-
-            cd ${FINAL_RELEASE_REPO}
-            git add ${OLD_FILE}
-            CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
-            if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
-            then
-              git commit -m "$COMMIT_MESSAGE"
-            else
-              echo "No change detected, skip commit"
-            fi
+      file: paas-template-<%= name %>/concourse/tasks/git_update_a_file_from_generated.yml
       params:
         OLD_FILE: <%= depls %>/<%= name %>/<%= name %>.yml
         NEW_FILE: "manifest.yml"
-        COMMIT_MESSAGE: "<%= name %> generated manifest auto update"
+        COMMIT_MESSAGE: "<%= name %> generated manifest auto update - [skip ci]"
       on_failure:
         put: failure-alert
         params:
@@ -214,7 +201,7 @@ jobs:
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
-    - put: secrets
+    - put: secrets-<%= name %>
       get_params: {submodules: none}
       params:
         - repository: updated-<%= name %>-secrets
