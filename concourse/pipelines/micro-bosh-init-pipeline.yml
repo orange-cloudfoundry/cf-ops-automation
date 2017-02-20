@@ -18,6 +18,7 @@ resources:
   source:
     expression: "0 12 * * 1-5"
     location: "Europe/Paris"
+    fire_immediately: true
 
 
 #- name: iaas-terraform-specs
