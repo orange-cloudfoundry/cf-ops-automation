@@ -23,6 +23,7 @@ resources:
   source:
     expression: "15 12 * * 1-5"
     location: "Europe/Paris"
+    fire_immediately: true
 
 - name: secrets
   type: git

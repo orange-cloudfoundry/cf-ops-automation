@@ -23,6 +23,7 @@ resources:
   source:
     expression: "0 12 * * 1-5"
     location: "Europe/Paris"
+    fire_immediately: true
 
 - name: micro-bosh-runtime-config
   type: bosh-config
@@ -73,28 +74,6 @@ resources:
     repository: cloudfoundry/os-conf-release
 
 jobs:
-
-
-- name: execute-deploy-script
-  plan:
-#      - get: secrets
-    - get: at-noon
-      trigger: true
-    - get: paas-bootstrap
-      params: { submodules: none}
-    - task: micro-bosh-cloud-config
-      input_mapping: {script-resource: paas-bootstrap}
-      file: paas-bootstrap/concourse/tasks/execute_deploy_script.yml
-      params:
-        SCRIPT_LOCATION: micro-depls
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
-
 
 - name: update-micro-bosh-cloud-config
   plan:
@@ -160,18 +139,6 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
 
-
-
-#          - get: buildpacks-ci
-#          - get: bosh-stemcell
-#          - get: cf-bosh-release
-#            version: { version: {-{cf-version}} }
-#        - put: cf-deployment
-#          params:
-#            manifest: {-{cf-manifest-location}}
-#            stemcells: ['bosh-stemcell/stemcell.tgz']
-#            releases:
-#              - cf-bosh-release/release.tgz
 
 - name: launch-docker-bosh-cli
   plan:
