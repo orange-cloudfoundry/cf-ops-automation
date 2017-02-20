@@ -7,6 +7,7 @@ require 'tempfile'
 require 'erb'
 require 'ostruct'
 
+# TODO add rspec file to avoid regression
 
 # Argument parsing
 OPTIONS = {}
@@ -22,58 +23,18 @@ opt_parser.parse!
 
 
 depls = OPTIONS[:depls]
-
 opt_parser.abort("#{opt_parser}") if depls == nil
-
 
 version_reference = YAML.load_file( "../#{depls}/#{depls}-versions.yml" )
 
-#public_config = YAML.load_file("../master-depls/master-depls-versions.yml")
-
 def erb(template, vars)
-#puts vars
   puts ERB.new(template).result(OpenStruct.new(vars).instance_eval { binding })
-#  ERB.new(template).result()
 end
-
-#full_config = public_config.merge(lpass_config)
-full_config = version_reference
-puts full_config
-
-#flyrc  = YAML.load_file(File.expand_path('~/.flyrc'))
-#target_name= ENV['TARGET_NAME'] || "cw-pp-micro"
-#target = flyrc['targets'][target_name]
-#concourse_url= target['api']
-
-PIPELINE_PREFIX = ENV['PIPELINE_PREFIX'] || ''
 
 def header(msg)
   print '*' * 10
   puts " #{msg}"
 end
-
-def set_pipeline(target_name:,name:, cmd:, load: [])
-  return if OPTIONS.has_key?(:match) && !name.include?(OPTIONS[:match])
-  return if OPTIONS.has_key?(:without) && name.include?(OPTIONS[:without])
-  puts "   #{name} pipeline"
-
-#  puts system(%{bash -c "echo fly -t #{target_name} set-pipeline \
-#    -p #{PIPELINE_PREFIX}#{name} \
-#    -c <(#{cmd})
-    puts "#{cmd}"
-   puts system(%{bash -c "<(#{cmd})"})
-
-
- #   #{load.collect { |l| "-l #{l}" }.join(' ')}
-#    -l public-config.yml \
-end
-
-
-
-#if !OPTIONS.has_key?(:template)
-#  update_standard_pipelines(target_name, full_config)
-#end
-#update_bosh_lite_pipelines(target_name, full_config)
 
 def generate_deployment_overview_from_array(path, version_reference)
    all_dependencies= []
@@ -147,14 +108,6 @@ def generate_deployment_overview_from_hash(path, version_reference)
         all_dependencies
 end
 
-#filename=File.open("pipelines/template/depls-pipeline.yml")
-name="#{depls}-pipeline"
-
-#tmp_yml_file=Tempfile.new('dependencies.yml')
-#tmp_yml_file=File.new('dependencies.yml',"w")
-#tmp_yml_file << all_dependencies.to_yaml
-#tmp_yml_file.flush
-#tmp_yml_file.close
 
 all_dependencies=generate_deployment_overview_from_hash("../" + depls + '/*',version_reference)
 
@@ -166,7 +119,5 @@ Dir['pipelines/template/depls-pipeline.yml'].each do |filename|
     aPipeline << output
 
 end
-
-
 
 puts 'Thanks, Orange CloudFoundry SKC'
