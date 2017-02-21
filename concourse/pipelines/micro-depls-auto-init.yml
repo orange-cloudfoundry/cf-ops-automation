@@ -190,7 +190,6 @@ jobs:
         text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
-
   - put: {{concourse-pipeline-name}}
     params:
       pipelines:
@@ -208,6 +207,28 @@ jobs:
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
+  - task: update-concourse-pipeline
+    input_mapping: {reference-resource: pipeline-credentials, generated-resource: concourse-master-depls-pipeline}
+    output_mapping: {updated-git-resource: updated-secrets}
+    file: depls/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: micro-depls/concourse-master/pipelines/master-depls-generated.yml
+      NEW_FILE: "concourse/pipelines/master-depls-generated.yml"
+      COMMIT_MESSAGE: "master-depls generated pipeline auto update - [skip ci]"
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - put: pipeline-credentials
+    get_params: {submodules: none}
+    params:
+      - repository: updated-secrets
+      - rebase: true
+
+
 #  - put: failure-alert
 #    params:
 #      channel: {{slack-channel}}
@@ -275,6 +296,28 @@ jobs:
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
+  - task: update-concourse-pipeline
+    input_mapping: {reference-resource: pipeline-credentials, generated-resource: concourse-ops-depls-pipeline}
+    output_mapping: {updated-git-resource: updated-secrets}
+    file: depls/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: master-depls/concourse-ops/pipelines/ops-depls-generated.yml
+      NEW_FILE: "concourse/pipelines/ops-depls-generated.yml"
+      COMMIT_MESSAGE: "ops-depls generated pipeline auto update - [skip ci]"
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - put: pipeline-credentials
+    get_params: {submodules: none}
+    params:
+      - repository: updated-secrets
+      - rebase: true
+
+
 
 - name: update-pipeline-micro-depls-generated
   plan:
@@ -324,7 +367,7 @@ jobs:
         team: main
         config_file: concourse-micro-depls-pipeline/concourse/pipelines/micro-depls-generated.yml
         vars_files:
-######### WARNING #########
+######### WARNING ######### credentials not in parent deployment (ie: inception) like master or ops
         - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-micro-depls-pipeline.yml
         - pipeline-credentials/micro-depls/micro-depls-versions.yml
     on_failure:
@@ -335,4 +378,24 @@ jobs:
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
+  - task: update-concourse-pipeline
+    input_mapping: {reference-resource: pipeline-credentials, generated-resource: concourse-micro-depls-pipeline}
+    output_mapping: {updated-git-resource: updated-secrets}
+    file: depls/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: micro-depls/concourse-micro/pipelines/micro-depls-generated.yml
+      NEW_FILE: "concourse/pipelines/micro-depls-generated.yml"
+      COMMIT_MESSAGE: "micro-depls generated pipeline auto update - [skip ci]"
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - put: pipeline-credentials
+    get_params: {submodules: none}
+    params:
+      - repository: updated-secrets
+      - rebase: true
 
