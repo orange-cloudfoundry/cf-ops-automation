@@ -26,8 +26,8 @@ run:
   args:
   - -exc
   - |
-    git config --global user.email $GIT_USER_EMAIL
-    git config --global user.name $GIT_USER_NAME
+    git config --global user.email "$GIT_USER_EMAIL"
+    git config --global user.name "$GIT_USER_NAME"
 
     FINAL_RELEASE_REPO=updated-git-resource
 
