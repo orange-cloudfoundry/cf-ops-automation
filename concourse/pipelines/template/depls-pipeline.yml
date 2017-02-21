@@ -63,7 +63,7 @@ resources:
   type: git
   source:
     uri: {{pipeline-credentials-uri}}
-    path: ["<%= depls %>/<%= name %>","shared"]
+    paths: ["<%= depls %>/<%= name %>","shared"]
     branch: master
     skip_ssl_verification: true
 
@@ -71,7 +71,7 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    path: ["<%= depls %>/<%= name %>"]
+    paths: ["<%= depls %>/<%= name %>"]
     branch: master
     skip_ssl_verification: true
 
