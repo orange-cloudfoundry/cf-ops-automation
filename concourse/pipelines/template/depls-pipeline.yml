@@ -137,6 +137,7 @@ jobs:
       - get: bosh-stemcell
         version: { version: {{stemcell-version}} }
         trigger: true
+        attempts: 3
       <% boshrelease["releases"].each do |release, info| %>
       - get: <%= release %>
         <% if info["base_location"].include?("bosh.io") %>
@@ -145,6 +146,7 @@ jobs:
         version: { tag: v{{<%= release %>-version}} }
         <% end %>
         trigger: true
+        attempts: 3
       <% end %>
       - get: secrets-<%= name %>
         params: { submodules: none}
