@@ -123,7 +123,7 @@ jobs:
       trigger: true
     - get: secrets
     - get: paas-bootstrap
-      params: { submodules: [inception/bosh-openstack-environment-templates] }
+      params: { submodules: [inception/terraform-config/template/bosh-openstack-environment-templates] }
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets,spec-resource: paas-bootstrap}
       output_mapping: {generated-files: terraform}
@@ -144,7 +144,7 @@ jobs:
   plan:
     - get: secrets
     - get: paas-bootstrap
-      params: { submodules: [inception/bosh-openstack-environment-templates] }
+      params: { submodules: [inception/terraform-config/template/bosh-openstack-environment-templates] }
     - task: bosh-cli
       config:
         platform: linux

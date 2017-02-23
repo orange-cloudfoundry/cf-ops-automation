@@ -40,7 +40,7 @@ resources:
 - name: paas-bootstrap
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{paas-templates-uri}}
     branch: master
     skip_ssl_verification: true
 
@@ -58,9 +58,9 @@ jobs:
     - get: at-noon
       trigger: true
     - get: secrets
-      params: { submodules: [inception/bosh-openstack-environment-templates] }
+      params: { submodules: none }
     - get: paas-bootstrap
-      params: { submodules: [inception/bosh-openstack-environment-templates] }
+      params: { submodules: [inception/terraform-config/template/bosh-openstack-environment-templates] }
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets}
       output_mapping: {generated-files: terraform-tfvars}
@@ -103,7 +103,7 @@ jobs:
             cd generated-files
             terraform apply ../spec-resource/$SPEC_PATH
         params:
-          SPEC_PATH: "inception/bosh-openstack-environment-templates/bosh-init-tf"
+          SPEC_PATH: "inception/micro-bosh/template/bosh-openstack-environment-templates/bosh-init-tf"
           STATE_FILE_DIR: "inception"
       on_failure:
         put: failure-alert
