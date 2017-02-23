@@ -156,6 +156,7 @@ jobs:
     - get: depls
       params: { submodules: none}
       trigger: true
+      passed: [auto-update-auto-init]
       attempts: 3
     - get: pipeline-credentials
       params: { submodules: none}
@@ -243,6 +244,7 @@ jobs:
   - aggregate:
     - get: depls
       params: { submodules: none}
+      passed: [auto-update-auto-init]
       trigger: true
       attempts: 3
     - get: pipeline-credentials
@@ -325,6 +327,7 @@ jobs:
     - get: depls
       params: { submodules: none}
       trigger: true
+      passed: [auto-update-auto-init]
       attempts: 3
     - get: pipeline-credentials
       params: { submodules: none}
