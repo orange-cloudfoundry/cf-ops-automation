@@ -63,7 +63,7 @@ jobs:
       file: paas-templates/concourse/tasks/terraform_plan_cloudfoundry.yml
       params:
         SPEC_PATH: "ops-depls/cloudfoundry/terraform-config/spec"
-        STATE_FILE_DIR: "ops-depls/cloudfoundry/terraform-config/"
+        SECRET_STATE_FILE_PATH: "ops-depls/cloudfoundry/terraform-config"
       on_failure:
         put: failure-alert
         params:
@@ -96,61 +96,34 @@ jobs:
       params:
         SPEC_PATH: "ops-depls/cloudfoundry/terraform-config/spec"
         SECRET_STATE_FILE_PATH: "ops-depls/cloudfoundry/terraform-config"
-      on_failure:
-        put: failure-alert
+#      on_failure:
+#        put: failure-alert
+#        params:
+#          channel: {{slack-channel}}
+#          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+#          username: Concourse
+      ensure:
+        task: update-terraform-state-file
+        input_mapping: {reference-resource: secrets, generated-resource: terraform-cf}
+        output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+        file: paas-templates/concourse/tasks/git_update_a_file_from_generated.yml
         params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
-    - task: update-terraform-state-file
-      input_mapping: {reference-resource: secrets, generated-resource: terraform-cf}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
-        inputs:
-          - name: reference-resource
-          - name: generated-resource
-        outputs:
-          - name: updated-terraform-state-secrets
-        run:
-          path: sh
-          args:
-          - -exc
-          - |
-            git config --global user.email "codex.clara-cloud-ops@orange.com"
-            git config --global user.name "Orange Cloud foundry SKC CI Server"
-
-            FINAL_RELEASE_REPO=updated-terraform-state-secrets
-
-            git clone reference-resource ${FINAL_RELEASE_REPO}
-            cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
-
-            cd ${FINAL_RELEASE_REPO}
-            git add ${OLD_FILE}
-            CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
-            if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
-            then
-              git commit -m "Terraform Cloudfoundry auto update: $OLD_FILE"
-            else
-              echo "No change detected, skip commit"
-            fi
-      params:
-        OLD_FILE: "ops-depls/cloudfoundry/terraform-config/terraform.tfstate"
-        NEW_FILE: "terraform.tfstate"
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
-    - put: secrets
-      get_params: {submodules: none}
-      params:
-        - repository: updated-terraform-state-secrets
-        - rebase: true
+          OLD_FILE: "ops-depls/cloudfoundry/terraform-config/terraform.tfstate"
+          NEW_FILE: "terraform.tfstate"
+          COMMIT_MESSAGE: "Terraform Cloudfoundry auto update - [skip ci]"
+        on_failure:
+          put: failure-alert
+          params:
+            channel: {{slack-channel}}
+            text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
+        on_success:
+          put: secrets
+          get_params: {submodules: none}
+          params:
+            - repository: updated-terraform-state-secrets
+            - rebase: true
 
 
