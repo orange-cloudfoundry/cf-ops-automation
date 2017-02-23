@@ -56,8 +56,6 @@ resources:
   source:
     name: {{stemcell-name}}
 
-<% require 'yaml' %>
-
 <% all_dependencies.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
   type: git
@@ -153,7 +151,8 @@ jobs:
         trigger: true
       - get: paas-template-<%= name %>
         trigger: true
-        params: { submodules: none}
+        <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
+        params: { submodules: <%= current_git_submodule || "none" %>}
     - task: generate-<%= name %>-manifest
       input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: secrets-<%= name %>}
       output_mapping: {generated-files: release-manifest}
