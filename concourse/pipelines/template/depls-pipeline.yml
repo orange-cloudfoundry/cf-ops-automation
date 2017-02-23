@@ -172,6 +172,7 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - put: deploy-<%= name %>
+      attempts: 3
       params:
         manifest: release-manifest/<%= name %>.yml
         stemcells:
