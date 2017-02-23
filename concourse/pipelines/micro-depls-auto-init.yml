@@ -179,10 +179,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/* result-dir
+          cp -r script-resource/. result-dir
           cp -rf secrets/* result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls master-depls
+          ./generate-depls.rb --depls master-depls -s ../../script-resource
     on_failure:
       put: failure-alert
       params:
@@ -267,10 +267,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/* result-dir
+          cp -r script-resource/. result-dir
           cp -rf secrets/* result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls ops-depls
+          ./generate-depls.rb --depls ops-depls -s ../../script-resource
     on_failure:
       put: failure-alert
       params:
@@ -348,10 +348,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/* result-dir
+          cp -r script-resource/. result-dir
           cp -rf secrets/* result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls micro-depls
+          ./generate-depls.rb --depls micro-depls -s ../../script-resource
     on_failure:
       put: failure-alert
       params:
