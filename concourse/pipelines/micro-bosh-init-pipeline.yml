@@ -85,10 +85,11 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: hashicorp/terraform, tag: 0.8.4}
+          source: {repository: hashicorp/terraform, tag: 0.8.5}
         inputs:
           - name: spec-resource
           - name: terraform-tfvars
+          - name: secrets
         outputs:
           - name: generated-files
         run:
@@ -98,13 +99,14 @@ jobs:
           - |
             terraform version
             CURRENT_DIR=$(pwd)
-            find spec-resource/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
+            find secrets/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
+            cp secrets/inception/micro-bosh/secrets/* generated-files/
             cp terraform-tfvars/* generated-files/
             cd generated-files
             terraform apply ../spec-resource/$SPEC_PATH
         params:
-          SPEC_PATH: "inception/micro-bosh/template/bosh-openstack-environment-templates/bosh-init-tf"
-          STATE_FILE_DIR: "inception"
+          SPEC_PATH: "inception/terraform-config/template/bosh-openstack-environment-templates/bosh-init-tf"
+          STATE_FILE_DIR: "inception/terraform-config/secrets"
       on_failure:
         put: failure-alert
         params:
