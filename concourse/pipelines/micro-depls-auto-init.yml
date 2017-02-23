@@ -159,7 +159,7 @@ jobs:
       attempts: 3
     - get: pipeline-credentials
       params: { submodules: none}
-      trigger: false
+      trigger: true
       attempts: 3
   - task: generate-master-depls-pipeline
     input_mapping: {script-resource: depls,secrets: pipeline-credentials}
@@ -247,7 +247,7 @@ jobs:
       attempts: 3
     - get: pipeline-credentials
       params: { submodules: none}
-      trigger: false
+      trigger: true
       attempts: 3
   - task: generate-ops-depls-pipeline
     input_mapping: {script-resource: depls,secrets: pipeline-credentials}
@@ -328,7 +328,7 @@ jobs:
       attempts: 3
     - get: pipeline-credentials
       params: { submodules: none}
-      trigger: false
+      trigger: true
       attempts: 3
   - task: generate-micro-depls-pipeline
     input_mapping: {script-resource: depls,secrets: pipeline-credentials}
