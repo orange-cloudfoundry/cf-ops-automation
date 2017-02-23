@@ -67,10 +67,10 @@ jobs:
       file: paas-bootstrap/micro-depls/concourse-micro/tasks/generate-terraform-config.yml
       params:
         YML_FILES: |
-            ./credentials-resource/inception/template/terraform-tpl.tfvars
-            ./credentials-resource/inception/template/meta.yml
-            ./credentials-resource/inception/template/secrets.yml
+            ./credentials-resource/inception/micro-bosh/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+        YML_TEMPLATE_DIR: scripts-resource/inception/terraform-config/template
+        SUFFIX: -tpl.tfvars.yml
       on_failure:
         put: failure-alert
         params:
@@ -141,12 +141,12 @@ jobs:
       file: paas-bootstrap/concourse/tasks/generate-manifest.yml
       params:
         YML_FILES: |
-            ./credentials-resource/inception/template/micro-bosh-tpl.yml
-            ./credentials-resource/inception/template/meta.yml
-            ./credentials-resource/inception/template/secrets.yml
+            ./credentials-resource/inception/micro-bosh/secrets/meta.yml
+            ./credentials-resource/inception/micro-bosh/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
             ./additional-resource/bosh.terraform-outputs.yml
-        OUTPUT_FILENAME: micro-bosh.yml
+        YML_TEMPLATE_DIR: scripts-resource/inception/micro-bosh/template
+
       on_failure:
         put: failure-alert
         params:
