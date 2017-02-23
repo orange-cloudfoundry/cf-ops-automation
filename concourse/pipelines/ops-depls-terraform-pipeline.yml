@@ -34,13 +34,13 @@ resources:
     skip_ssl_verification: true
 
 
-- name: terraform-specs
-  type: git
-  source:
-    uri: {{pipeline-credentials-uri}}
-    branch: master
-    paths: ["ops-depls/cloudfoundry/terraform-config/"]
-    skip_ssl_verification: true
+#- name: terraform-specs
+#  type: git
+#  source:
+#    uri: {{pipeline-credentials-uri}}
+#    branch: master
+#    paths: ["ops-depls/cloudfoundry/terraform-config/"]
+#    skip_ssl_verification: true
 
 - name: failure-alert
   type: slack-notification
@@ -55,11 +55,11 @@ jobs:
       params: { submodules: none}
     - get: at-noon
       trigger: true
-    - get: terraform-specs
+    - get: secrets
       params: { submodules: none}
 #      trigger: true
     - task: terraform-plan
-      input_mapping: {spec-resource: paas-templates}
+      input_mapping: {secret-state-resource: secrets,spec-resource: paas-templates}
       file: paas-templates/concourse/tasks/terraform_plan_cloudfoundry.yml
       params:
         SPEC_PATH: "ops-depls/cloudfoundry/terraform-config/spec"
@@ -74,7 +74,10 @@ jobs:
 
 - name: cf-manual-approval
   plan:
-    - get: terraform-specs
+    - get: paas-templates
+      params: { submodules: none}
+      passed: [check-terraform-cf-consistency]
+    - get: secrets
       params: { submodules: none}
       passed: [check-terraform-cf-consistency]
 
@@ -83,12 +86,12 @@ jobs:
     - aggregate:
       - get: paas-templates
         params: { submodules: none}
+        passed: [cf-manual-approval]
+        trigger: true
       - get: secrets
         params: { submodules: none}
-      - get: terraform-specs
-        params: { submodules: none}
-        trigger: true
         passed: [cf-manual-approval]
+        trigger: true
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets,spec-resource: paas-templates}
       output_mapping: {generated-files: terraform-cf}
