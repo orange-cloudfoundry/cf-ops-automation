@@ -69,7 +69,7 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    paths: ["<%= depls %>/<%= name %>"]
+    paths: ["<%= depls %>/<%= name %>","concourse/tasks","scripts"]
     branch: master
     skip_ssl_verification: true
 
