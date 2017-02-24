@@ -11,4 +11,6 @@ if [ -n "$CUSTOM_SCRIPT_DIR" -a  -f "$CUSTOM_SCRIPT_DIR/pre-bosh-deploy.sh" ]
 then
     echo "pre bosh deploy script detected"
     GENERATE_DIR=$OUTPUT_DIR BASE_TEMPLATE_DIR=$CUSTOM_SCRIPT_DIR $CUSTOM_SCRIPT_DIR/pre-bosh-deploy.sh
+else
+    echo "ignoring pre-bosh-deploy. No $CUSTOM_SCRIPT_DIR/pre-bosh-deploy.sh detected"
 fi

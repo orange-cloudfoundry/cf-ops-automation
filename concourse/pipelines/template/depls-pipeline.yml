@@ -178,6 +178,7 @@ jobs:
       file: paas-template-<%= name %>/concourse/tasks/spiff_pre_bosh_deploy.yml
       params:
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+        SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>/
       on_failure:
         put: failure-alert
         params:
