@@ -10,7 +10,7 @@ inputs:
 outputs:
   - name: generated-files
 run:
-  path: scripts-resource/scripts/manifest/generate-manifest.sh
+  path: scripts-resource/scripts/manifest/manifest-lifecycle-generation.sh
 params:
   YML_TEMPLATE_DIR:
   SPRUCE_FILE_BASE_PATH:

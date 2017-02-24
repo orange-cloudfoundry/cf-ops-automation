@@ -156,7 +156,7 @@ jobs:
     - task: generate-<%= name %>-manifest
       input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: secrets-<%= name %>}
       output_mapping: {generated-files: release-manifest}
-      file: paas-template-<%= name %>/concourse/tasks/manifest-lifecycle-generation.yml
+      file: paas-template-<%= name %>/concourse/tasks/generate-manifest.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/<%= name %>/
         YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/<%= name %>/template
