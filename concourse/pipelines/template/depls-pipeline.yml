@@ -61,7 +61,9 @@ resources:
   type: git
   source:
     uri: {{pipeline-credentials-uri}}
-    paths: ["<%= depls %>/<%= name %>","shared"]
+    <% ext_scan_path = boshrelease["resources"]["secrets"]["extented_scan_path"] if ( boshrelease["resources"] && boshrelease["resources"]["secrets"]["extented_scan_path"] ) %>
+    <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
+    paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || ""%>]
     branch: master
     skip_ssl_verification: true
 
