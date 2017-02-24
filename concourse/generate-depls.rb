@@ -102,7 +102,7 @@ def generate_deployment_overview_from_hash(path, version_reference)
           raise "#{dependency_file} - Invalid stemcell: expected <#{version_reference['stemcells-name']}> - Found <#{aStemcell}>" if aStemcell != version_reference['stemcell-name']
 
           version=version_reference['stemcell-version']
-          puts "####### #{version}"
+          # puts "####### #{version}"
           # deployment_details['stemcells'][aStemcell]['version']= version
         end
       end
@@ -112,8 +112,8 @@ def generate_deployment_overview_from_hash(path, version_reference)
     #        puts aDep
     #    end
     #puts "##############################"
-    puts YAML.dump(all_dependencies)
   end
+  puts "all_dependencies loaded: \n#{YAML.dump(all_dependencies)}"
   all_dependencies
 end
 
@@ -129,16 +129,16 @@ def list_git_submodules(base_path)
         current_depls=parsed_path[0]
         current_deployment=parsed_path[1]
         item={current_deployment => [path]}
-        puts item
+        # puts item
         if ! git_submodules[current_depls]
-          puts "init #{current_depls}"
+          # puts "init #{current_depls}"
           git_submodules[current_depls]= {}
         end
         if ! git_submodules[current_depls][current_deployment]
-          puts "init #{current_depls} - #{current_deployment}"
+          # puts "init #{current_depls} - #{current_deployment}"
           git_submodules[current_depls].merge! item
         else
-          puts "add #{current_depls} - #{current_deployment}: #{git_submodules[current_depls][current_deployment]} ## #{git_submodules}"
+          # puts "add #{current_depls} - #{current_deployment}: #{git_submodules[current_depls][current_deployment]} ## #{git_submodules}"
           # git_submodules.merge!(git_submodules[current_depls][current_deployment])
           git_submodules[current_depls][current_deployment] << path
         end
