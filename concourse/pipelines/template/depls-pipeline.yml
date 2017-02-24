@@ -156,7 +156,7 @@ jobs:
     - task: generate-<%= name %>-manifest
       input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: secrets-<%= name %>}
       output_mapping: {generated-files: release-manifest}
-      file: paas-template-<%= name %>/concourse/tasks/generate-manifest.yml
+      file: paas-template-<%= name %>/concourse/tasks/manifest-lifecycle-generation.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/<%= name %>/
         YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/<%= name %>/template
@@ -164,6 +164,7 @@ jobs:
             ./credentials-resource/<%= depls %>/<%= name %>/secrets/meta.yml
             ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
       on_failure:
         put: failure-alert
         params:
@@ -171,10 +172,23 @@ jobs:
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
+    - task: execute-<%= name %>-spiff-pre-bosh-deploy
+      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+      output_mapping: {generated-files: final-release-manifest}
+      file: paas-template-<%= name %>/concourse/tasks/spiff_pre_bosh_deploy.yml
+      params:
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot spiff manifest [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
     - put: deploy-<%= name %>
       attempts: 3
       params:
-        manifest: release-manifest/<%= name %>.yml
+        manifest: final-release-manifest/<%= name %>.yml
         stemcells:
         - bosh-stemcell/stemcell.tgz
         releases:
