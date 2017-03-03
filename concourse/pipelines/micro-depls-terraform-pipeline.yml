@@ -138,6 +138,29 @@ jobs:
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
+      ensure:
+        task: update-terraform-state-file
+        input_mapping: {reference-resource: secrets, generated-resource: terraform}
+        output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+        file: paas-templates/concourse/tasks/git_update_a_file_from_generated.yml
+        params:
+          OLD_FILE: "micro-depls/terraform-config/terraform.tfstate"
+          NEW_FILE: "terraform.tfstate"
+          COMMIT_MESSAGE: "Terraform micro-depls auto update - [skip ci]"
+        on_failure:
+          put: failure-alert
+          params:
+            channel: {{slack-channel}}
+            text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
+        on_success:
+          put: secrets
+          get_params: {submodules: none}
+          params:
+            - repository: updated-terraform-state-secrets
+            - rebase: true
+
 
 
 - name: launch-docker-bosh-cli
