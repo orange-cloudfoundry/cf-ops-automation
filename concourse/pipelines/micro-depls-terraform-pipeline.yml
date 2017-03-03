@@ -142,7 +142,7 @@ jobs:
         task: update-terraform-state-file
         input_mapping: {reference-resource: secrets, generated-resource: terraform}
         output_mapping: {updated-git-resource: updated-terraform-state-secrets}
-        file: paas-templates/concourse/tasks/git_update_a_file_from_generated.yml
+        file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
         params:
           OLD_FILE: "micro-depls/terraform-config/terraform.tfstate"
           NEW_FILE: "terraform.tfstate"
