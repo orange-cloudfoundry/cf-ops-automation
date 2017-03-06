@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 CURRENT_DIR=$(pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files/}
