@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 spruce --version
 CURRENT_DIR=$(pwd)
 OUTPUT_DIR=${CURRENT_DIR}/generated-files/
