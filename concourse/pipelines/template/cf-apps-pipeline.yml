@@ -1,0 +1,134 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+#  - name: maven-resource
+#    type: docker-image
+#    source:
+#      repository: patrickcrocker/maven-resource
+#      tag: latest
+
+
+
+resources:
+
+
+#- name: at-noon
+#  type: cron-resource
+#  source:
+#    expression: "15 12 * * 1-5"
+#    location: "Europe/Paris"
+#    fire_immediately: true
+
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+
+
+<% all_cf_apps.each do |name,cf_app_info| %>
+- name: secrets-<%= name %>
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    paths: ["<%= cf_app_info["base-dir"] %>"]
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-template-<%= name %>
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    paths: ["<%= cf_app_info["base-dir"] %>","concourse/tasks","scripts"]
+    branch: master
+    skip_ssl_verification: true
+
+#- name: deploy-<%= name %>
+#  type: bosh-deployment
+#  source:
+#    target: {{bosh-target}}
+#    username: {{bosh-username}}
+#    password: {{bosh-password}}
+#    deployment: <%= name %>
+<% end %>
+
+
+
+jobs:
+
+<% all_cf_apps.each do |name,cf_app_info| %>
+
+- name: cf-push-<%= name %>
+  plan:
+    - aggregate:
+      - get: secrets-<%= name %>
+        params: { submodules: none}
+        trigger: true
+      - get: paas-template-<%= name %>
+        trigger: true
+        params: { submodules: none }
+    - task: generate-<%= name %>-manifest
+      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: secrets-<%= name %>}
+      output_mapping: {generated-files: release-manifest}
+      file: paas-template-<%= name %>/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= cf_app_info["base-dir"] %>/
+        YML_TEMPLATE_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
+        YML_FILES: |
+            ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/meta.yml
+            ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/secrets.yml
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - task: push-<%= name %>
+      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+      output_mapping: {generated-files: final-release-manifest}
+      file: paas-template-<%= name %>/concourse/tasks/cf_push.yml
+      params:
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
+        SECRETS_DIR: credentials-resource/<%= cf_app_info["base-dir"] %>
+        CF_MANIFEST: <%= name %>_manifest.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot spiff manifest [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+    - task: update-<%= name %>-files
+      input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: final-release-manifest}
+      output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
+      file: paas-template-<%= name %>/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: <%= cf_app_info["base-dir"] %>/<%= name %>_manifest.yml
+        NEW_FILE: "<%= name %>_manifest.yml"
+        COMMIT_MESSAGE: "<%= name %> generated CF manifest auto update - [skip ci]"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - put: secrets-<%= name %>
+      get_params: {submodules: none}
+      params:
+        - repository: updated-<%= name %>-secrets
+        - rebase: true
+
+<% end %>

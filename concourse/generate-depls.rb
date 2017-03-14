@@ -10,7 +10,11 @@ require 'ostruct'
 # TODO add rspec file to avoid regression
 
 # Argument parsing
-OPTIONS = {:common_version_path => "..",:submodule_path => ".." ,:deployment_dependencies_path=> ".."}
+OPTIONS = {
+  :common_version_path => "..",
+  :submodule_path => ".." ,
+  :deployment_dependencies_path=> ".."
+}
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: ./#{opts.program_name} <options>"
 
@@ -149,22 +153,68 @@ def list_git_submodules(base_path)
 
 end
 
+def generate_cf_app_overview(path,depls_name)
+  cf_apps= {}
+  puts "Path CF App: #{path}"
+
+  Dir[path].select { |f| File.directory? f }.each do |base_dir|
+    dirname= base_dir.split('/').last
+    puts "Processing CF App: #{dirname}"
+    Dir.glob(base_dir + "/**/enable-cf-app.yml").each do |enable_cf_app_file|
+      puts "Cf App detected: #{base_dir} - #{enable_cf_app_file}"
+      enable_cf_app_file_dir=File.dirname(enable_cf_app_file)
+      cf_app_desc=YAML.load_file(enable_cf_app_file)
+      cf_app_desc["cf-app"].each do |cf_app_name, cf_app_details|
+
+      #   raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
+        cf_app_details["base-dir"]= enable_cf_app_file_dir.sub(/^.*#{Regexp.escape(depls_name)}/, depls_name)
+        cf_apps[cf_app_name] = cf_app_details
+      end
+    end
+  end
+  puts "cf_apps: \n#{YAML.dump(cf_apps)}"
+  cf_apps
+end
+
+
+
 
 version_reference = YAML.load_file("#{OPTIONS[:common_version_path]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{OPTIONS[:deployment_dependencies_path]}/" + depls + '/*', version_reference)
 raise "all_dependencies should not be empty" if all_dependencies.empty?
 
+all_cf_apps=generate_cf_app_overview("#{OPTIONS[:deployment_dependencies_path]}/#{depls}/*",depls)
+
+
 git_submodules=list_git_submodules(OPTIONS[:submodule_path])
 
 Dir['pipelines/template/depls-pipeline.yml'].each do |filename|
   # set_pipeline(target_name: target_name, name: name, cmd: "erb dependencies=#{tmp_yml_file.path} #{filename}")
+  puts "processing #{filename}"
   puts output=ERB.new(File.read(filename)).result()
   # erb(filename, all_dependencies)
+  pipeline_name= filename.split("/").last()
+  puts "Pipeline name #{pipeline_name}"
   aPipeline=File.new("pipelines/#{depls}-generated.yml", "w")
   aPipeline << output
-
 end
 
+
+Dir['pipelines/template/cf-apps-pipeline.yml'].each do |filename|
+  # set_pipeline(target_name: target_name, name: name, cmd: "erb dependencies=#{tmp_yml_file.path} #{filename}")
+  puts "processing #{filename}"
+  puts output=ERB.new(File.read(filename)).result()
+  # erb(filename, all_dependencies)
+  pipeline_name= filename.split("/").last().chomp("-pipeline.yml")
+  pipeline_name= "#{depls}-#{pipeline_name}-generated.yml"
+
+  puts "Pipeline name #{pipeline_name}"
+  aPipeline=File.new("pipelines/#{pipeline_name}", "w")
+  aPipeline << output
+end
+
+
+puts "### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists" if all_cf_apps.empty?
 puts "### WARNING ### no gitsubmodule detected" if git_submodules.empty?
 puts
 puts 'Thanks, Orange CloudFoundry SKC'
