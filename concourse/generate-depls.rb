@@ -165,9 +165,11 @@ def generate_cf_app_overview(path,depls_name)
       enable_cf_app_file_dir=File.dirname(enable_cf_app_file)
       cf_app_desc=YAML.load_file(enable_cf_app_file)
       cf_app_desc["cf-app"].each do |cf_app_name, cf_app_details|
-
-      #   raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
+        puts "processing cf-app: #{cf_app_name} from #{enable_cf_app_file}"
+        raise "cannot process #{enable_cf_app_file}, an application named #{cf_app_name} already exists" if cf_apps.has_key?(cf_app_name)
+        #   raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
         cf_app_details["base-dir"]= enable_cf_app_file_dir.sub(/^.*#{Regexp.escape(depls_name)}/, depls_name)
+
         cf_apps[cf_app_name] = cf_app_details
       end
     end
