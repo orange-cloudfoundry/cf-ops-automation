@@ -1,0 +1,20 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: governmentpaas/cf-cli}
+
+inputs:
+  - name: scripts-resource
+  - name: credentials-resource
+  - name: additional-resource
+outputs:
+  - name: generated-files
+run:
+  path: scripts-resource/scripts/cf/push.sh
+params:
+  GENERATE_DIR:
+  BASE_TEMPLATE_DIR:
+  SECRETS_DIR:
+  CUSTOM_SCRIPT_DIR:
+  CF_MANIFEST:
