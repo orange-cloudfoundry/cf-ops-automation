@@ -62,7 +62,7 @@ jobs:
     - get: paas-bootstrap
       params: { submodules: [inception/terraform-config/template/bosh-openstack-environment-templates] }
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets}
+      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: secrets}
       output_mapping: {generated-files: terraform-tfvars}
       file: paas-bootstrap/concourse/tasks/generate-manifest.yml
       params:
