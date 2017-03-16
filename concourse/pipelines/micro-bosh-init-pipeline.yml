@@ -64,12 +64,13 @@ jobs:
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets}
       output_mapping: {generated-files: terraform-tfvars}
-      file: paas-bootstrap/micro-depls/concourse-micro/tasks/generate-terraform-config.yml
+      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
       params:
         YML_FILES: |
             ./credentials-resource/inception/micro-bosh/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         YML_TEMPLATE_DIR: scripts-resource/inception/terraform-config/template
+        CUSTOM_SCRIPT_DIR: scripts-resource/inception/terraform-config/template
         SUFFIX: -tpl.tfvars.yml
       on_failure:
         put: failure-alert
