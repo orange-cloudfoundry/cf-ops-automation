@@ -42,6 +42,9 @@ CF_MANIFEST=${CF_MANIFEST:-manifest.yml}
 
 API_OPTIONS="--skip-ssl-validation"
 
+#TODO add an option to manage ssl validation
+cf api "$CF_API_URL" $API_OPTIONS
+cf auth "$CF_USERNAME" "$CF_PASSWORD"
 
 echo "copying file from $ADDITIONAL_RESSOURCE to $OUTPUT_DIR"
 cp -r $ADDITIONAL_RESSOURCE/. $OUTPUT_DIR/
@@ -54,8 +57,5 @@ else
     echo "ignoring pre CF push. No $CUSTOM_SCRIPT_DIR/pre-cf-push.sh detected"
 fi
 
-#TODO add an option to manage ssl validation
-cf api "$CF_API_URL" $API_OPTIONS
-cf auth "$CF_USERNAME" "$CF_PASSWORD"
-
+cf target -o "$CF_ORG" -s "$CF_SPACE"
 cf push -f ${CF_MANIFEST}
