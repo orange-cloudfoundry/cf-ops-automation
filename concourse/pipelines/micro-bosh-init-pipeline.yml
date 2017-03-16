@@ -100,8 +100,10 @@ jobs:
           - |
             terraform version
             CURRENT_DIR=$(pwd)
+            # Copy tfstate
             find secrets/${STATE_FILE_DIR}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
-            cp secrets/inception/micro-bosh/secrets/* generated-files/
+            # Copy micro-bosh secrets
+            cp -r secrets/inception/micro-bosh/secrets/* generated-files/
             cp terraform-tfvars/* generated-files/
             cd generated-files
             terraform apply ../spec-resource/$SPEC_PATH
