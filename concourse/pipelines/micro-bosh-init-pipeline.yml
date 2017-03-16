@@ -110,13 +110,29 @@ jobs:
         params:
           SPEC_PATH: "inception/terraform-config/template/bosh-openstack-environment-templates/bosh-init-tf"
           STATE_FILE_DIR: "inception/terraform-config/secrets"
-      on_failure:
-        put: failure-alert
+      ensure:
+        task: update-terraform-state-file
+        input_mapping: {reference-resource: secrets, generated-resource: terraform}
+        output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+        file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
         params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
+          OLD_FILE: "inception/terraform-config/terraform.tfstate"
+          NEW_FILE: "terraform.tfstate"
+          COMMIT_MESSAGE: "Terraform micro-depls auto update - [skip ci]"
+        on_failure:
+          put: failure-alert
+          params:
+            channel: {{slack-channel}}
+            text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
+        on_success:
+          put: secrets
+          get_params: {submodules: none}
+          params:
+            - repository: updated-terraform-state-secrets
+            - rebase: true
+
     - task: extract_terraform_outputs
       input_mapping: {script-resource: paas-bootstrap, state-file-resource: terraform}
       output_mapping: {result-dir: terraform-outputs}
@@ -145,13 +161,14 @@ jobs:
       output_mapping: {generated-files: micro-bosh}
       file: paas-bootstrap/concourse/tasks/generate-manifest.yml
       params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/inception/micro-bosh/
         YML_FILES: |
             ./credentials-resource/inception/micro-bosh/secrets/meta.yml
             ./credentials-resource/inception/micro-bosh/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
             ./additional-resource/bosh.terraform-outputs.yml
         YML_TEMPLATE_DIR: scripts-resource/inception/micro-bosh/template
-
+        CUSTOM_SCRIPT_DIR: scripts-resource/inception/micro-bosh/template
       on_failure:
         put: failure-alert
         params:
@@ -160,7 +177,7 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: diff-micro-bosh-config
-      input_mapping: {reference-resource: paas-bootstrap, generated-resource: micro-bosh}
+      input_mapping: {reference-resource: secrets, generated-resource: micro-bosh}
       config:
         platform: linux
         image_resource:
@@ -176,7 +193,7 @@ jobs:
           - |
             diff -ad $REFERENCE_FILE $OTHER_FILE
       params:
-        REFERENCE_FILE: "reference-resource/inception/micro-bosh.yml"
+        REFERENCE_FILE: "reference-resource/inception/micro-bosh/secrets/micro-bosh.yml"
         OTHER_FILE: "generated-resource/micro-bosh.yml"
       on_failure:
         put: failure-alert
