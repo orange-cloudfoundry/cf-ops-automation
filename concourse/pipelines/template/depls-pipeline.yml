@@ -129,6 +129,87 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
 
+- name: cloud-config-and-runtime-config-for-<%= depls %>
+  plan:
+    - get: secrets
+      params: { submodules: none}
+    - get: paas-template
+      params: { submodules: none}
+
+    - task: generate-<%= depls %>-terraform-outputs-cloud-config
+      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets, additional-resource: terraform-outputs}
+      output_mapping: {generated-files: cloud-config-manifest}
+      file: paas-template/concourse/tasks/extract_terraform_outputs.yml
+      params:
+        STATE_FILE: "state-file-resource/terraform.tfstate"
+        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
+
+        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
+        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
+        YML_FILES: |
+            ./credentials-resource/<%= depls %>/secrets/meta.yml
+            ./credentials-resource/<%= depls %>/secrets/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
+
+    - task: generate-<%= depls %>-all-config
+      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets, additional-resource: terraform-outputs}
+      output_mapping: {generated-files: config-manifest}
+      file: paas-template/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
+        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
+        YML_FILES: |
+            ./credentials-resource/<%= depls %>/secrets/meta.yml
+            ./credentials-resource/<%= depls %>/secrets/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
+
+    aggregate:
+      - task: update-cloud-config-for-<%= depls %>
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
+          inputs:
+            - name: config-manifest
+            - name: secrets
+            - name: paas-template
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                ./paas-template/scripts/bosh_login.sh {{bosh_target}} {{bosh_username}} {{bosh_password}}
+                bosh update cloud-config config-manifest/cloud-config.yml
+
+        - task: update-runtime-config-for-<%= depls %>
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: governmentpaas/bosh-cli
+            inputs:
+              - name: config-manifest
+              - name: secrets
+              - name: paas-template
+            run:
+              path: sh
+              args:
+                - -e
+                - -c
+                - |
+                  ./paas-template/scripts/bosh_login.sh {{bosh_target}} {{bosh_username}} {{bosh_password}}
+                  bosh update runtime-config config-manifest/runtime-config.yml
+
+
+
+
+
 <% all_dependencies.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
