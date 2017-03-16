@@ -122,8 +122,33 @@ jobs:
     - get: at-noon
       trigger: true
     - get: secrets
+      passed: [cf-manual-approval]
     - get: paas-bootstrap
       params: { submodules: [inception/terraform-config/template/bosh-openstack-environment-templates] }
+      passed: [cf-manual-approval]
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: paas-bootstrap/micro-depls/concourse-micro/tasks/generate-terraform-config.yml
+      params:
+        YML_FILES: |
+          ./credentials-resource/shared/secrets.yml
+        YML_TEMPLATE_DIR: scripts-resource/micro-depls/terraform-config/template
+        CUSTOM_SCRIPT_DIR: scripts-resource/micro-depls/terraform-config/template
+        SUFFIX: -tpl.tfvars.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+- name: cf-manual-approval
+  plan:
+    - get: paas-bootstrap
+      params: { submodules: none}
+    - get: secrets
+      params: { submodules: none}
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets,spec-resource: paas-bootstrap}
       output_mapping: {generated-files: terraform}
