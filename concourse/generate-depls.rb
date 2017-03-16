@@ -195,7 +195,9 @@ Dir['pipelines/template/depls-pipeline.yml'].each do |filename|
   puts "processing #{filename}"
   puts output=ERB.new(File.read(filename)).result()
   # erb(filename, all_dependencies)
-  pipeline_name= filename.split("/").last()
+  pipeline_name= filename.split("/").last().chomp("-pipeline.yml")
+  pipeline_name= "#{depls}-#{pipeline_name}-generated.yml"
+
   puts "Pipeline name #{pipeline_name}"
   aPipeline=File.new("pipelines/#{depls}-generated.yml", "w")
   aPipeline << output
