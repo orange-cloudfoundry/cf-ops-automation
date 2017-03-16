@@ -61,16 +61,29 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
     - [ ] auto-init
     - [X] deployments except micro-bosh 
     - [ ] terraform
- - Manual pipeline (to be generated)
-    - [X] auto-init
-    - [X] terraform
+    - [X] cf-apps
 
  - Enhancements
     - Pipelines
         - [ ] flow control to avoid Concourse out of resource crash
+        - cf-apps
+            - [ ] use concourse resource to push instead of shell
+            - [ ] use dedicated resource to handle binary download (ie maven, github-release, etc...)
+    - concourse credentials generation from template (like manifest)            
+            
+
+ - TODO     
+    - Pipeline generation
         - deployments
             - [ ] handle cloud-config & runtime-config
+                tfstate => yaml. (network tf =>  net-id => cloud-config-tpl.yml. (( grab tf-exchange.id )) )
             - [ ] generate check-resource script
-
+    - [ ] enable auto-init for manual pipeline
+    - migrate manual pipeline to generated pipeline
+        - [ ] auto-init
+        - [ ] terraform
+    - [ ] add tests to validate pipeline generation
+    - mattermost:
+        - check message
 
  
