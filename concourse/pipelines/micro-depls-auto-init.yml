@@ -290,6 +290,13 @@ jobs:
         vars_files:
         - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
         - pipeline-credentials/ops-depls/ops-depls-versions.yml
+      - name: ops-depls-cf-apps-generated
+        team: main
+        config_file: concourse-ops-depls-pipeline/concourse/pipelines/ops-depls-cf-apps-generated.yml
+        vars_files:
+        - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
+        - pipeline-credentials/ops-depls/ops-depls-versions.yml
+
     on_failure:
       put: failure-alert
       params:
@@ -318,6 +325,90 @@ jobs:
     params:
       - repository: updated-secrets
       - rebase: true
+
+
+- name: update-pipeline-expe-depls-generated
+  plan:
+  - aggregate:
+    - get: depls
+      params: { submodules: none}
+      passed: [auto-update-auto-init]
+      trigger: true
+      attempts: 3
+    - get: pipeline-credentials
+      params: { submodules: none}
+      trigger: true
+      attempts: 3
+  - task: generate-expe-depls-pipeline
+    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    output_mapping: {result-dir: concourse-expe-depls-pipeline}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: script-resource
+        - name: secrets
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cp -r script-resource/. result-dir
+          cp -rf secrets/. result-dir
+          cd result-dir/concourse
+          ./generate-depls.rb --depls expe-depls -s ../../script-resource
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+
+  - put: {{concourse-pipeline-name}}
+    params:
+      pipelines:
+      - name: expe-depls-generated
+        team: main
+        config_file: concourse-expe-depls-pipeline/concourse/pipelines/expe-depls-generated.yml
+        vars_files:
+        - pipeline-credentials/master-depls/concourse-expe/pipelines/credentials-ops-depls-pipeline.yml
+        - pipeline-credentials/expe-depls/expe-depls-versions.yml
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        username: Concourse
+  - task: update-concourse-pipeline
+    input_mapping: {reference-resource: pipeline-credentials, generated-resource: concourse-expe-depls-pipeline}
+    output_mapping: {updated-git-resource: updated-secrets}
+    file: depls/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: master-depls/concourse-expe/pipelines/expe-depls-generated.yml
+      NEW_FILE: "concourse/pipelines/expe-depls-generated.yml"
+      COMMIT_MESSAGE: "expe-depls generated pipeline auto update - [skip ci]"
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - put: pipeline-credentials
+    get_params: {submodules: none}
+    params:
+      - repository: updated-secrets
+      - rebase: true
+
+
+
 
 
 
