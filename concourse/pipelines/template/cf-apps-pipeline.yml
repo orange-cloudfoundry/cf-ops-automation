@@ -28,12 +28,12 @@ resources:
 #    location: "Europe/Paris"
 #    fire_immediately: true
 
-
+<% if ! all_cf_apps.empty? %>
 - name: failure-alert
   type: slack-notification
   source:
     url: {{slack-webhook}}
-
+<% end %>
 
 <% all_cf_apps.each do |app_name,cf_app_info| %>
 - name: secrets-<%= app_name %>
