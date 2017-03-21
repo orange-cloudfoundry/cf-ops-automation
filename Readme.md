@@ -60,6 +60,7 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
  - Pipeline generation
     - [ ] auto-init
     - [X] deployments except micro-bosh 
+        - handle cloud-config & runtime-config
     - [ ] terraform
     - [X] cf-apps
 
@@ -75,7 +76,7 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
  - TODO     
     - Pipeline generation
         - deployments
-            - [ ] handle cloud-config & runtime-config
+            - [ ] cloud-config should extract net_id from terraform
                 tfstate => yaml. (network tf =>  net-id => cloud-config-tpl.yml. (( grab tf-exchange.id )) )
             - [ ] generate check-resource script
         - cf-apps
