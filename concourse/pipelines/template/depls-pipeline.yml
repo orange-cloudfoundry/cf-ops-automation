@@ -56,6 +56,15 @@ resources:
   source:
     name: {{stemcell-name}}
 
+
+- name: secrets-<%=depls %>
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    paths: ["<%= depls %>/secrets","shared"]
+    branch: master
+    skip_ssl_verification: true
+
 <% all_dependencies.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
   type: git
@@ -131,13 +140,13 @@ jobs:
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
   plan:
-    - get: secrets
+    - get: secrets-<%=depls %>
       params: { submodules: none}
     - get: paas-template
       params: { submodules: none}
 
     - task: generate-<%= depls %>-terraform-outputs-cloud-config
-      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets, additional-resource: terraform-outputs}
+      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
       output_mapping: {generated-files: cloud-config-manifest}
       file: paas-template/concourse/tasks/extract_terraform_outputs.yml
       params:
@@ -153,7 +162,7 @@ jobs:
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
 
     - task: generate-<%= depls %>-all-config
-      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets, additional-resource: terraform-outputs}
+      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
       output_mapping: {generated-files: config-manifest}
       file: paas-template/concourse/tasks/generate-manifest.yml
       params:
@@ -175,7 +184,7 @@ jobs:
               repository: governmentpaas/bosh-cli
           inputs:
             - name: config-manifest
-            - name: secrets
+            - name: secrets-<%=depls %>
             - name: paas-template
           run:
             path: sh
@@ -195,7 +204,7 @@ jobs:
               repository: governmentpaas/bosh-cli
           inputs:
             - name: config-manifest
-            - name: secrets
+            - name: secrets-<%=depls %>
             - name: paas-template
           run:
             path: sh
