@@ -78,6 +78,8 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
             - [ ] handle cloud-config & runtime-config
                 tfstate => yaml. (network tf =>  net-id => cloud-config-tpl.yml. (( grab tf-exchange.id )) )
             - [ ] generate check-resource script
+        - cf-apps
+            - [ ] support/test multi app deployment. 
     - [ ] enable auto-init for manual pipeline
     - migrate manual pipeline to generated pipeline
         - [ ] auto-init
