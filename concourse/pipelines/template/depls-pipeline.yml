@@ -186,28 +186,25 @@ jobs:
                 ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
                 bosh update cloud-config config-manifest/cloud-config.yml
 
-        - task: update-runtime-config-for-<%= depls %>
-          config:
-            platform: linux
-            image_resource:
-              type: docker-image
-              source:
-                repository: governmentpaas/bosh-cli
-            inputs:
-              - name: config-manifest
-              - name: secrets
-              - name: paas-template
-            run:
-              path: sh
-              args:
-                - -e
-                - -c
-                - |
-                  ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
-                  bosh update runtime-config config-manifest/runtime-config.yml
-
-
-
+      - task: update-runtime-config-for-<%= depls %>
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
+          inputs:
+            - name: config-manifest
+            - name: secrets
+            - name: paas-template
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                bosh update runtime-config config-manifest/runtime-config.yml
 
 
 <% all_dependencies.each do |name,boshrelease| %>
