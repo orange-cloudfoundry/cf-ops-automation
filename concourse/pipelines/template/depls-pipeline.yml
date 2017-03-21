@@ -153,6 +153,7 @@ jobs:
       trigger: true
     - get: paas-template-<%=depls %>
       params: { submodules: none}
+      trigger: true
 
 
 #    - task: generate-<%= depls %>-terraform-outputs-cloud-config
@@ -209,7 +210,7 @@ jobs:
           task: update-cloud-config
           input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-cloud-config}
-          file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
+          file: paas-template-<%=depls %>/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: "<%=depls %>/cloud-config.yml"
             NEW_FILE: "config-manifest/cloud-config.yml"
@@ -252,7 +253,7 @@ jobs:
           task: update-runtime-config
           input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-runtime-config}
-          file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
+          file: paas-template-<%=depls %>/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: "<%=depls %>/runtime-config.yml"
             NEW_FILE: "config-manifest/runtime-config.yml"
