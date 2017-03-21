@@ -183,7 +183,7 @@ jobs:
               - -e
               - -c
               - |
-                ./paas-template/scripts/bosh_login.sh {{bosh_target}} {{bosh_username}} {{bosh_password}}
+                ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
                 bosh update cloud-config config-manifest/cloud-config.yml
 
         - task: update-runtime-config-for-<%= depls %>
@@ -203,7 +203,7 @@ jobs:
                 - -e
                 - -c
                 - |
-                  ./paas-template/scripts/bosh_login.sh {{bosh_target}} {{bosh_username}} {{bosh_password}}
+                  ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
                   bosh update runtime-config config-manifest/runtime-config.yml
 
 
