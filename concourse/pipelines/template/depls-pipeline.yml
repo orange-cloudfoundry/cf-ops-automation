@@ -145,24 +145,24 @@ jobs:
     - get: paas-template
       params: { submodules: none}
 
-    - task: generate-<%= depls %>-terraform-outputs-cloud-config
-      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
-      output_mapping: {generated-files: cloud-config-manifest}
-      file: paas-template/concourse/tasks/extract_terraform_outputs.yml
-      params:
-        STATE_FILE: "state-file-resource/terraform.tfstate"
-        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
-
-        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
-        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
-        YML_FILES: |
-            ./credentials-resource/<%= depls %>/secrets/meta.yml
-            ./credentials-resource/<%= depls %>/secrets/secrets.yml
-            ./credentials-resource/shared/secrets.yml
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
+#    - task: generate-<%= depls %>-terraform-outputs-cloud-config
+#      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
+#      output_mapping: {generated-files: cloud-config-manifest}
+#      file: paas-template/concourse/tasks/extract_terraform_outputs.yml
+#      params:
+#        STATE_FILE: "state-file-resource/terraform.tfstate"
+#        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
+#
+#        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
+#        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
+#        YML_FILES: |
+#            ./credentials-resource/<%= depls %>/secrets/meta.yml
+#            ./credentials-resource/<%= depls %>/secrets/secrets.yml
+#            ./credentials-resource/shared/secrets.yml
+#        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
 
     - task: generate-<%= depls %>-all-config
-      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
+      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: secrets-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
       file: paas-template/concourse/tasks/generate-manifest.yml
       params:
