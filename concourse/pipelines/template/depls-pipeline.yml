@@ -64,6 +64,14 @@ resources:
     paths: ["<%= depls %>/secrets","shared"]
     branch: master
     skip_ssl_verification: true
+- name: paas-template-<%=depls %>
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    paths: ["<%= depls %>/template","concourse/tasks","scripts"]
+    branch: master
+    skip_ssl_verification: true
+
 
 <% all_dependencies.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
@@ -142,8 +150,10 @@ jobs:
   plan:
     - get: secrets-<%=depls %>
       params: { submodules: none}
-    - get: paas-template
+      trigger: true
+    - get: paas-template-<%=depls %>
       params: { submodules: none}
+
 
 #    - task: generate-<%= depls %>-terraform-outputs-cloud-config
 #      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
@@ -162,9 +172,9 @@ jobs:
 #        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
 
     - task: generate-<%= depls %>-all-config
-      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: secrets-<%=depls %>}
+      input_mapping: {scripts-resource: paas-template-<%=depls %>, credentials-resource: secrets-<%=depls %>, additional-resource: secrets-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
-      file: paas-template/concourse/tasks/generate-manifest.yml
+      file: paas-template-<%=depls %>/concourse/tasks/generate-manifest.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
         YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
@@ -185,15 +195,38 @@ jobs:
           inputs:
             - name: config-manifest
             - name: secrets-<%=depls %>
-            - name: paas-template
+            - name: paas-template-<%=depls %>
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                ./paas-template-<%=depls %>/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                cat config-manifest/cloud-config.yml
                 bosh update cloud-config config-manifest/cloud-config.yml
+        ensure:
+          task: update-cloud-config
+          input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
+          output_mapping: {updated-git-resource: updated-cloud-config}
+          file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "<%=depls %>/cloud-config.yml"
+            NEW_FILE: "config-manifest/cloud-config.yml"
+            COMMIT_MESSAGE: "<%=depls %> cloud-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: {{slack-channel}}
+              text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-<%=depls %>
+            get_params: {submodules: none}
+            params:
+              - repository: updated-cloud-config
+              - rebase: true
 
       - task: update-runtime-config-for-<%= depls %>
         config:
@@ -205,15 +238,38 @@ jobs:
           inputs:
             - name: config-manifest
             - name: secrets-<%=depls %>
-            - name: paas-template
+            - name: paas-template-<%=depls %>
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-template/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                ./paas-template-<%=depls %>/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                cat config-manifest/runtime-config.yml
                 bosh update runtime-config config-manifest/runtime-config.yml
+        ensure:
+          task: update-runtime-config
+          input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
+          output_mapping: {updated-git-resource: updated-runtime-config}
+          file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "<%=depls %>/runtime-config.yml"
+            NEW_FILE: "config-manifest/runtime-config.yml"
+            COMMIT_MESSAGE: "<%=depls %> runtime-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: {{slack-channel}}
+              text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-<%=depls %>
+            get_params: {submodules: none}
+            params:
+              - repository: updated-runtime-config
+              - rebase: true
 
 
 <% all_dependencies.each do |name,boshrelease| %>
