@@ -165,7 +165,7 @@ jobs:
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
 
-    aggregate:
+    - aggregate:
       - task: update-cloud-config-for-<%= depls %>
         config:
           platform: linux
