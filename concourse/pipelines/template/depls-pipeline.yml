@@ -213,7 +213,7 @@ jobs:
           file: paas-template-<%=depls %>/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: "<%=depls %>/cloud-config.yml"
-            NEW_FILE: "config-manifest/cloud-config.yml"
+            NEW_FILE: "cloud-config.yml"
             COMMIT_MESSAGE: "<%=depls %> cloud-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
@@ -256,7 +256,7 @@ jobs:
           file: paas-template-<%=depls %>/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: "<%=depls %>/runtime-config.yml"
-            NEW_FILE: "config-manifest/runtime-config.yml"
+            NEW_FILE: "runtime-config.yml"
             COMMIT_MESSAGE: "<%=depls %> runtime-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
