@@ -83,7 +83,7 @@ def generate_deployment_overview_from_array(path, version_reference)
 end
 
 def generate_deployment_overview_from_hash(path, version_reference)
-  all_dependencies= {}
+  dependencies= {}
 
   Dir[path].select { |f| File.directory? f }.each do |filename|
     dirname= filename.split('/').last
@@ -94,7 +94,7 @@ def generate_deployment_overview_from_hash(path, version_reference)
       current_dependecies["deployment"].each do |deployment_name, deployment_details|
 
         raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
-        all_dependencies[deployment_name] = deployment_details
+        dependencies[deployment_name] = deployment_details
 
         deployment_details['releases'].each do |aRelease, _|
           #                puts "arelease: #{aRelease}"
@@ -112,14 +112,71 @@ def generate_deployment_overview_from_hash(path, version_reference)
       end
     end
     #puts "##############################"
-    #    all_dependencies.each do |aDep|
+    #    dependencies.each do |aDep|
     #        puts aDep
     #    end
     #puts "##############################"
   end
-  puts "all_dependencies loaded: \n#{YAML.dump(all_dependencies)}"
-  all_dependencies
+  puts "Dependencies loaded: \n#{YAML.dump(dependencies)}"
+  dependencies
 end
+
+
+# ci-deployment:
+#     ops-depls:
+#     target: concourse-ops
+#     pipelines:
+# ops-depls-generated:
+#     config_file: concourse/pipelines/ops-depls-generated.yml
+# vars_files:
+#     - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
+# - ops-depls/ops-depls-versions.yml
+# ops-depls-cf-apps-generated:
+#     config_file: concourse/pipelines/ops-depls-cf-apps-generated.yml
+# vars_files:
+#     - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
+# - ops-depls/ops-depls-versions.yml
+#
+
+def generate_ci_deployment_overview(path)
+ci_deployment= {}
+puts "Path CI deployment overview: #{path}"
+
+  Dir[path].select { |f| File.directory? f }.each do |filename|
+    dirname= filename.split('/').last
+    puts "Processing #{dirname}"
+    Dir[filename + "/ci-deployment-overview.yml"].each do |deployment_file|
+      puts "CI deployment detected: #{dirname}"
+      current_deployment=YAML.load_file(deployment_file)
+      raise "#{deployment_file} - Invalid deployment: expected 'ci-deployment' key as yaml root" if (current_deployment == nil || current_deployment["ci-deployment"] == nil)
+      current_deployment["ci-deployment"].each do |deployment_name, deployment_details|
+        raise "#{deployment_file} - missing keys: expecting keys target and pipelines" if deployment_details == nil
+        raise "#{deployment_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
+        ci_deployment[deployment_name] = deployment_details
+
+        raise "#{deployment_file} - No target defined: expecting a target" if deployment_details['target'] == nil
+
+        raise "#{deployment_file} - No pipeline detected: expecting at least one pipeline" if deployment_details['pipelines'] == nil
+
+        deployment_details['pipelines'].each do |pipeline_name, pipeline_details|
+          raise "#{deployment_file} - missing keys: expecting keys vars_files and config_file (optional)" if pipeline_details == nil
+          raise "#{deployment_file} - missing key: vars_files. Expecting an array of at least one concourse var file" if pipeline_details['vars_files'] == nil
+          puts "Generating default value for key config_file in #{pipeline_name}" if pipeline_details['config_file'] == nil
+          pipeline_details['config_file']= "concourse/pipelines/#{pipeline_name}.yml" if pipeline_details['config_file'] == nil
+        end
+      end
+    end
+    #puts "##############################"
+    #    ci_deployment.each do |aDep|
+    #        puts aDep
+    #    end
+    #puts "##############################"
+  end
+  puts "ci_deployment loaded: \n#{YAML.dump(ci_deployment)}"
+  ci_deployment
+end
+
+
 
 def list_git_submodules(base_path)
   git_submodules= {}
@@ -183,7 +240,9 @@ end
 
 version_reference = YAML.load_file("#{OPTIONS[:common_version_path]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{OPTIONS[:deployment_dependencies_path]}/" + depls + '/*', version_reference)
+
 raise "all_dependencies should not be empty" if all_dependencies.empty?
+all_ci_deployments=generate_ci_deployment_overview("#{OPTIONS[:deployment_dependencies_path]}/" + depls)
 
 all_cf_apps=generate_cf_app_overview("#{OPTIONS[:deployment_dependencies_path]}/#{depls}/*",depls)
 
@@ -217,7 +276,7 @@ Dir['pipelines/template/cf-apps-pipeline.yml'].each do |filename|
   aPipeline << output
 end
 
-
+puts "### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists" if all_ci_deployments.empty?
 puts "### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists" if all_cf_apps.empty?
 puts "### WARNING ### no gitsubmodule detected" if git_submodules.empty?
 puts
