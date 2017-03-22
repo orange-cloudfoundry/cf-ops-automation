@@ -122,10 +122,8 @@ jobs:
     - get: at-noon
       trigger: true
     - get: secrets
-      passed: [cf-manual-approval]
     - get: paas-bootstrap
       params: { submodules: [inception/terraform-config/template/bosh-openstack-environment-templates] }
-      passed: [cf-manual-approval]
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets}
       output_mapping: {generated-files: terraform-tfvars}
@@ -133,6 +131,8 @@ jobs:
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
+          ./credentials-resource/micro-depls/terraform-config/secrets/meta.yml
+          ./credentials-resource/micro-depls/terraform-config/secrets/secrets.yml
         YML_TEMPLATE_DIR: scripts-resource/micro-depls/terraform-config/template
         CUSTOM_SCRIPT_DIR: scripts-resource/micro-depls/terraform-config/template
         SUFFIX: -tpl.tfvars.yml
@@ -143,33 +143,37 @@ jobs:
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
-- name: cf-manual-approval
-  plan:
-    - get: paas-bootstrap
-      params: { submodules: none}
-    - get: secrets
-      params: { submodules: none}
     - task: terraform-apply
-      input_mapping: {secret-state-resource: secrets,spec-resource: paas-bootstrap}
       output_mapping: {generated-files: terraform}
-      file: paas-bootstrap/concourse/tasks/terraform_apply_cloudfoundry.yml
-      params:
-        SPEC_PATH: "micro-depls/terraform-config/spec"
-        SECRET_STATE_FILE_PATH: "micro-depls/terraform-config"
-      on_failure:
-        put: failure-alert
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: hashicorp/terraform, tag: 0.8.5}
+        inputs:
+          - name: paas-bootstrap
+          - name: terraform-tfvars
+          - name: secrets
+        outputs:
+          - name: generated-files
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            terraform version
+            cp secrets/${STATE_FILE_DIR}/terraform.tfstate generated-files/terraform.tfstate
+            terraform apply -state=generated-files/terraform.tfstate -var-file=terraform-tfvars/terraform.tfvars.json paas-bootstrap/$SPEC_PATH
         params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
+          SPEC_PATH: "micro-depls/terraform-config/spec"
+          STATE_FILE_DIR: "micro-depls/terraform-config/secrets"
       ensure:
         task: update-terraform-state-file
         input_mapping: {reference-resource: secrets, generated-resource: terraform}
         output_mapping: {updated-git-resource: updated-terraform-state-secrets}
         file: paas-bootstrap/concourse/tasks/git_update_a_file_from_generated.yml
         params:
-          OLD_FILE: "micro-depls/terraform-config/terraform.tfstate"
+          OLD_FILE: "micro-depls/terraform-config/secrets/terraform.tfstate"
           NEW_FILE: "terraform.tfstate"
           COMMIT_MESSAGE: "Terraform micro-depls auto update - [skip ci]"
         on_failure:
