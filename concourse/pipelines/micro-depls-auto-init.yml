@@ -152,7 +152,7 @@ jobs:
       params: { submodules: none}
       trigger: false
       attempts: 3
-  - put: {{concourse-pipeline-name}}
+  - put: {{concourse-micro-depls}}
     params:
       pipelines:
       - name: auto-init
