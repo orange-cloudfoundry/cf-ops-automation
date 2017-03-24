@@ -190,6 +190,7 @@ jobs:
 
     - aggregate:
       - task: update-cloud-config-for-<%= depls %>
+        attempts: 3
         config:
           platform: linux
           image_resource:
@@ -233,6 +234,7 @@ jobs:
               - rebase: true
 
       - task: update-runtime-config-for-<%= depls %>
+        attempts: 3
         config:
           platform: linux
           image_resource:
@@ -341,7 +343,7 @@ jobs:
         manifest: final-release-manifest/<%= name %>.yml
         stemcells:
         - bosh-stemcell/stemcell.tgz
-        releases:
+        release: <%= "[]" if boshrelease["releases"].empty? %>
         <% boshrelease["releases"].each do |release, info| %>
         - <%= release %>/release.tgz
         <% end %>
@@ -374,4 +376,3 @@ jobs:
         - rebase: true
 
 <% end %>
-
