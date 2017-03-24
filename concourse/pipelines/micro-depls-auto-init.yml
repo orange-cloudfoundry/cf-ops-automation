@@ -199,7 +199,7 @@ jobs:
         config_file: concourse-master-depls-pipeline/concourse/pipelines/master-depls-generated.yml
         vars_files:
         - pipeline-credentials/micro-depls/concourse-master/pipelines/credentials-master-depls-pipeline.yml
-        - pipeline-credentials/master-depls/master-depls-versions.yml
+        - script-resource/master-depls/master-depls-versions.yml
     on_failure:
       put: failure-alert
       params:
@@ -289,13 +289,13 @@ jobs:
         config_file: concourse-ops-depls-pipeline/concourse/pipelines/ops-depls-generated.yml
         vars_files:
         - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-        - pipeline-credentials/ops-depls/ops-depls-versions.yml
+        - script-resource/ops-depls/ops-depls-versions.yml
       - name: ops-depls-cf-apps-generated
         team: main
         config_file: concourse-ops-depls-pipeline/concourse/pipelines/ops-depls-cf-apps-generated.yml
         vars_files:
         - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-        - pipeline-credentials/ops-depls/ops-depls-versions.yml
+        - script-resource/ops-depls/ops-depls-versions.yml
 
     on_failure:
       put: failure-alert
@@ -393,7 +393,7 @@ jobs:
         config_file: concourse-expe-depls-pipeline/concourse/pipelines/expe-depls-generated.yml
         vars_files:
         - pipeline-credentials/master-depls/concourse-expe/pipelines/credentials-expe-depls-pipeline.yml
-        - pipeline-credentials/expe-depls/expe-depls-versions.yml
+        - script-resource/expe-depls/expe-depls-versions.yml
     on_failure:
       put: failure-alert
       params:
@@ -479,7 +479,7 @@ jobs:
         vars_files:
 ######### WARNING ######### credentials not in parent deployment (ie: inception) like master or ops
         - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-micro-depls-pipeline.yml
-        - pipeline-credentials/micro-depls/micro-depls-versions.yml
+        - script-resource/micro-depls/micro-depls-versions.yml
     on_failure:
       put: failure-alert
       params:
