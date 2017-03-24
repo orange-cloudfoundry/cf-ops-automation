@@ -31,12 +31,12 @@ run:
   - -exc
   - |
     cp -r script-resource/. run-resource
-    cp -r secrets/. run-resource
-    cd run-resource/${SCRIPT_LOCATION}
-    ./deploy.sh
+    run-resource/${CURRENT_DEPLS}/deploy.sh
 
 params:
-  SCRIPT_LOCATION:
-  BOSH_USER: admin
+  CURRENT_DEPLS:
+  COMMON_SCRIPT_DIR:
+  SECRETS_DIR:
+  BOSH_USERNAME: admin
   BOSH_PASSWORD:
   BOSH_TARGET:
