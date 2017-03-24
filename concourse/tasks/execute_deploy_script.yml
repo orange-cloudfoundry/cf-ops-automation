@@ -16,19 +16,27 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: governmentpaas/bosh-cli
+#    repository: governmentpaas/bosh-cli
+    repository: orangecloudfoundry/bosh-cli-v2
 
 inputs:
-- name: script-resource
+  - name: script-resource
+  - name: secrets
+outputs:
+  - name: run-resource
 
 run:
   path: sh
   args:
   - -exc
   - |
-    cd script-resource/${SCRIPT_LOCATION}
+    cp -r script-resource/. run-resource
+    cp -r secrets/. run-resource
+    cd run-resource/${SCRIPT_LOCATION}
     ./deploy.sh
 
 params:
   SCRIPT_LOCATION:
-
+  BOSH_USER: admin
+  BOSH_PASSWORD:
+  BOSH_TARGET:
