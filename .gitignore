@@ -5,6 +5,7 @@
 **/secrets/*
 **/secrets.yml
 shared/
+**/*-generated.yml
 
 ### Eclipse template
 .settings/
