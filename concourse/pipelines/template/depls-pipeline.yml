@@ -343,7 +343,7 @@ jobs:
         manifest: final-release-manifest/<%= name %>.yml
         stemcells:
         - bosh-stemcell/stemcell.tgz
-        release: <%= "[]" if boshrelease["releases"].empty? %>
+        releases: <%= "[]" if boshrelease["releases"].empty? %>
         <% boshrelease["releases"].each do |release, info| %>
         - <%= release %>/release.tgz
         <% end %>

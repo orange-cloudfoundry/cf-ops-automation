@@ -15,14 +15,41 @@ resource_types:
 #    repository: orangecloudfoundry/slack-notification-resource
 
 resources:
-- name: {{concourse-pipeline-name}}
+- name: {{concourse-micro-depls}}
   type: concourse-pipeline
   source:
-    insecure: {{concourse-insecure}}
+    insecure: {{concourse-micro-depls-insecure}}
     teams:
     - name: main
-      username: {{concourse-username}}
-      password: {{concourse-password}}
+      username: {{concourse-micro-depls-username}}
+      password: {{concourse-micro-depls-password}}
+
+- name: {{concourse-master-depls}}
+  type: concourse-pipeline
+  source:
+    insecure: {{concourse-master-depls-insecure}}
+    teams:
+    - name: main
+      username: {{concourse-master-depls-username}}
+      password: {{concourse-master-depls-password}}
+
+- name: {{concourse-ops-depls}}
+  type: concourse-pipeline
+  source:
+    insecure: {{concourse-ops-depls-insecure}}
+    teams:
+    - name: main
+      username: {{concourse-ops-depls-username}}
+      password: {{concourse-ops-depls-password}}
+
+- name: {{concourse-expe-depls}}
+  type: concourse-pipeline
+  source:
+    insecure: {{concourse-expe-depls-insecure}}
+    teams:
+    - name: main
+      username: {{concourse-expe-depls-username}}
+      password: {{concourse-expe-depls-password}}
 
 
 - name: depls
@@ -191,7 +218,7 @@ jobs:
         text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
-  - put: {{concourse-pipeline-name}}
+  - put: {{concourse-master-depls}}
     params:
       pipelines:
       - name: master-depls-generated
@@ -281,7 +308,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-pipeline-name}}
+  - put: {{concourse-ops-depls}}
     params:
       pipelines:
       - name: ops-depls-generated
@@ -385,7 +412,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-pipeline-name}}
+  - put: {{concourse-expe-depls}}
     params:
       pipelines:
       - name: expe-depls-generated
@@ -470,7 +497,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-pipeline-name}}
+  - put: {{concourse-micro-depls}}
     params:
       pipelines:
       - name: micro-depls-generated
