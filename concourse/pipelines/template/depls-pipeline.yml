@@ -115,9 +115,11 @@ jobs:
       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
       file: paas-template-<%= depls %>/concourse/tasks/execute_deploy_script.yml
       params:
-        SCRIPT_LOCATION: <%= depls %>
+        CURRENT_DEPLS: <%= depls %>
+        COMMON_SCRIPT_DIR: script-resource/scripts
+        SECRETS_DIR: secrets
         BOSH_TARGET: {{bosh-target}}
-        BOSH_USER: {{bosh-username}}
+        BOSH_USERNAME: {{bosh-username}}
         BOSH_PASSWORD: {{bosh-password}}
       on_failure:
         put: failure-alert
