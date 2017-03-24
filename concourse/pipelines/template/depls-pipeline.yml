@@ -115,7 +115,7 @@ jobs:
       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
       file: paas-template-<%= depls %>/concourse/tasks/execute_deploy_script.yml
       params:
-        CURRENT_DEPLS: <%= depls %>
+        CURRENT_DEPLS: <%= depls %>/template
         COMMON_SCRIPT_DIR: script-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET: {{bosh-target}}
