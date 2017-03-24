@@ -138,6 +138,9 @@ jobs:
       file: paas-template/concourse/tasks/execute_deploy_script.yml
       params:
         SCRIPT_LOCATION: <%= depls %>
+        BOSH_TARGET: {{bosh-target}}
+        BOSH_USER: {{bosh-username}}
+        BOSH_PASSWORD: {{bosh-password}}
       on_failure:
         put: failure-alert
         params:
@@ -371,3 +374,4 @@ jobs:
         - rebase: true
 
 <% end %>
+
