@@ -67,6 +67,7 @@ if template directory contains pre-cf-push.sh, then this scripts is run:
 #### file format
 
 ``` yaml
+
 ---
 cf-app:
   probe-apps-domains:
@@ -75,7 +76,35 @@ cf-app:
     cf_password: 
     cf_organization: 
     cf_space:
+
 ``` 
+
+### pipeline auto-update
+
+if a ci_deployments descriptor (ie a file called ci-deployment-overview.yml) is detected in secrets dir/<depls>, then an
+auto-update job is generated.
+
+#### file format
+
+``` yaml
+
+---
+ci-deployment:
+  ops-depls:
+    target: concourse-ops
+    pipelines:
+      ops-depls-generated:
+        config_file: xxxx/pipelines/ops-depls-generated.yml
+        vars_files:
+        - xxx/pipelines/credentials-ops-depls-pipeline.yml
+        - xxx/ops-depls-versions.yml
+      ops-depls-cf-apps-generated:
+        config_file: xxx/pipelines/ops-depls-cf-apps-generated.yml
+        vars_files:
+        - xxx/pipelines/credentials-ops-depls-pipeline.yml
+        - xxx/ops-depls-versions.yml
+
+```
 
 #usage
 How to use it :
@@ -96,7 +125,7 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
 
  - Enhancements
     - Pipelines
-        - [ ] flow control to avoid Concourse out of resource crash
+        - [ ] flow control to avoid Concourse out of resource crash. Workaround: increase number of workers. 
         - cf-apps
             - [ ] use concourse resource to push instead of shell
             - [ ] use dedicated resource to handle binary download (ie maven, github-release, etc...)
@@ -109,6 +138,7 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
             - [ ] cloud-config should extract net_id from terraform
                 tfstate => yaml. (network tf =>  net-id => cloud-config-tpl.yml. (( grab tf-exchange.id )) )
             - [ ] generate check-resource script
+            - [ ] better support of bosh release not available on bosh.io
         - cf-apps
             - [ ] support/test multi app deployment. 
     - [ ] enable auto-init for manual pipeline
