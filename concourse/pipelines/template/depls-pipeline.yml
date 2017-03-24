@@ -17,34 +17,12 @@ resource_types:
 
 resources:
 
-
 - name: at-noon
   type: cron-resource
   source:
     expression: "15 12 * * 1-5"
     location: "Europe/Paris"
     fire_immediately: true
-
-#- name: secrets
-#  type: git
-#  source:
-#    uri: {{pipeline-credentials-uri}}
-#    branch: master
-#    skip_ssl_verification: true
-
-- name: paas-template
-  type: git
-  source:
-    uri: {{paas-templates-uri}}
-    branch: master
-    skip_ssl_verification: true
-
-- name: paas-repo
-  type: git
-  source:
-    uri: {{paas-repo-uri}}
-    branch: master
-    skip_ssl_verification: true
 
 - name: failure-alert
   type: slack-notification
@@ -129,13 +107,13 @@ jobs:
   plan:
     - get: at-noon
       trigger: true
-    - get: paas-repo
+    - get: secrets-<%= depls %>
       params: { submodules: none}
-    - get: paas-template
+    - get: paas-template-<%= depls %>
       params: { submodules: none}
     - task: run-deploy.sh
-      input_mapping: {script-resource: paas-template}
-      file: paas-template/concourse/tasks/execute_deploy_script.yml
+      input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
+      file: paas-template-<%= depls %>/concourse/tasks/execute_deploy_script.yml
       params:
         SCRIPT_LOCATION: <%= depls %>
         BOSH_TARGET: {{bosh-target}}
