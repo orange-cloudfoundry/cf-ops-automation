@@ -382,7 +382,7 @@ jobs:
     - put: errand-<%= name %>
       params:
         errand: <%= errand_name %>
-        manifest: <%= depls %>/<%= name %>/<%= name %>.yml
+        manifest: secrets-<%= name %>/<%= depls %>/<%= name %>/<%= name %>.yml
       on_failure:
         put: failure-alert
         params:
