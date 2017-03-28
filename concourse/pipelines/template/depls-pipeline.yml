@@ -77,6 +77,16 @@ resources:
     username: {{bosh-username}}
     password: {{bosh-password}}
     deployment: <%= name %>
+
+<% if boshrelease["errands"] != nil && !boshrelease["errands"].empty? %>
+- name: errand-<%= name %>
+  type: bosh-errand
+  source:
+    target: {{bosh-target}}
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: <%= name %>
+<% end %>
 <% end %>
 
 <% uniq_releases= {} %>
@@ -359,5 +369,28 @@ jobs:
       params:
         - repository: updated-<%= name %>-secrets
         - rebase: true
+
+<% if boshrelease["errands"] != nil && !boshrelease["errands"].empty? %>
+- name: run-errand-<%= name %>
+  plan:
+    - aggregate:
+      - get: secrets-<%= name %>
+        params: { submodules: none}
+        trigger: true
+        passed: [deploy-<%= name %>]
+    <% boshrelease["errands"].each do |errand_name, errand_info| %>
+    - put: errand-<%= name %>
+      params:
+        errand: <%= errand_name %>
+        manifest: <%= depls %>/<%= name %>/<%= name %>.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: errand-<%= name %> failed  [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    <% end %>
+<% end %>
 
 <% end %>

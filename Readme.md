@@ -17,6 +17,9 @@ if template directory contains either post-generate.sh or pre-bosh-deploy.sh, th
 
 Restrictions: as the post-generation script is executed in the same docker image running spruce, no spiff is available.
 
+* to generate an additional errand step, insert a key ```errands```, with a subkey named like the errand job to execute 
+in deployment-dependencies.yml  
+
 TODO: add info about gitsubmodule detection
 
 #### deployment dependencies format
@@ -46,7 +49,31 @@ deployment:
       xxx_boshrelease:
         base_location: https://bosh.io/d/github.com/
         repository: xxx/yyyy
+    errands:
+      smoke_tests:
+        
 ```
+
+### Cloudfoundry application deployment
+for each cf-application, when a enable-cf-app.yml is found, it is going to spruce all files in template dir ending with ```-tpl.yml```
+
+if template directory contains pre-cf-push.sh, then this scripts is run:
+    - you are already logged in CF,
+    - you have to download your binaries before uploading to CF
+
+#### file format
+
+``` yaml
+---
+cf-app:
+  probe-apps-domains:
+    cf_api_url: 
+    cf_username: 
+    cf_password: 
+    cf_organization: 
+    cf_space:
+``` 
+
 #usage
 How to use it :
 
