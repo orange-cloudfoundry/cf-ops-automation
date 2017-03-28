@@ -91,7 +91,7 @@ jobs:
         YML_FILES: |
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/meta.yml
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/secrets.yml
-            ./credentials-resource/<%= depls %>/shared/secrets.yml
+            ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
       on_failure:
         put: failure-alert
