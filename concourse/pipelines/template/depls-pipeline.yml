@@ -188,7 +188,7 @@ jobs:
               - -c
               - |
                 ./paas-template-<%=depls %>/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
-                OLD_CONFIG=$(mktemp cloud-config-XXXXXX.yml
+                OLD_CONFIG=$(mktemp cloud-config-XXXXXX.yml)
                 bosh cloud-config >$OLD_CONFIG
                 diff $OLD_CONFIG config-manifest/cloud-config.yml || true
                 bosh update cloud-config config-manifest/cloud-config.yml
@@ -235,7 +235,7 @@ jobs:
               - |
                 ./paas-template-<%=depls %>/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
                 cat config-manifest/runtime-config.yml
-                OLD_CONFIG=$(mktemp runtime-config-XXXXXX.yml
+                OLD_CONFIG=$(mktemp runtime-config-XXXXXX.yml)
                 bosh runtime-config >$OLD_CONFIG
                 diff $OLD_CONFIG config-manifest/runtime-config.yml || true
                 bosh update runtime-config config-manifest/runtime-config.yml
