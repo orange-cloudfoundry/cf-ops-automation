@@ -14,7 +14,8 @@ DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|gre
 
 if [ -n "$BOSH_CERT_FILE" ]
 then
-  CA_CERT_FILE="--ca-cert=${BOSH_CERT_FILE}"
+    echo "Using ca cert file: ${BOSH_CERT_FILE}"
+    CA_CERT_FILE="--ca-cert=${BOSH_CERT_FILE}"
 fi
 
 bosh alias-env -e $DIRECTOR_IP $CA_CERT_FILE ${BOSH_HOST}
