@@ -40,7 +40,7 @@ resources:
   type: git
   source:
     uri: {{pipeline-credentials-uri}}
-    paths: ["<%= cf_app_info["base-dir"] %>"]
+    paths: ["<%= cf_app_info["base-dir"] %>", "shared"]
     branch: master
     skip_ssl_verification: true
 
@@ -65,6 +65,11 @@ resources:
 
 jobs:
 
+<% if all_cf_apps.empty? %>
+- name: this-is-an-empty-pipeline
+
+<% end %>
+
 <% all_cf_apps.each do |app_name,cf_app_info| %>
 
 - name: cf-push-<%= app_name %>
@@ -86,6 +91,7 @@ jobs:
         YML_FILES: |
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/meta.yml
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/secrets.yml
+            ./credentials-resource/<%= depls %>/secrets.yml
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
       on_failure:
         put: failure-alert
