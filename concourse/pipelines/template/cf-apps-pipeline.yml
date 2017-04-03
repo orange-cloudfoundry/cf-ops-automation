@@ -33,6 +33,9 @@ resources:
   type: slack-notification
   source:
     url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
 <% end %>
 
 <% all_cf_apps.each do |app_name,cf_app_info| %>
