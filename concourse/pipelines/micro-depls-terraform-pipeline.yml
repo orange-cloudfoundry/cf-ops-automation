@@ -149,7 +149,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: hashicorp/terraform, tag: 0.8.5}
+          source: {repository: hashicorp/terraform, tag: 0.8.7}
         inputs:
           - name: paas-bootstrap
           - name: terraform-tfvars
