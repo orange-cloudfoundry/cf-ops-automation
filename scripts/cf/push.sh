@@ -52,6 +52,7 @@ cp -r $ADDITIONAL_RESSOURCE/. $OUTPUT_DIR/
 if [ -n "$CUSTOM_SCRIPT_DIR" -a  -f "$CUSTOM_SCRIPT_DIR/pre-cf-push.sh" ]
 then
     echo "pre CF push script detected"
+    chmod +x $CUSTOM_SCRIPT_DIR/pre-cf-push.sh
     GENERATE_DIR=$OUTPUT_DIR BASE_TEMPLATE_DIR=$CUSTOM_SCRIPT_DIR $CUSTOM_SCRIPT_DIR/pre-cf-push.sh
 else
     echo "ignoring pre CF push. No $CUSTOM_SCRIPT_DIR/pre-cf-push.sh detected"
