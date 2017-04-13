@@ -355,7 +355,7 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: execute-<%= name %>-post-bosh-deploy
-      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-release-manifest}
       output_mapping: {generated-files: post-deploy-result}
       file: paas-template-<%= name %>/concourse/tasks/post_bosh_deploy.yml
       params:
