@@ -11,9 +11,6 @@ inputs:
 outputs:
   - name: generated-files
 run:
-  path: scripts-resource/scripts/cf/push.sh
-
-run:
   path: scripts-resource/scripts/post-bosh-deploy-launcher.sh
 
 params:
