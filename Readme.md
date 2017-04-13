@@ -11,11 +11,14 @@ Have a look this plantuml file: [bosh overview](docs/overview.puml). You can gen
 ### deployment pipeline
 for each boshrelease, when a deployment-dependencies.yml is found, it is going to spruce all files in template dir ending with ```-tpl.yml```
 
-if template directory contains either post-generate.sh or pre-bosh-deploy.sh, then scripts are executed
-  - post-generate can execute shell operation or spruce task
-  - pre-bosh-deploy can execute shell operation or spiff task
+if template directory contains scripts with specific name, then these scripts are executed, using the following order :
 
-Restrictions: as the post-generation script is executed in the same docker image running spruce, no spiff is available.
+  1: post-generate.sh: can execute shell operation or spruce task.
+     **Restrictions**: as the post-generation script is executed in the same docker image running spruce, no spiff is available.
+
+  2: pre-bosh-deploy.sh: can execute shell operation or spiff task. 
+
+  3: post-bosh-deploy.sh: can execute shell operation (including curl). 
 
 * to generate an additional errand step, insert a key ```errands```, with a subkey named like the errand job to execute 
 in deployment-dependencies.yml  

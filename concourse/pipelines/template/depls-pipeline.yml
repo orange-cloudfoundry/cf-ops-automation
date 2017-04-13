@@ -354,6 +354,21 @@ jobs:
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
+    - task: execute-<%= name %>-post-bosh-deploy
+      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+      output_mapping: {generated-files: post-deploy-result}
+      file: paas-template-<%= name %>/concourse/tasks/post_bosh_deploy.yml
+      params:
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+        SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
     - task: update-<%= name %>-files
       input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: deploy-<%= name %>}
       output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
