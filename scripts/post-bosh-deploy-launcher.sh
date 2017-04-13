@@ -6,9 +6,13 @@ OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files}
 COMMON_SCRIPT_DIR=${COMMON_SCRIPT_DIR:-scripts-resource/scripts}
 SECRETS_DIR=${SECRETS_DIR:-credentials-resource}
 
+
 if [ -n "$CUSTOM_SCRIPT_DIR" -a  -f "$CUSTOM_SCRIPT_DIR/post-bosh-deploy.sh" ]
 then
     echo "post bosh deploy script detected"
+    cp -r additional-resource/. $OUTPUT_DIR/
     chmod +x $CUSTOM_SCRIPT_DIR/post-bosh-deploy.sh
     GENERATE_DIR=${OUTPUT_DIR} BASE_TEMPLATE_DIR=${CUSTOM_SCRIPT_DIR} ${CUSTOM_SCRIPT_DIR}/post-bosh-deploy.sh
+else
+    echo "ignoring post-bosh-deploy. No $CUSTOM_SCRIPT_DIR/post-bosh-deploy.sh detected"
 fi
