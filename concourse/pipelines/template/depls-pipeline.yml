@@ -420,17 +420,17 @@ jobs:
 - name: recreate-<%= name %>
   plan:
     - aggregate:
-     - get: secrets-<%= depls %>
-       params: { submodules: none}
-     - get: paas-template-<%= depls %>
-       params: { submodules: none}
-    <% if previous_deployment_name != nil && !previous_deployment_name.empty? %>
-     - get: recreate-<%= previous_deployment_name %>
-       passed: [recreate-<%= previous_deployment_name %>]
-    <% end %>
+       - get: secrets-<%= depls %>
+         params: { submodules: none}
+       - get: paas-template-<%= depls %>
+         params: { submodules: none}
+      <% if previous_deployment_name != nil && !previous_deployment_name.empty? %>
+       - get: recreate-<%= previous_deployment_name %>
+         passed: [recreate-<%= previous_deployment_name %>]
+      <% end %>
     - task: bosh-recreate-<%= name %>
-       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
-       config:
+      input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
+      config:
           platform: linux
           image_resource:
             type: docker-image
@@ -449,12 +449,12 @@ jobs:
               - |
                 ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET} ${BOSH_USERNAME} ${BOSH_PASSWORD} ${BOSH_CERT_FILE}
                 bosh env -d <%= name %>
-       params:
+      params:
          BOSH_TARGET: {{bosh-target}}
          BOSH_USERNAME: {{bosh-username}}
          BOSH_PASSWORD: {{bosh-password}}
          BOSH_CERT_FILE: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
-       on_failure:
+      on_failure:
          put: failure-alert
          params:
            channel: {{slack-channel}}
