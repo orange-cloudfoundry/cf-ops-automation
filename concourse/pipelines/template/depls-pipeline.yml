@@ -422,12 +422,10 @@ jobs:
     - aggregate:
        - get: secrets-<%= depls %>
          params: { submodules: none}
+         <%= "passed: \[recreate-#{previous_deployment_name}]" if previous_deployment_name != nil %>
        - get: paas-template-<%= depls %>
          params: { submodules: none}
-      <% if previous_deployment_name != nil && !previous_deployment_name.empty? %>
-       - get: recreate-<%= previous_deployment_name %>
-         passed: [recreate-<%= previous_deployment_name %>]
-      <% end %>
+         <%= "passed: \[recreate-#{previous_deployment_name}]" if previous_deployment_name != nil %>
     - task: bosh-recreate-<%= name %>
       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
       config:
