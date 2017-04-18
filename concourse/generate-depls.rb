@@ -265,6 +265,10 @@ Dir['pipelines/template/depls-pipeline.yml'].each do |filename|
   puts "Pipeline name #{pipeline_name}"
   aPipeline=File.new("pipelines/#{depls}-generated.yml", "w")
   aPipeline << output
+  puts "Trying to parse generated Yaml: #{pipeline_name}"
+  YAML.load_file(aPipeline)
+  puts "> #{pipeline_name} seems a valid Yaml file"
+
 end
 
 
@@ -279,6 +283,10 @@ Dir['pipelines/template/cf-apps-pipeline.yml'].each do |filename|
   puts "Pipeline name #{pipeline_name}"
   aPipeline=File.new("pipelines/#{pipeline_name}", "w")
   aPipeline << output
+  puts "Trying to parse generated Yaml: #{pipeline_name}"
+  YAML.load_file(aPipeline)
+  puts "> #{pipeline_name} seems a valid Yaml file"
+
 end
 
 puts "### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists" if all_ci_deployments.empty?
