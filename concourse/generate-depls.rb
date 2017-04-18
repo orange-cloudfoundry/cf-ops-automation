@@ -8,7 +8,12 @@ require 'erb'
 require 'ostruct'
 
 # TODO add rspec file to avoid regression
-
+BOSH_CERT_LOCATIONS={
+    "micro-depls" => "inception/micro-bosh/secrets/certificates/certs/rootCA.pem",
+    "master-depls" => "micro-depls/bosh-master/secrets/certificates/certs/rootCA.pem",
+    "expe-depls" => "master-depls/bosh-expe/secrets/certificates/certs/rootCA.pem",
+    "ops-depls" => "master-depls/bosh-ops/secrets/certificates/certs/rootCA.pem"
+}
 # Argument parsing
 OPTIONS = {
   :common_version_path => "..",
