@@ -414,3 +414,52 @@ jobs:
 <% end %>
 
 <% end %>
+
+<% previous_deployment_name=nil %>
+<% all_dependencies.each do |name,boshrelease| %>
+- name: recreate-<%= name %>
+  plan:
+    - aggregate:
+     - get: secrets-<%= depls %>
+       params: { submodules: none}
+     - get: paas-template-<%= depls %>
+       params: { submodules: none}
+    <% if previous_deployment_name != nil && !previous_deployment_name.empty? %>
+     - get: recreate-<%= previous_deployment_name %>
+       passed: [recreate-<%= previous_deployment_name %>]
+    <% end %>
+    - task: bosh-recreate-<%= name %>
+       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
+       config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: orangecloudfoundry/bosh-cli-v2
+          inputs:
+            - name: script-resource
+            - name: secrets
+          outputs:
+            - name: run-resource
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET} ${BOSH_USERNAME} ${BOSH_PASSWORD} ${BOSH_CERT_FILE}
+                bosh env -d <%= name %>
+       params:
+         BOSH_TARGET: {{bosh-target}}
+         BOSH_USERNAME: {{bosh-username}}
+         BOSH_PASSWORD: {{bosh-password}}
+         BOSH_CERT_FILE: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+       on_failure:
+         put: failure-alert
+         params:
+           channel: {{slack-channel}}
+           text: Deployment Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+           username: Concourse
+<% previous_deployment_name=name %>
+<% end %>
