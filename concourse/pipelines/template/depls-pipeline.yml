@@ -445,8 +445,8 @@ jobs:
               - -e
               - -c
               - |
-                ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET} ${BOSH_USERNAME} ${BOSH_PASSWORD} ${BOSH_CERT_FILE}
-                bosh env -d <%= name %>
+                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET} ${BOSH_USERNAME} ${BOSH_PASSWORD} ${BOSH_CERT_FILE}
+                bosh -n -d <%= name %> recreate
       params:
          BOSH_TARGET: {{bosh-target}}
          BOSH_USERNAME: {{bosh-username}}
