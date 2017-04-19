@@ -110,7 +110,22 @@ resources:
     - name: main
       username: {{concourse-<%= depls %>-username}}
       password: {{concourse-<%= depls %>-password}}
+
+- name: secrets-complete
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-template-complete
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: master
+    skip_ssl_verification: true
 <% end %>
+
 
 <% uniq_releases= {} %>
 <% all_dependencies.each do |name,boshrelease| %>
@@ -306,11 +321,9 @@ jobs:
     - aggregate:
       - get: secrets-<%=depls %>
         params: { submodules: none}
-        trigger: true
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
       - get: paas-template-<%=depls %>
         params: { submodules: none}
-        trigger: true
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
       - get: bosh-stemcell
         version: { version: {{stemcell-version}} }
@@ -505,14 +518,18 @@ jobs:
   - aggregate:
     - get: paas-template-<%= depls %>
       params: { submodules: none}
-      trigger: true
       attempts: 3
     - get: secrets-<%= depls %>
       params: { submodules: none}
-      trigger: true
+      attempts: 3
+    - get: paas-template-complete
+      params: { submodules: none}
+      attempts: 3
+    - get: secrets-complete
+      params: { submodules: none}
       attempts: 3
   - task: generate-<%= depls %>-pipeline
-    input_mapping: {script-resource: paas-template-<%= depls %>,secrets: secrets-<%= depls %>}
+    input_mapping: {script-resource: paas-template-complete,secrets: secrets-complete}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux
@@ -551,8 +568,8 @@ jobs:
         vars_files:
           <% pipeline_details["vars_files"].each do |a_vars_file| %>
           # trick to manage <depls>-versions.yml (not included in secrets)
-         <%= "- secrets-#{depls}/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-template-#{depls}/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
+         <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
+         <%= "- paas-template-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
           <% end %>
      <% end %>
     on_failure:
@@ -564,9 +581,9 @@ jobs:
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
   - task: update-concourse-depls-pipeline
-    input_mapping: {reference-resource: secrets-<%= depls %>, generated-resource: concourse-<%= depls %>-pipeline}
+    input_mapping: {reference-resource: secrets-complete, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-template-<%= depls %>/concourse/tasks/git_update_a_file_from_generated.yml
+    file: paas-template-complete/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: <%= current_depls_generated["config_file"] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-generated.yml"
@@ -581,7 +598,7 @@ jobs:
   - task: update-concourse-cf-apps-pipeline
     input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-template-<%= depls %>/concourse/tasks/git_update_a_file_from_generated.yml
+    file: paas-template-complete/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: <%= current_cf_apps_generated["config_file"] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-cf-apps-generated.yml"
