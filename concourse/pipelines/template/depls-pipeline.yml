@@ -15,6 +15,12 @@ resource_types:
     source:
       repository: dellemcdojo/bosh-config-resource
 
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: robdimsdale/concourse-pipeline-resource
+      tag: latest-final
+
 resources:
 
 - name: at-noon
@@ -39,7 +45,6 @@ resources:
   source:
     name: {{stemcell-name}}
 
-
 - name: secrets-<%=depls %>
   type: git
   source:
@@ -47,6 +52,7 @@ resources:
     paths: ["<%= depls %>/secrets","shared"]
     branch: master
     skip_ssl_verification: true
+
 - name: paas-template-<%=depls %>
   type: git
   source:
@@ -54,7 +60,6 @@ resources:
     paths: ["<%= depls %>/template","concourse/tasks","scripts"]
     branch: master
     skip_ssl_verification: true
-
 
 <% all_dependencies.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
@@ -91,6 +96,18 @@ resources:
     username: {{bosh-username}}
     password: {{bosh-password}}
     deployment: <%= name %>
+<% end %>
+
+<% if ! all_ci_deployments.empty? %>
+- name: <%= all_ci_deployments[depls]["target_name"] %>
+  type: concourse-pipeline
+  source:
+    target: {{concourse-<%= depls %>-target}}
+    insecure: {{concourse-<%= depls %>-insecure}}
+    teams:
+    - name: main
+      username: {{concourse-<%= depls %>-username}}
+      password: {{concourse-<%= depls %>-password}}
 <% end %>
 <% end %>
 
@@ -479,7 +496,9 @@ jobs:
 
 <% if ! all_ci_deployments.empty? %>
 <% current_depls_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] %>
+<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil  %>
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] %>
+<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 - name: update-pipeline-<%= depls %>-generated
   plan:
   - aggregate:
@@ -521,7 +540,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-pipeline-name}}
+  - put: <%= all_ci_deployments[depls]["target_name"] %>
     params:
       pipelines:
       - name: <%= depls %>-generated
@@ -531,7 +550,7 @@ jobs:
           <% current_depls_generated["vars_files"].each do |a_vars_file| %>
          - secrets-<%= depls %>/<%= a_vars_file %>
           <% end %>
-      - name: ops-depls-cf-apps-generated
+      - name: <%= depls %>-cf-apps-generated
         team: main
         config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= depls %>-cf-apps-generated.yml
         vars_files:

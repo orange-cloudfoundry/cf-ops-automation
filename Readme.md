@@ -91,7 +91,7 @@ auto-update job is generated.
 ---
 ci-deployment:
   ops-depls:
-    target: concourse-ops
+    target_name: concourse-ops
     pipelines:
       ops-depls-generated:
         config_file: xxxx/pipelines/ops-depls-generated.yml

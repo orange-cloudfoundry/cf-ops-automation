@@ -129,7 +129,7 @@ end
 
 # ci-deployment:
 #     ops-depls:
-#     target: concourse-ops
+#     target_name: concourse-ops
 #     pipelines:
 # ops-depls-generated:
 #     config_file: concourse/pipelines/ops-depls-generated.yml
@@ -159,7 +159,7 @@ puts "Path CI deployment overview: #{path}"
         raise "#{deployment_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
         ci_deployment[deployment_name] = deployment_details
 
-        raise "#{deployment_file} - No target defined: expecting a target" if deployment_details['target'] == nil
+        raise "#{deployment_file} - No target defined: expecting a target_name" if deployment_details['target_name'] == nil
 
         raise "#{deployment_file} - No pipeline detected: expecting at least one pipeline" if deployment_details['pipelines'] == nil
 
