@@ -550,7 +550,9 @@ jobs:
         config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
         vars_files:
           <% pipeline_details["vars_files"].each do |a_vars_file| %>
-         - secrets-<%= depls %>/<%= a_vars_file %>
+          # trick to manage <depls>-versions.yml (not included in secrets)
+         <%= "- secrets-#{depls}/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
+         <%= "- paas-template-#{depls}/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
           <% end %>
      <% end %>
     on_failure:
