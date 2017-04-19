@@ -525,9 +525,11 @@ jobs:
     - get: paas-template-complete
       params: { submodules: none}
       attempts: 3
+      trigger: true
     - get: secrets-complete
       params: { submodules: none}
       attempts: 3
+      trigger: true
   - task: generate-<%= depls %>-pipeline
     input_mapping: {script-resource: paas-template-complete,secrets: secrets-complete}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
