@@ -98,6 +98,8 @@ resources:
     deployment: <%= name %>
 <% end %>
 
+<% end %>
+
 <% if ! all_ci_deployments.empty? %>
 - name: <%= all_ci_deployments[depls]["target_name"] %>
   type: concourse-pipeline
@@ -108,7 +110,6 @@ resources:
     - name: main
       username: {{concourse-<%= depls %>-username}}
       password: {{concourse-<%= depls %>-password}}
-<% end %>
 <% end %>
 
 <% uniq_releases= {} %>
