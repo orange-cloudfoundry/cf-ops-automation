@@ -543,21 +543,15 @@ jobs:
   - put: <%= all_ci_deployments[depls]["target_name"] %>
     params:
       pipelines:
-      - name: <%= depls %>-generated
+      <% all_ci_deployments[depls]["pipelines"].each do |pipeline_name,pipeline_details| %>
+      - name: <%= pipeline_name %>
         team: main
-        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= depls %>-generated.yml
+        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
         vars_files:
-          <% current_depls_generated["vars_files"].each do |a_vars_file| %>
+          <% pipeline_details["vars_files"].each do |a_vars_file| %>
          - secrets-<%= depls %>/<%= a_vars_file %>
           <% end %>
-      - name: <%= depls %>-cf-apps-generated
-        team: main
-        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= depls %>-cf-apps-generated.yml
-        vars_files:
-          <% current_cf_apps_generated["vars_files"].each do |a_vars_file| %>
-          - secrets-<%= depls %>/<%= a_vars_file %>
-          <% end %>
-
+     <% end %>
     on_failure:
       put: failure-alert
       params:
