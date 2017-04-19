@@ -18,6 +18,7 @@ resources:
 - name: {{concourse-micro-depls}}
   type: concourse-pipeline
   source:
+    target: {{concourse-micro-depls-target}}
     insecure: {{concourse-micro-depls-insecure}}
     teams:
     - name: main
@@ -27,6 +28,7 @@ resources:
 - name: {{concourse-master-depls}}
   type: concourse-pipeline
   source:
+    target: {{concourse-master-depls-target}}
     insecure: {{concourse-master-depls-insecure}}
     teams:
     - name: main
@@ -36,6 +38,7 @@ resources:
 - name: {{concourse-ops-depls}}
   type: concourse-pipeline
   source:
+    target: {{concourse-ops-depls-target}}
     insecure: {{concourse-ops-depls-insecure}}
     teams:
     - name: main
@@ -45,6 +48,7 @@ resources:
 - name: {{concourse-expe-depls}}
   type: concourse-pipeline
   source:
+    target: {{concourse-expe-depls-target}}
     insecure: {{concourse-expe-depls-insecure}}
     teams:
     - name: main
