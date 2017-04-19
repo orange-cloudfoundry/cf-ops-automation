@@ -176,6 +176,7 @@ jobs:
         team: main
         config_file: concourse-master-depls-pipeline/concourse/pipelines/master-depls-generated.yml
         vars_files:
+        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
         - pipeline-credentials/micro-depls/concourse-master/pipelines/credentials-master-depls-pipeline.yml
         - depls/master-depls/master-depls-versions.yml
     on_failure:
@@ -266,12 +267,14 @@ jobs:
         team: main
         config_file: concourse-ops-depls-pipeline/concourse/pipelines/ops-depls-generated.yml
         vars_files:
+        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
         - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
         - depls/ops-depls/ops-depls-versions.yml
       - name: ops-depls-cf-apps-generated
         team: main
         config_file: concourse-ops-depls-pipeline/concourse/pipelines/ops-depls-cf-apps-generated.yml
         vars_files:
+        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
         - pipeline-credentials/master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
         - depls/ops-depls/ops-depls-versions.yml
 
@@ -370,6 +373,7 @@ jobs:
         team: main
         config_file: concourse-expe-depls-pipeline/concourse/pipelines/expe-depls-generated.yml
         vars_files:
+        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
         - pipeline-credentials/master-depls/concourse-expe/pipelines/credentials-expe-depls-pipeline.yml
         - depls/expe-depls/expe-depls-versions.yml
     on_failure:
@@ -456,6 +460,7 @@ jobs:
         config_file: concourse-micro-depls-pipeline/concourse/pipelines/micro-depls-generated.yml
         vars_files:
 ######### WARNING ######### credentials not in parent deployment (ie: inception) like master or ops
+        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
         - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-micro-depls-pipeline.yml
         - depls/micro-depls/micro-depls-versions.yml
     on_failure:
