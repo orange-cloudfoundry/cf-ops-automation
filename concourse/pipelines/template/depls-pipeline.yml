@@ -519,9 +519,11 @@ jobs:
     - get: paas-template-<%= depls %>
       params: { submodules: none}
       attempts: 3
+      trigger: true
     - get: secrets-<%= depls %>
       params: { submodules: none}
       attempts: 3
+      trigger: true
     - get: paas-template-complete
       params: { submodules: none}
       attempts: 3
