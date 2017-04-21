@@ -84,6 +84,12 @@ cf-app:
 if a ci_deployments descriptor (ie a file called ci-deployment-overview.yml) is detected in secrets dir/<depls>, then an
 auto-update job is generated.
 
+### terraform
+
+ci-deployment-overview.yml may include a terraform_config key to generate a terraform  pipeline.The terraform_config key
+ must include a state_file_path key to indicate tfstate file path. It assumes that a spec dir is also included alongside
+ tfstate
+  
 #### file format
 
 ``` yaml
@@ -92,6 +98,8 @@ auto-update job is generated.
 ci-deployment:
   ops-depls:
     target_name: concourse-ops
+    terraform_config:
+      state_file_path: ops-depls/tf-config-dir
     pipelines:
       ops-depls-generated:
         config_file: xxxx/pipelines/ops-depls-generated.yml
@@ -120,7 +128,7 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
     - [ ] auto-init
     - [X] deployments except micro-bosh 
         - handle cloud-config & runtime-config
-    - [ ] terraform
+    - [X] terraform
     - [X] cf-apps
 
  - Enhancements
