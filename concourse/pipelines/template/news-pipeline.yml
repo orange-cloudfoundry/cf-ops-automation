@@ -1,0 +1,136 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: robdimsdale/concourse-pipeline-resource
+      tag: latest-final
+
+resources:
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+- name: new-version-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+
+- name: bosh-stemcell
+  type: bosh-io-stemcell
+  source:
+    name: {{stemcell-name}}
+
+- name: secrets-complete
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-template-complete
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+<% uniq_releases= {} %>
+<% all_dependencies.each do |name,boshrelease| %>
+<% boshrelease["releases"].each do |release, info|  %>
+<% uniq_releases[release]= info %>
+<% end %>
+<% end %>
+
+<% uniq_releases.each do |release, info|  %>
+- name: <%= release %>
+  <% if info["base_location"].include?("bosh.io") %>
+  type: bosh-io-release
+  source:
+    repository: <%= info["repository"] %>
+  <% else %>
+  type: github-release
+  source:
+    user: <%= info["repository"].split('/').first %>
+    repository: <%= info["repository"].split('/').last %>
+  <% end %>
+<% end %>
+
+
+jobs:
+
+#      - get: bosh-stemcell
+#        version: { version: {{stemcell-version}} }
+#        trigger: true
+#        attempts: 3
+
+<% uniq_releases.each do |release, info|  %>
+
+- name: check-<%= release %>
+  plan:
+    - aggregate:
+      - get: <%= release %>
+        trigger: true
+        attempts: 3
+        params: {tarball: false}
+      - get: paas-template-complete
+        params: { submodules: none}
+        attempts: 3
+        trigger: true
+    - task: generate-update-message
+      input_mapping: {boshrelease: <%= release %>}
+      output_mapping: {message: <%= release %>-message}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: governmentpaas/curl-ssl}
+        inputs:
+          - name: boshrelease
+        outputs:
+          - name: message
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            MESSAGE_FILE=message/update_notif
+            NEW_VERSION=$(cat boshrelease/version)
+            RELEASE_URL=$(cat boshrelease/url|sed 's|/d/|/releases/|'|sed 's/?v=/?version=/')
+            echo "New version of <%= release %> detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
+            echo "Currently using ${CURRENT_VERSION} of <%= release %>" >>${MESSAGE_FILE}
+      params:
+        CURRENT_VERSION: {{<%= release %>-version}}
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+    - put: new-version-alert
+      params:
+        channel: {{slack-channel}}
+        text_file: <%= release %>-message/update_notif
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+
+<% end %>
