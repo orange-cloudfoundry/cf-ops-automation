@@ -637,6 +637,25 @@ jobs:
     - get: secrets-complete
       passed: [update-pipeline-<%= depls %>-generated]
       params: { submodules: none}
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      params:
+        YML_FILES: |
+          ./credentials-resource/shared/secrets.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
+          ./credentials-resource/<%= terraform_config_path %>secrets/secrets.yml
+        YML_TEMPLATE_DIR: scripts-resource/<%= terraform_config_path %>/template
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= terraform_config_path %>/template
+        SUFFIX: -tpl.tfvars.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
     - task: terraform-plan
       input_mapping: {secret-state-resource: secrets-complete,spec-resource: paas-templates-complete}
       file: paas-templates-complete/concourse/tasks/terraform_plan_cloudfoundry.yml
@@ -671,6 +690,25 @@ jobs:
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      params:
+        YML_FILES: |
+          ./credentials-resource/shared/secrets.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
+          ./credentials-resource/<%= terraform_config_path %>secrets/secrets.yml
+        YML_TEMPLATE_DIR: scripts-resource/<%= terraform_config_path %>/template
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= terraform_config_path %>/template
+        SUFFIX: -tpl.tfvars.yml
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets-complete,spec-resource: paas-templates-complete}
       output_mapping: {generated-files: terraform-cf}
