@@ -640,7 +640,7 @@ jobs:
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete}
       output_mapping: {generated-files: terraform-tfvars}
-      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      file: paas-templates-complete/concourse/tasks/generate-manifest.yml
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
@@ -693,7 +693,7 @@ jobs:
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete}
       output_mapping: {generated-files: terraform-tfvars}
-      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      file: paas-templates-complete/concourse/tasks/generate-manifest.yml
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
