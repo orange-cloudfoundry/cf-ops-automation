@@ -254,31 +254,15 @@ all_cf_apps=generate_cf_app_overview("#{OPTIONS[:deployment_dependencies_path]}/
 
 git_submodules=list_git_submodules(OPTIONS[:submodule_path])
 
-Dir['pipelines/template/depls-pipeline.yml'].each do |filename|
-  # set_pipeline(target_name: target_name, name: name, cmd: "erb dependencies=#{tmp_yml_file.path} #{filename}")
+Dir['pipelines/template/depls-pipeline.yml', 'pipelines/template/cf-apps-pipeline.yml', 'pipelines/template/news-pipeline.yml'].each do |filename|
   puts "processing #{filename}"
   puts output=ERB.new(File.read(filename)).result()
-  # erb(filename, all_dependencies)
-  pipeline_name= filename.split("/").last().chomp("-pipeline.yml")
-  pipeline_name= "#{depls}-#{pipeline_name}-generated.yml"
 
-  puts "Pipeline name #{pipeline_name}"
-  aPipeline=File.new("pipelines/#{depls}-generated.yml", "w")
-  aPipeline << output
-  puts "Trying to parse generated Yaml: #{pipeline_name}"
-  YAML.load_file(aPipeline)
-  puts "> #{pipeline_name} seems a valid Yaml file"
-
-end
-
-
-Dir['pipelines/template/cf-apps-pipeline.yml'].each do |filename|
-  # set_pipeline(target_name: target_name, name: name, cmd: "erb dependencies=#{tmp_yml_file.path} #{filename}")
-  puts "processing #{filename}"
-  puts output=ERB.new(File.read(filename)).result()
-  # erb(filename, all_dependencies)
-  pipeline_name= filename.split("/").last().chomp("-pipeline.yml")
-  pipeline_name= "#{depls}-#{pipeline_name}-generated.yml"
+  # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
+  tmp_pipeline_name= filename.split("/").last().chomp("-pipeline.yml").chomp("depls")
+  pipeline_name= "#{depls}-"
+  pipeline_name << "#{tmp_pipeline_name}-" if ! tmp_pipeline_name.nil? && ! tmp_pipeline_name.empty?
+  pipeline_name << "generated.yml"
 
   puts "Pipeline name #{pipeline_name}"
   aPipeline=File.new("pipelines/#{pipeline_name}", "w")
