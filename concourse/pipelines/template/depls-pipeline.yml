@@ -638,7 +638,7 @@ jobs:
       passed: [update-pipeline-<%= depls %>-generated]
       params: { submodules: none}
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete}
+      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete, additional-resource: secrets-complete}
       output_mapping: {generated-files: terraform-tfvars}
       file: paas-templates-complete/concourse/tasks/generate-manifest.yml
       params:
@@ -691,7 +691,7 @@ jobs:
         passed: [cf-manual-approval]
         trigger: true
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete}
+      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete, additional-resource: secrets-complete}
       output_mapping: {generated-files: terraform-tfvars}
       file: paas-templates-complete/concourse/tasks/generate-manifest.yml
       params:
