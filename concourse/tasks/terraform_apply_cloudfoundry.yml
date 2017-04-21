@@ -44,8 +44,8 @@ run:
     find secret-state-resource/${SECRET_STATE_FILE_PATH}/ -type f -exec cp {} generated-files/ \;
 
     # copy generated tfvars
-    cp terraform-tfvars/* generated-files/
     find terraform-tfvars/ -type f -exec cp {} generated-files/ \;
+
     cd generated-files/
     terraform apply  ../spec-resource/$SPEC_PATH
 
