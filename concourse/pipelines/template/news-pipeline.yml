@@ -34,17 +34,17 @@ resources:
       cert: {{slack-custom-root-cert}}
 
 
-- name: bosh-stemcell
-  type: bosh-io-stemcell
-  source:
-    name: {{stemcell-name}}
+#- name: bosh-stemcell
+#  type: bosh-io-stemcell
+#  source:
+#    name: {{stemcell-name}}
 
-- name: secrets-complete
-  type: git
-  source:
-    uri: {{pipeline-credentials-uri}}
-    branch: master
-    skip_ssl_verification: true
+#- name: secrets-complete
+#  type: git
+#  source:
+#    uri: {{pipeline-credentials-uri}}
+#    branch: master
+#    skip_ssl_verification: true
 
 - name: paas-template-complete
   type: git
