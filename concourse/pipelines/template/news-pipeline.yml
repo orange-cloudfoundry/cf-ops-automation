@@ -74,6 +74,12 @@ resources:
   <% end %>
 <% end %>
 
+- name: monday-morning
+  type: cron-resource
+  source:
+    expression: "0 9 * * 1"
+    location: "Europe/Paris"
+    fire_immediately: true
 
 jobs:
 
@@ -87,14 +93,13 @@ jobs:
 - name: check-<%= release %>
   plan:
     - aggregate:
-      - get: <%= release %>
+      - get: monday-morning
         trigger: true
+      - get: <%= release %>
         attempts: 3
         params: {tarball: false}
       - get: paas-template-complete
         params: { submodules: none}
-        attempts: 3
-        trigger: true
     - task: generate-update-message
       input_mapping: {boshrelease: <%= release %>}
       output_mapping: {message: <%= release %>-message}
