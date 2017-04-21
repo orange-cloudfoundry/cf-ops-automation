@@ -115,8 +115,13 @@ jobs:
             MESSAGE_FILE=message/update_notif
             NEW_VERSION=$(cat boshrelease/version)
             RELEASE_URL=$(cat boshrelease/url|sed 's|/d/|/releases/|'|sed 's/?v=/?version=/')
-            echo "New version of <%= release %> detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
-            echo "Currently using ${CURRENT_VERSION} of <%= release %>" >>${MESSAGE_FILE}
+            if [ "${NEW_VERSION}" != "${CURRENT_VERSION}" ]
+            then
+              echo "New version of <%= release %> detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
+              echo "Currently using ${CURRENT_VERSION} of <%= release %>" >>${MESSAGE_FILE}
+            else
+              echo "You are running the latest <%= release %> (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
+            fi
       params:
         CURRENT_VERSION: {{<%= release %>-version}}
       on_failure:
