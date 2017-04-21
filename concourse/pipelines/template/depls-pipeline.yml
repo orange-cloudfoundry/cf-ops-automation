@@ -118,7 +118,7 @@ resources:
     branch: master
     skip_ssl_verification: true
 
-- name: paas-template-complete
+- name: paas-templates-complete
   type: git
   source:
     uri: {{paas-templates-uri}}
@@ -524,7 +524,7 @@ jobs:
       params: { submodules: none}
       attempts: 3
       trigger: true
-    - get: paas-template-complete
+    - get: paas-templates-complete
       params: { submodules: none}
       attempts: 3
       trigger: true
@@ -533,7 +533,7 @@ jobs:
       attempts: 3
       trigger: true
   - task: generate-<%= depls %>-pipeline
-    input_mapping: {script-resource: paas-template-complete,secrets: secrets-complete}
+    input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux
@@ -573,7 +573,7 @@ jobs:
           <% pipeline_details["vars_files"].each do |a_vars_file| %>
           # trick to manage <depls>-versions.yml (not included in secrets)
          <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-template-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
+         <%= "- paas-templates-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
           <% end %>
      <% end %>
     on_failure:
@@ -587,7 +587,7 @@ jobs:
   - task: update-concourse-depls-pipeline
     input_mapping: {reference-resource: secrets-complete, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-template-complete/concourse/tasks/git_update_a_file_from_generated.yml
+    file: paas-templates-complete/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: <%= current_depls_generated["config_file"] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-generated.yml"
@@ -602,7 +602,7 @@ jobs:
   - task: update-concourse-cf-apps-pipeline
     input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-template-complete/concourse/tasks/git_update_a_file_from_generated.yml
+    file: paas-templates-complete/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: <%= current_cf_apps_generated["config_file"] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-cf-apps-generated.yml"
