@@ -270,6 +270,8 @@ Dir['pipelines/template/depls-pipeline.yml', 'pipelines/template/cf-apps-pipelin
   puts "Trying to parse generated Yaml: #{pipeline_name}"
   YAML.load_file(aPipeline)
   puts "> #{pipeline_name} seems a valid Yaml file"
+  puts "####################################################################################"
+  puts "####################################################################################"
 
 end
 
