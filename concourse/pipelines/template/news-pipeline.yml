@@ -82,7 +82,7 @@ resources:
 - name: monday-morning
   type: cron-resource
   source:
-    expression: 0 9 * * 1
+    expression: 22 13 * * *
     location: "Europe/Paris"
     fire_immediately: true
 
