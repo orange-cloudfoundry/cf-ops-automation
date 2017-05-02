@@ -152,9 +152,50 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
     - [ ] enable auto-init for manual pipeline
     - migrate manual pipeline to generated pipeline
         - [ ] auto-init
-        - [ ] terraform
+        - [X] terraform
     - [ ] add tests to validate pipeline generation
     - mattermost:
         - check message
 
- 
+# FAQ
+
+## How to initialize a new bosh deployment template ?
+run ./init-template.sh, and it creates empty placeholder.
+
+## How to enable a bosh deployment template ?
+
+deployment-dependencies.yml sample (should be placed in secrets repo):
+
+``` yaml
+
+---
+deployment:
+  micro-bosh:
+    stemcells:
+      bosh-openstack-kvm-ubuntu-trusty-go_agent:
+    releases:
+      route-registrar-boshrelease:
+        base_location: https://bosh.io/d/github.com/
+        repository: cloudfoundry-community/route-registrar-boshrelease    
+      shield:
+        base_location: https://bosh.io/d/github.com/
+        repository: starkandwayne/shield-boshrelease        
+      xxx_boshrelease:
+        base_location: https://bosh.io/d/github.com/
+        repository: xxx/yyyy
+    errands:
+      smoke_tests:
+        
+```
+
+
+## How to upload a bosh release not available on bosh.io?
+use deploy.sh script like [this](ops-depls/template/deploy.sh) to manually upload release.
+
+## How to generate a tfvars in json from a yaml template?
+You can use spruce embedded with post-generate.sh to do it !
+See [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh) script t
+
+### sample
+
+have a look to this [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh)
