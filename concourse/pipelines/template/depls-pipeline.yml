@@ -755,7 +755,7 @@ jobs:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
           ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
-          ./credentials-resource/<%= terraform_config_path %>secrets/secrets.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
         YML_TEMPLATE_DIR: scripts-resource/<%= terraform_config_path %>/template
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
