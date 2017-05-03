@@ -48,10 +48,9 @@ run:
     cat flight-report/flight-report.txt
 
 params:
-  ATC_EXTERNAL_URL: https://elpaaso-concourse-micro.nd-ops-paas.itn.intraorange
-  FLY_USERNAME: atc
-#  FLY_PASSWORD: yuomVijIrdekTod
-  FLY_PASSWORD: ridsaydbuttEmHobAynyohabyarWio
+  ATC_EXTERNAL_URL:
+  FLY_USERNAME:
+  FLY_PASSWORD:
 
 
 
