@@ -457,6 +457,53 @@ jobs:
 
 <% end %>
 
+
+- name: retrigger-all-jobs
+  plan:
+    - aggregate:
+      - get: paas-templates-complete
+        params: { submodules: none}
+      - get: secrets-complete
+        params: { submodules: none}
+    - task: generate-<%= depls %>-pipeline
+      output_mapping: {result-dir: trigger-<%= depls %>-plan}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            <% all_dependencies.each do |name,_| %>
+            echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
+            <% end %>
+        on_failure:
+          put: failure-alert
+          params:
+            channel: {{slack-channel}}
+            text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
+    - task: fly-into-concourse
+      input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
+      output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
+      file: paas-templates-complete/concourse/tasks/fly_execute_commands.yml
+      params:
+        FLY_USERNAME: {{concourse-<%= depls %>-username}}
+        FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
 <% previous_deployment_name=nil %>
 <% all_dependencies.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
