@@ -482,6 +482,8 @@ jobs:
             <% all_dependencies.each do |name,_| %>
             echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
             <% end %>
+        params:
+          BUILD_PIPELINE_NAME: <%= depls %>-generated
         on_failure:
           put: failure-alert
           params:
@@ -494,6 +496,7 @@ jobs:
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
       file: paas-templates-complete/concourse/tasks/fly_execute_commands.yml
       params:
+        ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
         FLY_USERNAME: {{concourse-<%= depls %>-username}}
         FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
       on_failure:
