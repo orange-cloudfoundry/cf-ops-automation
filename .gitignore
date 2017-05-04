@@ -12,3 +12,4 @@ shared/
 # Eclipse Core
 .project
 
+/ops-depls/cf-apps-deployments/mattermost/mattermost/
