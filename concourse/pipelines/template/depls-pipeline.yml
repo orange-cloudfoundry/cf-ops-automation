@@ -563,6 +563,60 @@ jobs:
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil  %>
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] %>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
+
+- name: init-concourse-boshrelease-for-<%= depls %>
+  plan:
+  - aggregate:
+    - get: paas-templates-complete
+      params: { submodules: none}
+      attempts: 3
+#      trigger: true
+    - get: secrets-complete
+      params: { submodules: none}
+      attempts: 3
+#      trigger: true
+  - task: generate-<%= depls %>-flight-plan
+    output_mapping: {result-dir: init-<%= depls %>-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          <% all_dependencies.each do |name,_| %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:{{<%= name %>-version}}" >> result-dir/flight-plan
+          <% end %>
+      params:
+        BUILD_PIPELINE_NAME: <%= depls %>-generated
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: init-<%= depls %>-plan}
+    output_mapping: {flight-report: concourse-<%= depls %>-init-report}
+    file: paas-templates-complete/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
+      FLY_USERNAME: {{concourse-<%= depls %>-username}}
+      FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+
 - name: update-pipeline-<%= depls %>-generated
   plan:
   - aggregate:
