@@ -145,10 +145,10 @@ git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample
         - deployments
             - [ ] cloud-config should extract net_id from terraform
                 tfstate => yaml. (network tf =>  net-id => cloud-config-tpl.yml. (( grab tf-exchange.id )) )
-            - [ ] generate check-resource script
+            - [X] generate check-resource script
             - [ ] better support of bosh release not available on bosh.io
         - cf-apps
-            - [ ] support/test multi app deployment. 
+            - [X] support/test multi app deployment. 
     - [ ] enable auto-init for manual pipeline
     - migrate manual pipeline to generated pipeline
         - [ ] auto-init
