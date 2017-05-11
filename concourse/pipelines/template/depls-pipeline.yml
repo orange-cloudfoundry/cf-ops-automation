@@ -589,7 +589,7 @@ jobs:
         args:
         - -exc
         - |
-          <% all_dependencies.each do |name,_| %>
+          <% uniq_releases.each do |name,_| %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:{{<%= name %>-version}}" >> result-dir/flight-plan
           <% end %>
       params:
