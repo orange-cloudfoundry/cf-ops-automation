@@ -35,7 +35,7 @@ run:
     cp -rf generated-resource/. ${FINAL_RELEASE_REPO}
 
     cd ${FINAL_RELEASE_REPO}
-    git add
+    git add .
     CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
     if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
     then
