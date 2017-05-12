@@ -254,7 +254,7 @@ all_cf_apps=generate_cf_app_overview("#{OPTIONS[:deployment_dependencies_path]}/
 
 git_submodules=list_git_submodules(OPTIONS[:submodule_path])
 
-Dir['pipelines/template/depls-pipeline.yml', 'pipelines/template/cf-apps-pipeline.yml', 'pipelines/template/news-pipeline.yml'].each do |filename|
+Dir['pipelines/template/depls-pipeline.yml', 'pipelines/template/cf-apps-pipeline.yml', 'pipelines/template/news-pipeline.yml','pipelines/template/sync-helper-pipeline.yml'].each do |filename|
   puts "processing #{filename}"
   puts output=ERB.new(File.read(filename)).result()
 
