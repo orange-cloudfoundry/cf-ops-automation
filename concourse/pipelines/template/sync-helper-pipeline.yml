@@ -1,0 +1,134 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+resources:
+
+#- name: at-nine
+#  type: cron-resource
+#  source:
+#    expression: "15 9 * * 1-5"
+#    location: "Europe/Paris"
+#    fire_immediately: true
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+- name: anonymized-secrets
+  type: git
+  source:
+    uri: {{anonymized-secrets-repo-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: anonymized-secrets-compared
+  type: git
+  source:
+    uri: {{anonymized-secrets-compare-repo-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+
+<% if ! all_ci_deployments.empty? %>
+
+- name: secrets-complete
+  type: git
+  source:
+    uri: {{pipeline-credentials-uri}}
+    branch: master
+    skip_ssl_verification: true
+
+- name: paas-templates-complete
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: master
+    skip_ssl_verification: true
+<% end %>
+
+jobs:
+
+<% if ! all_ci_deployments.empty? %>
+
+- name: anonymize-secrets-value
+  plan:
+  - aggregate:
+    - get: paas-templates-complete
+      params: { submodules: none}
+      attempts: 3
+    - get: secrets-complete
+      params: { submodules: none}
+      attempts: 3
+  - task: anonymized-secrets
+    input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
+    output_mapping: {result-dir: anonymized-secrets-dir}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: script-resource
+        - name: secrets
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          script-resource/scripts/anonymize_secrets.rb -s secrets -o result-dir
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - task: update-anonymized-files
+    input_mapping: {reference-resource: anonymized-secrets, generated-resource: anonymized-secrets-dir}
+    output_mapping: {updated-git-resource: updated-anonymized-secrets}
+    file: paas-templates-complete/concourse/tasks/git_update_all_files_from_generated.yml
+    params:
+      COMMIT_MESSAGE: "auto anonymized new secrets"
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - put: anonymized-secrets
+    get_params: {submodules: none}
+    params:
+      - repository: updated-anonymized-secrets
+      - rebase: true
+
+<% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
+- name: compare-anonymized-<%= depls %>-secrets
+  plan:
+  - aggregate :
+    - get: anonymized-secrets
+      passed: [anonymize-secrets-value]
+      trigger: true
+    - get: anonymized-secrets-compared
+      trigger: true
+
+<% end %>
+
+<% end %>
