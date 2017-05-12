@@ -36,7 +36,7 @@ resources:
     branch: master
     skip_ssl_verification: true
 
-- name: anonymized-secrets-compared
+- name: anonymized-secrets-compare
   type: git
   source:
     uri: {{anonymized-secrets-compare-repo-uri}}
@@ -126,8 +126,52 @@ jobs:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true
-    - get: anonymized-secrets-compared
+    - get: anonymized-secrets-compare
       trigger: true
+  - task: diff-secrets
+    output_mapping: {result-dir: compared-anonymized-<%= depls %>-secrets}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: anonymized-secrets
+        - name: anonymized-secrets-compare
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -xc
+        - |
+          diff -r anonymized-secrets/<%= depls %> anonymized-secrets-compare/<%= depls %>
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    ensure:
+      task: diff-secrets
+      output_mapping: {result-dir: compared-anonymized-<%= depls %>-secrets}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: ruby, tag: 2.3.1-slim}
+        inputs:
+          - name: anonymized-secrets
+          - name: anonymized-secrets-compare
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -xc
+          - |
+            diff -r -q anonymized-secrets/<%= depls %> anonymized-secrets-compare/<%= depls %>
 
 <% end %>
 
