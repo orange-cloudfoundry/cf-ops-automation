@@ -74,6 +74,9 @@ jobs:
     - get: secrets-complete
       params: { submodules: none}
       attempts: 3
+    - get: anonymized-secrets
+      attempts: 3
+
   - task: anonymized-secrets
     input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
     output_mapping: {result-dir: anonymized-secrets-dir}
