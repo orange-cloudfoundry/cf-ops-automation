@@ -9,7 +9,7 @@ Have a look this plantuml file: [bosh overview](docs/overview.puml). You can gen
 
 ## Concourse pipeline generation
 ### deployment pipeline
-for each boshrelease, when a deployment-dependencies.yml is found, it is going to spruce all files in template dir ending with ```-tpl.yml```
+for each boshrelease, when a enable-deployment.yml is found, it is going to spruce all files in template dir ending with ```-tpl.yml```
 
 if template directory contains scripts with specific name, then these scripts are executed, using the following order :
 
@@ -25,7 +25,11 @@ in deployment-dependencies.yml
 
 TODO: add info about gitsubmodule detection
 
-#### deployment dependencies format
+
+#### enable deployment format (enable-deployment.yml)
+this is an empty yaml file !
+
+#### deployment dependencies format (deployment-dependencies.yml)
 
 in deployment-dependencies.yml, it is possible to add secrets path to trigger the build
     resources:
@@ -33,7 +37,7 @@ in deployment-dependencies.yml, it is possible to add secrets path to trigger th
         extented_scan_path: ["ops-depls/cloudfoundry", "...."]
 
 
-deployment-dependencies.yml sample (should be placed in secrets repo):
+deployment-dependencies.yml sample (should be placed in ths boshrelease deployment dir):
 
 ``` yaml
 
