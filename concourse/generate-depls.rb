@@ -17,8 +17,9 @@ BOSH_CERT_LOCATIONS={
 # Argument parsing
 OPTIONS = {
   :common_version_path => "..",
-  :submodule_path => ".." ,
-  :deployment_dependencies_path=> ".."
+  :git_submodule_path => ".." ,
+  :secret_path => "..",
+  :paas_template_root=> ".."
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Usage: ./#{opts.program_name} <options>"
@@ -31,12 +32,12 @@ opt_parser = OptionParser.new do |opts|
     OPTIONS[:common_version_path]= cvp_string
   end
 
-  opts.on("-s", "--submodule-path PATH", ".gitsubmodule path") do |sp_string|
-    OPTIONS[:submodule_path]= sp_string
+  opts.on("-s", "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
+    OPTIONS[:git_submodule_path]= gsp_string
   end
 
-  opts.on("-p", "--deployment-dependencies-path PATH", "Base scan dir for deployment-dependencies.yml") do |ddp_string|
-    OPTIONS[:deployment_dependencies_path]= ddp_string
+  opts.on("-p", "--secrets-path PATH", "Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).") do |sp_string|
+    OPTIONS[:secret_path]= sp_string
   end
 
 end
@@ -54,12 +55,14 @@ def header(msg)
   puts " #{msg}"
 end
 
-def generate_deployment_overview_from_array(path, version_reference)
+def generate_deployment_overview_from_array(secrets_path, version_reference)
   all_dependencies= []
-  Dir[path].select { |f| File.directory? f }.each do |filename|
+  Dir[secrets_path].select { |f| File.directory? f }.each do |filename|
     dirname= filename.split('/').last
-    puts "Processing #{dirname}"
-    Dir[filename + "/deployment-dependencies.yml"].each do |dependency_file|
+    puts "Processing #{dirname}  - #{filename}"
+    # Dir[filename + "/deployment-dependencies.yml"].each do |dependency_file|
+    Dir[filename + "/enable-deployment.yml"].each do |enable_deployment_file|
+      dependency_file="../#{dirname}/deployment-dependencies.yml"
       puts "Bosh release detected: #{dirname}"
       current_dependecies=YAML.load_file(dependency_file)
       current_dependecies["deployment"].each do |aDep|
@@ -87,13 +90,17 @@ def generate_deployment_overview_from_array(path, version_reference)
   end
 end
 
-def generate_deployment_overview_from_hash(path, version_reference)
+def generate_deployment_overview_from_hash(depls,paas_template_path, secrets_path, version_reference)
   dependencies= {}
+  puts "Path deployment overview: #{secrets_path}"
 
-  Dir[path].select { |f| File.directory? f }.each do |filename|
+  Dir[secrets_path].select { |f| File.directory? f }.each do |filename|
     dirname= filename.split('/').last
     puts "Processing #{dirname}"
-    Dir[filename + "/deployment-dependencies.yml"].each do |dependency_file|
+    # Dir[filename + "/deployment-dependencies.yml"].each do |dependency_file|
+    Dir[filename + "/enable-deployment.yml"].each do |enable_deployment_file|
+      dependency_file="#{paas_template_path}/#{depls}/#{dirname}/deployment-dependencies.yml"
+
       puts "Bosh release detected: #{dirname}"
       current_dependecies=YAML.load_file(dependency_file)
       current_dependecies["deployment"].each do |deployment_name, deployment_details|
@@ -244,17 +251,21 @@ end
 
 
 version_reference = YAML.load_file("#{OPTIONS[:common_version_path]}/#{depls}/#{depls}-versions.yml")
-all_dependencies=generate_deployment_overview_from_hash("#{OPTIONS[:deployment_dependencies_path]}/" + depls + '/*', version_reference)
+all_dependencies=generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/",  "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
 
 raise "all_dependencies should not be empty" if all_dependencies.empty?
-all_ci_deployments=generate_ci_deployment_overview("#{OPTIONS[:deployment_dependencies_path]}/" + depls)
+all_ci_deployments=generate_ci_deployment_overview("#{OPTIONS[:secret_path]}/" + depls)
 
-all_cf_apps=generate_cf_app_overview("#{OPTIONS[:deployment_dependencies_path]}/#{depls}/*",depls)
+all_cf_apps=generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls)
 
 
-git_submodules=list_git_submodules(OPTIONS[:submodule_path])
+git_submodules=list_git_submodules(OPTIONS[:git_submodule_path])
 
-Dir['pipelines/template/depls-pipeline.yml', 'pipelines/template/cf-apps-pipeline.yml', 'pipelines/template/news-pipeline.yml','pipelines/template/sync-helper-pipeline.yml'].each do |filename|
+Dir["#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/depls-pipeline.yml",
+    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/cf-apps-pipeline.yml",
+    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/news-pipeline.yml",
+    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/sync-helper-pipeline.yml"
+  ].each do |filename|
   puts "processing #{filename}"
   puts output=ERB.new(File.read(filename)).result()
 
