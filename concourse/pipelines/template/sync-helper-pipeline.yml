@@ -95,8 +95,6 @@ jobs:
         args:
         - -exc
         - |
-          # first cleanup existing data to detect deleted file but keep .git dir
-          for i in $(dir secrets);do rm -rf secrets/$i;done
           script-resource/scripts/anonymize_secrets.rb -s secrets -o result-dir
     on_failure:
       put: failure-alert

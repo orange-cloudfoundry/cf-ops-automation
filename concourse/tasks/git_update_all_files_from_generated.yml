@@ -32,6 +32,10 @@ run:
     FINAL_RELEASE_REPO=updated-git-resource
 
     git clone reference-resource ${FINAL_RELEASE_REPO}
+
+    # first cleanup existing data to detect deleted file but keep .git dir
+    for i in $(dir secrets);do rm -rf secrets/$i;done
+
     cp -rf generated-resource/. ${FINAL_RELEASE_REPO}
 
     cd ${FINAL_RELEASE_REPO}
