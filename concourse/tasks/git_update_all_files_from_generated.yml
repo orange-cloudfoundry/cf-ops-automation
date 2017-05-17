@@ -34,7 +34,7 @@ run:
     git clone reference-resource ${FINAL_RELEASE_REPO}
 
     # first cleanup existing data to detect deleted file but keep .git dir
-    for i in $(dir secrets);do rm -rf secrets/$i;done
+    for i in $(dir ${FINAL_RELEASE_REPO});do rm -rf ${FINAL_RELEASE_REPO}/$i;done
 
     cp -rf generated-resource/. ${FINAL_RELEASE_REPO}
 
