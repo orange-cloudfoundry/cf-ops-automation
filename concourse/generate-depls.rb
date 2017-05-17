@@ -264,7 +264,8 @@ git_submodules=list_git_submodules(OPTIONS[:git_submodule_path])
 Dir["#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/depls-pipeline.yml",
     "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/cf-apps-pipeline.yml",
     "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/news-pipeline.yml",
-    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/sync-helper-pipeline.yml"
+    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/sync-helper-pipeline.yml",
+    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/init-pipeline.yml"
   ].each do |filename|
   puts "processing #{filename}"
   puts output=ERB.new(File.read(filename)).result()

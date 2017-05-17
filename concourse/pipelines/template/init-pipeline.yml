@@ -12,30 +12,6 @@ resource_types:
       repository: cfcommunity/slack-notification-resource
 
 resources:
-- name: {{concourse-pipeline-name}}
-  type: concourse-pipeline
-  source:
-    insecure: {{concourse-insecure}}
-    teams:
-    - name: main
-      username: {{concourse-username}}
-      password: {{concourse-password}}
-
-- name: paas-template
-  type: git
-  source:
-    uri: {{pipeline-credentials-uri}}
-    branch: master
-    skip_ssl_verification: true
-
-- name: pipeline-credentials
-  type: git
-  source:
-    uri: {{pipeline-credentials-uri}}
-    branch: master
-    skip_ssl_verification: true
-#    paths: [ci/deploy/]
-
 
 - name: failure-alert
   type: slack-notification
@@ -47,75 +23,80 @@ resources:
     - domain: {{slack-custom-root-domain}}
       cert: {{slack-custom-root-cert}}
 
-- name: <% current_pipeline %>
-  type: git
+<% if ! all_ci_deployments.empty? %>
+- name: <%= all_ci_deployments[depls]["target_name"] %>
+  type: concourse-pipeline
   source:
-    uri: {{<% current_pipeline %>.uri}}
-    branch: {{<% current_pipeline %>.branch}}
-    paths: [ci/pipeline/]
+    target: {{concourse-<%= depls %>-target}}
+    insecure: {{concourse-<%= depls %>-insecure}}
+    teams:
+    - name: main
+      username: {{concourse-<%= depls %>-username}}
+      password: {{concourse-<%= depls %>-password}}
 
-- name: <% current_pipeline %>-credentials
+- name: secrets-complete
   type: git
   source:
     uri: {{pipeline-credentials-uri}}
     branch: master
     skip_ssl_verification: true
 
+- name: paas-templates-complete
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: master
+    skip_ssl_verification: true
+<% end %>
 
 jobs:
-
-jobs:
-- name: auto-update-auto-init
-  plan:
-  - aggregate:
-    - get: paas-template
-      params: { submodules: none}
-      trigger: true
-      attempts: 3
-    - get: pipeline-credentials
-      params: { submodules: none}
-      trigger: false
-      attempts: 3
-  - put: {{concourse-target}}
-    params:
-      pipelines:
-      - name: auto-init
-        team: main
-        config_file: paas-template/concourse/pipelines/micro-depls-auto-init.yml
-        vars_files:
-        - pipeline-credentials/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
-        text: |
-          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        username: Concourse
-
-
-
-
 
 <% if ! all_ci_deployments.empty? %>
-<% current_depls_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] %>
-<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil  %>
-<% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] %>
-<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
+<% pipeline_name="#{depls}-init-generated" %>
 
-- name: update-pipeline-<%= depls %>-generated
+#<% if all_ci_deployments[depls]["pipelines"][pipeline_name] != nil %>
+#
+#- name: auto-update-<%= "#{depls}-init-generated" %>
+#  plan:
+#  - aggregate:
+#    - get: paas-templates-complete
+#      params: { submodules: none}
+#      trigger: true
+#      attempts: 3
+#    - get: secrets-complete
+#      params: { submodules: none}
+#      trigger: false
+#      attempts: 3
+#  - put: <%= all_ci_deployments[depls]["target_name"] %>
+#    params:
+#      pipelines:
+#      <% pipeline_details=all_ci_deployments[depls]["pipelines"][pipeline_name] %>
+#      - name: <%= pipeline_name %>
+#        team: main
+#        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
+#        vars_files:
+#          <% pipeline_details["vars_files"].each do |a_vars_file| %>
+#          # trick to manage <depls>-versions.yml (not included in secrets)
+#         <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
+#         <%= "- paas-template-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
+#          <% end %>
+#<% end %>
+
+- name: update-pipeline-<%= depls %>
   plan:
   - aggregate:
-    - get: paas-template-complete
+    - get: paas-templates-complete
       params: { submodules: none}
+#      <%= "passed: [auto-update-#{depls}-init-generated]" if all_ci_deployments[depls]["pipelines"][pipeline_name] != nil %>
       attempts: 3
-      trigger: true
+      trigger: false
     - get: secrets-complete
       params: { submodules: none}
+#      <%= "passed: [auto-update-#{depls}-init-generated]" if all_ci_deployments[depls]["pipelines"][pipeline_name] != nil %>
       attempts: 3
-      trigger: true
-  - task: generate-<%= depls %>-pipeline
-    input_mapping: {script-resource: paas-template-complete,secrets: secrets-complete}
+      trigger: false
+  - task: generate-<%= depls %>-pipelines
+    input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux
@@ -155,7 +136,7 @@ jobs:
           <% pipeline_details["vars_files"].each do |a_vars_file| %>
           # trick to manage <depls>-versions.yml (not included in secrets)
          <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-template-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
+         <%= "- paas-templates-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
           <% end %>
      <% end %>
     on_failure:
@@ -166,113 +147,5 @@ jobs:
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
-  - task: update-concourse-depls-pipeline
-    input_mapping: {reference-resource: secrets-complete, generated-resource: concourse-<%= depls %>-pipeline}
-    output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-template-complete/concourse/tasks/git_update_a_file_from_generated.yml
-    params:
-      OLD_FILE: <%= current_depls_generated["config_file"] %>
-      NEW_FILE: "concourse/pipelines/<%= depls %>-generated.yml"
-      COMMIT_MESSAGE: "<%= depls %> generated pipeline auto update - [skip ci]"
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
-  - task: update-concourse-cf-apps-pipeline
-    input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-<%= depls %>-pipeline}
-    output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-template-complete/concourse/tasks/git_update_a_file_from_generated.yml
-    params:
-      OLD_FILE: <%= current_cf_apps_generated["config_file"] %>
-      NEW_FILE: "concourse/pipelines/<%= depls %>-cf-apps-generated.yml"
-      COMMIT_MESSAGE: "<%= depls %> cf-apps generated pipeline auto update - [skip ci]"
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
-
-  - put: secrets-complete
-    get_params: {submodules: none}
-    params:
-      - repository: updated-secrets
-      - rebase: true
 <% end %>
 
-
-
-
-- name: load-<% current_pipeline %>
-  plan:
-  - aggregate:
-    - get: <% current_pipeline %>
-      trigger: true
-      attempts: 3
-    - get: <% current_pipeline %>-credentials
-      params: { submodules: none}
-      trigger: false
-      attempts: 3
-  - task: generate-master-depls-pipeline
-    input_mapping: {script-resource: paas-template,secrets: pipeline-credentials}
-    output_mapping: {result-dir: concourse-master-depls-pipeline}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
-      inputs:
-        - name: script-resource
-        - name: secrets
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          cp -r script-resource/* result-dir
-          cp -rf secrets/* result-dir
-          cd result-dir/concourse
-          ./generate-depls.rb --depls master-depls
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
-
-  - put: {{concourse-target}}
-    params:
-      pipelines:
-      - name: <% current_pipeline %>-generated
-        team: main
-        config_file: <% current_pipeline %>/<% config_file %>
-
-        config_file: concourse-master-depls-pipeline/concourse/pipelines/master-depls-generated.yml
-
-        vars_files:
-        - <% current_pipeline %>-credentials/<% credentials_path %>
-
-        - pipeline-credentials/micro-depls/concourse-master/pipelines/credentials-master-depls-pipeline.yml
-        - pipeline-credentials/master-depls/master-depls-versions.yml
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
-        text: |
-          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        username: Concourse
-  - put: failure-alert
-    params:
-      channel: {{slack-channel}}
-      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
-      text: |
-        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      username: Concourse
