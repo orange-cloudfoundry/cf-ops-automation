@@ -203,3 +203,19 @@ See [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh) s
 ### sample
 
 have a look to this [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh)
+
+## How to bootstrap pipelines to a new concourse
+
+simply run [concourse-bootstrap.sh](concourse-bootstrap.sh) with the appropriate environment variable set  
+
+
+```
+SECRETS=<path_to_your_secret_dir> FLY_TARGET=<your_target> ./concourse-bootstrap.sh
+```
+
+### pre requisite
+The following tools are required to run [concourse-bootstrap.sh](concourse-bootstrap.sh)
+ - git 
+ - ruby
+ - fly, the concourse CLI
+    - Login to concourse in main team
