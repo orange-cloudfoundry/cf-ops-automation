@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 usage(){
-    echo "$0 -t <micro-depls|master-depls|ops-depls|inception> -n <name>" 1>&2
-    echo -e "\t -d deployment type (micro-depls|master-depls|ops-depls|inception) " 1>&2
+    echo "$0 -t <micro-depls|master-depls|ops-depls|expe-depls|inception> -n <name>" 1>&2
+    echo -e "\t -d deployment type (micro-depls|master-depls|ops-depls|expe-depls|inception) " 1>&2
     echo -e "\t -n deployment name" 1>&2
     exit 1
 }
@@ -13,7 +13,7 @@ while getopts "t:n:" option; do
             DEPLOYMENT_NAME=$OPTARG
             ;;
         t)
-            if [ $OPTARG == "micro-depls" -o $OPTARG == "master-depls" -o $OPTARG == "ops-depls" -o $OPTARG == "inception" ]
+            if [ $OPTARG == "micro-depls" -o $OPTARG == "master-depls" -o $OPTARG == "ops-depls" -o $OPTARG == "expe-depls" -o $OPTARG == "inception" ]
             then
                 DEPLOYMENT_TYPE=$OPTARG
             else
