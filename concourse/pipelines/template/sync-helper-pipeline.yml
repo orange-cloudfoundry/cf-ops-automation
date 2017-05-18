@@ -222,7 +222,7 @@ groups:
 - name: diff-overview
   jobs:
   - anonymize-secrets-value
-  <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
+  <% %w(inception micro-depls master-depls ops-depls expe-depls shared).each do |depls| %>
   - compare-anonymized-<%= depls %>-secrets
   <% end %>
 <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
