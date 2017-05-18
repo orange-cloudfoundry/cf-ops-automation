@@ -122,7 +122,7 @@ jobs:
       - repository: updated-anonymized-secrets
       - rebase: true
 
-<% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
+<% %w(inception micro-depls master-depls ops-depls expe-depls shared).each do |depls| %>
 - name: compare-anonymized-<%= depls %>-secrets
   plan:
   - aggregate :
@@ -177,10 +177,10 @@ jobs:
             diff -r -q anonymized-secrets/<%= depls %> anonymized-secrets-compare/<%= depls %>
 
 <% end %>
-
-<% secrets_dirs_overview.each do |main_dir, subdir_list|  %>
+<% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
+<% subdir_list=secrets_dirs_overview[depls] %>
 <% subdir_list.each do |subdir| %>
-- name: <%= main_dir %>-<%= subdir %>-comparison
+- name: <%= depls %>-<%= subdir %>-comparison
   plan:
   - aggregate :
     - get: anonymized-secrets
@@ -189,7 +189,7 @@ jobs:
     - get: anonymized-secrets-compare
       trigger: true
   - task: diff-secrets
-    output_mapping: {result-dir: compared-anonymized-<%= main_dir %>-<%= subdir %>}
+    output_mapping: {result-dir: compared-anonymized-<%= depls %>-<%= subdir %>}
     config:
       platform: linux
       image_resource:
@@ -205,7 +205,7 @@ jobs:
         args:
         - -xc
         - |
-          diff -r anonymized-secrets/<%= main_dir %>/<%= subdir %> anonymized-secrets-compare/<%= main_dir %>/<%= subdir %>
+          diff -r anonymized-secrets/<%= depls %>/<%= subdir %> anonymized-secrets-compare/<%= depls %>/<%= subdir %>
     on_failure:
       put: failure-alert
       params:
@@ -225,10 +225,11 @@ groups:
   <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
   - compare-anonymized-<%= depls %>-secrets
   <% end %>
-<% secrets_dirs_overview.each do |main_dir, subdir_list|  %>
-- name: <%= main_dir %>
+<% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
+<% subdir_list=secrets_dirs_overview[depls] %>
+- name: <%= depls %>
   jobs:
   <% subdir_list.each do |subdir| %>
-  - <%= main_dir %>-<%= subdir %>-comparison
+  - <%= depls %>-<%= subdir %>-comparison
   <% end %>
 <% end %>
