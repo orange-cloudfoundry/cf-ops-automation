@@ -178,4 +178,57 @@ jobs:
 
 <% end %>
 
+<% secrets_dirs_overview.each do |main_dir, subdir_list|  %>
+<% subdir_list.each do |subdir| %>
+- name: <%= main_dir %>-<%= subdir %>-comparison
+  plan:
+  - aggregate :
+    - get: anonymized-secrets
+      passed: [anonymize-secrets-value]
+      trigger: true
+    - get: anonymized-secrets-compare
+      trigger: true
+  - task: diff-secrets
+    output_mapping: {result-dir: compared-anonymized-<%= main_dir %>-<%= subdir %>}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: anonymized-secrets
+        - name: anonymized-secrets-compare
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -xc
+        - |
+          diff -r anonymized-secrets/<%= main_dir %>/<%= subdir %> anonymized-secrets-compare/<%= main_dir %>/<%= subdir %>
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  <% end %>
+<% end %>
+
+<% end %>
+
+groups:
+- name: diff-overview
+  jobs:
+  - anonymize-secrets-value
+  <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
+  - compare-anonymized-<%= depls %>-secrets
+  <% end %>
+<% secrets_dirs_overview.each do |main_dir, subdir_list|  %>
+- name: <%= main_dir %>
+  jobs:
+  <% subdir_list.each do |subdir| %>
+  - <%= main_dir %>-<%= subdir %>-comparison
+  <% end %>
 <% end %>

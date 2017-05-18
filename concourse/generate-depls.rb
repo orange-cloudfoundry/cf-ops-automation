@@ -19,10 +19,11 @@ OPTIONS = {
   :common_version_path => "..",
   :git_submodule_path => ".." ,
   :secret_path => "..",
+  :output_path => ".",
   :paas_template_root=> ".."
 }
 opt_parser = OptionParser.new do |opts|
-  opts.banner = "Usage: ./#{opts.program_name} <options>"
+  opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
 
   opts.on("-d", "--depls DEPLOYMENT", "Specify a deployment name to generate template for. MANDATORY") do |deployment_string|
     OPTIONS[:depls]= deployment_string
@@ -40,6 +41,9 @@ opt_parser = OptionParser.new do |opts|
     OPTIONS[:secret_path]= sp_string
   end
 
+  opts.on("-o", "--output-path PATH", "Output dir for generated pipelines.") do |op_string|
+    OPTIONS[:output_path]= op_string
+  end
 end
 opt_parser.parse!
 
@@ -248,7 +252,23 @@ def generate_cf_app_overview(path,depls_name)
 end
 
 
+def generate_secrets_dir_overview(secrets_root)
+  dir_overview={}
 
+  Dir[secrets_root].select { |f| File.directory? f }.each do |depls_level_dir|
+    depls_level_name= depls_level_dir.split('/').last
+    puts "Processing depls level: #{depls_level_name}"
+    dir_overview[depls_level_name]=[]
+    Dir[depls_level_dir+"/*"].select { |f| File.directory? f }.each do |boshrelease_level_dir|
+      boshrelease_level_name= boshrelease_level_dir.split('/').last
+      puts "Processing boshrelease level: #{depls_level_name} -- #{boshrelease_level_name}"
+      dir_overview[depls_level_name] << boshrelease_level_name
+    end
+  end
+  dir_overview
+end
+
+secrets_dirs_overview=generate_secrets_dir_overview("#{OPTIONS[:secret_path]}/*")
 
 version_reference = YAML.load_file("#{OPTIONS[:common_version_path]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/",  "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
@@ -277,7 +297,7 @@ Dir["#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/depls-pipeline
   pipeline_name << "generated.yml"
 
   puts "Pipeline name #{pipeline_name}"
-  aPipeline=File.new("pipelines/#{pipeline_name}", "w")
+  aPipeline=File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", "w")
   aPipeline << output
   puts "Trying to parse generated Yaml: #{pipeline_name}"
   YAML.load_file(aPipeline)
@@ -286,6 +306,7 @@ Dir["#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/depls-pipeline
   puts "####################################################################################"
 
 end
+
 
 puts "### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists" if all_ci_deployments.empty?
 puts "### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists" if all_cf_apps.empty?
