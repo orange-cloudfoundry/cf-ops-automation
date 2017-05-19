@@ -208,7 +208,7 @@ jobs:
         args:
         - -xc
         - |
-          if [ (-d anonymized-secrets/<%= depls %>/<%= subdir %>) -o (-d anonymized-secrets-compare/<%= depls %>/<%= subdir %>) ]
+          if [ -d "anonymized-secrets/<%= depls %>/<%= subdir %>" -o -d "anonymized-secrets-compare/<%= depls %>/<%= subdir %>" ]
           then
             diff -r anonymized-secrets/<%= depls %>/<%= subdir %> anonymized-secrets-compare/<%= depls %>/<%= subdir %>
           else
