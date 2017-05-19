@@ -208,7 +208,12 @@ jobs:
         args:
         - -xc
         - |
-          diff -r anonymized-secrets/<%= depls %>/<%= subdir %> anonymized-secrets-compare/<%= depls %>/<%= subdir %>
+          if [ (-d anonymized-secrets/<%= depls %>/<%= subdir %>) -o (-d anonymized-secrets-compare/<%= depls %>/<%= subdir %>) ]
+          then
+            diff -r anonymized-secrets/<%= depls %>/<%= subdir %> anonymized-secrets-compare/<%= depls %>/<%= subdir %>
+          else
+            echo "skipping: anonymized-secrets/<%= depls %>/<%= subdir %> and anonymized-secrets-compare/<%= depls %>/<%= subdir %> do not exist"
+          fi
     on_failure:
       put: failure-alert
       params:
