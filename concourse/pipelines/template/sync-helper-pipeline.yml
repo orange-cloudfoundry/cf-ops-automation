@@ -95,7 +95,9 @@ jobs:
         args:
         - -exc
         - |
-          script-resource/scripts/anonymize_secrets.rb -s secrets -o result-dir
+          cd script-resource
+          bundle install
+          bundle exec scripts/anonymize_secrets.rb -s ../secrets -o ../result-dir
     on_failure:
       put: failure-alert
       params:

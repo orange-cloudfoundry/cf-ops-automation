@@ -1,0 +1,18 @@
+GEM
+  remote: http://rubygems.org/
+  specs:
+    deep_merge (1.1.1)
+    rhcl (0.1.0)
+      deep_merge
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rhcl (>= 0.1.0)
+
+RUBY VERSION
+   ruby 2.3.1p112
+
+BUNDLED WITH
+   1.14.6

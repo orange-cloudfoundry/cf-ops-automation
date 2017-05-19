@@ -5,6 +5,7 @@ require 'yaml'
 require 'optparse'
 require 'find'
 require 'tmpdir'
+require 'rhcl'
 
 # Argument parsing
 OPTIONS = {
@@ -81,8 +82,6 @@ def extract_secrets_keys(selected_yaml_file)
   file_counter=0
   selected_yaml_file.each do |filename|
     current_secrets_yaml=YAML.load_file(filename)
-    new_secret_filename=filename
-    # new_secret_filename=filename.slice(2..filename.length) if filename.slice(0..1) == "./"
     new_secret_filename=filename.slice(OPTIONS[:secrets_path].length+1..filename.length)
 
     puts "> processing #{new_secret_filename}"
@@ -110,16 +109,60 @@ def selected_yaml_secrets_files(path)
   return selected_files
 end
 
+def selected_tfvars_secrets_files(path)
+  selected_files=[]
+  Dir[path].each do |filename|
+    selected_files << filename
+  end
+
+  return selected_files
+
+end
+
+def cleanup_tfvars_secrets(secrets_tfvars)
+  secrets_tfvars.keys
+end
+
+def anonymize_tfvars_files(selected_tfvars_secrets)
+  file_counter=0
+  selected_tfvars_secrets.each do |filename|
+    current_secrets_tfvars=File.read(filename)
+
+    new_secret_filename=filename.slice(OPTIONS[:secrets_path].length+1..filename.length)
+
+    puts "> processing #{new_secret_filename}"
+    file_counter+=1
+
+    parsed_secrets= Rhcl.parse(current_secrets_tfvars)
+    anonymized_secrets=cleanup_tfvars_secrets(parsed_secrets)
+
+
+
+    create_missing_dir(new_secret_filename)
+
+    anonymized_secrets_file=File.new("#{OPTIONS[:output_path]}/#{new_secret_filename}", "w")
+    anonymized_secrets_file << YAML.dump(anonymized_secrets)
+  end
+  file_counter
+
+end
+
+
 Dir.mkdir("#{OPTIONS[:output_path]}") if ! Dir.exist?("#{OPTIONS[:output_path]}")
 
 # processed_files=extract_secrets_keys("#{OPTIONS[:deployment_dependencies_path]}/shared/secrets.yml")
 # processed_files=extract_secrets_keys("#{OPTIONS[:secrets_path]}/micro-depls/nexus/nexus.yml")
 selected_yaml_secrets=selected_yaml_secrets_files("#{OPTIONS[:secrets_path]}/**/*.yml")
-processed_files=extract_secrets_keys(selected_yaml_secrets)
+yaml_processed_files=extract_secrets_keys(selected_yaml_secrets)
+
+selected_tfvars_secrets=selected_tfvars_secrets_files("#{OPTIONS[:secrets_path]}/**/*.tfvars")
+tfvars_processed_files=anonymize_tfvars_files(selected_tfvars_secrets)
+
 
 # puts OPTIONS.inspect
 puts
 puts
-puts "#{processed_files} have been anonymized at #{OPTIONS[:output_path]}"
+puts "#{yaml_processed_files} yaml files have been anonymized at #{OPTIONS[:output_path]}"
+puts "#{tfvars_processed_files} yaml files have been anonymized at #{OPTIONS[:output_path]}"
 puts
 puts 'Thanks, Orange CloudFoundry SKC'
