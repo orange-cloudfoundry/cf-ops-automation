@@ -48,7 +48,7 @@ resources:
 - name: secrets-<%=depls %>
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{secrets-uri}}
     paths: ["<%= depls %>/secrets","shared"]
     branch: master
     skip_ssl_verification: true
@@ -65,7 +65,7 @@ resources:
 - name: secrets-<%= name %>
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{secrets-uri}}
     <% ext_scan_path = boshrelease["resources"]["secrets"]["extended_scan_path"] if ( boshrelease["resources"] && boshrelease["resources"]["secrets"]["extended_scan_path"] ) %>
     <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
     paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || ""%>]
@@ -114,7 +114,7 @@ resources:
 - name: secrets-complete
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{secrets-uri}}
     branch: master
     skip_ssl_verification: true
 

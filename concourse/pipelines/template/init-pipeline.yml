@@ -37,7 +37,7 @@ resources:
 - name: secrets-complete
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{secrets-uri}}
     branch: master
     skip_ssl_verification: true
 

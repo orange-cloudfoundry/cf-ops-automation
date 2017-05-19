@@ -42,7 +42,7 @@ resources:
 - name: secrets-<%= app_name %>
   type: git
   source:
-    uri: {{pipeline-credentials-uri}}
+    uri: {{secrets-uri}}
     paths: ["<%= cf_app_info["base-dir"] %>", "shared"]
     branch: master
     skip_ssl_verification: true
