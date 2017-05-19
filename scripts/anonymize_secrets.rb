@@ -163,6 +163,6 @@ tfvars_processed_files=anonymize_tfvars_files(selected_tfvars_secrets)
 puts
 puts
 puts "#{yaml_processed_files} yaml files have been anonymized at #{OPTIONS[:output_path]}"
-puts "#{tfvars_processed_files} yaml files have been anonymized at #{OPTIONS[:output_path]}"
+puts "#{tfvars_processed_files} tfvars files have been anonymized at #{OPTIONS[:output_path]}"
 puts
 puts 'Thanks, Orange CloudFoundry SKC'
