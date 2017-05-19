@@ -96,6 +96,7 @@ jobs:
         - -exc
         - |
           cd script-resource
+          gem update bundler
           bundle install
           bundle exec scripts/anonymize_secrets.rb -s ../secrets -o ../result-dir
     on_failure:
