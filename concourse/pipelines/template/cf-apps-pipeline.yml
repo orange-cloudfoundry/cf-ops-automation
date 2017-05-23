@@ -148,10 +148,10 @@ jobs:
     - task: execute-<%= app_name %>-post-deploy
       input_mapping: {scripts-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: post-deploy-result}
-      file: paas-template-<%= name %>/concourse/tasks/post_bosh_deploy.yml
+      file: paas-template-<%= app_name %>/concourse/tasks/post_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
-        SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
+        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>/template
+        SECRETS_DIR: credentials-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>
       on_failure:
         put: failure-alert
         params:
