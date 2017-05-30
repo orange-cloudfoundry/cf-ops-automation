@@ -4,7 +4,7 @@ set -e
 
 spruce --version
 CURRENT_DIR=$(pwd)
-OUTPUT_DIR=${CURRENT_DIR}/generated-files/
+OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files/}
 SPRUCE_SCRIPT_DIR=${SPRUCE_SCRIPT_DIR:-scripts-resource/scripts/manifest}
 
 SUFFIX=${SUFFIX:-"-tpl.yml"}
