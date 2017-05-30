@@ -55,7 +55,7 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    branch: master
+    branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 
 <% uniq_releases= {} %>

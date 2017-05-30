@@ -44,7 +44,7 @@ resources:
   source:
     uri: {{secrets-uri}}
     paths: ["<%= cf_app_info["base-dir"] %>", "shared"]
-    branch: master
+    branch: {{secrets-branch}}
     skip_ssl_verification: true
 
 - name: paas-template-<%= app_name %>
@@ -52,7 +52,7 @@ resources:
   source:
     uri: {{paas-templates-uri}}
     paths: ["<%= cf_app_info["base-dir"] %>","concourse/tasks","scripts"]
-    branch: master
+    branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 
 #- name: deploy-<%= app_name %>

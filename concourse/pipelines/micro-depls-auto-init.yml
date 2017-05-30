@@ -60,14 +60,14 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    branch: master
+    branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 
 - name: pipeline-credentials
   type: git
   source:
     uri: {{secrets-uri}}
-    branch: master
+    branch: {{secrets-branch}}
     skip_ssl_verification: true
 #    paths: [ci/deploy/]
 
