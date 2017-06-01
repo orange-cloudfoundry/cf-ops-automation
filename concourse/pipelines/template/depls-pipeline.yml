@@ -565,7 +565,7 @@ jobs:
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] %>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
-- name: init-concourse-boshrelease-for-<%= depls %>
+- name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
   plan:
   - aggregate:
     - get: paas-templates-complete
@@ -593,6 +593,8 @@ jobs:
           <% uniq_releases.each do |name,_| %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:{{<%= name %>-version}}" >> result-dir/flight-plan
           <% end %>
+
+          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from version:{{stemcell-version}}" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-generated
       on_failure:
