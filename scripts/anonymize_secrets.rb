@@ -100,14 +100,23 @@ end
 def selected_yaml_secrets_files(path)
   selected_files=[]
   Dir[path].each do |filename|
-    name_without_extention=File.basename(filename,".*")
-    file_path=File.dirname(filename)
-
-    selected_files << filename if ! file_path.include?(name_without_extention) || name_without_extention == "secrets"
+    selected_files << filename if include_yaml_file? filename
   end
 
   return selected_files
 end
+
+def include_yaml_file?(filename)
+  name_without_extension=File.basename(filename,".*")
+  file_path=File.dirname(filename)
+
+  return false if name_without_extension.end_with? "-generated"
+
+  return true if ! file_path.include?(name_without_extension) || name_without_extension == "secrets"
+
+  return false
+end
+
 
 def selected_tfvars_secrets_files(path)
   selected_files=[]
