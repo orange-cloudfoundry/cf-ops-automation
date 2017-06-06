@@ -104,6 +104,7 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: push-<%= app_name %>
+      attempts: 3
       input_mapping: {scripts-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: final-release-manifest}
       file: paas-template-<%= app_name %>/concourse/tasks/cf_push.yml
