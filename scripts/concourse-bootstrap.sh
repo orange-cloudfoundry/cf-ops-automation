@@ -22,8 +22,22 @@ then
     usage
 fi
 
-SCRIPT_DIR=$(dirname $0)
+CURRENT_SCRIPT_DIR=$(realpath $0|xargs dirname)
+if [ "$SCRIPT_DIR" == "." ]
+then
+    SCRIPT_DIR=..
+fi
+SCRIPT_DIR=${CURRENT_SCRIPT_DIR%scripts}
+
+set +e
 SECRET_DIR=$(readlink -e ${SECRETS})
+set -e
+if [ "$SECRET_DIR" == "" ]
+then
+    echo "SECRETS ($SECRETS) does not exist" 1>&2
+    usage
+    exit 1
+fi
 
 OUTPUT_DIR=$(readlink -f ${SCRIPT_DIR}/boostrap-generated)
 mkdir -p ${OUTPUT_DIR}/pipelines
@@ -33,7 +47,7 @@ for depls in ${DEPLS_LIST};do
     cd ${SCRIPT_DIR}/concourse
     ./generate-depls.rb -d ${depls} -p ${SECRET_DIR} -o ${OUTPUT_DIR}
     PIPELINE="${depls}-init-generated"
-    cd ..
+    cd ${SCRIPT_DIR}
     echo "Load ${PIPELINE} on ${FLY_TARGET}"
     set +e
     fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${OUTPUT_DIR}/pipelines/${PIPELINE}.yml  -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
