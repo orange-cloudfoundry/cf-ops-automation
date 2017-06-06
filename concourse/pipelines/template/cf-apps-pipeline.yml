@@ -16,11 +16,7 @@ resource_types:
 #      repository: patrickcrocker/maven-resource
 #      tag: latest
 
-
-
 resources:
-
-
 #- name: at-noon
 #  type: cron-resource
 #  source:
@@ -36,7 +32,6 @@ resources:
     ca_certs:
     - domain: {{slack-custom-domain}}
       cert: {{slack-custom-cert}}
-<% else %>
 - name: secrets-complete
   type: git
   source:
