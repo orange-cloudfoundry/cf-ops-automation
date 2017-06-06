@@ -36,6 +36,20 @@ resources:
     ca_certs:
     - domain: {{slack-custom-domain}}
       cert: {{slack-custom-cert}}
+<% else %>
+- name: secrets-complete
+  type: git
+  source:
+    uri: {{secrets-uri}}
+    branch: {{secrets-branch}}
+    skip_ssl_verification: true
+
+- name: paas-templates-complete
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
 <% end %>
 
 <% all_cf_apps.each do |app_name,cf_app_info| %>
@@ -52,20 +66,6 @@ resources:
   source:
     uri: {{paas-templates-uri}}
     paths: ["<%= cf_app_info["base-dir"] %>","concourse/tasks","scripts"]
-    branch: {{paas-templates-branch}}
-    skip_ssl_verification: true
-
-- name: secrets-complete
-  type: git
-  source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
-    skip_ssl_verification: true
-
-- name: paas-templates-complete
-  type: git
-  source:
-    uri: {{paas-templates-uri}}
     branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 <% end %>
