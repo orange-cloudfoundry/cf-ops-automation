@@ -5,6 +5,10 @@ Have a look this plantuml file: [bosh overview](docs/overview.puml). You can gen
 
 [Direct link (may not be the latest version)](http://plantuml-etherpad.kermit.rd.francetelecom.fr/png/TP9DJyCm38RFv5TOHKAhjEu7xC1Xi24a418tZbbhjaXj4X9t7_-Un5q_rVNIo7xp-h5ZKbIYW8tnHwYzF22O4xgJmhD0NG1nMkpD1P9tdQCbPNGY7gnqf79bfIReudmZI8KsrFWCSdjZo9EJbbLHSRFzLBapsIlQqYVm-A4EHzgKDOvh914mOsa2qWEV18IlhzN7AgbZ9_jufvAUq76uAznojWGi6IEyEKGzBT1R3QeOw-49y69nN6IEdmsQ1Xgl2ScNzHt6DnPp7a721k4_mMiZDxQ0zbAQke2TgNNXhbrEXfe-ld6E7XOsgwx-hrn2XLKkyoCk0IbVhLRfdPanw3QqEnxO3vQbESyHHoqZRziPzSnTQ33GE4gdAjGaUNFkF5stMf0zDs-_XZ1I9t-DgnPAIf_EQdWhb5QqQFOZHbCXECioVfar752ZauIBmHf57H-YCCnxgWgxa0uKiRkf97ONRCBbpgEdVjc5bFW7)
 
+## Script lifecycle overview
+Have a look this plantuml file: [script lifecycle overview](docs/script-lifecycle-overview.puml). You can generate a graphical view using [etherplant](http://plantuml-etherpad.kermit.rd.francetelecom.fr/)
+
+[Direct link (may not be the latest version)](http://plantuml-etherpad.kermit.rd.francetelecom.fr/png/fLIxZjim4AoZhrWudH0fI6l41zmPSPeKYUy30ffQsKGeak33PpN-blkM-x8izR8boxaYBWoG7CtEpYpfXPUOm3EtmdYGeaHUSucWZsYF0byIL0Nu1hJJ9rXimwvUmCSVOd_mtosYIZuOPhtWmZ3bOV5J69H28UnHeMLUsmKmTrarVCIKNEZWs_O9F5P6CeyzzvCCEAOkq4WtgSRBZ1dZ5kDjXIzJeAiLpmue3Te9M2ZX9wAUmyxLZXIHcAv7LEH1JHXt61PhgKEnqQgmTMnnlHbeMF1QXMg7Dac6pY5xQ7jOzcuWcCwjf3cuGbHCKHJEzr2XLGBqKvg-ij6W9N2jA2GFmGcr1sTiu0XVJwVJGvfctiWqpUjAWjVjPhD8tbvlQXdjVDPBogd1SQ5c2Pmfm1FoGDkEZ9IWJISCgBUkkcVkJzv-aAPRqcy5Zn2NfajmYB15LbIOLqK3Ydx5GZUItbwDnIowdSKTNT_AMhulIPHbf-XI878kct-mA94vXBP2HQdEMpEHCQ6oWLHOorJXaZpFuNmM2cZ0c9GepsUWlQjv0EUrwIakTLmmHbEKFZALsbPm7yFZs7scibvK68UW5Fj_mE_vrwRK9Rj3cY8iugm4WhDYvD00fQ-17PcGR1UV2DMWSg5pUAPiDu-_yd6ioMe5gzLr-ryc5sAumNENOZYS87dvt_VZTqzmvwBShHtdabOcKEFawGYstj0v7G3jIC5RLNU9PaPhse4_20UkVPfZJ4mwtML5xrPxtBi5isuFZF4zRnx6J-sBTucKd44kIi7xIjtaZACSfHPvvW8RHtlzvhwFZgfcOSbV)
 
 
 ## Concourse pipeline generation
@@ -23,8 +27,9 @@ if template directory contains scripts with specific name, then these scripts ar
 * to generate an additional errand step, insert a key ```errands```, with a subkey named like the errand job to execute 
 in deployment-dependencies.yml  
 
-TODO: add info about gitsubmodule detection
-
+### git submodules
+By default, git submodules are not check outed (this can be very time consuming). But some bosh releases require these 
+  submodule. There is a mechanism to detect submodule for a release and include it only for this bosh release
 
 #### enable deployment format (enable-deployment.yml)
 this is an empty yaml file !
@@ -126,40 +131,10 @@ This repository should be use with a repository containing secrets. A sample sec
 ```
 git clone https://www.forge.orange-labs.fr/plugins/git/clara-cloud/public-sample-secrets.git
 ```
+# anonimyzation
+
        
-#status
- - Pipeline generation
-    - [ ] auto-init
-    - [X] deployments except micro-bosh 
-        - handle cloud-config & runtime-config
-    - [X] terraform
-    - [X] cf-apps
-
- - Enhancements
-    - Pipelines
-        - [ ] flow control to avoid Concourse out of resource crash. Workaround: increase number of workers. 
-        - cf-apps
-            - [ ] use concourse resource to push instead of shell
-            - [ ] use dedicated resource to handle binary download (ie maven, github-release, etc...)
-    - concourse credentials generation from template (like manifest)            
-            
-
- - TODO     
-    - Pipeline generation
-        - deployments
-            - [ ] cloud-config should extract net_id from terraform
-                tfstate => yaml. (network tf =>  net-id => cloud-config-tpl.yml. (( grab tf-exchange.id )) )
-            - [X] generate check-resource script
-            - [ ] better support of bosh release not available on bosh.io
-        - cf-apps
-            - [X] support/test multi app deployment. 
-    - [ ] enable auto-init for manual pipeline
-    - migrate manual pipeline to generated pipeline
-        - [ ] auto-init
-        - [X] terraform
-    - [ ] add tests to validate pipeline generation
-    - mattermost:
-        - check message
+# [status](docs/work-in-progress.md)
 
 # FAQ
 
