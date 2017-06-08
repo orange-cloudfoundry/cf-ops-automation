@@ -150,8 +150,9 @@ resources:
 
 
 jobs:
-
+<% jobs = Hash.new {|h,k| h[k]=[]} %>
 - name: execute-deploy-script
+  <% jobs["utils"] << "execute-deploy-script" %>
   plan:
     - get: at-noon
       trigger: true
@@ -180,6 +181,7 @@ jobs:
           username: Concourse
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
+  <% jobs["utils"] << "cloud-config-and-runtime-config-for-#{depls}" %>
   plan:
     - get: secrets-<%=depls %>
       params: { submodules: none}
@@ -317,6 +319,7 @@ jobs:
 <% all_dependencies.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
+  <% jobs[name[0]] << "deploy-#{name}" %>
   plan:
     - aggregate:
       - get: secrets-<%=depls %>
@@ -434,6 +437,7 @@ jobs:
 
 <% if boshrelease["errands"] != nil && !boshrelease["errands"].empty? %>
 - name: run-errand-<%= name %>
+  <% jobs[name[0]] << "run-errand-#{name}" %>
   plan:
     - aggregate:
       - get: secrets-<%= name %>
@@ -459,6 +463,7 @@ jobs:
 
 
 - name: retrigger-all-jobs
+  <% jobs["utils"] << "retrigger-all-jobs" %>
   plan:
     - aggregate:
       - get: paas-templates-complete
@@ -511,6 +516,7 @@ jobs:
 
 <% all_dependencies.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
+  <% jobs["recreate"] << "recreate-#{name}" %>
   plan:
     - aggregate:
        - get: secrets-<%= depls %>
@@ -566,6 +572,7 @@ jobs:
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
+  <% jobs["utils"] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
   plan:
   - aggregate:
     - get: paas-templates-complete
@@ -621,6 +628,7 @@ jobs:
         username: Concourse
 
 - name: update-pipeline-<%= depls %>-generated
+  <% jobs["utils"] << "update-pipeline-#{depls}-generated" %>
   plan:
   - aggregate:
     - get: paas-template-<%= depls %>
@@ -742,6 +750,7 @@ jobs:
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>
 
 - name: check-terraform-cf-consistency
+  <% jobs["terraform"] << "check-terraform-cf-consistency" %>
   plan:
     - get: at-noon
       trigger: true
@@ -785,6 +794,7 @@ jobs:
           username: Concourse
 
 - name: cf-manual-approval
+  <% jobs["terraform"] << "cf-manual-approval" %>
   plan:
     - get: paas-templates-complete
       params: { submodules: none}
@@ -794,6 +804,7 @@ jobs:
       passed: [check-terraform-cf-consistency]
 
 - name: enforce-terraform-cf-consistency
+  <% jobs["terraform"] << "enforce-terraform-cf-consistency" %>
   plan:
     - aggregate:
       - get: paas-templates-complete
@@ -861,5 +872,23 @@ jobs:
             - rebase: true
 <% end %>
 
+<% end %>
+
+
+groups:
+- name: all
+  jobs:
+  <% jobs.each_value do |jobs_list| %>
+   <% jobs_list.each do |a_job| %>
+    - <%= a_job %>
+   <% end %>
+  <% end %>
+
+<% jobs.each do |group_name, jobs_list| %>
+- name: <%= group_name %>
+  jobs:
+   <% jobs_list.each do |a_job| %>
+    - <%= a_job %>
+   <% end %>
 <% end %>
 
