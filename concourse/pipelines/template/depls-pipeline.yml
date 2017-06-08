@@ -514,21 +514,34 @@ jobs:
 
 <% previous_deployment_name=nil %>
 
-<% all_dependencies.each do |name,boshrelease| %>
-- name: recreate-<%= name %>
-  <% jobs["recreate"] << "recreate-#{name}" %>
+
+- name: recreate-all
+<% jobs["recreate"] << "recreate-all" %>
+<% jobs["utils"] << "recreate-all" %>
+  serial_groups: [recreate]
   plan:
     - aggregate:
        - get: secrets-<%= depls %>
          params: { submodules: none}
-         <%= "passed: [recreate-#{previous_deployment_name}]" if previous_deployment_name != nil %>
-         <%= "passed: [update-pipeline-#{depls}-generated]" if previous_deployment_name == nil && ! all_ci_deployments.empty? %>
-         <%= "trigger: true" if previous_deployment_name != nil %>
+         <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
        - get: paas-template-<%= depls %>
          params: { submodules: none}
-         <%= "passed: [recreate-#{previous_deployment_name}]" if previous_deployment_name != nil %>
-         <%= "passed: [update-pipeline-#{depls}-generated]" if (previous_deployment_name == nil && ! all_ci_deployments.empty?) %>
-         <%= "trigger: true" if previous_deployment_name != nil %>
+         <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
+
+<% all_dependencies.each do |name,boshrelease| %>
+- name: recreate-<%= name %>
+  <% jobs["recreate"] << "recreate-#{name}" %>
+  serial_groups: [recreate]
+  plan:
+    - aggregate:
+       - get: secrets-<%= depls %>
+         params: { submodules: none}
+         passed: [recreate-all]
+         trigger: true
+       - get: paas-template-<%= depls %>
+         params: { submodules: none}
+         passed: [recreate-all]
+         trigger: true
     - task: bosh-recreate-<%= name %>
       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
       config:
