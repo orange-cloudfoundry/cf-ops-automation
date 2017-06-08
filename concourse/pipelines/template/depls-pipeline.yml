@@ -889,7 +889,7 @@ jobs:
 
 
 groups:
-- name: all
+- name: <%= depls.capitalize %>
   jobs:
   <% jobs.each_value do |jobs_list| %>
    <% jobs_list.each do |a_job| %>
@@ -898,7 +898,7 @@ groups:
   <% end %>
 
 <% jobs.each do |group_name, jobs_list| %>
-- name: <%= group_name %>
+- name: <%= group_name.capitalize %>
   jobs:
    <% jobs_list.each do |a_job| %>
     - <%= a_job %>
