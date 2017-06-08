@@ -437,7 +437,7 @@ jobs:
 
 <% if boshrelease["errands"] != nil && !boshrelease["errands"].empty? %>
 - name: run-errand-<%= name %>
-  <% jobs[name[0]] << "run-errand-#{name}" %>
+  <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}" %>
   plan:
     - aggregate:
       - get: secrets-<%= name %>
