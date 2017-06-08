@@ -319,7 +319,7 @@ jobs:
 <% all_dependencies.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
-  <% jobs[name[0]] << "deploy-#{name}" %>
+  <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   plan:
     - aggregate:
       - get: secrets-<%=depls %>
