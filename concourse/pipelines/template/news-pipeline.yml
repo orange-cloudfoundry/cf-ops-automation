@@ -60,7 +60,7 @@ resources:
 
 <% uniq_releases= {} %>
 <% all_dependencies.each do |name,boshrelease| %>
-<% boshrelease["releases"].each do |release, info|  %>
+<% boshrelease["releases"]&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
 <% end %>

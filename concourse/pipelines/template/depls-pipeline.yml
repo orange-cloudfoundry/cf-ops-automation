@@ -129,7 +129,7 @@ resources:
 
 <% uniq_releases= {} %>
 <% all_dependencies.each do |name,boshrelease| %>
-<% boshrelease["releases"].each do |release, info|  %>
+<% boshrelease["releases"]&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
 <% end %>
@@ -332,7 +332,7 @@ jobs:
         version: { version: {{stemcell-version}} }
         trigger: true
         attempts: 3
-      <% boshrelease["releases"].each do |release, info| %>
+      <% boshrelease["releases"]&.each do |release, info| %>
       - get: <%= release %>
         <% if info["base_location"].include?("bosh.io") %>
         version: { version: {{<%= release %>-version}} }
@@ -388,8 +388,8 @@ jobs:
         manifest: final-release-manifest/<%= name %>.yml
         stemcells:
         - bosh-stemcell/stemcell.tgz
-        releases: <%= "[]" if boshrelease["releases"].empty? %>
-        <% boshrelease["releases"].each do |release, info| %>
+        releases: <%= "[]" if boshrelease["releases"]&.empty? %>
+        <% boshrelease["releases"]&.each do |release, info| %>
         - <%= release %>/release.tgz
         <% end %>
       on_failure:
