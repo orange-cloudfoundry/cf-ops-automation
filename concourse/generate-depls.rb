@@ -112,7 +112,8 @@ def generate_deployment_overview_from_hash(depls,paas_template_path, secrets_pat
         raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
         dependencies[deployment_name] = deployment_details
 
-        deployment_details['releases'].each do |aRelease, _|
+        boshrelease_list=deployment_details['releases']
+        boshrelease_list&.each do |aRelease, _|
           #                puts "arelease: #{aRelease}"
           version=version_reference[aRelease+'-version']
           #                puts version
