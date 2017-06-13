@@ -76,7 +76,7 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    paths: ["<%= depls %>/<%= name %>","concourse/tasks","scripts"]
+    paths: ["<%= depls %>/<%= name %>","concourse/tasks","scripts"<%= ",.gitmodules" if git_submodules[depls] && git_submodules[depls][name] %>]
     branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 
