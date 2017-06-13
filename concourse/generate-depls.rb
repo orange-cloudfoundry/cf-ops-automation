@@ -288,7 +288,7 @@ Dir["#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/depls-pipeline
     "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/init-pipeline.yml"
   ].each do |filename|
   puts "processing #{filename}"
-  puts output=ERB.new(File.read(filename)).result()
+  puts output=ERB.new(File.read(filename),0,"<>").result()
 
   # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
   tmp_pipeline_name= filename.split("/").last().chomp("-pipeline.yml").chomp("depls")
