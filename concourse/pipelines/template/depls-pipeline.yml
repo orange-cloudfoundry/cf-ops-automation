@@ -170,8 +170,9 @@ jobs:
         COMMON_SCRIPT_DIR: script-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET: {{bosh-target}}
-        BOSH_USERNAME: {{bosh-username}}
-        BOSH_PASSWORD: {{bosh-password}}
+        BOSH_CLIENT: {{bosh-username}}
+        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
       on_failure:
         put: failure-alert
         params:
@@ -561,13 +562,13 @@ jobs:
               - -e
               - -c
               - |
-                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET} ${BOSH_USERNAME} ${BOSH_PASSWORD} ${BOSH_CERT_FILE}
+                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 bosh -n -d <%= name %> recreate
       params:
          BOSH_TARGET: {{bosh-target}}
-         BOSH_USERNAME: {{bosh-username}}
-         BOSH_PASSWORD: {{bosh-password}}
-         BOSH_CERT_FILE: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+         BOSH_CLIENT: {{bosh-username}}
+         BOSH_CLIENT_SECRET: {{bosh-password}}
+         BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
       on_failure:
          put: failure-alert
          params:
