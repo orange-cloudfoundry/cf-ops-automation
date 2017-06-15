@@ -126,6 +126,7 @@ jobs:
       - rebase: true
 
 <% %w(inception micro-depls master-depls ops-depls expe-depls shared).each do |depls| %>
+
 - name: compare-anonymized-<%= depls %>-secrets
   plan:
   - aggregate :
@@ -183,6 +184,7 @@ jobs:
 <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
 <% subdir_list=secrets_dirs_overview[depls] %>
 <% subdir_list.each do |subdir| %>
+
 - name: <%= depls %>-<%= subdir %>-comparison
   plan:
   - aggregate :
@@ -235,6 +237,7 @@ groups:
   <% end %>
 <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
 <% subdir_list=secrets_dirs_overview[depls] %>
+
 - name: <%= depls %>
   jobs:
   <% subdir_list.each do |subdir| %>
