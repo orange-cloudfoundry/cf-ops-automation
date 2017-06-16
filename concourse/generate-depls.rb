@@ -16,11 +16,10 @@ BOSH_CERT_LOCATIONS={
 }
 # Argument parsing
 OPTIONS = {
-  :common_version_path => "..",
-  :git_submodule_path => ".." ,
+  :git_submodule_path => "../../paas-templates" ,
   :secret_path => "..",
   :output_path => ".",
-  :paas_template_root=> ".."
+  :paas_template_root=> "../../paas-templates"
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
@@ -29,8 +28,8 @@ opt_parser = OptionParser.new do |opts|
     OPTIONS[:depls]= deployment_string
   end
 
-  opts.on("-c", "--common-version-path PATH", "Base location for <depls>/<depls>-versions.yml") do |cvp_string|
-    OPTIONS[:common_version_path]= cvp_string
+  opts.on("-t", "--templates-path PATH", "Base location for paas-templates") do |cvp_string|
+    OPTIONS[:paas_template_root]= cvp_string
   end
 
   opts.on("-s", "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
@@ -57,41 +56,6 @@ end
 def header(msg)
   print '*' * 10
   puts " #{msg}"
-end
-
-def generate_deployment_overview_from_array(secrets_path, version_reference)
-  all_dependencies= []
-  Dir[secrets_path].select { |f| File.directory? f }.each do |filename|
-    dirname= filename.split('/').last
-    puts "Processing #{dirname}  - #{filename}"
-    # Dir[filename + "/deployment-dependencies.yml"].each do |dependency_file|
-    Dir[filename + "/enable-deployment.yml"].each do |enable_deployment_file|
-      dependency_file="../#{dirname}/deployment-dependencies.yml"
-      puts "Bosh release detected: #{dirname}"
-      current_dependecies=YAML.load_file(dependency_file)
-      current_dependecies["deployment"].each do |aDep|
-        raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{aDep["name"]}>" if aDep["name"] != dirname
-#            puts aDep["name"]
-#            puts aDep["releases"]
-        all_dependencies << aDep
-
-        aDep["releases"].each do |aRelease|
-#                puts "arelease: #{aRelease}"
-          version=version_reference[aRelease['name']+'-version']
-          aRelease['version']= version
-        end
-        raise "" #{dependency_file} - Invalid stemcell: expected <#{version_reference['stemcell-name'}> - Found <#{aDep["stemcells"][0]["name"]}>" if aDep["stemcells"][0]["name"] != version_reference['stemcell-name']
-        version=version_reference['stemcell-version']
-        aDep["stemcells"][0]['version']= version
-      end
-    end
-    #puts "##############################"
-    #    all_dependencies.each do |aDep|
-    #        puts aDep
-    #    end
-    #puts "##############################"
-    puts YAML.dump(all_dependencies)
-  end
 end
 
 def generate_deployment_overview_from_hash(depls,paas_template_path, secrets_path, version_reference)
@@ -271,7 +235,7 @@ end
 
 secrets_dirs_overview=generate_secrets_dir_overview("#{OPTIONS[:secret_path]}/*")
 
-version_reference = YAML.load_file("#{OPTIONS[:common_version_path]}/#{depls}/#{depls}-versions.yml")
+version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/",  "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
 
 raise "all_dependencies should not be empty" if all_dependencies.empty?
