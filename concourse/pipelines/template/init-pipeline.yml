@@ -34,18 +34,25 @@ resources:
       username: {{concourse-<%= depls %>-username}}
       password: {{concourse-<%= depls %>-password}}
 
-- name: secrets-complete
+- name: secrets-full
   type: git
   source:
     uri: {{secrets-uri}}
     branch: {{secrets-branch}}
     skip_ssl_verification: true
 
-- name: paas-templates-complete
+- name: paas-templates-full
   type: git
   source:
     uri: {{paas-templates-uri}}
     branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
 <% end %>
 
@@ -54,49 +61,24 @@ jobs:
 <% if ! all_ci_deployments.empty? %>
 <% pipeline_name="#{depls}-init-generated" %>
 
-#<% if all_ci_deployments[depls]["pipelines"][pipeline_name] != nil %>
-#
-#- name: auto-update-<%= "#{depls}-init-generated" %>
-#  plan:
-#  - aggregate:
-#    - get: paas-templates-complete
-#      params: { submodules: none}
-#      trigger: true
-#      attempts: 3
-#    - get: secrets-complete
-#      params: { submodules: none}
-#      trigger: false
-#      attempts: 3
-#  - put: <%= all_ci_deployments[depls]["target_name"] %>
-#    params:
-#      pipelines:
-#      <% pipeline_details=all_ci_deployments[depls]["pipelines"][pipeline_name] %>
-#      - name: <%= pipeline_name %>
-#        team: main
-#        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
-#        vars_files:
-#          <% pipeline_details["vars_files"].each do |a_vars_file| %>
-#          # trick to manage <depls>-versions.yml (not included in secrets)
-#         <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-#         <%= "- paas-template-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
-#          <% end %>
-#<% end %>
-
 - name: update-pipeline-<%= depls %>
   plan:
   - aggregate:
-    - get: paas-templates-complete
+    - get: paas-templates-full
       params: { submodules: none}
-#      <%= "passed: [auto-update-#{depls}-init-generated]" if all_ci_deployments[depls]["pipelines"][pipeline_name] != nil %>
       attempts: 3
       trigger: false
-    - get: secrets-complete
+    - get: secrets-full
       params: { submodules: none}
-#      <%= "passed: [auto-update-#{depls}-init-generated]" if all_ci_deployments[depls]["pipelines"][pipeline_name] != nil %>
       attempts: 3
       trigger: false
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 3
+      trigger: false
+
   - task: generate-<%= depls %>-pipelines
-    input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
+    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux
@@ -106,6 +88,7 @@ jobs:
       inputs:
         - name: script-resource
         - name: secrets
+        - name: templates
       outputs:
         - name: result-dir
       run:
@@ -113,7 +96,8 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/. result-dir
+          cp -r templates/. result-dir
+          cp -rf script-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/concourse
           ./generate-depls.rb --depls <%= depls %> -s ../../script-resource
@@ -135,8 +119,8 @@ jobs:
         vars_files:
           <% pipeline_details["vars_files"].each do |a_vars_file| %>
           # trick to manage <depls>-versions.yml (not included in secrets)
-         <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-templates-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
+         <%= "- secrets-full/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
+         <%= "- paas-templates-full/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
           <% end %>
      <% end %>
     on_failure:
@@ -148,4 +132,3 @@ jobs:
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
 <% end %>
-

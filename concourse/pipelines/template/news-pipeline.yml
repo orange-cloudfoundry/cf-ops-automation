@@ -51,11 +51,18 @@ resources:
 #    branch: master
 #    skip_ssl_verification: true
 
-- name: paas-template-complete
+- name: paas-templates-full
   type: git
   source:
     uri: {{paas-templates-uri}}
     branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
 
 <% uniq_releases= {} %>
@@ -104,8 +111,11 @@ jobs:
       - get: <%= release %>
         attempts: 3
         params: {tarball: false}
-      - get: paas-template-complete
+      - get: paas-templates-full
         params: { submodules: none}
+      - get: cf-ops-automation
+        params: { submodules: none}
+
     - task: generate-update-message
       input_mapping: {boshrelease: <%= release %>}
       output_mapping: {message: <%= release %>-message}
