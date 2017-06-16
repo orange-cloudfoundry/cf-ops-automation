@@ -19,7 +19,10 @@ OPTIONS = {
   :git_submodule_path => "../../paas-templates" ,
   :secret_path => "..",
   :output_path => ".",
+  :ops_automation => "..",
+  :dump_output => true,
   :paas_template_root=> "../../paas-templates"
+
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
@@ -28,8 +31,8 @@ opt_parser = OptionParser.new do |opts|
     OPTIONS[:depls]= deployment_string
   end
 
-  opts.on("-t", "--templates-path PATH", "Base location for paas-templates") do |cvp_string|
-    OPTIONS[:paas_template_root]= cvp_string
+  opts.on("-t", "--templates-path PATH", "Base location for paas-templates") do |tp_string|
+    OPTIONS[:paas_template_root]= tp_string
   end
 
   opts.on("-s", "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
@@ -43,6 +46,15 @@ opt_parser = OptionParser.new do |opts|
   opts.on("-o", "--output-path PATH", "Output dir for generated pipelines.") do |op_string|
     OPTIONS[:output_path]= op_string
   end
+
+  opts.on("-a", "--automation-path PATH", "Base location for cf-ops-automation") do |ap_string|
+    OPTIONS[:ops_automation]= ap_string
+  end
+
+  opts.on( "--[no-]dump", "Dump genereted file on standart output") do |dump|
+    OPTIONS[:dump_output]= dump
+  end
+
 end
 opt_parser.parse!
 
@@ -246,30 +258,43 @@ all_cf_apps=generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls
 
 git_submodules=list_git_submodules(OPTIONS[:git_submodule_path])
 
-Dir["#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/depls-pipeline.yml",
-    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/cf-apps-pipeline.yml",
-    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/news-pipeline.yml",
-    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/sync-helper-pipeline.yml",
-    "#{OPTIONS[:paas_template_root]}/concourse/pipelines/template/init-pipeline.yml"
+processed_template_count=0
+Dir["#{OPTIONS[:ops_automation]}/concourse/pipelines/template/depls-pipeline.yml.erb",
+    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/cf-apps-pipeline.yml.erb",
+    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/news-pipeline.yml.erb",
+    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/sync-helper-pipeline.yml.erb",
+    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/init-pipeline.yml.erb"
   ].each do |filename|
+  processed_template_count=processed_template_count+1
+
   puts "processing #{filename}"
-  puts output=ERB.new(File.read(filename),0,"<>").result()
+  output=ERB.new(File.read(filename),0,"<>").result()
+  puts output if OPTIONS[:dump_output]
 
   # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
-  tmp_pipeline_name= filename.split("/").last().chomp("-pipeline.yml").chomp("depls")
+  tmp_pipeline_name= filename.split("/").last().chomp("-pipeline.yml.erb").chomp("depls")
   pipeline_name= "#{depls}-"
   pipeline_name << "#{tmp_pipeline_name}-" if ! tmp_pipeline_name.nil? && ! tmp_pipeline_name.empty?
   pipeline_name << "generated.yml"
 
   puts "Pipeline name #{pipeline_name}"
+  target_dir="#{OPTIONS[:output_path]}/pipelines"
+  Dir.mkdir(target_dir) if ! Dir.exist?(target_dir)
   aPipeline=File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", "w")
   aPipeline << output
-  puts "Trying to parse generated Yaml: #{pipeline_name}"
+  puts "Trying to parse generated Yaml: #{pipeline_name} (#{aPipeline&.path})"
   YAML.load_file(aPipeline)
   puts "> #{pipeline_name} seems a valid Yaml file"
   puts "####################################################################################"
   puts "####################################################################################"
+end
 
+if processed_template_count > 0
+  puts "#{processed_template_count} concourse pipeline templates were processed"
+else
+  puts "ERROR: no concourse pipeline templates found in #{OPTIONS[:ops_automation]}/concourse/pipelines/template/"
+  puts "ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/concourse/pipelines/template/"
+  exit 1
 end
 
 
