@@ -45,12 +45,15 @@ mkdir -p ${OUTPUT_DIR}/pipelines
 echo "Deploy on ${FLY_TARGET} using secrets in $SECRET_DIR"
 for depls in ${DEPLS_LIST};do
     cd ${SCRIPT_DIR}/concourse
-    ./generate-depls.rb -d ${depls} -p ${SECRET_DIR} -o ${OUTPUT_DIR}
+    ./generate-depls.rb -d ${depls} -p ${SECRET_DIR} -o ${OUTPUT_DIR} --no-dump
     PIPELINE="${depls}-init-generated"
     cd ${SCRIPT_DIR}
     echo "Load ${PIPELINE} on ${FLY_TARGET}"
     set +e
-    fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${OUTPUT_DIR}/pipelines/${PIPELINE}.yml  -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
+    fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${OUTPUT_DIR}/pipelines/${PIPELINE}.yml  \
+                -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml \
+                -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-mattermost-certs.yml \
+                -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml
     set -e
     fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
     if [ "$SKIP_TRIGGER" != "true" ]
