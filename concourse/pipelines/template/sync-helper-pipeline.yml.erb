@@ -46,18 +46,18 @@ resources:
 
 <% if ! all_ci_deployments.empty? %>
 
-- name: secrets-complete
+- name: secrets-full
   type: git
   source:
     uri: {{secrets-uri}}
     branch: {{secrets-branch}}
     skip_ssl_verification: true
 
-- name: paas-templates-complete
+- name: cf-ops-automation
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
 <% end %>
 
@@ -68,17 +68,17 @@ jobs:
 - name: anonymize-secrets-value
   plan:
   - aggregate:
-    - get: paas-templates-complete
+    - get: cf-ops-automation
       params: { submodules: none}
       attempts: 3
-    - get: secrets-complete
+    - get: secrets-full
       params: { submodules: none}
       attempts: 3
     - get: anonymized-secrets
       attempts: 3
 
   - task: anonymized-secrets
-    input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
+    input_mapping: {script-resource: cf-ops-automation,secrets: secrets-full}
     output_mapping: {result-dir: anonymized-secrets-dir}
     config:
       platform: linux
@@ -109,7 +109,7 @@ jobs:
   - task: update-anonymized-files
     input_mapping: {reference-resource: anonymized-secrets, generated-resource: anonymized-secrets-dir}
     output_mapping: {updated-git-resource: updated-anonymized-secrets}
-    file: paas-templates-complete/concourse/tasks/git_update_all_files_from_generated.yml
+    file: cf-ops-automation/concourse/tasks/git_update_all_files_from_generated.yml
     params:
       COMMIT_MESSAGE: "auto anonymized new secrets"
     on_failure:
