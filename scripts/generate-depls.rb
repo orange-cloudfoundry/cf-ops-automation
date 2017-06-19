@@ -16,12 +16,12 @@ BOSH_CERT_LOCATIONS={
 }
 # Argument parsing
 OPTIONS = {
-  :git_submodule_path => "../../paas-templates" ,
+  :git_submodule_path => "../paas-templates" ,
   :secret_path => "..",
-  :output_path => ".",
-  :ops_automation => "..",
+  :output_path => "bootstrap-generated",
+  :ops_automation => ".",
   :dump_output => true,
-  :paas_template_root=> "../../paas-templates"
+  :paas_template_root=> "../paas-templates"
 
 }
 opt_parser = OptionParser.new do |opts|
@@ -31,8 +31,9 @@ opt_parser = OptionParser.new do |opts|
     OPTIONS[:depls]= deployment_string
   end
 
-  opts.on("-t", "--templates-path PATH", "Base location for paas-templates") do |tp_string|
+  opts.on("-t", "--templates-path PATH", "Base location for paas-templates (implies -s)") do |tp_string|
     OPTIONS[:paas_template_root]= tp_string
+    OPTIONS[:git_submodule_path]= tp_string
   end
 
   opts.on("-s", "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
@@ -255,9 +256,7 @@ all_ci_deployments=generate_ci_deployment_overview("#{OPTIONS[:secret_path]}/" +
 
 all_cf_apps=generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls)
 
-
 git_submodules=list_git_submodules(OPTIONS[:git_submodule_path])
-
 processed_template_count=0
 Dir["#{OPTIONS[:ops_automation]}/concourse/pipelines/template/depls-pipeline.yml.erb",
     "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/cf-apps-pipeline.yml.erb",
