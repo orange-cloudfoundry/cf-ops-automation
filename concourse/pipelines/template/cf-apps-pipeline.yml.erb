@@ -32,18 +32,18 @@ resources:
     ca_certs:
     - domain: {{slack-custom-domain}}
       cert: {{slack-custom-cert}}
-- name: secrets-complete
+- name: secrets-full
   type: git
   source:
     uri: {{secrets-uri}}
     branch: {{secrets-branch}}
     skip_ssl_verification: true
 
-- name: paas-templates-complete
+- name: cf-ops-automation
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
 <% end %>
 
@@ -60,7 +60,7 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    paths: ["<%= cf_app_info["base-dir"] %>","concourse/tasks","scripts"]
+    paths: ["<%= cf_app_info["base-dir"] %>"]
     branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 <% end %>
@@ -75,9 +75,9 @@ jobs:
 - name: retrigger-all-jobs
   plan:
     - aggregate:
-      - get: paas-templates-complete
+      - get: cf-ops-automation
         params: { submodules: none}
-      - get: secrets-complete
+      - get: secrets-full
         params: { submodules: none}
     - task: generate-<%= depls %>-pipeline
       output_mapping: {result-dir: trigger-<%= depls %>-plan}
@@ -108,7 +108,7 @@ jobs:
     - task: fly-into-concourse
       input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
-      file: paas-templates-complete/concourse/tasks/fly_execute_commands.yml
+      file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
         ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
         FLY_USERNAME: {{concourse-<%= depls %>-username}}
@@ -134,18 +134,22 @@ jobs:
       - get: paas-template-<%= app_name %>
         trigger: true
         params: { submodules: none }
+      - get: cf-ops-automation
+        trigger: true
+        params: { submodules: none }
+
     - task: generate-<%= app_name %>-manifest
-      input_mapping: {scripts-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: secrets-<%= app_name %>}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= app_name %>, additional-resource: paas-template-<%= app_name %>}
       output_mapping: {generated-files: release-manifest}
-      file: paas-template-<%= app_name %>/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= cf_app_info["base-dir"] %>/
-        YML_TEMPLATE_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
+        YML_TEMPLATE_DIR: additional-resource/<%= cf_app_info["base-dir"] %>/template
         YML_FILES: |
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/meta.yml
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= cf_app_info["base-dir"] %>/template
       on_failure:
         put: failure-alert
         params:
@@ -157,7 +161,7 @@ jobs:
       attempts: 3
       input_mapping: {scripts-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: final-release-manifest}
-      file: paas-template-<%= app_name %>/concourse/tasks/cf_push.yml
+      file: cf-ops-automation/concourse/tasks/cf_push.yml
       params:
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= cf_app_info["base-dir"] %>/template
         SECRETS_DIR: credentials-resource/<%= cf_app_info["base-dir"] %>
@@ -179,7 +183,7 @@ jobs:
     - task: update-<%= app_name %>-files
       input_mapping: {reference-resource: secrets-<%= app_name %>, generated-resource: final-release-manifest}
       output_mapping: {updated-git-resource: updated-<%= app_name %>-secrets}
-      file: paas-template-<%= app_name %>/concourse/tasks/git_update_a_file_from_generated.yml
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
         OLD_FILE: <%= cf_app_info["base-dir"] %>/<%= app_name %>_manifest.yml
         NEW_FILE: "<%= app_name %>_manifest.yml"
@@ -199,7 +203,7 @@ jobs:
     - task: execute-<%= app_name %>-post-deploy
       input_mapping: {scripts-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: post-deploy-result}
-      file: paas-template-<%= app_name %>/concourse/tasks/post_bosh_deploy.yml
+      file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
       params:
         CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>/template
         SECRETS_DIR: credentials-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>
