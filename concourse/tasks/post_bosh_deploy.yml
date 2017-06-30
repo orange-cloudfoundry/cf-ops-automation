@@ -6,6 +6,7 @@ image_resource:
     repository: governmentpaas/curl-ssl
 inputs:
   - name: scripts-resource
+  - name: template-resource
   - name: credentials-resource
   - name: additional-resource
 outputs:

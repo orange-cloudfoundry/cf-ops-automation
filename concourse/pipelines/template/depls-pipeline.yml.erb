@@ -57,8 +57,15 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    paths: ["<%= depls %>/template","concourse/tasks","scripts"]
+    paths: ["<%= depls %>/template"]
     branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
 
 <% all_dependencies.each do |name,boshrelease| %>
@@ -66,7 +73,7 @@ resources:
   type: git
   source:
     uri: {{secrets-uri}}
-    <% ext_scan_path = boshrelease["resources"]["secrets"]["extended_scan_path"] if ( boshrelease["resources"] && boshrelease["resources"]["secrets"]["extended_scan_path"] ) %>
+    <% ext_scan_path = boshrelease['resources']['secrets']['extended_scan_path'] if ( boshrelease['resources'] && boshrelease['resources']['secrets']['extended_scan_path'] ) %>
     <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
     paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || ""%>]
     branch: {{secrets-branch}}
@@ -76,7 +83,7 @@ resources:
   type: git
   source:
     uri: {{paas-templates-uri}}
-    paths: ["<%= depls %>/<%= name %>","concourse/tasks","scripts"<%= ",.gitmodules" if git_submodules[depls] && git_submodules[depls][name] %>]
+    paths: ["<%= depls %>/<%= name %>"<%= ',.gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>]
     branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 
@@ -88,7 +95,7 @@ resources:
     password: {{bosh-password}}
     deployment: <%= name %>
 
-<% if boshrelease["errands"] != nil && !boshrelease["errands"].empty? %>
+<% if boshrelease['errands'] != nil && !boshrelease['errands'].empty? %>
 - name: errand-<%= name %>
   type: bosh-errand
   source:
@@ -101,7 +108,7 @@ resources:
 <% end %>
 
 <% if ! all_ci_deployments.empty? %>
-- name: <%= all_ci_deployments[depls]["target_name"] %>
+- name: <%= all_ci_deployments[depls]['target_name'] %>
   type: concourse-pipeline
   source:
     target: {{concourse-<%= depls %>-target}}
@@ -111,40 +118,41 @@ resources:
       username: {{concourse-<%= depls %>-username}}
       password: {{concourse-<%= depls %>-password}}
 
-- name: secrets-complete
+- name: secrets-full
   type: git
   source:
     uri: {{secrets-uri}}
     branch: {{secrets-branch}}
     skip_ssl_verification: true
 
-- name: paas-templates-complete
+- name: paas-templates-full
   type: git
   source:
     uri: {{paas-templates-uri}}
     branch: {{paas-templates-branch}}
     skip_ssl_verification: true
+
 <% end %>
 
 
 <% uniq_releases= {} %>
 <% all_dependencies.each do |name,boshrelease| %>
-<% boshrelease["releases"]&.each do |release, info|  %>
+<% boshrelease['releases']&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
 <% end %>
 
 <% uniq_releases.each do |release, info|  %>
 - name: <%= release %>
-  <% if info["base_location"].include?("bosh.io") %>
+  <% if info['base_location'].include?('bosh.io') %>
   type: bosh-io-release
   source:
-    repository: <%= info["repository"] %>
+    repository: <%= info['repository'] %>
   <% else %>
   type: github-release
   source:
-    user: <%= info["repository"].split('/').first %>
-    repository: <%= info["repository"].split('/').last %>
+    user: <%= info['repository'].split('/').first %>
+    repository: <%= info['repository'].split('/').last %>
   <% end %>
 <% end %>
 
@@ -152,19 +160,24 @@ resources:
 jobs:
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
 - name: execute-deploy-script
-  <% jobs["utils"] << "execute-deploy-script" %>
+  <% jobs['utils'] << 'execute-deploy-script' %>
   plan:
     - get: at-noon
       trigger: true
-    - get: secrets-<%= depls %>
-      params: { submodules: none}
-      <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
-    - get: paas-template-<%= depls %>
-      params: { submodules: none}
-      <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+    - aggregate:
+      - get: secrets-<%= depls %>
+        params: { submodules: none}
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+      - get: paas-template-<%= depls %>
+        params: { submodules: none}
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+      - get: cf-ops-automation
+        params: { submodules: none}
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+
     - task: run-deploy.sh
-      input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
-      file: paas-template-<%= depls %>/concourse/tasks/execute_deploy_script.yml
+      input_mapping: {script-resource: cf-ops-automation, templates: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
+      file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: <%= depls %>/template
         COMMON_SCRIPT_DIR: script-resource/scripts
@@ -182,7 +195,7 @@ jobs:
           username: Concourse
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
-  <% jobs["utils"] << "cloud-config-and-runtime-config-for-#{depls}" %>
+  <% jobs['utils'] << "cloud-config-and-runtime-config-for-#{depls}" %>
   plan:
     - get: secrets-<%=depls %>
       params: { submodules: none}
@@ -192,7 +205,10 @@ jobs:
       params: { submodules: none}
       trigger: true
       <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
-
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
 #    - task: generate-<%= depls %>-terraform-outputs-cloud-config
 #      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
 #      output_mapping: {generated-files: cloud-config-manifest}
@@ -210,17 +226,17 @@ jobs:
 #        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
 
     - task: generate-<%= depls %>-all-config
-      input_mapping: {scripts-resource: paas-template-<%=depls %>, credentials-resource: secrets-<%=depls %>, additional-resource: secrets-<%=depls %>}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-template-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
-      file: paas-template-<%=depls %>/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
-        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
+        YML_TEMPLATE_DIR: additional-resource/<%= depls %>/template
         YML_FILES: |
             ./credentials-resource/<%= depls %>/secrets/meta.yml
             ./credentials-resource/<%= depls %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/template
 
     - aggregate:
       - task: update-cloud-config-for-<%= depls %>
@@ -234,14 +250,14 @@ jobs:
           inputs:
             - name: config-manifest
             - name: secrets-<%=depls %>
-            - name: paas-template-<%=depls %>
+            - name: cf-ops-automation
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-template-<%=depls %>/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
                 OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
                 bosh cloud-config >$OLD_CONFIG
                 diff $OLD_CONFIG config-manifest/cloud-config.yml || true
@@ -250,7 +266,7 @@ jobs:
           task: update-cloud-config
           input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-cloud-config}
-          file: paas-template-<%=depls %>/concourse/tasks/git_update_a_file_from_generated.yml
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: "<%=depls %>/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
@@ -280,14 +296,14 @@ jobs:
           inputs:
             - name: config-manifest
             - name: secrets-<%=depls %>
-            - name: paas-template-<%=depls %>
+            - name: cf-ops-automation
           run:
             path: sh
             args:
               - -e
               - -c
               - |
-                ./paas-template-<%=depls %>/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
                 cat config-manifest/runtime-config.yml
                 OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
                 bosh runtime-config >$OLD_CONFIG
@@ -297,7 +313,7 @@ jobs:
           task: update-runtime-config
           input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-runtime-config}
-          file: paas-template-<%=depls %>/concourse/tasks/git_update_a_file_from_generated.yml
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: "<%=depls %>/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
@@ -333,9 +349,12 @@ jobs:
         version: { version: {{stemcell-version}} }
         trigger: true
         attempts: 3
+      - get: cf-ops-automation
+        params: { submodules: none}
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
       <% boshrelease["releases"]&.each do |release, info| %>
       - get: <%= release %>
-        <% if info["base_location"].include?("bosh.io") %>
+        <% if info['base_location'].include?('bosh.io') %>
         version: { version: {{<%= release %>-version}} }
         <% else %>
         version: { tag: v{{<%= release %>-version}} }
@@ -349,19 +368,19 @@ jobs:
       - get: paas-template-<%= name %>
         trigger: true
         <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
-        params: { submodules: <%= current_git_submodule || "none" %>}
+        params: { submodules: <%= current_git_submodule || 'none' %>}
     - task: generate-<%= name %>-manifest
-      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: secrets-<%= name %>}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-template-<%= name %>}
       output_mapping: {generated-files: release-manifest}
-      file: paas-template-<%= name %>/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/<%= name %>/
-        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+        YML_TEMPLATE_DIR: additional-resource/<%= depls %>/<%= name %>/template
         YML_FILES: |
             ./credentials-resource/<%= depls %>/<%= name %>/secrets/meta.yml
             ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
       on_failure:
         put: failure-alert
         params:
@@ -370,11 +389,11 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: execute-<%= name %>-spiff-pre-bosh-deploy
-      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: final-release-manifest}
-      file: paas-template-<%= name %>/concourse/tasks/spiff_pre_bosh_deploy.yml
+      file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+        CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
         SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
       on_failure:
         put: failure-alert
@@ -389,8 +408,8 @@ jobs:
         manifest: final-release-manifest/<%= name %>.yml
         stemcells:
         - bosh-stemcell/stemcell.tgz
-        releases: <%= "[]" if boshrelease["releases"]&.empty? %>
-        <% boshrelease["releases"]&.each do |release, info| %>
+        releases: <%= '[]' if boshrelease['releases']&.empty? %>
+        <% boshrelease['releases']&.each do |release, info| %>
         - <%= release %>/release.tgz
         <% end %>
       on_failure:
@@ -401,11 +420,11 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: execute-<%= name %>-post-bosh-deploy
-      input_mapping: {scripts-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-release-manifest}
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-release-manifest}
       output_mapping: {generated-files: post-deploy-result}
-      file: paas-template-<%= name %>/concourse/tasks/post_bosh_deploy.yml
+      file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/<%= name %>/template
+        CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
         SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
       on_failure:
         put: failure-alert
@@ -418,7 +437,7 @@ jobs:
     - task: update-<%= name %>-files
       input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: deploy-<%= name %>}
       output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
-      file: paas-template-<%= name %>/concourse/tasks/git_update_a_file_from_generated.yml
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
         OLD_FILE: <%= depls %>/<%= name %>/<%= name %>.yml
         NEW_FILE: "manifest.yml"
@@ -436,7 +455,7 @@ jobs:
         - repository: updated-<%= name %>-secrets
         - rebase: true
 
-<% if boshrelease["errands"] != nil && !boshrelease["errands"].empty? %>
+<% if boshrelease['errands'] != nil && !boshrelease['errands'].empty? %>
 - name: run-errand-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}" %>
   plan:
@@ -445,7 +464,7 @@ jobs:
         params: { submodules: none}
         trigger: true
         passed: [deploy-<%= name %>]
-    <% boshrelease["errands"].each do |errand_name, errand_info| %>
+    <% boshrelease['errands'].each do |errand_name, errand_info| %>
     - put: errand-<%= name %>
       params:
         errand: <%= errand_name %>
@@ -464,12 +483,12 @@ jobs:
 
 
 - name: retrigger-all-jobs
-  <% jobs["utils"] << "retrigger-all-jobs" %>
+  <% jobs['utils'] << 'retrigger-all-jobs' %>
   plan:
     - aggregate:
-      - get: paas-templates-complete
+      - get: cf-ops-automation
         params: { submodules: none}
-      - get: secrets-complete
+      - get: secrets-full
         params: { submodules: none}
     - task: generate-<%= depls %>-pipeline
       output_mapping: {result-dir: trigger-<%= depls %>-plan}
@@ -500,7 +519,7 @@ jobs:
     - task: fly-into-concourse
       input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
-      file: paas-templates-complete/concourse/tasks/fly_execute_commands.yml
+      file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
         ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
         FLY_USERNAME: {{concourse-<%= depls %>-username}}
@@ -517,8 +536,8 @@ jobs:
 
 
 - name: recreate-all
-<% jobs["recreate"] << "recreate-all" %>
-<% jobs["utils"] << "recreate-all" %>
+<% jobs['recreate'] << 'recreate-all' %>
+<% jobs['utils'] << 'recreate-all' %>
   serial_groups: [recreate]
   plan:
     - aggregate:
@@ -528,10 +547,13 @@ jobs:
        - get: paas-template-<%= depls %>
          params: { submodules: none}
          <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
+       - get: cf-ops-automation
+         params: { submodules: none}
+         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
 
 <% all_dependencies.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
-  <% jobs["recreate"] << "recreate-#{name}" %>
+  <% jobs['recreate'] << "recreate-#{name}" %>
   serial_groups: [recreate]
   plan:
     - aggregate:
@@ -543,6 +565,10 @@ jobs:
          params: { submodules: none}
          passed: [recreate-all]
          trigger: true
+       - get: cf-ops-automation
+         params: { submodules: none}
+         passed: [recreate-all]
+
     - task: bosh-recreate-<%= name %>
       input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
       config:
@@ -580,20 +606,20 @@ jobs:
 <% end %>
 
 <% if ! all_ci_deployments.empty? %>
-<% current_depls_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] %>
-<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil  %>
-<% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] %>
+<% current_depls_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] || all_ci_deployments[depls]["pipelines"].to_a[0][1] %>
+<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil %>
+<% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
-  <% jobs["utils"] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
+  <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
   plan:
   - aggregate:
-    - get: paas-templates-complete
+    - get: cf-ops-automation
       params: { submodules: none}
       attempts: 3
 #      trigger: true
-    - get: secrets-complete
+    - get: secrets-full
       params: { submodules: none}
       attempts: 3
 #      trigger: true
@@ -628,7 +654,7 @@ jobs:
   - task: fly-into-concourse
     input_mapping: {fly-cmd: init-<%= depls %>-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
-    file: paas-templates-complete/concourse/tasks/fly_execute_commands.yml
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
       ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
       FLY_USERNAME: {{concourse-<%= depls %>-username}}
@@ -642,7 +668,7 @@ jobs:
         username: Concourse
 
 - name: update-pipeline-<%= depls %>-generated
-  <% jobs["utils"] << "update-pipeline-#{depls}-generated" %>
+  <% jobs['utils'] << "update-pipeline-#{depls}-generated" %>
   plan:
   - aggregate:
     - get: paas-template-<%= depls %>
@@ -653,16 +679,20 @@ jobs:
       params: { submodules: none}
       attempts: 3
       trigger: true
-    - get: paas-templates-complete
+    - get: cf-ops-automation
       params: { submodules: none}
       attempts: 3
       trigger: true
-    - get: secrets-complete
+    - get: paas-templates-full
+      params: { submodules: none}
+      attempts: 3
+      trigger: true
+    - get: secrets-full
       params: { submodules: none}
       attempts: 3
       trigger: true
   - task: generate-<%= depls %>-pipeline
-    input_mapping: {script-resource: paas-templates-complete,secrets: secrets-complete}
+    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux
@@ -671,6 +701,7 @@ jobs:
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
         - name: script-resource
+        - name: templates
         - name: secrets
       outputs:
         - name: result-dir
@@ -679,10 +710,11 @@ jobs:
         args:
         - -exc
         - |
+          cp -r templates/. result-dir
           cp -r script-resource/. result-dir
           cp -rf secrets/. result-dir
-          cd result-dir/concourse
-          ./generate-depls.rb --depls <%= depls %> -s ../../script-resource
+          cd result-dir/
+          ./scripts/generate-depls.rb --depls <%= depls %> -t ../templates -p . -o concourse
     on_failure:
       put: failure-alert
       params:
@@ -691,18 +723,18 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: <%= all_ci_deployments[depls]["target_name"] %>
+  - put: <%= all_ci_deployments[depls]['target_name'] %>
     params:
       pipelines:
-      <% all_ci_deployments[depls]["pipelines"].each do |pipeline_name,pipeline_details| %>
+      <% all_ci_deployments[depls]['pipelines'].each do |pipeline_name,pipeline_details| %>
       - name: <%= pipeline_name %>
         team: main
         config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
         vars_files:
-          <% pipeline_details["vars_files"].each do |a_vars_file| %>
+          <% pipeline_details['vars_files'].each do |a_vars_file| %>
           # trick to manage <depls>-versions.yml (not included in secrets)
-         <%= "- secrets-complete/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-templates-complete/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
+         <%= "- secrets-full/#{a_vars_file}" if ! a_vars_file.end_with?('-versions.yml') %>
+         <%= "- paas-templates-full/#{a_vars_file}" if a_vars_file.end_with?('-versions.yml') %>
           <% end %>
      <% end %>
     on_failure:
@@ -714,11 +746,11 @@ jobs:
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
   - task: update-concourse-depls-pipeline
-    input_mapping: {reference-resource: secrets-complete, generated-resource: concourse-<%= depls %>-pipeline}
+    input_mapping: {reference-resource: secrets-full, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-templates-complete/concourse/tasks/git_update_a_file_from_generated.yml
+    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
-      OLD_FILE: <%= current_depls_generated["config_file"] %>
+      OLD_FILE: <%= current_depls_generated['config_file'] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-generated.yml"
       COMMIT_MESSAGE: "<%= depls %> generated pipeline auto update - [skip ci]"
     on_failure:
@@ -731,9 +763,9 @@ jobs:
   - task: update-concourse-cf-apps-pipeline
     input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
-    file: paas-templates-complete/concourse/tasks/git_update_a_file_from_generated.yml
+    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
-      OLD_FILE: <%= current_cf_apps_generated["config_file"] %>
+      OLD_FILE: <%= current_cf_apps_generated['config_file'] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-cf-apps-generated.yml"
       COMMIT_MESSAGE: "<%= depls %> cf-apps generated pipeline auto update - [skip ci]"
     on_failure:
@@ -744,7 +776,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: secrets-complete
+  - put: secrets-full
     get_params: {submodules: none}
     params:
       - repository: updated-secrets
@@ -758,33 +790,36 @@ jobs:
         username: Concourse
 
 
+
 <% puts all_ci_deployments[depls] %>
-<% if ! all_ci_deployments[depls]["terraform_config"].nil? %>
-<% terraform_config_path= all_ci_deployments[depls]["terraform_config"]["state_file_path"] %>
+<% if ! all_ci_deployments[depls]['terraform_config'].nil? %>
+<% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>
 
 - name: check-terraform-cf-consistency
-  <% jobs["terraform"] << "check-terraform-cf-consistency" %>
+  <% jobs['terraform'] << 'check-terraform-cf-consistency' %>
   plan:
     - get: at-noon
       trigger: true
-    - get: paas-templates-complete
+    - get: cf-ops-automation
       params: { submodules: none}
       passed: [update-pipeline-<%= depls %>-generated]
-    - get: secrets-complete
+    - get: paas-templates-full
+      params: { submodules: none}
+    - get: secrets-full
       passed: [update-pipeline-<%= depls %>-generated]
       params: { submodules: none}
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete, additional-resource: secrets-complete}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
-      file: paas-templates-complete/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
           ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
           ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
-        YML_TEMPLATE_DIR: scripts-resource/<%= terraform_config_path %>/template
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= terraform_config_path %>/template
+        YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
       on_failure:
         put: failure-alert
@@ -794,8 +829,8 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: terraform-plan
-      input_mapping: {secret-state-resource: secrets-complete,spec-resource: paas-templates-complete}
-      file: paas-templates-complete/concourse/tasks/terraform_plan_cloudfoundry.yml
+      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
+      file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
       params:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
@@ -807,32 +842,40 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
 
+
 - name: cf-manual-approval
-  <% jobs["terraform"] << "cf-manual-approval" %>
+  <% jobs['terraform'] << 'cf-manual-approval' %>
   plan:
-    - get: paas-templates-complete
+    - get: cf-ops-automation
       params: { submodules: none}
       passed: [check-terraform-cf-consistency]
-    - get: secrets-complete
+    - get: paas-templates-full
+      params: { submodules: none}
+      passed: [check-terraform-cf-consistency]
+    - get: secrets-full
       params: { submodules: none}
       passed: [check-terraform-cf-consistency]
 
 - name: enforce-terraform-cf-consistency
-  <% jobs["terraform"] << "enforce-terraform-cf-consistency" %>
+  <% jobs['terraform'] << 'enforce-terraform-cf-consistency' %>
   plan:
     - aggregate:
-      - get: paas-templates-complete
+      - get: cf-ops-automation
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
-      - get: secrets-complete
+      - get: paas-templates-full
+        params: { submodules: none}
+        passed: [cf-manual-approval]
+        trigger: true
+      - get: secrets-full
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: paas-templates-complete, credentials-resource: secrets-complete, additional-resource: secrets-complete}
+      input_mapping: {scripts-resource: paas-templates-full, credentials-resource: secrets-full, additional-resource: secrets-full}
       output_mapping: {generated-files: terraform-tfvars}
-      file: paas-templates-complete/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
@@ -849,9 +892,9 @@ jobs:
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
     - task: terraform-apply
-      input_mapping: {secret-state-resource: secrets-complete,spec-resource: paas-templates-complete}
+      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-cf}
-      file: paas-templates-complete/concourse/tasks/terraform_apply_cloudfoundry.yml
+      file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
       params:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
@@ -864,9 +907,9 @@ jobs:
           username: Concourse
       ensure:
         task: update-terraform-state-file
-        input_mapping: {reference-resource: secrets-complete, generated-resource: terraform-cf}
+        input_mapping: {reference-resource: secrets-full, generated-resource: terraform-cf}
         output_mapping: {updated-git-resource: updated-terraform-state-secrets}
-        file: paas-templates-complete/concourse/tasks/git_update_a_file_from_generated.yml
+        file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
         params:
           OLD_FILE: "<%= terraform_config_path %>/terraform.tfstate"
           NEW_FILE: "terraform.tfstate"
@@ -879,7 +922,7 @@ jobs:
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse
         on_success:
-          put: secrets-complete
+          put: secrets-full
           get_params: {submodules: none}
           params:
             - repository: updated-terraform-state-secrets

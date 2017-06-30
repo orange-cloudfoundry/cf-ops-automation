@@ -5,6 +5,7 @@ image_resource:
   source: {repository: orangecloudfoundry/spiff}
 inputs:
   - name: scripts-resource
+  - name: template-resource
   - name: credentials-resource
   - name: additional-resource
 outputs:

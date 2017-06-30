@@ -21,6 +21,7 @@ image_resource:
 
 inputs:
   - name: script-resource
+  - name: templates
   - name: secrets
 outputs:
   - name: run-resource
@@ -31,6 +32,7 @@ run:
   - -exc
   - |
     cp -r script-resource/. run-resource
+    cp -r templates/. run-resource
     run-resource/${CURRENT_DEPLS}/deploy.sh
 
 params:
