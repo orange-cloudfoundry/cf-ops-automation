@@ -66,13 +66,13 @@ resources:
     skip_ssl_verification: true
 
 <% uniq_releases= {} %>
-<% all_dependencies.each do |name,boshrelease| %>
+<% all_dependencies.sort.each do |name,boshrelease| %>
 <% boshrelease["releases"]&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
 <% end %>
 
-<% uniq_releases.each do |release, info|  %>
+<% uniq_releases.sort.each do |release, info|  %>
 - name: <%= release %>
   <% if info["base_location"].include?("bosh.io") %>
   type: bosh-io-release
@@ -101,7 +101,7 @@ jobs:
 #        trigger: true
 #        attempts: 3
 
-<% uniq_releases.each do |release, info|  %>
+<% uniq_releases.sort.each do |release, info|  %>
 
 - name: check-<%= release %>
   plan:
