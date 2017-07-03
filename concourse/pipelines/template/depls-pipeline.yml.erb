@@ -68,7 +68,7 @@ resources:
     branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
 
-<% all_dependencies.each do |name,boshrelease| %>
+<% all_dependencies.sort.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
   type: git
   source:
@@ -136,13 +136,13 @@ resources:
 
 
 <% uniq_releases= {} %>
-<% all_dependencies.each do |name,boshrelease| %>
+<% all_dependencies.sort.each do |name,boshrelease| %>
 <% boshrelease['releases']&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
 <% end %>
 
-<% uniq_releases.each do |release, info|  %>
+<% uniq_releases.sort.each do |release, info|  %>
 - name: <%= release %>
   <% if info['base_location'].include?('bosh.io') %>
   type: bosh-io-release
@@ -333,7 +333,7 @@ jobs:
               - rebase: true
 
 
-<% all_dependencies.each do |name,boshrelease| %>
+<% all_dependencies.sort.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
@@ -352,7 +352,7 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
-      <% boshrelease["releases"]&.each do |release, info| %>
+      <% boshrelease['releases']&.sort.each do |release, info| %>
       - get: <%= release %>
         <% if info['base_location'].include?('bosh.io') %>
         version: { version: {{<%= release %>-version}} }
@@ -409,7 +409,7 @@ jobs:
         stemcells:
         - bosh-stemcell/stemcell.tgz
         releases: <%= '[]' if boshrelease['releases']&.empty? %>
-        <% boshrelease['releases']&.each do |release, info| %>
+        <% boshrelease['releases']&.sort.each do |release, info| %>
         - <%= release %>/release.tgz
         <% end %>
       on_failure:
@@ -504,7 +504,7 @@ jobs:
           args:
           - -exc
           - |
-            <% all_dependencies.each do |name,_| %>
+            <% all_dependencies.sort.each do |name,_| %>
             echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
             <% end %>
         params:
@@ -551,7 +551,7 @@ jobs:
          params: { submodules: none}
          <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
 
-<% all_dependencies.each do |name,boshrelease| %>
+<% all_dependencies.sort.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
   <% jobs['recreate'] << "recreate-#{name}" %>
   serial_groups: [recreate]
@@ -637,7 +637,7 @@ jobs:
         args:
         - -exc
         - |
-          <% uniq_releases.each do |name,_| %>
+          <% uniq_releases.sort.each do |name,_| %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:{{<%= name %>-version}}" >> result-dir/flight-plan
           <% end %>
 

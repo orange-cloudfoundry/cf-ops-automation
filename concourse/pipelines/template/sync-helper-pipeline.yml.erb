@@ -183,7 +183,7 @@ jobs:
 <% end %>
 <% %w(inception micro-depls master-depls ops-depls expe-depls).each do |depls| %>
 <% subdir_list=secrets_dirs_overview[depls] %>
-<% subdir_list.each do |subdir| %>
+<% subdir_list.sort.each do |subdir| %>
 
 - name: <%= depls %>-<%= subdir %>-comparison
   plan:

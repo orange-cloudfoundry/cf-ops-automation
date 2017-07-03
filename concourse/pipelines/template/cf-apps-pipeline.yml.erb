@@ -47,7 +47,7 @@ resources:
     skip_ssl_verification: true
 <% end %>
 
-<% all_cf_apps.each do |app_name,cf_app_info| %>
+<% all_cf_apps.sort.each do |app_name,cf_app_info| %>
 - name: secrets-<%= app_name %>
   type: git
   source:
@@ -93,7 +93,7 @@ jobs:
           args:
           - -exc
           - |
-            <% all_cf_apps.each do |app_name,_| %>
+            <% all_cf_apps.sort.each do |app_name,_| %>
             echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-<%= app_name %>" >> result-dir/flight-plan
             <% end %>
         params:
@@ -123,7 +123,7 @@ jobs:
 
 <% end %>
 
-<% all_cf_apps.each do |app_name,cf_app_info| %>
+<% all_cf_apps.sort.each do |app_name,cf_app_info| %>
 
 - name: cf-push-<%= app_name %>
   plan:
