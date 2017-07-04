@@ -97,10 +97,10 @@ jobs:
         - -exc
         - |
           cp -r templates/. result-dir
-          cp -rf script-resource/. result-dir
+          cp -r script-resource/. result-dir
           cp -rf secrets/. result-dir
-          cd result-dir/concourse
-          ./generate-depls.rb --depls <%= depls %> -s ../../templates -t ../../templates
+          cd result-dir/
+          ./scripts/generate-depls.rb --depls <%= depls %> -t ../templates -p . -o concourse
     on_failure:
       put: failure-alert
       params:
