@@ -12,12 +12,12 @@ resource_types:
 
 resources:
 
-#- name: at-nine
-#  type: cron-resource
-#  source:
-#    expression: "15 9 * * 1-5"
-#    location: "Europe/Paris"
-#    fire_immediately: true
+- name: at-nine
+  type: cron-resource
+  source:
+    expression: "15 9 * * 1-5"
+    location: "Europe/Paris"
+    fire_immediately: true
 
 - name: failure-alert
   type: slack-notification
@@ -68,6 +68,8 @@ jobs:
 - name: anonymize-secrets-value
   plan:
   - aggregate:
+    - get: at-nine
+      trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 3
