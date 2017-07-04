@@ -28,10 +28,18 @@ require 'optparse'
 
 # Argument parsing
 OPTIONS = {
-    :depls => "ops-depls"
+  :depls => 'ops-depls'
 }
 opt_parser = OptionParser.new do |opts|
-  opts.banner = "Usage: ./scripts/concourse-manual-pipelines-update.sh [options]"
+  opts.banner = 'Usage: ./scripts/concourse-manual-pipelines-update.sh [options]
+Customization using ENVIRONMENT_VARIABLE:
+    SECRETS: secrets repo to use - Default: ../preprod-secrets
+    PAAS_TEMPLATES: paas-templates to use - Default: ../paas-templates
+    DEBUG: enable debug message - Default: false
+    PIPELINES_DIR: pipelines ready to be uploaded directory- Default: boostrap-generated/pipelines
+    TARGET_NAME - Default: cw-pp-micro
+
+'
 
   opts.on("--without=WITHOUT", "-wWITHOUT", "Don't update matched pipelines") do |without_string|
     OPTIONS[:without] = without_string
@@ -51,24 +59,14 @@ opt_parser = OptionParser.new do |opts|
 end
 opt_parser.parse!
 
-#public_config = YAML.load_file("public-config.yml")
-#
-#lpass_config= {}
-#
-#full_config = public_config.merge(lpass_config)
-
-SECRETS=ENV['SECRETS'] ||"../preprod-secrets"
-PAAS_TEMPLATES=ENV['PAAS_TEMPLATES'] ||"../paas-templates"
-DEPLS_LIST=ENV['DEPLS_LIST'] || ["micro-depls", "master-depls", "ops-depls", "expe-depls"]
-SKIP_TRIGGER=ENV['SKIP_TRIGGER'] || false
-DEBUG=ENV['DEBUG'] || false
-
-PIPELINES_DIR=ENV['PIPELINES_DIR'] || "boostrap-generated/pipelines"
-#mkdir -p ${OUTPUT_DIR}/pipelines
+SECRETS = ENV['SECRETS'] ||"../preprod-secrets"
+PAAS_TEMPLATES = ENV['PAAS_TEMPLATES'] ||'../paas-templates'
+DEBUG = ENV['DEBUG'] || false
+PIPELINES_DIR = ENV['PIPELINES_DIR'] || 'boostrap-generated/pipelines'
 
 
-flyrc  = YAML.load_file(File.expand_path('~/.flyrc'))
-target_name= ENV['TARGET_NAME'] || "cw-pp-micro"
+flyrc = YAML.load_file(File.expand_path('~/.flyrc'))
+target_name = ENV['TARGET_NAME'] || 'cw-pp-micro'
 target = flyrc['targets'][target_name]
 concourse_url= target['api']
 
@@ -91,33 +89,37 @@ def set_pipeline(target_name:,name:, config:, load: [])
   "})
 end
 
-def update_bosh_lite_pipelines(target_name, full_config)
+def generate_full_path_for_concourse_vars_files(vars_files)
+  vars_files_with_path = []
+  vars_files.each do |var_file|
+    if var_file =~ /versions.yml/
+      vars_files_with_path << "#{PAAS_TEMPLATES}/#{var_file}"
+    else
+      vars_files_with_path << "#{SECRETS}/#{var_file}"
+    end
+  end
+  vars_files_with_path
+end
+
+def update_bosh_lite_pipelines(target_name)
   header("For pipelines in #{PIPELINES_DIR}")
   depls=OPTIONS[:depls]
   Dir["#{PIPELINES_DIR}/*.yml"].each do |filename|
     # puts "Found #{filename}"
-    next if OPTIONS.has_key?(:depls) && !filename.include?(OPTIONS[:depls])
-    next if OPTIONS.has_key?(:template) && !filename.include?(OPTIONS[:template])
+    next if OPTIONS.key?(:depls) && !filename.include?(OPTIONS[:depls])
+    next if OPTIONS.key?(:template) && !filename.include?(OPTIONS[:template])
     puts "Processing only #{filename}"
     deployment_name = File.basename(filename, '.yml')
     ci_deployment_overview = YAML.load_file("#{SECRETS}/#{depls}/ci-deployment-overview.yml")
 
-    pipelines=ci_deployment_overview["ci-deployment"][depls]["pipelines"]
+    pipelines=ci_deployment_overview['ci-deployment'][depls]['pipelines']
     current_pipeline = pipelines[deployment_name]
     if current_pipeline.nil?
       puts "invalid config #{SECRETS}/#{depls}/ci-deployment-overview.yml should contains a key ...[pipelines][vars_files]"
       puts "ignoring pipeline #{filename} (invalid config #{SECRETS}/#{depls}/ci-deployment-overview.yml)"
       next
     end
-
-    vars_files_with_path=[]
-    current_pipeline["vars_files"].each do |var_file|
-      if var_file =~ /versions.yml/
-        vars_files_with_path << "#{PAAS_TEMPLATES}/#{var_file}"
-      else
-        vars_files_with_path << "#{SECRETS}/#{var_file}"
-      end
-    end
+    vars_files_with_path = generate_full_path_for_concourse_vars_files(current_pipeline['vars_files'])
     set_pipeline(
       target_name: target_name,
       name: deployment_name,
@@ -128,5 +130,5 @@ def update_bosh_lite_pipelines(target_name, full_config)
 end
 
 
-update_bosh_lite_pipelines target_name,{}
+update_bosh_lite_pipelines target_name
 
