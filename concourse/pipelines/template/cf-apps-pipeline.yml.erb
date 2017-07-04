@@ -201,11 +201,11 @@ jobs:
         - repository: updated-<%= app_name %>-secrets
         - rebase: true
     - task: execute-<%= app_name %>-post-deploy
-      input_mapping: {scripts-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: post-deploy-result}
       file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>/template
+        CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>/template
         SECRETS_DIR: credentials-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>
       on_failure:
         put: failure-alert
