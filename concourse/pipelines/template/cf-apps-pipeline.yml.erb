@@ -159,11 +159,11 @@ jobs:
           username: Concourse
     - task: push-<%= app_name %>
       attempts: 3
-      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
+      input_mapping: {scripts-resource: cf-ops-automation, templates-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: final-release-manifest}
       file: cf-ops-automation/concourse/tasks/cf_push.yml
       params:
-        CUSTOM_SCRIPT_DIR: template-resource/<%= cf_app_info["base-dir"] %>/template
+        CUSTOM_SCRIPT_DIR: templates-resource/<%= cf_app_info["base-dir"] %>/template
         SECRETS_DIR: credentials-resource/<%= cf_app_info["base-dir"] %>
         CF_MANIFEST: generated-files/<%= app_name %>_manifest.yml
         CF_API_URL: <%= cf_app_info["cf_api_url"] %>
