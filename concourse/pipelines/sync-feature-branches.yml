@@ -50,7 +50,7 @@ jobs:
       get_params: {submodules: none}
       params:
         - repository: paas-templates-features
-        - merge: true
+        - rebase: true
       on_failure:
         put: failure-alert
         params:
