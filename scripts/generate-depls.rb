@@ -10,9 +10,9 @@ require 'ostruct'
 # TODO add rspec file to avoid regression
 BOSH_CERT_LOCATIONS={
     "micro-depls" => "inception/micro-bosh/secrets/certificates/certs/rootCA.pem",
-    "master-depls" => "micro-depls/bosh-master/secrets/certificates/certs/rootCA.pem",
-    "expe-depls" => "master-depls/bosh-expe/secrets/certificates/certs/rootCA.pem",
-    "ops-depls" => "master-depls/bosh-ops/secrets/certificates/certs/rootCA.pem"
+    "master-depls" => "shared/certs/internal_paas-ca/server-ca.crt",
+    "expe-depls" => "shared/certs/internal_paas-ca/server-ca.crt",
+    "ops-depls" => "shared/certs/internal_paas-ca/server-ca.crt"
 }
 # Argument parsing
 OPTIONS = {
