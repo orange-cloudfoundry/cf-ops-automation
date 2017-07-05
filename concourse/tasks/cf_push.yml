@@ -8,6 +8,7 @@ inputs:
   - name: scripts-resource
   - name: credentials-resource
   - name: additional-resource
+  - name: templates-resource
 outputs:
   - name: generated-files
 run:
