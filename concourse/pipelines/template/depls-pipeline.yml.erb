@@ -21,6 +21,11 @@ resource_types:
       repository: robdimsdale/concourse-pipeline-resource
       tag: latest-final
 
+  - name: bosh-deployment
+    type: docker-image
+    source:
+      repository: cloudfoundry/bosh-deployment-resource
+
 resources:
 
 - name: at-noon
@@ -91,10 +96,11 @@ resources:
 - name: deploy-<%= name %>
   type: bosh-deployment
   source:
-    target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
+#    target: {{bosh-target}}
+    client: {{bosh-username}}
+    client_secret: {{bosh-password}}
     deployment: <%= name %>
+    ca_cert: <%= BOSH_CERT[depls].dump %>
 
 <% if boshrelease['errands'] != nil && !boshrelease['errands'].empty? %>
 - name: errand-<%= name %>
@@ -403,10 +409,39 @@ jobs:
           text: Failed cannot spiff manifest [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
+    - task: convert-bosh-dns-to-ip
+      output_mapping: {result-dir: bosh-generated-config}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            export DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_TARGET%%:25555}
+            export DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|tail -n2|grep Address|cut -d':' -f2)
+            export DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
+            export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
+            echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
+        params:
+          BOSH_TARGET: {{bosh-target}}
+        on_failure:
+          put: failure-alert
+          params:
+            channel: {{slack-channel}}
+            text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
     - put: deploy-<%= name %>
       attempts: 3
       params:
         manifest: final-release-manifest/<%= name %>.yml
+        source_file: bosh-generated-config/bosh_config.json
         stemcells:
         - bosh-stemcell/stemcell.tgz
         releases: <%= '[]' if boshrelease['releases']&.empty? %>

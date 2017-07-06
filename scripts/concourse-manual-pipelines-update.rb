@@ -62,7 +62,7 @@ opt_parser.parse!
 SECRETS = ENV['SECRETS'] ||"../preprod-secrets"
 PAAS_TEMPLATES = ENV['PAAS_TEMPLATES'] ||'../paas-templates'
 DEBUG = ENV['DEBUG'] || false
-PIPELINES_DIR = ENV['PIPELINES_DIR'] || 'boostrap-generated/pipelines'
+PIPELINES_DIR = ENV['PIPELINES_DIR'] || 'bootstrap-generated/pipelines'
 
 
 flyrc = YAML.load_file(File.expand_path('~/.flyrc'))
