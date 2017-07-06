@@ -873,7 +873,7 @@ jobs:
         passed: [cf-manual-approval]
         trigger: true
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: paas-templates-full, credentials-resource: secrets-full, additional-resource: secrets-full}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -881,8 +881,8 @@ jobs:
           ./credentials-resource/shared/secrets.yml
           ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
           ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
-        YML_TEMPLATE_DIR: scripts-resource/<%= terraform_config_path %>/template
-        CUSTOM_SCRIPT_DIR: scripts-resource/<%= terraform_config_path %>/template
+        YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
       on_failure:
         put: failure-alert
