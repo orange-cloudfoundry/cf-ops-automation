@@ -4,6 +4,8 @@ set -e
 BOSH_HOST=$1
 BOSH_CERT_FILE=$2
 
+bosh --version
+
 function my_realpath { echo $(cd $(dirname $1); pwd)/$(basename $1); }
 
 if [ -n "$BOSH_CERT_FILE" ]
