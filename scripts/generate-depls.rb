@@ -9,50 +9,50 @@ require 'ostruct'
 
 # TODO add rspec file to avoid regression
 BOSH_CERT_LOCATIONS={
-    "micro-depls" => "inception/micro-bosh/secrets/certificates/certs/rootCA.pem",
-    "master-depls" => "shared/certs/internal_paas-ca/server-ca.crt",
-    "expe-depls" => "shared/certs/internal_paas-ca/server-ca.crt",
-    "ops-depls" => "shared/certs/internal_paas-ca/server-ca.crt"
+    'micro-depls' => 'inception/micro-bosh/secrets/certificates/certs/rootCA.pem',
+    'master-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+    'expe-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+    'ops-depls' => 'shared/certs/internal_paas-ca/server-ca.crt'
 }
 # Argument parsing
 OPTIONS = {
-  :git_submodule_path => "../paas-templates" ,
-  :secret_path => "..",
-  :output_path => "bootstrap-generated",
-  :ops_automation => ".",
+  :git_submodule_path => '../paas-templates',
+  :secret_path => '..',
+  :output_path => 'bootstrap-generated',
+  :ops_automation => '.',
   :dump_output => true,
-  :paas_template_root=> "../paas-templates"
+  :paas_template_root=> '../paas-templates'
 
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
 
-  opts.on("-d", "--depls DEPLOYMENT", "Specify a deployment name to generate template for. MANDATORY") do |deployment_string|
+  opts.on('-d', "--depls DEPLOYMENT", "Specify a deployment name to generate template for. MANDATORY") do |deployment_string|
     OPTIONS[:depls]= deployment_string
   end
 
-  opts.on("-t", "--templates-path PATH", "Base location for paas-templates (implies -s)") do |tp_string|
+  opts.on('-t', "--templates-path PATH", "Base location for paas-templates (implies -s)") do |tp_string|
     OPTIONS[:paas_template_root]= tp_string
     OPTIONS[:git_submodule_path]= tp_string
   end
 
-  opts.on("-s", "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
+  opts.on('-s', "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
     OPTIONS[:git_submodule_path]= gsp_string
   end
 
-  opts.on("-p", "--secrets-path PATH", "Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).") do |sp_string|
+  opts.on('-p', "--secrets-path PATH", "Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).") do |sp_string|
     OPTIONS[:secret_path]= sp_string
   end
 
-  opts.on("-o", "--output-path PATH", "Output dir for generated pipelines.") do |op_string|
+  opts.on('-o', "--output-path PATH", 'Output dir for generated pipelines.') do |op_string|
     OPTIONS[:output_path]= op_string
   end
 
-  opts.on("-a", "--automation-path PATH", "Base location for cf-ops-automation") do |ap_string|
+  opts.on('-a', "--automation-path PATH", "Base location for cf-ops-automation") do |ap_string|
     OPTIONS[:ops_automation]= ap_string
   end
 
-  opts.on( "--[no-]dump", "Dump genereted file on standart output") do |dump|
+  opts.on("--[no-]dump", 'Dump genereted file on standart output') do |dump|
     OPTIONS[:dump_output]= dump
   end
 
@@ -79,17 +79,17 @@ def generate_deployment_overview_from_hash(depls,paas_template_path, secrets_pat
     dirname= filename.split('/').last
     puts "Processing #{dirname}"
     # Dir[filename + "/deployment-dependencies.yml"].each do |dependency_file|
-    Dir[filename + "/enable-deployment.yml"].each do |enable_deployment_file|
-      dependency_file="#{paas_template_path}/#{depls}/#{dirname}/deployment-dependencies.yml"
+    Dir[filename + '/enable-deployment.yml'].each do |_|
+      dependency_file = "#{paas_template_path}/#{depls}/#{dirname}/deployment-dependencies.yml"
 
       puts "Bosh release detected: #{dirname}"
-      current_dependecies=YAML.load_file(dependency_file)
-      current_dependecies["deployment"].each do |deployment_name, deployment_details|
+      current_dependecies = YAML.load_file(dependency_file)
+      current_dependecies['deployment'].each do |deployment_name, deployment_details|
 
         raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
         dependencies[deployment_name] = deployment_details
 
-        boshrelease_list=deployment_details['releases']
+        boshrelease_list = deployment_details['releases']
         boshrelease_list&.each do |aRelease, _|
           #                puts "arelease: #{aRelease}"
           version=version_reference[aRelease+'-version']
@@ -139,11 +139,11 @@ puts "Path CI deployment overview: #{path}"
   Dir[path].select { |f| File.directory? f }.each do |filename|
     dirname= filename.split('/').last
     puts "Processing #{dirname}"
-    Dir[filename + "/ci-deployment-overview.yml"].each do |deployment_file|
+    Dir[filename + '/ci-deployment-overview.yml'].each do |deployment_file|
       puts "CI deployment detected: #{dirname}"
       current_deployment=YAML.load_file(deployment_file)
-      raise "#{deployment_file} - Invalid deployment: expected 'ci-deployment' key as yaml root" if (current_deployment == nil || current_deployment["ci-deployment"] == nil)
-      current_deployment["ci-deployment"].each do |deployment_name, deployment_details|
+      raise "#{deployment_file} - Invalid deployment: expected 'ci-deployment' key as yaml root" if (current_deployment == nil || current_deployment['ci-deployment'] == nil)
+      current_deployment['ci-deployment'].each do |deployment_name, deployment_details|
         raise "#{deployment_file} - missing keys: expecting keys target and pipelines" if deployment_details == nil
         raise "#{deployment_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
         ci_deployment[deployment_name] = deployment_details
@@ -175,17 +175,17 @@ end
 def list_git_submodules(base_path)
   git_submodules= {}
 
-  gitmodules=File.open("#{base_path}/.gitmodules")
-  gitmodules.select{|line| line.strip!.start_with?("path =")}
+  gitmodules = File.open("#{base_path}/.gitmodules")
+  gitmodules.select{|line| line.strip!.start_with?('path =')}
       .each { |path| path[0..6]=""}
       .each { |path|
-      parsed_path=path.split("/")
+      parsed_path=path.split('/')
       if parsed_path.length >2
         current_depls=parsed_path[0]
         current_deployment=parsed_path[1]
         item={current_deployment => [path]}
         # puts item
-        if ! git_submodules[current_depls]
+        unless git_submodules[current_depls]
           # puts "init #{current_depls}"
           git_submodules[current_depls]= {}
         end
@@ -211,15 +211,15 @@ def generate_cf_app_overview(path,depls_name)
   Dir[path].select { |f| File.directory? f }.each do |base_dir|
     dirname= base_dir.split('/').last
     puts "Processing CF App: #{dirname}"
-    Dir.glob(base_dir + "/**/enable-cf-app.yml").each do |enable_cf_app_file|
+    Dir.glob(base_dir + '/**/enable-cf-app.yml').each do |enable_cf_app_file|
       puts "Cf App detected: #{base_dir} - #{enable_cf_app_file}"
       enable_cf_app_file_dir=File.dirname(enable_cf_app_file)
       cf_app_desc=YAML.load_file(enable_cf_app_file)
-      cf_app_desc["cf-app"].each do |cf_app_name, cf_app_details|
+      cf_app_desc['cf-app'].each do |cf_app_name, cf_app_details|
         puts "processing cf-app: #{cf_app_name} from #{enable_cf_app_file}"
         raise "cannot process #{enable_cf_app_file}, an application named #{cf_app_name} already exists" if cf_apps.has_key?(cf_app_name)
         #   raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
-        cf_app_details["base-dir"]= enable_cf_app_file_dir.sub(/^.*#{Regexp.escape(depls_name)}/, depls_name)
+        cf_app_details['base-dir']= enable_cf_app_file_dir.sub(/^.*#{Regexp.escape(depls_name)}/, depls_name)
 
         cf_apps[cf_app_name] = cf_app_details
       end
@@ -237,7 +237,7 @@ def generate_secrets_dir_overview(secrets_root)
     depls_level_name= depls_level_dir.split('/').last
     puts "Processing depls level: #{depls_level_name}"
     dir_overview[depls_level_name]=[]
-    Dir[depls_level_dir+"/*"].select { |f| File.directory? f }.each do |boshrelease_level_dir|
+    Dir[depls_level_dir+'/*'].select { |f| File.directory? f }.each do |boshrelease_level_dir|
       boshrelease_level_name= boshrelease_level_dir.split('/').last
       puts "Processing boshrelease level: #{depls_level_name} -- #{boshrelease_level_name}"
       dir_overview[depls_level_name] << boshrelease_level_name
@@ -251,7 +251,7 @@ secrets_dirs_overview=generate_secrets_dir_overview("#{OPTIONS[:secret_path]}/*"
 version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/",  "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
 
-raise "all_dependencies should not be empty" if all_dependencies.empty?
+raise 'all_dependencies should not be empty' if all_dependencies.empty?
 all_ci_deployments=generate_ci_deployment_overview("#{OPTIONS[:secret_path]}/" + depls)
 
 all_cf_apps=generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls)
@@ -267,38 +267,38 @@ Dir["#{OPTIONS[:ops_automation]}/concourse/pipelines/template/depls-pipeline.yml
   processed_template_count=processed_template_count+1
 
   puts "processing #{filename}"
-  output=ERB.new(File.read(filename),0,"<>").result()
+  output=ERB.new(File.read(filename), 0, '<>').result
   puts output if OPTIONS[:dump_output]
 
   # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
-  tmp_pipeline_name= filename.split("/").last().chomp("-pipeline.yml.erb").chomp("depls")
+  tmp_pipeline_name= filename.split('/').last.chomp('-pipeline.yml.erb').chomp('depls')
   pipeline_name= "#{depls}-"
   pipeline_name << "#{tmp_pipeline_name}-" if ! tmp_pipeline_name.nil? && ! tmp_pipeline_name.empty?
-  pipeline_name << "generated.yml"
+  pipeline_name << 'generated.yml'
 
   puts "Pipeline name #{pipeline_name}"
   target_dir="#{OPTIONS[:output_path]}/pipelines"
-  Dir.mkdir(target_dir) if ! Dir.exist?(target_dir)
-  aPipeline=File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", "w")
+  Dir.mkdir(target_dir) unless Dir.exist?(target_dir)
+  aPipeline=File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", 'w')
   aPipeline << output
   puts "Trying to parse generated Yaml: #{pipeline_name} (#{aPipeline&.path})"
   YAML.load_file(aPipeline)
   puts "> #{pipeline_name} seems a valid Yaml file"
-  puts "####################################################################################"
-  puts "####################################################################################"
+  puts '####################################################################################'
+  puts '####################################################################################'
 end
 
 if processed_template_count > 0
   puts "#{processed_template_count} concourse pipeline templates were processed"
 else
   puts "ERROR: no concourse pipeline templates found in #{OPTIONS[:ops_automation]}/concourse/pipelines/template/"
-  puts "ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/concourse/pipelines/template/"
+  puts 'ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/concourse/pipelines/template/'
   exit 1
 end
 
 
-puts "### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists" if all_ci_deployments.empty?
-puts "### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists" if all_cf_apps.empty?
-puts "### WARNING ### no gitsubmodule detected" if git_submodules.empty?
+puts '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if all_ci_deployments.empty?
+puts '### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists' if all_cf_apps.empty?
+puts '### WARNING ### no gitsubmodule detected' if git_submodules.empty?
 puts
 puts 'Thanks, Orange CloudFoundry SKC'
