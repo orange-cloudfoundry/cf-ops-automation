@@ -4,6 +4,8 @@ set -e
 BOSH_HOST=$1
 BOSH_CERT_FILE=$2
 
+function my_realpath { echo $(cd $(dirname $1); pwd)/$(basename $1); }
+
 if [ -n "$BOSH_CERT_FILE" ]
 then
     echo "Using ca cert file: ${BOSH_CERT_FILE}"
@@ -33,6 +35,12 @@ fi
 if [ $ERROR_COUNT -ne 0 ]
 then
     exit $ERROR_COUNT
+fi
+
+
+if [ -n "$BOSH_CA_CERT"  ]
+then
+    export BOSH_CA_CERT=$(my_realpath $BOSH_CA_CERT)
 fi
 
 echo "targeting ${BOSH_HOST}"
