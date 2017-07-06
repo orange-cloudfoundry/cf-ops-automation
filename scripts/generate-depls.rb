@@ -6,14 +6,17 @@ require 'optparse'
 require 'tempfile'
 require 'erb'
 require 'ostruct'
+require 'openssl'
+
 
 # TODO add rspec file to avoid regression
 BOSH_CERT_LOCATIONS={
-    'micro-depls' => 'inception/micro-bosh/secrets/certificates/certs/rootCA.pem',
-    'master-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
-    'expe-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
-    'ops-depls' => 'shared/certs/internal_paas-ca/server-ca.crt'
+'micro-depls' => 'inception/micro-bosh/secrets/certificates/certs/rootCA.pem',
+'master-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+'expe-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+'ops-depls' => 'shared/certs/internal_paas-ca/server-ca.crt'
 }
+
 # Argument parsing
 OPTIONS = {
   :git_submodule_path => '../paas-templates',
@@ -22,7 +25,6 @@ OPTIONS = {
   :ops_automation => '.',
   :dump_output => true,
   :paas_template_root=> '../paas-templates'
-
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
@@ -61,6 +63,19 @@ opt_parser.parse!
 
 depls = OPTIONS[:depls]
 opt_parser.abort("#{opt_parser}") if depls == nil
+
+def load_cert_from_location(bosh_cert_hash)
+  certs={}
+  bosh_cert_hash.each do |depls_name, cert_path|
+    ca_cert = OpenSSL::X509::Certificate.new(File.read("#{OPTIONS[:secret_path]}/#{cert_path}"))
+    certs[depls_name]=ca_cert.to_pem
+  end
+  certs
+end
+
+
+BOSH_CERT=load_cert_from_location BOSH_CERT_LOCATIONS
+
 
 def erb(template, vars)
   puts ERB.new(template).result(OpenStruct.new(vars).instance_eval { binding })
@@ -277,6 +292,7 @@ Dir["#{OPTIONS[:ops_automation]}/concourse/pipelines/template/depls-pipeline.yml
   pipeline_name << 'generated.yml'
 
   puts "Pipeline name #{pipeline_name}"
+  Dir.mkdir(OPTIONS[:output_path]) unless Dir.exist?(OPTIONS[:output_path])
   target_dir="#{OPTIONS[:output_path]}/pipelines"
   Dir.mkdir(target_dir) unless Dir.exist?(target_dir)
   aPipeline=File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", 'w')
