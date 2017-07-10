@@ -62,8 +62,7 @@ deployment:
         base_location: https://bosh.io/d/github.com/
         repository: xxx/yyyy
     errands:
-      smoke_tests:
-        
+      smoke_tests:       
 ```
 
 ### Cloudfoundry application deployment
@@ -85,7 +84,6 @@ cf-app:
     cf_password: 
     cf_organization: 
     cf_space:
-
 ``` 
 
 ### pipeline auto-update
@@ -120,7 +118,6 @@ ci-deployment:
         vars_files:
         - xxx/pipelines/credentials-ops-depls-pipeline.yml
         - xxx/ops-depls-versions.yml
-
 ```
 
 #usage
@@ -163,10 +160,8 @@ deployment:
         base_location: https://bosh.io/d/github.com/
         repository: xxx/yyyy
     errands:
-      smoke_tests:
-        
+      smoke_tests:        
 ```
-
 
 ## How to upload a bosh release not available on bosh.io?
 use ```deploy.sh``` script like [this](ops-depls/template/deploy.sh) to manually upload release.
