@@ -45,6 +45,7 @@ resources:
     uri: {{cf-ops-automation-uri}}
     branch: {{cf-ops-automation-branch}}
     skip_ssl_verification: true
+    tag_filter: {{cf-ops-automation-tag-filter}}
 <% end %>
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
