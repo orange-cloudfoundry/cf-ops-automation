@@ -96,7 +96,7 @@ resources:
 - name: deploy-<%= name %>
   type: bosh-deployment
   source:
-#    target: {{bosh-target}}
+    target: {{bosh-target}}
     client: {{bosh-username}}
     client_secret: {{bosh-password}}
     deployment: <%= name %>
