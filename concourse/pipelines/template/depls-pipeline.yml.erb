@@ -441,7 +441,7 @@ jobs:
       attempts: 3
       params:
         manifest: final-release-manifest/<%= name %>.yml
-        source_file: bosh-generated-config/bosh_config.json
+#        source_file: bosh-generated-config/bosh_config.json
         stemcells:
         - bosh-stemcell/stemcell.tgz
         releases: <%= '[]' if boshrelease['releases']&.empty? %>
