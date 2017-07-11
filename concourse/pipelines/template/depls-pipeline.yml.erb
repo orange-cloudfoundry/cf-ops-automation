@@ -26,6 +26,11 @@ resource_types:
     source:
       repository: cloudfoundry/bosh-deployment-resource
 
+  - name: bosh-errand
+    type: docker-image
+    source:
+      repository: starkandwayne/bosh2-errand-resource
+
 resources:
 
 - name: at-noon
@@ -107,9 +112,10 @@ resources:
   type: bosh-errand
   source:
     target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
+    client: {{bosh-username}}
+    client_secret: {{bosh-password}}
     deployment: <%= name %>
+    ca_cert: <%= BOSH_CERT[depls].dump %>
 <% end %>
 
 <% end %>
@@ -503,8 +509,7 @@ jobs:
     <% boshrelease['errands'].each do |errand_name, errand_info| %>
     - put: errand-<%= name %>
       params:
-        errand: <%= errand_name %>
-        manifest: secrets-<%= name %>/<%= depls %>/<%= name %>/<%= name %>.yml
+        name: <%= errand_name %>
       on_failure:
         put: failure-alert
         params:
