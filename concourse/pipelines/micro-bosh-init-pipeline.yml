@@ -135,8 +135,8 @@ jobs:
           put: secrets
           get_params: {submodules: none}
           params:
-            - repository: updated-terraform-state-secrets
-            - rebase: true
+            repository: updated-terraform-state-secrets
+            rebase: true
 
     - task: extract_terraform_outputs
       input_mapping: {script-resource: paas-bootstrap, state-file-resource: terraform}

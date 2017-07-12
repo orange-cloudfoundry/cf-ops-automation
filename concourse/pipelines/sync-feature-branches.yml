@@ -49,8 +49,8 @@ jobs:
     - put: features-or-wip-merged
       get_params: {submodules: none}
       params:
-        - repository: paas-templates-features
-        - rebase: true
+        repository: paas-templates-features
+        rebase: true
       on_failure:
         put: failure-alert
         params:
