@@ -21,7 +21,7 @@ resource_types:
       repository: robdimsdale/concourse-pipeline-resource
       tag: latest-final
 
-  - name: bosh-deployment
+  - name: bosh-deployment-v2
     type: docker-image
     source:
       repository: cloudfoundry/bosh-deployment-resource
@@ -98,14 +98,24 @@ resources:
     branch: {{paas-templates-branch}}
     skip_ssl_verification: true
 
+<% if boshrelease['cli_version'] == "v1" %>
 - name: deploy-<%= name %>
   type: bosh-deployment
+  source:
+    target: https://((bosh-target)):25555
+    username: {{bosh-username}}
+    password: {{bosh-password}}
+    deployment: <%= name %>
+<% else %>
+- name: deploy-<%= name %>
+  type: bosh-deployment-v2
   source:
     target: {{bosh-target}}
     client: {{bosh-username}}
     client_secret: {{bosh-password}}
     deployment: <%= name %>
     ca_cert: <%= BOSH_CERT[depls].dump %>
+<% end %>
 
 <% if boshrelease['errands'] != nil && !boshrelease['errands'].empty? %>
 - name: errand-<%= name %>

@@ -36,11 +36,24 @@ this is an empty yaml file !
 
 #### deployment dependencies format (deployment-dependencies.yml)
 
-in deployment-dependencies.yml, it is possible to add secrets path to trigger the build
-    resources:
-      secrets:
-        extented_scan_path: ["ops-depls/cloudfoundry", "...."]
+in deployment-dependencies.yml, it is possible: 
 
+    - to add secrets path to trigger the build
+        resources:
+          secrets:
+            extented_scan_path: ["ops-depls/cloudfoundry", "...."]
+
+    - choose a bosh cli version. By default, bosh cli v2 is used unless v1 specified in cli_version
+        
+        ``` yaml
+        deployment:
+          micro-bosh:
+            cli_version: v1
+            stemcells:
+                ...
+            releases:
+                ...
+        ```
 
 deployment-dependencies.yml sample (should be placed in ths boshrelease deployment dir):
 
@@ -140,7 +153,7 @@ run ./init-template.sh, and it creates empty placeholder.
 
 ## How to enable a bosh deployment template ?
 
-deployment-dependencies.yml sample (should be placed in secrets repo):
+deployment-dependencies.yml sample:
 
 ``` yaml
 
