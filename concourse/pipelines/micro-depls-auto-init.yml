@@ -205,8 +205,8 @@ jobs:
   - put: pipeline-credentials
     get_params: {submodules: none}
     params:
-      - repository: updated-secrets
-      - rebase: true
+      repository: updated-secrets
+      rebase: true
 
 
 #  - put: failure-alert
@@ -320,8 +320,8 @@ jobs:
   - put: pipeline-credentials
     get_params: {submodules: none}
     params:
-      - repository: updated-secrets
-      - rebase: true
+      repository: updated-secrets
+      rebase: true
 
 
 - name: update-pipeline-expe-depls-generated
@@ -402,8 +402,8 @@ jobs:
   - put: pipeline-credentials
     get_params: {submodules: none}
     params:
-      - repository: updated-secrets
-      - rebase: true
+      repository: updated-secrets
+      rebase: true
 
 
 
@@ -489,6 +489,6 @@ jobs:
   - put: pipeline-credentials
     get_params: {submodules: none}
     params:
-      - repository: updated-secrets
-      - rebase: true
+      repository: updated-secrets
+      rebase: true
 

@@ -49,8 +49,8 @@ jobs:
     - put: hotfixes-merged
       get_params: {submodules: none}
       params:
-        - repository: paas-templates-hotfixes
-        - merge: true
+        repository: paas-templates-hotfixes
+        merge: true
       on_failure:
         put: failure-alert
         params:

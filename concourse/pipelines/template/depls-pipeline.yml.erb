@@ -295,8 +295,8 @@ jobs:
             put: secrets-<%=depls %>
             get_params: {submodules: none}
             params:
-              - repository: updated-cloud-config
-              - rebase: true
+              repository: updated-cloud-config
+              rebase: true
 
       - task: update-runtime-config-for-<%= depls %>
         attempts: 3
@@ -342,8 +342,8 @@ jobs:
             put: secrets-<%=depls %>
             get_params: {submodules: none}
             params:
-              - repository: updated-runtime-config
-              - rebase: true
+              repository: updated-runtime-config
+              rebase: true
 
 
 <% all_dependencies.sort.each do |name,boshrelease| %>
@@ -494,8 +494,8 @@ jobs:
     - put: secrets-<%= name %>
       get_params: {submodules: none}
       params:
-        - repository: updated-<%= name %>-secrets
-        - rebase: true
+        repository: updated-<%= name %>-secrets
+        rebase: true
 
 <% if boshrelease['errands'] != nil && !boshrelease['errands'].empty? %>
 - name: run-errand-<%= name %>
@@ -820,8 +820,8 @@ jobs:
   - put: secrets-full
     get_params: {submodules: none}
     params:
-      - repository: updated-secrets
-      - rebase: true
+      repository: updated-secrets
+      rebase: true
     on_failure:
       put: failure-alert
       params:
@@ -966,8 +966,8 @@ jobs:
           put: secrets-full
           get_params: {submodules: none}
           params:
-            - repository: updated-terraform-state-secrets
-            - rebase: true
+            repository: updated-terraform-state-secrets
+            rebase: true
 <% end %>
 
 <% end %>

@@ -125,8 +125,8 @@ jobs:
   - put: anonymized-secrets
     get_params: {submodules: none}
     params:
-      - repository: updated-anonymized-secrets
-      - rebase: true
+      repository: updated-anonymized-secrets
+      rebase: true
 
 <% %w(inception micro-depls master-depls ops-depls expe-depls shared).each do |depls| %>
 

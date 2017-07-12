@@ -199,8 +199,8 @@ jobs:
     - put: secrets-<%= app_name %>
       get_params: {submodules: none}
       params:
-        - repository: updated-<%= app_name %>-secrets
-        - rebase: true
+        repository: updated-<%= app_name %>-secrets
+        rebase: true
     - task: execute-<%= app_name %>-post-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: post-deploy-result}

@@ -191,8 +191,8 @@ jobs:
 #          put: secrets
 #          get_params: {submodules: none}
 #          params:
-#            - repository: updated-terraform-state-secrets
-#            - rebase: true
+#            repository: updated-terraform-state-secrets
+#            rebase: true
 
 
 
