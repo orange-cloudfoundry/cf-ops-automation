@@ -781,11 +781,8 @@ jobs:
     <% all_dependencies.sort.each do |name,_| %>
     - get: secrets-<%= name %>
       params: { submodules: none}
-      trigger: true
     - get: paas-template-<%= name %>
-      trigger: true
-      <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
-      params: { submodules: <%= current_git_submodule || 'none' %>}
+      params: { submodules: none}
     <% end %>
 
   - task: generate-<%= depls %>-pipeline
