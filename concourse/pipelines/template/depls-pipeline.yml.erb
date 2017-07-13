@@ -388,10 +388,12 @@ jobs:
       - get: secrets-<%= name %>
         params: { submodules: none}
         trigger: true
+        <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
       - get: paas-template-<%= name %>
         trigger: true
         <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
         params: { submodules: <%= current_git_submodule || 'none' %>}
+        <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
     - task: generate-<%= name %>-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-template-<%= name %>}
       output_mapping: {generated-files: release-manifest}
@@ -776,6 +778,16 @@ jobs:
       params: { submodules: none}
       attempts: 3
       trigger: true
+    <% all_dependencies.sort.each do |name,_| %>
+    - get: secrets-<%= name %>
+      params: { submodules: none}
+      trigger: true
+    - get: paas-template-<%= name %>
+      trigger: true
+      <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
+      params: { submodules: <%= current_git_submodule || 'none' %>}
+    <% end %>
+
   - task: generate-<%= depls %>-pipeline
     input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
