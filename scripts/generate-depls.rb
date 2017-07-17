@@ -11,7 +11,7 @@ require 'openssl'
 
 # TODO add rspec file to avoid regression
 BOSH_CERT_LOCATIONS={
-'micro-depls' => 'inception/micro-bosh/secrets/certificates/certs/rootCA.pem',
+'micro-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
 'master-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
 'expe-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
 'ops-depls' => 'shared/certs/internal_paas-ca/server-ca.crt'
