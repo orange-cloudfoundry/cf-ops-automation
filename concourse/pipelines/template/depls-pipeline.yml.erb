@@ -657,7 +657,7 @@ jobs:
          passed: [recreate-all]
 
     - task: bosh-recreate-<%= name %>
-      input_mapping: {script-resource: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
+      input_mapping: {script-resource: cf-ops-automation, secrets: secrets-<%= depls %>}
       config:
           platform: linux
           image_resource:
