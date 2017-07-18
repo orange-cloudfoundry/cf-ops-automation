@@ -28,7 +28,8 @@ require 'optparse'
 
 # Argument parsing
 OPTIONS = {
-  :depls => 'ops-depls'
+  :depls => 'ops-depls',
+  :no_interactive => false
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = 'Usage: ./scripts/concourse-manual-pipelines-update.sh [options]
@@ -56,6 +57,11 @@ Customization using ENVIRONMENT_VARIABLE:
   opts.on("--depls=DEPLS", "-dDEPLS", "Only update pipelines from the specified template") do |depls_string|
     OPTIONS[:depls] = depls_string
   end
+
+  opts.on('--no-interactive', 'Do not ask for confirmation on pipeline load') do |_|
+    OPTIONS[:no_interactive] = true
+  end
+
 end
 opt_parser.parse!
 
@@ -77,7 +83,7 @@ def header(msg)
   puts " #{msg}"
 end
 
-def set_pipeline(target_name:,name:, config:, load: [])
+def set_pipeline(target_name:,name:, config:, load: [],options: [])
   return if OPTIONS.has_key?(:match) && !name.include?(OPTIONS[:match])
   return if OPTIONS.has_key?(:without) && name.include?(OPTIONS[:without])
   puts "   #{name} pipeline"
@@ -85,7 +91,8 @@ def set_pipeline(target_name:,name:, config:, load: [])
   puts system(%{bash -c "fly -t #{target_name} set-pipeline \
     -p #{PIPELINE_PREFIX}#{name} \
     -c #{config} \
-    #{load.collect { |l| "-l #{l}" }.join(' ')}
+    #{load.collect { |l| "-l #{l}" }.join(' ')} \
+    #{options.collect { |opt| "#{opt}" }.join(' ')}
   "})
 end
 
@@ -119,12 +126,16 @@ def update_bosh_lite_pipelines(target_name)
       puts "ignoring pipeline #{filename} (invalid config #{SECRETS}/#{depls}/ci-deployment-overview.yml)"
       next
     end
+    additional_config = []
+    additional_config << "--non-interactive" if OPTIONS[:no_interactive]
+
     vars_files_with_path = generate_full_path_for_concourse_vars_files(current_pipeline['vars_files'])
     set_pipeline(
       target_name: target_name,
       name: deployment_name,
       config: filename,
-      load: vars_files_with_path
+      load: vars_files_with_path,
+      options: additional_config
     )
   end
 end
