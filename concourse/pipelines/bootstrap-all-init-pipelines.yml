@@ -1,0 +1,122 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+resources:
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+- name: secrets-full
+  type: git
+  source:
+    uri: {{secrets-uri}}
+    branch: {{secrets-branch}}
+    skip_ssl_verification: true
+
+- name: paas-templates-full
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
+    tag_filter: {{cf-ops-automation-tag-filter}}
+    skip_ssl_verification: true
+
+jobs:
+
+- name: bootstrap-init-pipelines
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+    - get: paas-templates-full
+      params: { submodules: none}
+    - get: secrets-full
+      params: { submodules: none}
+  - task: generate-all-pipelines
+    input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
+    output_mapping: {result-dir: all-pipelines}
+    file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+  - task: set-all-init-pipelines
+    input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
+    file: cf-ops-automation/concourse/tasks/bootstrp_init_pipelines.yml
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    params:
+      ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
+      FLY_USERNAME: {{concourse-micro-depls-username}}
+      FLY_PASSWORD:  {{concourse-micro-depls-password}}
+  - task: generate-auto-trigger-flight-plan
+    output_mapping: {result-dir: init-auto-trigger-flight-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+        - name: all-pipelines
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cd all-pipelines/pipelines
+          for aFile in $(ls *init-generated.yml)
+          do
+          PIPELINE=$(basename ${aFile})
+          DEPLS=${PIPELINE%%-init-generated.yml}
+          echo "trigger-job -j "${PIPELINE}/update-pipeline-${DEPLS}"  >> result-dir/flight-plan
+          done
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: init-auto-trigger-flight-plan}
+    output_mapping: {flight-report: concourse-<%= depls %>-init-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
+      FLY_USERNAME: {{concourse-micro-depls-username}}
+      FLY_PASSWORD:  {{concourse-micro-depls-password}}
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse

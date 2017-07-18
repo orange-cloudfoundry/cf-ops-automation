@@ -1,0 +1,21 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: ruby, tag: 2.3.1-slim}
+inputs:
+  - name: scripts-resource
+  - name: secrets-resource
+  - name: templates-resource
+outputs:
+  - name: result-dir
+run:
+  path: sh
+  args:
+  - -exc
+  - |
+    export SECRETS=$(pwd)/secrets-resource
+    export TEMPLATES=$(pwd)/templates-resource
+    export OUTPUT_DIR=$(pwd)/result-dir
+    cd scripts-resource
+    ./scripts/concourse-generate-all-pipelines.sh
