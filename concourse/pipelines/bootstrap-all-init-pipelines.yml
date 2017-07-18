@@ -63,7 +63,7 @@ jobs:
         username: Concourse
   - task: set-all-init-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
-    file: cf-ops-automation/concourse/tasks/bootstrp_init_pipelines.yml
+    file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
     on_failure:
       put: failure-alert
       params:
