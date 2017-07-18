@@ -43,7 +43,7 @@ then
     exit 1
 fi
 
-if [ -z "${OOUTPUT_DIR}" ]
+if [ -z "${OUTPUT_DIR}" ]
 then
     OUTPUT_DIR=$(readlink -f ${ROOT_DIR}/bootstrap-generated)
 fi
