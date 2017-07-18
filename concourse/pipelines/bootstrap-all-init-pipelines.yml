@@ -91,12 +91,13 @@ jobs:
         args:
         - -exc
         - |
+          DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
           for aFile in $(ls *init-generated.yml)
           do
-          PIPELINE=$(basename ${aFile})
-          DEPLS=${PIPELINE%%-init-generated.yml}
-          echo "trigger-job -j "${PIPELINE}/update-pipeline-${DEPLS}"  >> result-dir/flight-plan
+          PIPELINE=$(basename ${aFile} .yml)
+          DEPLS=${PIPELINE%%-init-generated}
+          echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
       on_failure:
         put: failure-alert
