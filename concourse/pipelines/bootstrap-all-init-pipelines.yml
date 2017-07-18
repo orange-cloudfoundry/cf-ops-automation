@@ -5,6 +5,11 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
 
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
 resources:
 
 - name: failure-alert
@@ -16,6 +21,13 @@ resources:
       cert: {{slack-custom-cert}}
     - domain: {{slack-custom-root-domain}}
       cert: {{slack-custom-root-cert}}
+
+- name: weekday-morning
+  type: cron-resource
+  source:
+    expression: 30 8 * * 1-5
+    location: "Europe/Paris"
+    fire_immediately: true
 
 - name: secrets-full
   type: git
@@ -44,6 +56,8 @@ jobs:
 - name: bootstrap-init-pipelines
   plan:
   - aggregate:
+    - get: weekday-morning
+      trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
     - get: paas-templates-full
