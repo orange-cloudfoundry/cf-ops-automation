@@ -2,6 +2,7 @@
 set -e
 SECRETS=${SECRETS:-../preprod-secrets}
 FLY_TARGET=${FLY_TARGET:-cw-pp-micro}
+DEFAULT_DEPLS_LIST=$(find $SECRETS -type d -maxdepth 1 -name "*-depls")
 DEPLS_LIST=${DEPLS_LIST:-"micro-depls master-depls ops-depls expe-depls"}
 SKIP_TRIGGER=${SKIP_TRIGGER:=false}
 DEBUG=${DEBUG:=false}
@@ -39,15 +40,13 @@ then
     exit 1
 fi
 
-OUTPUT_DIR=$(readlink -f ${SCRIPT_DIR}/boostrap-generated)
+OUTPUT_DIR=$(readlink -f ${SCRIPT_DIR}/bootstrap-generated)
 mkdir -p ${OUTPUT_DIR}/pipelines
 
 echo "Deploy on ${FLY_TARGET} using secrets in $SECRET_DIR"
 for depls in ${DEPLS_LIST};do
-    cd ${SCRIPT_DIR}/concourse
-    ./generate-depls.rb -d ${depls} -p ${SECRET_DIR} -o ${OUTPUT_DIR} --no-dump
+    ${SCRIPT_DIR}/generate-depls.rb -d ${depls} -p ${SECRET_DIR} -o ${OUTPUT_DIR} --no-dump
     PIPELINE="${depls}-init-generated"
-    cd ${SCRIPT_DIR}
     echo "Load ${PIPELINE} on ${FLY_TARGET}"
     set +e
     fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${OUTPUT_DIR}/pipelines/${PIPELINE}.yml  \
