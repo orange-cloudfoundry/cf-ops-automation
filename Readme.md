@@ -203,3 +203,14 @@ The following tools are required to run [concourse-bootstrap.sh](concourse-boots
  - ruby
  - fly, the concourse CLI
     - Login to concourse in main team
+
+
+## How to create a new root deployment
+
+To setup a new paas-template repo, a new secrets repo or to add a new root deployment, you can run 
+[create-root-depls](scripts/create-root-depls.rb) script to create empty files.
+
+### pre requisite
+The following tools are required to run [create-root-depls](scripts/create-root-depls.rb)
+ - ruby
+
