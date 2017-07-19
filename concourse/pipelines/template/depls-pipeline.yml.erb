@@ -50,10 +50,12 @@ resources:
     - domain: {{slack-custom-root-domain}}
       cert: {{slack-custom-root-cert}}
 
+<% unless all_dependencies %>
 - name: bosh-stemcell
   type: bosh-io-stemcell
   source:
     name: {{stemcell-name}}
+<% end %>
 
 - name: secrets-<%=depls %>
   type: git
@@ -568,7 +570,7 @@ jobs:
 
 <% end %>
 
-
+<% unless all_dependencies %>
 - name: retrigger-all-jobs
   <% jobs['utils'] << 'retrigger-all-jobs' %>
   plan:
@@ -618,9 +620,7 @@ jobs:
           text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
-
-<% previous_deployment_name=nil %>
-
+<% end %>
 
 - name: recreate-all
 <% jobs['recreate'] << 'recreate-all' %>
@@ -689,7 +689,6 @@ jobs:
            text: Deployment Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
            username: Concourse
-<% previous_deployment_name=name %>
 <% end %>
 
 <% if ! all_ci_deployments.empty? %>
@@ -698,6 +697,7 @@ jobs:
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
+<% unless all_dependencies %>
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
   <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
   plan:
@@ -753,6 +753,7 @@ jobs:
         text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
+<% end %>
 
 - name: update-pipeline-<%= depls %>-generated
   <% jobs['utils'] << "update-pipeline-#{depls}-generated" %>
@@ -883,9 +884,6 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-
-
-<% puts all_ci_deployments[depls] %>
 <% if ! all_ci_deployments[depls]['terraform_config'].nil? %>
 <% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>

@@ -266,7 +266,6 @@ secrets_dirs_overview=generate_secrets_dir_overview("#{OPTIONS[:secret_path]}/*"
 version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/",  "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
 
-raise 'all_dependencies should not be empty' if all_dependencies.empty?
 all_ci_deployments=generate_ci_deployment_overview("#{OPTIONS[:secret_path]}/" + depls)
 
 all_cf_apps=generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls)
@@ -286,16 +285,16 @@ Dir["#{OPTIONS[:ops_automation]}/concourse/pipelines/template/depls-pipeline.yml
   puts output if OPTIONS[:dump_output]
 
   # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
-  tmp_pipeline_name= filename.split('/').last.chomp('-pipeline.yml.erb').chomp('depls')
-  pipeline_name= "#{depls}-"
+  tmp_pipeline_name = filename.split('/').last.chomp('-pipeline.yml.erb').chomp('depls')
+  pipeline_name = "#{depls}-"
   pipeline_name << "#{tmp_pipeline_name}-" if ! tmp_pipeline_name.nil? && ! tmp_pipeline_name.empty?
   pipeline_name << 'generated.yml'
 
   puts "Pipeline name #{pipeline_name}"
   Dir.mkdir(OPTIONS[:output_path]) unless Dir.exist?(OPTIONS[:output_path])
-  target_dir="#{OPTIONS[:output_path]}/pipelines"
+  target_dir = "#{OPTIONS[:output_path]}/pipelines"
   Dir.mkdir(target_dir) unless Dir.exist?(target_dir)
-  aPipeline=File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", 'w')
+  aPipeline = File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", 'w')
   aPipeline << output
   puts "Trying to parse generated Yaml: #{pipeline_name} (#{aPipeline&.path})"
   YAML.load_file(aPipeline)
@@ -312,7 +311,11 @@ else
   exit 1
 end
 
-
+puts
+puts
+puts "### WARNING ### no deployment detected. Please check
+ template_dir: #{OPTIONS[:paas_template_root]}
+ secrets_dir: #{OPTIONS[:secret_path]}" if  all_dependencies.empty?
 puts '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if all_ci_deployments.empty?
 puts '### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists' if all_cf_apps.empty?
 puts '### WARNING ### no gitsubmodule detected' if git_submodules.empty?
