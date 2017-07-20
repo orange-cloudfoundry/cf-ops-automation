@@ -50,7 +50,7 @@ resources:
     - domain: {{slack-custom-root-domain}}
       cert: {{slack-custom-root-cert}}
 
-<% unless all_dependencies %>
+<% unless all_dependencies.empty? %>
 - name: bosh-stemcell
   type: bosh-io-stemcell
   source:
@@ -570,7 +570,7 @@ jobs:
 
 <% end %>
 
-<% unless all_dependencies %>
+<% unless all_dependencies.empty? %>
 - name: retrigger-all-jobs
   <% jobs['utils'] << 'retrigger-all-jobs' %>
   plan:
@@ -697,7 +697,7 @@ jobs:
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
-<% unless all_dependencies %>
+<% unless all_dependencies.empty? %>
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
   <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
   plan:
@@ -1041,3 +1041,4 @@ groups:
    <% end %>
 <% end %>
 
+<% puts "#{all_dependencies} - #{all_dependencies.empty?} "%>
