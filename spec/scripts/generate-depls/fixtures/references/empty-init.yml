@@ -1,0 +1,28 @@
+---
+resource_types:
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: robdimsdale/concourse-pipeline-resource
+      tag: latest-final
+
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+resources:
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+
+jobs:
+
