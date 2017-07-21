@@ -1,0 +1,10 @@
+ci-deployment:
+  <%= depls %>:
+    target_name: TO_BE_DEFINED
+    pipelines:
+      <%= depls %>-generated:
+        vars_files:
+          - <%= depls %>/<%= depls %>-versions.yml
+      <%= depls %>-cf-apps-generated:
+        vars_files:
+          - <%= depls %>/<%= depls %>-versions.yml
