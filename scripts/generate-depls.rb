@@ -34,47 +34,49 @@ opt_parser = OptionParser.new do |opts|
   end
 
   opts.on('-t', "--templates-path PATH", "Base location for paas-templates (implies -s)") do |tp_string|
-    OPTIONS[:paas_template_root]= tp_string
-    OPTIONS[:git_submodule_path]= tp_string
+    OPTIONS[:paas_template_root] = tp_string
+    OPTIONS[:git_submodule_path] = tp_string
   end
 
   opts.on('-s', "--git-submodule-path PATH", ".gitsubmodule path") do |gsp_string|
-    OPTIONS[:git_submodule_path]= gsp_string
+    OPTIONS[:git_submodule_path] = gsp_string
   end
 
   opts.on('-p', "--secrets-path PATH", "Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).") do |sp_string|
-    OPTIONS[:secret_path]= sp_string
+    OPTIONS[:secret_path] = sp_string
   end
 
   opts.on('-o', "--output-path PATH", 'Output dir for generated pipelines.') do |op_string|
-    OPTIONS[:output_path]= op_string
+    OPTIONS[:output_path] = op_string
   end
 
   opts.on('-a', "--automation-path PATH", "Base location for cf-ops-automation") do |ap_string|
-    OPTIONS[:ops_automation]= ap_string
+    OPTIONS[:ops_automation] = ap_string
   end
 
-  opts.on("--[no-]dump", 'Dump genereted file on standart output') do |dump|
-    OPTIONS[:dump_output]= dump
+  opts.on('--[no-]dump', 'Dump genereted file on standart output') do |dump|
+    OPTIONS[:dump_output] = dump
   end
 
 end
 opt_parser.parse!
 
 depls = OPTIONS[:depls]
-opt_parser.abort("#{opt_parser}") if depls == nil
+opt_parser.abort("#{opt_parser}") if depls.nil?
 
 def load_cert_from_location(bosh_cert_hash)
-  certs={}
+  certs = {}
   bosh_cert_hash.each do |depls_name, cert_path|
+    next unless File.exist? "#{OPTIONS[:secret_path]}/#{cert_path}"
+
     ca_cert = OpenSSL::X509::Certificate.new(File.read("#{OPTIONS[:secret_path]}/#{cert_path}"))
-    certs[depls_name]=ca_cert.to_pem
+    certs[depls_name] = ca_cert.to_pem
   end
   certs
 end
 
 
-BOSH_CERT=load_cert_from_location BOSH_CERT_LOCATIONS
+BOSH_CERT = load_cert_from_location BOSH_CERT_LOCATIONS
 
 
 def erb(template, vars)
@@ -188,12 +190,14 @@ end
 
 
 def list_git_submodules(base_path)
-  git_submodules= {}
 
-  gitmodules = File.open("#{base_path}/.gitmodules")
-  gitmodules.select{|line| line.strip!.start_with?('path =')}
-      .each { |path| path[0..6]=""}
-      .each { |path|
+  git_submodules = {}
+
+  gitmodules = File.open("#{base_path}/.gitmodules") if File.exist? "#{base_path}/.gitmodules"
+  gitmodules
+    &.select { |line| line.strip!.start_with?('path =') }
+    &.each { |path| path[0..6] = '' }
+    &.each { |path|
       parsed_path=path.split('/')
       if parsed_path.length >2
         current_depls=parsed_path[0]
@@ -214,7 +218,7 @@ def list_git_submodules(base_path)
         end
       end
   }
-  gitmodules.close
+  gitmodules&.close
   git_submodules
 
 end
@@ -263,6 +267,7 @@ end
 
 secrets_dirs_overview=generate_secrets_dir_overview("#{OPTIONS[:secret_path]}/*")
 
+raise "#{depls}-versions.yml: file not found. #{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml does not exist" unless File.exist? "#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml"
 version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 all_dependencies=generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/",  "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
 

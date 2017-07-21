@@ -116,4 +116,16 @@ RSpec.configure do |config|
     $stderr = STDERR
   end
 
+  def fly(arg, env = {})
+    target = 'buildpacks'
+    env_var = env.collect { |k, v| "#{k}=#{v}" }.join(' ')
+    out, err, status = Open3.capture3("env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log")
+    raise "Failed: env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log" if !status.success? or err =~ /error: websocket: bad handshake/
+    out
+  end
+
+  def execute(cmd, env = {})
+    fly("execute #{cmd}", env)
+  end
+
 end

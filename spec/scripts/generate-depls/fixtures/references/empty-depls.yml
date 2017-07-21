@@ -1,0 +1,309 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+  - name: bosh-config
+    type: docker-image
+    source:
+      repository: dellemcdojo/bosh-config-resource
+
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: robdimsdale/concourse-pipeline-resource
+      tag: latest-final
+
+  - name: bosh-deployment-v2
+    type: docker-image
+    source:
+      repository: cloudfoundry/bosh-deployment-resource
+
+  - name: bosh-errand
+    type: docker-image
+    source:
+      repository: starkandwayne/bosh2-errand-resource
+
+resources:
+
+- name: at-noon
+  type: cron-resource
+  source:
+    expression: "15 12 * * 1-5"
+    location: "Europe/Paris"
+    fire_immediately: true
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+
+- name: secrets-dummy-depls
+  type: git
+  source:
+    uri: {{secrets-uri}}
+    paths: ["dummy-depls/secrets","shared"]
+    branch: {{secrets-branch}}
+    skip_ssl_verification: true
+
+- name: paas-template-dummy-depls
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    paths: ["dummy-depls/template"]
+    branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
+    tag_filter: {{cf-ops-automation-tag-filter}}
+    skip_ssl_verification: true
+
+
+
+
+
+
+
+jobs:
+- name: execute-deploy-script
+  
+  plan:
+    - get: at-noon
+      trigger: true
+    - aggregate:
+      - get: secrets-dummy-depls
+        params: { submodules: none}
+        
+      - get: paas-template-dummy-depls
+        params: { submodules: none}
+        
+      - get: cf-ops-automation
+        params: { submodules: none}
+        
+
+    - task: run-deploy.sh
+      input_mapping: {script-resource: cf-ops-automation, templates: paas-template-dummy-depls, secrets: secrets-dummy-depls}
+      file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
+      params:
+        CURRENT_DEPLS: dummy-depls/template
+        COMMON_SCRIPT_DIR: script-resource/scripts
+        SECRETS_DIR: secrets
+        BOSH_TARGET: {{bosh-target}}
+        BOSH_CLIENT: {{bosh-username}}
+        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_CA_CERT: secrets/
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+
+- name: cloud-config-and-runtime-config-for-dummy-depls
+  
+  plan:
+    - get: secrets-dummy-depls
+      params: { submodules: none}
+      trigger: true
+      
+    - get: paas-template-dummy-depls
+      params: { submodules: none}
+      trigger: true
+      
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      
+#    - task: generate-dummy-depls-terraform-outputs-cloud-config
+#      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-dummy-depls, additional-resource: terraform-outputs}
+#      output_mapping: {generated-files: cloud-config-manifest}
+#      file: paas-template/concourse/tasks/extract_terraform_outputs.yml
+#      params:
+#        STATE_FILE: "state-file-resource/terraform.tfstate"
+#        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
+#
+#        SPRUCE_FILE_BASE_PATH: credentials-resource/dummy-depls/
+#        YML_TEMPLATE_DIR: scripts-resource/dummy-depls/template
+#        YML_FILES: |
+#            ./credentials-resource/dummy-depls/secrets/meta.yml
+#            ./credentials-resource/dummy-depls/secrets/secrets.yml
+#            ./credentials-resource/shared/secrets.yml
+#        CUSTOM_SCRIPT_DIR: scripts-resource/dummy-depls/template
+
+    - task: generate-dummy-depls-all-config
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-dummy-depls, additional-resource: paas-template-dummy-depls}
+      output_mapping: {generated-files: config-manifest}
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/dummy-depls/
+        YML_TEMPLATE_DIR: additional-resource/dummy-depls/template
+        YML_FILES: |
+            ./credentials-resource/dummy-depls/secrets/meta.yml
+            ./credentials-resource/dummy-depls/secrets/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: additional-resource/dummy-depls/template
+
+    - aggregate:
+      - task: update-cloud-config-for-dummy-depls
+        attempts: 3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
+          inputs:
+            - name: config-manifest
+            - name: secrets-dummy-depls
+            - name: cf-ops-automation
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
+                bosh cloud-config >$OLD_CONFIG
+                diff $OLD_CONFIG config-manifest/cloud-config.yml || true
+                bosh update cloud-config config-manifest/cloud-config.yml
+        ensure:
+          task: update-cloud-config
+          input_mapping: {reference-resource: secrets-dummy-depls, generated-resource: config-manifest}
+          output_mapping: {updated-git-resource: updated-cloud-config}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "dummy-depls/cloud-config.yml"
+            NEW_FILE: "cloud-config.yml"
+            COMMIT_MESSAGE: "dummy-depls cloud-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: {{slack-channel}}
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-dummy-depls
+            get_params: {submodules: none}
+            params:
+              repository: updated-cloud-config
+              rebase: true
+
+      - task: update-runtime-config-for-dummy-depls
+        attempts: 3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
+          inputs:
+            - name: config-manifest
+            - name: secrets-dummy-depls
+            - name: cf-ops-automation
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                cat config-manifest/runtime-config.yml
+                OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
+                bosh runtime-config >$OLD_CONFIG
+                diff $OLD_CONFIG config-manifest/runtime-config.yml || true
+                bosh update runtime-config config-manifest/runtime-config.yml
+        ensure:
+          task: update-runtime-config
+          input_mapping: {reference-resource: secrets-dummy-depls, generated-resource: config-manifest}
+          output_mapping: {updated-git-resource: updated-runtime-config}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "dummy-depls/runtime-config.yml"
+            NEW_FILE: "runtime-config.yml"
+            COMMIT_MESSAGE: "dummy-depls runtime-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: {{slack-channel}}
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-dummy-depls
+            get_params: {submodules: none}
+            params:
+              repository: updated-runtime-config
+              rebase: true
+
+
+
+
+- name: recreate-all
+  serial_groups: [recreate]
+  plan:
+    - aggregate:
+       - get: secrets-dummy-depls
+         params: { submodules: none}
+         
+       - get: paas-template-dummy-depls
+         params: { submodules: none}
+         
+       - get: cf-ops-automation
+         params: { submodules: none}
+         
+
+
+
+
+groups:
+- name: Dummy-depls
+  jobs:
+  
+   
+    - execute-deploy-script
+   
+    - cloud-config-and-runtime-config-for-dummy-depls
+   
+    - recreate-all
+   
+  
+   
+    - recreate-all
+   
+  
+
+- name: Recreate
+  jobs:
+   
+    - recreate-all
+   
+- name: Utils
+  jobs:
+   
+    - execute-deploy-script
+   
+    - cloud-config-and-runtime-config-for-dummy-depls
+   
+    - recreate-all
+   
+

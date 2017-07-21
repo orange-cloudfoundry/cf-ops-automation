@@ -1,0 +1,85 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: robdimsdale/concourse-pipeline-resource
+      tag: latest-final
+
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+
+resources:
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+- name: new-version-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+
+#- name: bosh-stemcell
+#  type: bosh-io-stemcell
+#  source:
+#    name: {{stemcell-name}}
+
+#- name: secrets-complete
+#  type: git
+#  source:
+#    uri: {{secrets-uri}}
+#    branch: master
+#    skip_ssl_verification: true
+
+- name: paas-templates-full
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
+    tag_filter: {{cf-ops-automation-tag-filter}}
+    skip_ssl_verification: true
+
+
+
+- name: monday-morning
+  type: cron-resource
+  source:
+    expression: 30 8 * * 1
+    location: "Europe/Paris"
+    fire_immediately: true
+
+
+jobs:
+
+#      - get: bosh-stemcell
+#        version: { version: {{stemcell-version}} }
+#        trigger: true
+#        attempts: 3
+
