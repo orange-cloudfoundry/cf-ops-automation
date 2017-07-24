@@ -4,6 +4,7 @@
 require 'optparse'
 require 'erb'
 require_relative '../lib/deployments_generator'
+require_relative '../lib/template_processor'
 
 
 def header(msg)
@@ -98,39 +99,27 @@ all_ci_deployments = generator.generate_ci_deployment_overview("#{OPTIONS[:secre
 all_cf_apps = generator.generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls)
 
 git_submodules = generator.list_git_submodules(OPTIONS[:git_submodule_path])
+
+erb_context = {
+  depls: depls,
+  bosh_cert: BOSH_CERT,
+  secrets_dirs_overview: secrets_dirs_overview,
+  version_reference: version_reference,
+  all_dependencies: all_dependencies,
+  all_ci_deployments: all_ci_deployments,
+  all_cf_apps: all_cf_apps,
+  git_submodules: git_submodules
+}
+
+processor = TemplateProcessor.new depls, OPTIONS, erb_context
+
+
 processed_template_count = 0
-
-puts OPTIONS[:input_pipelines]
-
 OPTIONS[:input_pipelines].each do |dir|
-  Dir[dir].each do |filename|
-    processed_template_count += 1
-
-    puts "processing #{filename}"
-    output = ERB.new(File.read(filename), 0, '<>').result
-    puts output if OPTIONS[:dump_output]
-
-    # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
-    tmp_pipeline_name = filename.split('/').last.chomp('-pipeline.yml.erb').chomp('depls')
-    pipeline_name = "#{depls}-"
-    pipeline_name << "#{tmp_pipeline_name}-" if ! tmp_pipeline_name.nil? && ! tmp_pipeline_name.empty?
-    pipeline_name << 'generated.yml'
-
-    puts "Pipeline name #{pipeline_name}"
-    Dir.mkdir(OPTIONS[:output_path]) unless Dir.exist?(OPTIONS[:output_path])
-    target_dir = "#{OPTIONS[:output_path]}/pipelines"
-    Dir.mkdir(target_dir) unless Dir.exist?(target_dir)
-    aPipeline = File.new("#{OPTIONS[:output_path]}/pipelines/#{pipeline_name}", 'w')
-    aPipeline << output
-    puts "Trying to parse generated Yaml: #{pipeline_name} (#{aPipeline&.path})"
-    YAML.load_file(aPipeline)
-    puts "> #{pipeline_name} seems a valid Yaml file"
-    puts '####################################################################################'
-    puts '####################################################################################'
-  end
+  processed_template_count += processor.process(dir)
 end
 
-if processed_template_count > 0
+if processed_template_count.positive?
   puts "#{processed_template_count} concourse pipeline templates were processed"
 else
   puts "ERROR: no concourse pipeline templates found in #{OPTIONS[:ops_automation]}/concourse/pipelines/template/"
