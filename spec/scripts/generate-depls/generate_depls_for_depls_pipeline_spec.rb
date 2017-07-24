@@ -26,36 +26,48 @@ describe 'generate-depls for depls pipeline' do
     end
 
     context 'when only templates dir is initialized' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/depls-pipeline.yml.erb" }
 
       stdout_str = stderr_str = ''
       before do
-        TestHelper.create_test_root_ca "#{secrets_path}/shared/certs/internal_paas-ca/server-ca.crt"
+        TestHelper.create_test_root_ca "#{secrets_path}/shared/certs/internal_paas-ca/server-ca.crt" unless File.exist?("#{secrets_path}/shared/certs/internal_paas-ca/server-ca.crt")
         stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
       end
 
-      it 'generate pipelines without deployment' do
+      it 'no error message are displayed' do
         expect(stderr_str).to eq('')
+      end
+
+      it 'only depls-pipeline template is processed' do
         expect(stdout_str).to include('processing ./concourse/pipelines/template/depls-pipeline.yml.erb').and \
-          include('')
+          include('1 concourse pipeline templates were processed')
       end
 
       # context 'when depls pipeline is checked' do
       #   it_behaves_like 'pipeline checker', 'dummy-depls-generated.yml', 'empty-depls.yml'
       # end
 
+      it 'generate deployment using bosh cli v2, by default'
     end
 
   end
 
+  describe 'depls-pipeline template pre-requisite' do
+    context 'when template is processed' do
+
+      before do
+
+      end
+
+
+
+    end
+  end
+
   describe 'dual deployment mode' do
-    it 'handle bosh deployment using bosh cli v1' do
+    it 'handle bosh deployment using bosh cli v1'
 
-    end
-
-    it 'handle bosh deployment using bosh cli v2' do
-
-    end
+    it 'handle bosh deployment using bosh cli v2'
 
   end
 
