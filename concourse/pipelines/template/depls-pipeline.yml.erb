@@ -116,7 +116,7 @@ resources:
     client: {{bosh-username}}
     client_secret: {{bosh-password}}
     deployment: <%= name %>
-    ca_cert: <%= BOSH_CERT[depls].dump %>
+    ca_cert: <%= BOSH_CERT[depls]&.dump %>
 <% end %>
 
 <% if boshrelease['errands'] != nil && !boshrelease['errands'].empty? %>
