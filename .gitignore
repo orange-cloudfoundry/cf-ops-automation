@@ -2,9 +2,9 @@
 .idea
 *.iml
 
-**/secrets/*
-**/secrets.yml
-shared/
+#**/secrets/*
+#**/secrets.yml
+#shared/
 **/*-generated.yml
 
 ### Eclipse template

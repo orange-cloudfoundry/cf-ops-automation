@@ -108,7 +108,7 @@ jobs:
         BOSH_TARGET: {{bosh-target}}
         BOSH_CLIENT: {{bosh-username}}
         BOSH_CLIENT_SECRET: {{bosh-password}}
-        BOSH_CA_CERT: secrets/
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
       on_failure:
         put: failure-alert
         params:

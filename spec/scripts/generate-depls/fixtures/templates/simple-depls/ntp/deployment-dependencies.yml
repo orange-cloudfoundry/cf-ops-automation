@@ -1,0 +1,9 @@
+---
+deployment:
+  ntp:
+    stemcells:
+      bosh-openstack-kvm-ubuntu-trusty-go_agent:
+    releases:
+      ntp_boshrelease:
+        base_location: https://bosh.io/d/github.com/
+        repository: cloudfoundry-community/ntp-release

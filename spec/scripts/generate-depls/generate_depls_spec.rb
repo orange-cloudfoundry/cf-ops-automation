@@ -24,25 +24,75 @@ describe 'generate-depls' do
   #   ENV.store('PATH', old_path)
   # end
 
-  # RSpec.shared_examples 'pipeline checker' do |generated_pipeline_name, reference_pipeline|
-  #   it "#{generated_pipeline_name} matches #{reference_pipeline}" do
-  #     reference_file = YAML.load_file("#{test_path}/fixtures/references/#{reference_pipeline}")
-  #     generated_file = YAML.load_file "#{output_path}/pipelines/#{generated_pipeline_name}"
-  #     expect(generated_file).to eq(reference_file)
-  #   end
-  # end
 
   #     Dir.chdir("#{ci_path}/spec/tasks/overwrite-cflinuxfs2-release") do
 
   #     expect(File.exist?(blob_destination)).to eq(true)
   #     expect(File.read(blob_destination)).to eq('new-tarball')
-  context 'when no parameter are provided' do
-    it 'display help message' do
-      stdout_str, stderr_str, status = Open3.capture3("#{ci_path}/scripts/generate-depls.rb")
-      expect(status.exitstatus).to eq(1)
-      expect(stderr_str).to include("generate-depls: Incomplete/wrong parameter(s): [].\n Usage: ./generate-depls <options>\n    -d, --depls DEPLOYMENT").and include("-t, --templates-path PATH        Base location for paas-templates (implies -s)").and include("-s, --git-submodule-path PATH    .gitsubmodule path").and include("-p, --secrets-path PATH          Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).").and include("-o, --output-path PATH           Output dir for generated pipelines.").and include("-a, --automation-path PATH       Base location for cf-ops-automation").and include("--[no-]dump                  Dump genereted file on standart output")
-      expect(stdout_str).to be_empty
+
+  describe 'parameter validation' do
+    let(:output_path) { Dir.mktmpdir }
+    let(:templates_path) { Dir.mktmpdir }
+    let(:secrets_path) { Dir.mktmpdir }
+
+    after do
+      FileUtils.rm_rf(output_path) unless output_path.nil?
+      FileUtils.rm_rf(templates_path) unless templates_path.nil?
+      FileUtils.rm_rf(secrets_path) unless secrets_path.nil?
     end
+
+    context 'when no parameter are provided' do
+      it 'display help message' do
+        stdout_str, stderr_str, status = Open3.capture3("#{ci_path}/scripts/generate-depls.rb")
+        expect(status.exitstatus).to eq(1)
+        expect(stderr_str).to \
+          include('generate-depls: Incomplete/wrong parameter(s): [].').and \
+          include("Usage: ./generate-depls <options>\n    -d, --depls DEPLOYMENT").and \
+          include('-t, --templates-path PATH        Base location for paas-templates (implies -s)').and \
+          include('-s, --git-submodule-path PATH    .gitsubmodule path').and \
+          include('-p, --secrets-path PATH          Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).').and \
+          include('-o, --output-path PATH           Output dir for generated pipelines.').and \
+          include('-a, --automation-path PATH       Base location for cf-ops-automation').and \
+          include('-i, --input PIPELINE1,PIPELINE2, List of pipelines to process').and \
+          include('--[no-]dump                  Dump genereted file on standart output')
+        expect(stdout_str).to be_empty
+      end
+    end
+
+    context 'when depls parameter is missing' do
+      let(:options) { "-o #{output_path} -t #{templates_path} -p #{secrets_path}" }
+
+      it 'an error occurs' do
+        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+        expect(stderr_str).to include('generate-depls: Incomplete/wrong parameter(s):')
+      end
+
+    end
+
+    context 'when only a pipeline is selected' do
+      let(:depls_name) { 'dummy-depls' }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i ./concourse/pipelines/template/depls-pipeline.yml.erb -no-dump" }
+
+      stdout_str, stderr_str, = ''
+      before do
+        DirectoryInitializer.new(depls_name, secrets_path, templates_path).setup_templates!
+        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+      end
+
+      it 'no error message expected' do
+        expect(stderr_str).to eq('')
+      end
+
+      it 'only one pipeline template is processed' do
+        expect(stdout_str).to include('1 concourse pipeline templates were processed').and include('processing ./concourse/pipelines/template/depls-pipeline.yml.erb')
+      end
+
+    end
+
+    context 'when no dump is set' do
+      it 'log output to stdout is reduced'
+    end
+
   end
 
   context 'when a dummy deployment is used and output-path is set' do
@@ -52,7 +102,7 @@ describe 'generate-depls' do
     let(:secrets_path) { Dir.mktmpdir }
 
     after do
-      FileUtils.rm_rf(output_path) unless output_path.nil?
+      # FileUtils.rm_rf(output_path) unless output_path.nil?
       FileUtils.rm_rf(templates_path) unless templates_path.nil?
       FileUtils.rm_rf(secrets_path) unless secrets_path.nil?
     end
@@ -82,11 +132,11 @@ describe 'generate-depls' do
         expect(stdout_str).to include('### WARNING ### no deployment detected. Please check')
       end
 
-
-      # context 'when empty pipelines are generated' do
-      #   before do
-      #     Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-      #   end
+      it 'generate a pipeline for each pipeline template' do
+        erb_file_counter = 0
+        Dir["#{ci_path}/concourse/pipelines/template/*.erb"]&.each{ erb_file_counter += 1 }
+        expect(stdout_str).to include("#{erb_file_counter} concourse pipeline templates were processed")
+      end
 
       context 'when cf-apps pipeline is checked' do
         it_behaves_like 'pipeline checker', 'dummy-depls-cf-apps-generated.yml', 'empty-cf-apps.yml'
