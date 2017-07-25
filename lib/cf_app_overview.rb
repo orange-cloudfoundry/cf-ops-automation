@@ -1,3 +1,4 @@
+require 'yaml'
 
 class CfAppOverview
   attr_reader :base_dir, :root_deployment_name

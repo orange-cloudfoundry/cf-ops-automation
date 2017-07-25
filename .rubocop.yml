@@ -4,6 +4,7 @@ AllCops:
   Exclude:
     - 'vendor/**/*'
     - 'spec/fixtures/**/*'
+    - 'spec/lib/fixtures/**/*'
     - 'bin/**/*'
 
 Style/Encoding:
