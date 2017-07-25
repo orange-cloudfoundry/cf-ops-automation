@@ -1,5 +1,6 @@
 require 'yaml'
 require 'erb'
+require 'ostruct'
 require 'fileutils'
 
 class TemplateProcessor
@@ -20,7 +21,8 @@ class TemplateProcessor
 
       puts "processing #{filename}"
 
-      output = ERB.new(File.read(filename), 0, '<>').result(load_context_into_a_binding)
+      # output = ERB.new(File.read(filename), 0, '<>').result(load_context_into_a_binding)
+      output = erb(filename, @context)
       puts output if config[:dump_output]
 
       # trick to avoid pipeline name like ops-depls-depls-generated or ops-depls--generated
@@ -45,6 +47,10 @@ class TemplateProcessor
   end
 
   private
+
+  def erb(template, vars = {})
+    ERB.new(File.read(template), 0, '<>').result(OpenStruct.new(vars).instance_eval { binding })
+  end
 
   def load_context_into_a_binding
     new_binding = binding

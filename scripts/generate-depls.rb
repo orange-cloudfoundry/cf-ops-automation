@@ -2,9 +2,12 @@
 # encoding: utf-8
 
 require 'optparse'
-require 'erb'
 require_relative '../lib/deployments_generator'
 require_relative '../lib/template_processor'
+require_relative '../lib/git_modules'
+require_relative '../lib/ci_deployment_overview'
+require_relative '../lib/secrets'
+require_relative '../lib/cf_app_overview'
 
 
 def header(msg)
@@ -88,17 +91,17 @@ end
 generator = DeploymentsGenerator.new
 BOSH_CERT = generator.load_cert_from_location OPTIONS[:secret_path], BOSH_CERT_LOCATIONS
 
-secrets_dirs_overview = generator.generate_secrets_dir_overview("#{OPTIONS[:secret_path]}/*")
+secrets_dirs_overview = Secrets.new("#{OPTIONS[:secret_path]}/*").overview
 
 raise "#{depls}-versions.yml: file not found. #{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml does not exist" unless File.exist? "#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml"
 version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 all_dependencies = generator.generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/", "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
 
-all_ci_deployments = generator.generate_ci_deployment_overview("#{OPTIONS[:secret_path]}/" + depls)
+all_ci_deployments = CiDeploymentOverview.new("#{OPTIONS[:secret_path]}/" + depls).overview
 
-all_cf_apps = generator.generate_cf_app_overview("#{OPTIONS[:secret_path]}/#{depls}/*",depls)
+all_cf_apps = CfAppOverview.new("#{OPTIONS[:secret_path]}/#{depls}/*", depls).overview
 
-git_submodules = generator.list_git_submodules(OPTIONS[:git_submodule_path])
+git_submodules = GitModules.list(OPTIONS[:git_submodule_path])
 
 erb_context = {
   depls: depls,
