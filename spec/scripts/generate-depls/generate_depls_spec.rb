@@ -102,7 +102,7 @@ describe 'generate-depls' do
     let(:secrets_path) { Dir.mktmpdir }
 
     after do
-      # FileUtils.rm_rf(output_path) unless output_path.nil?
+      FileUtils.rm_rf(output_path) unless output_path.nil?
       FileUtils.rm_rf(templates_path) unless templates_path.nil?
       FileUtils.rm_rf(secrets_path) unless secrets_path.nil?
     end
