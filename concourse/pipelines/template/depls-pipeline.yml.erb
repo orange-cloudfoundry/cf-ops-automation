@@ -363,9 +363,6 @@ jobs:
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   plan:
     - aggregate:
-      - get: paas-template-<%=depls %>
-        params: { submodules: none}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
       - get: bosh-stemcell
         version: { version: {{stemcell-version}} }
         trigger: true
