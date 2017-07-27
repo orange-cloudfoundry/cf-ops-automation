@@ -8,7 +8,7 @@ OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files/}
 SPRUCE_SCRIPT_DIR=${SPRUCE_SCRIPT_DIR:-scripts-resource/scripts/manifest}
 
 SUFFIX=${SUFFIX:-"-tpl.yml"}
-echo "selecting ${SUFFIX} in ${YML_TEMPLATE_DIR}"
+echo "selecting ${SUFFIX} in '${YML_TEMPLATE_DIR}'"
 for template in $(ls $YML_TEMPLATE_DIR/*$SUFFIX)
 do
     filename=$(basename $template)
