@@ -19,7 +19,7 @@ class TemplateProcessor
     processed_template_count = 0
     return processed_template_count if dir.nil?
 
-    Dir[dir].each do |filename|
+    Dir[dir]&.each do |filename|
       processed_template_count += 1
 
       puts "processing #{filename}"
