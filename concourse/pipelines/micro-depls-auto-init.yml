@@ -3,7 +3,7 @@ resource_types:
 - name: concourse-pipeline
   type: docker-image
   source:
-    repository: robdimsdale/concourse-pipeline-resource
+    repository: concourse/concourse-pipeline-resource
     tag: latest-final
 #    repository: orangeopensource/concourse-pipeline-resource
 #    tag: latest
