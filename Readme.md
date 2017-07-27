@@ -214,3 +214,23 @@ To setup a new paas-template repo, a new secrets repo or to add a new root deplo
 The following tools are required to run [create-root-depls](scripts/create-root-depls.rb)
  - ruby
 
+# Development
+
+## Running the Test Suite
+
+If you are running the full test suite, some of the integration tests are dependent on the fly CLI.
+
+
+To login to the Fly CLI and target the cf-ops-automation CI:
+
+```sh
+fly -t cf-ops-automation login
+```
+
+You will be prompted to select either the Github, UAA or Basic Auth authentication methods.
+
+After these are set up, you will be able to run the test suite via:
+
+```sh
+bundler exec rspec
+```
