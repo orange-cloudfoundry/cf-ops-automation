@@ -100,7 +100,7 @@ resources:
     skip_ssl_verification: true
 
 <% if boshrelease['cli_version'] == "v1" %>
-- name: deploy-<%= name %>
+- name: <%= name %>-deployment
   type: bosh-deployment
   source:
 #    target: https://{{bosh-target)):25555
@@ -108,7 +108,7 @@ resources:
     password: {{bosh-password}}
     deployment: <%= name %>
 <% else %>
-- name: deploy-<%= name %>
+- name: <%= name %>-deployment
   type: bosh-deployment-v2
   source:
     target: {{bosh-target}}
@@ -481,7 +481,7 @@ jobs:
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse
     <% end %>
-    - put: deploy-<%= name %>
+    - put: <%= name %>-deployment
       attempts: 3
       params:
         manifest: final-release-manifest/<%= name %>.yml
@@ -518,7 +518,7 @@ jobs:
           username: Concourse
 
     - task: update-<%= name %>-files
-      input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: deploy-<%= name %>}
+      input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: <%= name %>-deployment}
       output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
@@ -546,7 +546,7 @@ jobs:
       - get: secrets-<%= name %>
         params: { submodules: none}
         trigger: true
-        passed: [deploy-<%= name %>]
+        passed: [<%= name %>-deployment]
     <% boshrelease['errands'].each do |errand_name, errand_info| %>
     - put: errand-<%= name %>
       params:
