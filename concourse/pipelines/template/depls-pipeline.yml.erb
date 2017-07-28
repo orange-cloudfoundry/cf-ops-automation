@@ -546,7 +546,7 @@ jobs:
       - get: secrets-<%= name %>
         params: { submodules: none}
         trigger: true
-        passed: [<%= name %>-deployment]
+        passed: [deploy-<%= name %>]
     <% boshrelease['errands'].each do |errand_name, errand_info| %>
     - put: errand-<%= name %>
       params:
