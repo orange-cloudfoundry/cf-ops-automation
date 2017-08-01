@@ -444,13 +444,13 @@ jobs:
             echo "https://$BOSH_ENVIRONMENT:25555" > result-dir/bosh_target
         params:
           BOSH_TARGET: {{bosh-target}}
-        on_failure:
-          put: failure-alert
-          params:
-            channel: {{slack-channel}}
-            text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-            username: Concourse
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
     <% else %>
     - task: convert-bosh-dns-to-ip
       output_mapping: {result-dir: bosh-generated-config}
@@ -473,12 +473,12 @@ jobs:
             echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
         params:
           BOSH_TARGET: {{bosh-target}}
-        on_failure:
-          put: failure-alert
-          params:
-            channel: {{slack-channel}}
-            text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse
     <% end %>
     - put: <%= name %>-deployment
