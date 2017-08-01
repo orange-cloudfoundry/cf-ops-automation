@@ -100,9 +100,8 @@ jobs:
         GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
         SKIP_SSL_VERIFICATION: true
 
-
-#    - put: features-or-wip-merged
-#      get_params: {submodules: none}
-#      params:
-#        repository: paas-templates-features-reseted
-#        force: true
+    - put: features-or-wip-merged
+      get_params: {submodules: none}
+      params:
+        repository: paas-templates-features-reseted
+        force: true
