@@ -99,13 +99,13 @@ jobs:
             <% end %>
         params:
           BUILD_PIPELINE_NAME: <%= depls %>-cf-apps-generated
-        on_failure:
-          put: failure-alert
-          params:
-            channel: {{slack-channel}}
-            text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-            username: Concourse
+      on_failure:
+        put: failure-alert
+        params:
+          channel: {{slack-channel}}
+          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
     - task: fly-into-concourse
       input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
