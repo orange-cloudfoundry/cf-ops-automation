@@ -96,51 +96,9 @@ jobs:
       file: cf-ops-automation/concourse/tasks/git_reset_wip.yml
       input_mapping: {reference-resource: paas-templates-reference}
       output_mapping: {updated-git-resource: paas-templates-features-reseted}
-
-#      config:
-#        platform: linux
-#        image_resource:
-#          type: docker-image
-#          source: {repository: concourse/busyboxplus, tag: "git"}
-#        inputs:
-#          - name: reference-resource
-#        outputs:
-#          - name: updated-git-resource
-#        run:
-#          path: sh
-#          args:
-#          - -exc
-#          - |
-#            git config --global user.email "$GIT_USER_EMAIL"
-#            git config --global user.name "$GIT_USER_NAME"
-#
-#            FINAL_RELEASE_REPO=updated-git-resource
-#
-#            if [ "$SKIP_SSL_VERIFICATION" = "true" ]; then
-#              export GIT_SSL_NO_VERIFY=true
-#            fi
-#
-#            cd reference-resource
-#            URI=$(git remote get-url origin)
-#
-#            current_heads=$(git ls-remote -h "$URI" $GIT_BRANCH_FILTER | sed 's/refs\/heads\///' | awk '{print $2, $1}' | sort)
-#            cd ..
-#
-#            git clone $URI ${FINAL_RELEASE_REPO}
-#            cd ${FINAL_RELEASE_REPO}
-#            git checkout -b develop -t origin/develop
-#
-#            git_br=$(echo $current_heads |awk '{ for (i=2;i<=NF;i+=2) $i=""; print}' )
-#
-#            for i in $git_br; do echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i ;done
-
       params:
-        GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
-        GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
         GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
         SKIP_SSL_VERIFICATION: true
-            #for i in $git_br; do git checkout -b $i -t origin/$i ;done
-#            git_id=$(echo $current_heads |awk '{ for (i=1;i<=NF;i+=2) $i=""; print}' )
 
 
 #    - put: features-or-wip-merged
