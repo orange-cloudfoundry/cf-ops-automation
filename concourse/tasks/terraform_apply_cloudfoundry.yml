@@ -25,6 +25,7 @@ inputs:
 
 outputs:
   - name: generated-files
+  - name: spec-applied
 
 run:
   path: sh
@@ -46,8 +47,17 @@ run:
     # copy generated tfvars
     find terraform-tfvars/ -type f -exec cp {} generated-files/ \;
 
+    # copy spec in spec
+    find spec-resource/${SPEC_PATH}/ -type f -exec cp {} spec-applied/ \;
+
+    # copy spec in secrets
+    if [ -d "secret-state-resource/${SPEC_PATH}" ]
+    then
+    find secret-state-resource/${SPEC_PATH}/ -type f -exec cp {} spec-applied/ \;
+    fi
+
     cd generated-files/
-    terraform apply  ../spec-resource/$SPEC_PATH
+    terraform apply  ../spec-applied/
 
 params:
   SPEC_PATH:
