@@ -183,7 +183,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'does not contain any files in generated-files output' do
-      expect(Dir.entries(@generated_files)).to eq(%w[. .. .gitkeep])
+      expect(Dir.entries(@generated_files).sort).to eq(%w[. .. .gitkeep].sort)
     end
 
   end
