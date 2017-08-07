@@ -4,7 +4,7 @@ GEM
     ast (2.3.0)
     deep_merge (1.1.1)
     diff-lcs (1.3)
-    parallel (1.11.2)
+    parallel (1.12.0)
     parser (2.4.0.0)
       ast (~> 2.2)
     powerpack (0.1.1)
@@ -43,9 +43,9 @@ PLATFORMS
 
 DEPENDENCIES
   rhcl (>= 0.1.0)
-  rspec
-  rubocop
-  rubocop-rspec
+  rspec (>= 3.6.0)
+  rubocop (>= 0.49.1)
+  rubocop-rspec (>= 1.15.1)
 
 RUBY VERSION
    ruby 2.3.1p112
