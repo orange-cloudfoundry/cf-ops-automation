@@ -43,7 +43,6 @@ describe TemplateProcessor do
   end
 
   describe '#process' do
-    skip('TO bE FIXED')
     context 'when no parameter are provided' do
       subject { described_class.new(root_deployment_name) }
 
@@ -102,7 +101,7 @@ describe TemplateProcessor do
 
         after(:context) { FileUtils.rm_rf(@output_dir) }
 
-        it 'raises an exception' do
+        xit 'raises an exception' do
           expect(Dir).to receive(:[]).with(@pipelines_dir)
           expect(File).to receive(:read).with(@template_pipeline_name)
 
@@ -140,7 +139,7 @@ describe TemplateProcessor do
           FileUtils.rm_rf(@pipelines_dir)
         }
 
-        it 'generate a valid yaml file' do
+        xit 'generate a valid yaml file' do
           expect(Dir).to receive(:[]).with(@pipelines_dir)
           expect(File).to receive(:read).with(File.join(@pipelines_output_dir, @template_pipeline_name))
 
@@ -148,7 +147,7 @@ describe TemplateProcessor do
           expect(File.read(File.join(@pipelines_output_dir, @template_pipeline_name))).to eq(expected_yaml_file)
         end
 
-        it 'generated filename is correct' do
+        xit 'generated filename is correct' do
           expect(File.exist?(File.join(@pipelines_output_dir, @template_pipeline_name))).to be_truthy
         end
 
@@ -181,17 +180,17 @@ describe TemplateProcessor do
 
         after(:context) { FileUtils.rm_rf(@output_dir) }
 
-        it 'raise an exception' do
+        xit 'raise an exception' do
           expect{ subject.process(@pipelines_dir) }.to raise_error(Psych::SyntaxError, /could not find expected ':'/)
           expect(File.exist?(File.join(@pipelines_output_dir, 'my_depls-my-template-generated.yml'))).to be_truthy
 
         end
 
-        it 'generated filename is correct' do
+        xit 'generated filename is correct' do
           expect(File.exist?(File.join(@pipelines_output_dir, 'my_depls-my-template-generated.yml'))).to be_truthy
         end
 
-        it 'generated content is an invalid yaml file' do
+        xit 'generated content is an invalid yaml file' do
           expect(File.read(File.join(@pipelines_output_dir, 'my_depls-my-template-generated.yml'))).to eq(expected_yaml_file)
         end
       end
