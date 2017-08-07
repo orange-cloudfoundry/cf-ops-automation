@@ -36,7 +36,8 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'ensures tfvars files are also in generated-files' do
-      expect(Dir.entries(@generated_files)).to eq(Dir.entries(@terraform_tfvars))
+      expected_dirs = Dir.entries(@terraform_tfvars) << '.gitkeep'
+      expect(Dir.entries(@generated_files).sort).to eq(expected_dirs.sort)
     end
 
   end
@@ -54,8 +55,8 @@ describe 'terraform_plan_cloudfoundry task' do
         "-i terraform-tfvars=#{@terraform_tfvars} " \
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
-        'SPEC_PATH' =>'spec-only',
-        'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir' )
+                        'SPEC_PATH' =>'spec-only',
+                        'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir' )
     end
 
     after(:context) do
@@ -74,11 +75,14 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'contains only spec files in spec-applied' do
-      expect(Dir.entries(@spec_applied)).to eq(['.', '..', 'create-file.tf'])
+      expect(Dir.entries(@spec_applied)).to eq(%w(. .. create-file.tf))
     end
 
     it 'copies terraform-tfvars files in generated-files output' do
-      expect(Dir.entries(@generated_files)).to eq(Dir.entries(@terraform_tfvars))
+      cred_dir= %w[.gitkeep]
+
+      expected_dirs = Dir.entries(@terraform_tfvars) + cred_dir
+      expect(Dir.entries(@generated_files).sort).to eq(expected_dirs.sort)
     end
 
   end
@@ -126,7 +130,9 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'copies terraform-tfvars files in generated-files output' do
-      expect(Dir.entries(@generated_files)).to eq(Dir.entries(@terraform_tfvars))
+      Dir.entries(@terraform_tfvars).each do |filename|
+        expect(File).to exist(File.join(@generated_files, filename))
+      end
     end
 
   end
@@ -177,7 +183,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'does not contain any files in generated-files output' do
-      expect(Dir.entries(@generated_files)).to eq(['.','..'])
+      expect(Dir.entries(@generated_files)).to eq(%w[. .. .gitkeep])
     end
 
   end
