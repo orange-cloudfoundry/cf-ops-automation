@@ -2,12 +2,14 @@
 # encoding: utf-8
 
 require 'optparse'
-require_relative '../lib/deployments_generator'
+require_relative '../lib/bosh_certificates'
+require_relative '../lib/deployment_factory'
 require_relative '../lib/template_processor'
 require_relative '../lib/git_modules'
 require_relative '../lib/ci_deployment_overview'
 require_relative '../lib/secrets'
 require_relative '../lib/cf_app_overview'
+require_relative '../lib/root_deployment'
 
 
 def header(msg)
@@ -88,18 +90,19 @@ if OPTIONS[:input_pipelines].nil?
   ]
 end
 
-generator = DeploymentsGenerator.new
-BOSH_CERT = generator.load_cert_from_location OPTIONS[:secret_path], BOSH_CERT_LOCATIONS
+BOSH_CERT = BoshCertificates.new.load_from_location OPTIONS[:secret_path], BOSH_CERT_LOCATIONS
 
 secrets_dirs_overview = Secrets.new("#{OPTIONS[:secret_path]}/*").overview
 
 raise "#{depls}-versions.yml: file not found. #{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml does not exist" unless File.exist? "#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml"
 version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
-all_dependencies = generator.generate_deployment_overview_from_hash("#{depls}","#{OPTIONS[:paas_template_root]}/", "#{OPTIONS[:secret_path]}/" + depls + '/*', version_reference)
+deployment_factory = DeploymentFactory.new(depls.to_s,version_reference)
+puts version_reference
+all_dependencies = RootDeployment.new(depls.to_s, OPTIONS[:paas_template_root].to_s, File.join(OPTIONS[:secret_path], depls, '/*')).overview_from_hash(deployment_factory)
 
 all_ci_deployments = CiDeploymentOverview.new("#{OPTIONS[:secret_path]}/" + depls).overview
 
-all_cf_apps = CfAppOverview.new("#{OPTIONS[:secret_path]}/#{depls}/*", depls).overview
+all_cf_apps = CfAppOverview.new(File.join(OPTIONS[:secret_path], depls, '/*'), depls).overview
 
 git_submodules = GitModules.list(OPTIONS[:git_submodule_path])
 
