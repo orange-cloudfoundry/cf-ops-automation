@@ -1,0 +1,93 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+resources:
+- name: cf-ops-automation-docker-image
+  type: docker-image
+  source:
+    repository: orangecloudfoundry/cf-ops-automation
+    username: ((dockerhub-username))
+    password: ((dockerhub-password))
+
+- name: ci-develop
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    branch: ((cf-ops-automation-git-branch))
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+
+- name: ci-master
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    branch: master
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+
+
+- name: cf-ops-automation-dependencies
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    branch: ((cf-ops-automation-git-branch))
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+    paths: [ "Gemfile*", "Dockerfile" ]
+
+
+
+jobs:
+
+- name: build-cached-image
+  plan:
+#  - get: cf-ops-automation
+  - get: cf-ops-automation-dependencies
+    trigger: true
+  - put: cf-ops-automation-docker-image
+    params:
+      build: cf-ops-automation-dependencies
+      build_args:
+        CONCOURSE_VERSION: 3.3.3
+        CONCOURSE_SHA: 53ad92a78299c6b190838f462bd432d113fb3bacaa7fc2d9bc041af8d7c48aa5
+
+
+- name: test
+  plan:
+  - aggregate:
+    - get: cf-ops-automation-docker-image
+      passed: [build-cached-image]
+      trigger: true
+    - get: cf-ops-automation
+      resource: ci-develop
+      trigger: true
+#    passed: [build-cached-image]
+    trigger: true
+  - task: run-tests
+    image: cf-ops-automation-docker-image
+    config:
+      platform: linux
+      inputs:
+      - name: cf-ops-automation
+      run:
+        dir: cf-ops-automation
+        path: /bin/bash
+        args:
+        - -c
+        - |
+          fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+          bundle exec rspec
+
+- name: merge-to-master
+  serial: true
+  plan:
+    - aggregate:
+      - get: ci-master
+      - get: cf-ops-automation
+        resource: ci-develop
+        trigger: true
+        passed: [test]
+    - put: ci-master
+      params:
+        repository: cf-ops-automation

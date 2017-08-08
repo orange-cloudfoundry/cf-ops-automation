@@ -13,3 +13,4 @@
 .project
 
 /ops-depls/cf-apps-deployments/mattermost/mattermost/
+/ci/private.yml
