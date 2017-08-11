@@ -1,5 +1,5 @@
 ---
-#deployment-name: micro-depls
+deployment-name: simple-depls
 ntp_boshrelease-version: 4
 
 stemcell-version: 3363.14

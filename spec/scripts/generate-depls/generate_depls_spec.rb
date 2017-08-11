@@ -127,8 +127,11 @@ describe 'generate-depls' do
 
       end
 
-      it 'generate pipelines without deployment' do
+      it 'no error message expected' do
         expect(stderr_str).to eq('')
+      end
+
+      it 'generate pipelines without deployment' do
         expect(stdout_str).to include('### WARNING ### no deployment detected. Please check')
       end
 

@@ -2,6 +2,7 @@ require 'rspec'
 require 'yaml'
 require 'fileutils'
 require_relative '../../lib/directory_initializer'
+require_relative '../../lib/root_deployment_version'
 
 describe DirectoryInitializer do
 
@@ -57,6 +58,7 @@ describe DirectoryInitializer do
 
           expect(generated_ci_overview).to eq(reference)#, "#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml"
         end
+
     end
   end
 
@@ -74,6 +76,16 @@ describe DirectoryInitializer do
       expect(File.exist? "#{template_dir}/#{root_deployment_name}/template/runtime-config-tpl.yml").to be_truthy
       expect(File.exist? "#{template_dir}/#{root_deployment_name}/#{root_deployment_name}-versions.yml").to be_truthy
       # expect(File.exist? "#{template_dir}/.gitmodule").to be_truthy
+    end
+
+    context 'when files are generated with default value' do
+
+      it '<root_deployment>-versions.yml is valid' do
+        subject.setup_templates!
+
+        versions=RootDeploymentVersion.load_file("#{template_dir}/#{root_deployment_name}/#{root_deployment_name}-versions.yml")
+        expect(versions).not_to be_nil
+      end
     end
   end
 end
