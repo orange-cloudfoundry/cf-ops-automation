@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'yaml'
+require_relative '../lib/root_deployment_version'
 
 class DirectoryInitializer
   attr_reader :root_deployment_name, :secrets_dir, :template_dir
@@ -39,6 +40,7 @@ class DirectoryInitializer
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/cloud-config-tpl.yml"
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/runtime-config-tpl.yml"
 
+    RootDeploymentVersion.init_file( @root_deployment_name, {}, File.join(@template_dir, @root_deployment_name))
     create_non_existing_files files_to_create
   end
 

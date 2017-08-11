@@ -10,6 +10,7 @@ require_relative '../lib/ci_deployment_overview'
 require_relative '../lib/secrets'
 require_relative '../lib/cf_app_overview'
 require_relative '../lib/root_deployment'
+require_relative '../lib/root_deployment_version'
 
 
 def header(msg)
@@ -95,9 +96,11 @@ BOSH_CERT = BoshCertificates.new.load_from_location OPTIONS[:secret_path], BOSH_
 secrets_dirs_overview = Secrets.new("#{OPTIONS[:secret_path]}/*").overview
 
 raise "#{depls}-versions.yml: file not found. #{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml does not exist" unless File.exist? "#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml"
-version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
-deployment_factory = DeploymentFactory.new(depls.to_s,version_reference)
-puts version_reference
+# version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
+root_deployment_versions = RootDeploymentVersion.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
+
+deployment_factory = DeploymentFactory.new(depls.to_s, root_deployment_versions.versions)
+puts root_deployment_versions.versions
 all_dependencies = RootDeployment.new(depls.to_s, OPTIONS[:paas_template_root].to_s, File.join(OPTIONS[:secret_path], depls, '/*')).overview_from_hash(deployment_factory)
 
 all_ci_deployments = CiDeploymentOverview.new("#{OPTIONS[:secret_path]}/" + depls).overview
@@ -110,7 +113,7 @@ erb_context = {
   depls: depls,
   bosh_cert: BOSH_CERT,
   secrets_dirs_overview: secrets_dirs_overview,
-  version_reference: version_reference,
+  version_reference: root_deployment_versions.versions,
   all_dependencies: all_dependencies,
   all_ci_deployments: all_ci_deployments,
   all_cf_apps: all_cf_apps,
