@@ -72,8 +72,11 @@ jobs:
 - name: this-is-an-empty-pipeline
 
 <% else %>
+<% jobs = Hash.new {|h,k| h[k]=[]} %>
 
 - name: retrigger-all-jobs
+  <% jobs['utils'] << "retrigger-all-jobs" %>
+
   plan:
     - aggregate:
       - get: cf-ops-automation
@@ -127,6 +130,7 @@ jobs:
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
 
 - name: cf-push-<%= app_name %>
+<% jobs["app-#{app_name[0]}*"] << "cf-push-#{app_name}" %>
   plan:
     - aggregate:
       - get: secrets-<%= app_name %>
@@ -215,5 +219,26 @@ jobs:
           text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
+
+<% end %>
+
+
+<% unless all_cf_apps.empty? %>
+groups:
+- name: <%= depls.capitalize %>
+  jobs:
+  <% jobs.each_value do |jobs_list| %>
+   <% jobs_list.each do |a_job| %>
+    - <%= a_job %>
+   <% end %>
+  <% end %>
+
+<% jobs.sort.each do |group_name, jobs_list| %>
+- name: <%= group_name.capitalize %>
+  jobs:
+   <% jobs_list.each do |a_job| %>
+    - <%= a_job %>
+   <% end %>
+<% end %>
 
 <% end %>
