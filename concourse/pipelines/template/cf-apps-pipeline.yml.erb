@@ -206,8 +206,8 @@ jobs:
       output_mapping: {generated-files: post-deploy-result}
       file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>/template
-        SECRETS_DIR: credentials-resource/<%= depls %>/cf-apps-deployments/<%= app_name %>
+        CUSTOM_SCRIPT_DIR: template-resource/<%= cf_app_info["base-dir"] %>/template
+        SECRETS_DIR: credentials-resource/<%= cf_app_info["base-dir"] %>
       on_failure:
         put: failure-alert
         params:
