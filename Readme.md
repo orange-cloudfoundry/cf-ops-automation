@@ -69,16 +69,19 @@ this is expected to be an empty yaml file !
 
 #### deployment dependencies format (deployment-dependencies.yml)
 
-in `deployment-dependencies.yml`, it is possible to: 
+In `deployment-dependencies.yml`, it is possible to: 
 
-    - add secrets path to trigger the build
-        resources:
+- add secrets path to trigger the build:
+
+``` yaml
+        resources:
           secrets:
             extented_scan_path: ["ops-depls/cloudfoundry", "...."]
-
-    - choose a bosh cli version. By default, bosh cli v2 is used unless v1 specified in cli_version
+```
         
-        ``` yaml
+- choose a bosh cli version. By default, bosh cli v2 is used unless v1 specified in cli_version
+        
+``` yaml
         deployment:
           micro-bosh:
             cli_version: v1
@@ -86,9 +89,9 @@ in `deployment-dependencies.yml`, it is possible to:
                 ...
             releases:
                 ...
-        ```
+```
 
-`deployment-dependencies.yml` sample (should be placed in the boshrelease deployment dir):
+Following is a `deployment-dependencies.yml` sample (should be placed in the boshrelease deployment dir):
 
 ``` yaml
 
@@ -212,9 +215,9 @@ use ```deploy.sh``` script like [this](ops-depls/template/deploy.sh) to manually
 You can use spruce embedded with post-generate.sh to do it !
 See [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh) script t
 
-### sample
+### Sample
 
-have a look to this [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh)
+There is no yet public template sample. Orange employees can have a look to the [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh) in the private paas-template repo.
 
 ## How to bootstrap pipelines to a new concourse
 
