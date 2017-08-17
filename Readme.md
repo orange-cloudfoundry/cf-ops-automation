@@ -6,7 +6,7 @@ It provides:
 - concourse-based continuous deployment pipeline generator for common resource types: bosh deployments, cf apps, terraform resources
 - templating engine supporting operations of multiple environments (e.g. preprod/prod-region1/prod-region2) 
 
-The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, ...
+The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
 
 # Overview
 
@@ -15,8 +15,9 @@ This repo takes templates and instances as input, and generates concourse pipeli
 * Instances are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
 * Generated pipeline triggers provisionning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
  
-A `root deployment` contains infrastructure to operate `nested deployment`s. A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
-Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ... 
+A `root deployment` contains infrastructure to operate `nested deployment`s. 
+* A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
+* Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ... 
 
 
 ## Orange CF-SKC Deployment topology
