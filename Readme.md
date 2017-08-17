@@ -177,6 +177,10 @@ ci-deployment:
 
 See [status](docs/work-in-progress.md) as well as git hub issues.
 
+# Credits
+
+This repo was inspired by great work shared in https://github.com/alphagov/paas-cf
+
 # FAQ
 
 ## How to initialize a new bosh deployment template ?
