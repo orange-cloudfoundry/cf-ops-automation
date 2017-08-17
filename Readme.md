@@ -21,9 +21,9 @@ Nested deployments are resources created by a root deployment. This typically in
 
 ## Orange CF-SKC Deployment topology
 
-This repo is maintained by the Orange CF skill center team for its deployments. The team infrastructure deployment topology and bootstrapping process is illustred below:    
-![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.github.com/orange-cloudfoundry/cf-ops-automation/master/src/docs/overview.puml?lastRefreshOn=17082017)
-Source is in the [plantuml](http://plantuml.com/) file: [bosh overview](docs/overview.puml).
+This repo is maintained by the Orange CF skill center team for its deployments. The team's infrastructure deployment topology and bootstrapping process is illustred below:    
+![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/overview.puml?lastRefreshOn=17082017)
+Source is in the [plantuml](http://plantuml.com/) file: [bosh overview](docs/overview.puml), see [caching tips](https://stackoverflow.com/questions/32203610/how-to-integrate-uml-diagrams-into-gitlab-or-github)
 
 The `inception`, `micro-depls`, `master-depls`, `ops-depls`, `expe-depls` are `root deployment`s in Orange CF skill center infrastructure.
 
@@ -35,7 +35,7 @@ The plan is to open source the Orange's CF skill center team template git repo i
 
 The diagram below illustrates the concourse pipeline generation for 2 types of supported resources (Bosh deployments and CF apps). The diagram includes the main hooks that templating engine supports during the resources life cycle. 
 
-[script lifecycle overview](http://www.plantuml.com/plantuml/proxy?src=https://raw.github.com/orange-cloudfoundry/cf-ops-automation/master/src/docs/script-lifecycle-overview.puml?lastRefreshOn=17082017). 
+[script lifecycle overview](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/script-lifecycle-overview.puml?lastRefreshOn=17082017). 
 
 
 ## Concourse pipeline generation
