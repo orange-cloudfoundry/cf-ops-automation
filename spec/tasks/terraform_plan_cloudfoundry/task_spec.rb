@@ -75,7 +75,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'contains only spec files in spec-applied' do
-      expect(Dir.entries(@spec_applied)).to eq(%w(. .. create-file.tf))
+      expect(Dir.entries(@spec_applied).sort).to eq(%w[. .. create-file.tf].sort)
     end
 
     it 'copies terraform-tfvars files in generated-files output' do

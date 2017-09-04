@@ -73,7 +73,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'contains only spec files in spec-applied' do
-      expect(Dir.entries(@spec_applied)).to eq(%w[. .. create-file.tf])
+      expect(Dir.entries(@spec_applied).sort).to eq(%w[. .. create-file.tf].sort)
     end
 
     it 'generates a terraform state file in generated-files output' do
@@ -88,6 +88,7 @@ describe 'terraform_apply_cloudfoundry task' do
       expected_files = %w[. .. .gitkeep terraform.tfvars terraform.tfstate spec-only.txt].sort
       expect(Dir.entries(@generated_files).sort).to eq(expected_files)
     end
+
   end
 
   context 'when specs are in resource dirs' do
