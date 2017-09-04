@@ -17,6 +17,8 @@ resources:
   type: git
   source:
     uri: ((cf-ops-automation-git-uri))
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-password))
     branch: ((cf-ops-automation-git-branch))
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
@@ -24,6 +26,8 @@ resources:
   type: git
   source:
     uri: ((cf-ops-automation-git-uri))
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-password))
     branch: master
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
@@ -49,8 +53,8 @@ jobs:
     params:
       build: cf-ops-automation-dependencies
       build_args:
-        CONCOURSE_VERSION: 3.3.3
-        CONCOURSE_SHA: 53ad92a78299c6b190838f462bd432d113fb3bacaa7fc2d9bc041af8d7c48aa5
+        CONCOURSE_VERSION: 3.4.1
+        CONCOURSE_SHA: 7259f5dc26dba6b10bc515f7fae2ccf559579e61320f071656a6444806260289
 
 
 - name: test
@@ -74,7 +78,7 @@ jobs:
         dir: cf-ops-automation
         path: /bin/bash
         args:
-        - -c
+        - -ce
         - |
           fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
           bundle exec rspec
