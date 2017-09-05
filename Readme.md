@@ -225,7 +225,8 @@ There is no yet public template sample. Orange employees can have a look to the 
 
 ## How to bootstrap pipelines to a new concourse
 
-simply run [concourse-bootstrap.sh](concourse-bootstrap.sh) with the appropriate environment variable set  
+simply run [concourse-bootstrap.sh](concourse-bootstrap.sh) with the appropriate environment variable set. It loads the
+```bootstrap-all-init-pipelines``` pipeline and triggers it.  
 
 
 ```
@@ -235,7 +236,6 @@ SECRETS=<path_to_your_secret_dir> FLY_TARGET=<your_target> ./concourse-bootstrap
 ### pre requisite
 The following tools are required to run [concourse-bootstrap.sh](concourse-bootstrap.sh)
  - git 
- - ruby
  - fly, the concourse CLI
     - Login to concourse in main team
 

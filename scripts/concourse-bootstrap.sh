@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 set -e
-SECRETS=${SECRETS:-../preprod-secrets}
+SECRETS=${SECRETS:-$(pwd)/../../preprod-secrets}
 FLY_TARGET=${FLY_TARGET:-cw-pp-micro}
-DEFAULT_DEPLS_LIST=$(find $SECRETS -type d -maxdepth 1 -name "*-depls")
-DEPLS_LIST=${DEPLS_LIST:-"micro-depls master-depls ops-depls expe-depls"}
 SKIP_TRIGGER=${SKIP_TRIGGER:=false}
 DEBUG=${DEBUG:=false}
 
@@ -13,7 +11,6 @@ usage(){
     echo -e "No parameter supported. Use environment variables:" 1>&2
     echo -e "\t FLY_TARGET: fly target name to use. DEFAULT: $FLY_TARGET " 1>&2
     echo -e "\t SECRETS: path to secrets directory. DEFAULT: $SECRETS " 1>&2
-    echo -e "\t DEPLS_LIST: deployments to process. DEFAULT: [$DEPLS_LIST] " 1>&2
     echo -e "\t SKIP_TRIGGER: skip job triggering after pipeline loading. DEFAULT: [$SKIP_TRIGGER] " 1>&2
     exit 1
 }
@@ -28,7 +25,7 @@ if [ "$SCRIPT_DIR" == "." ]
 then
     SCRIPT_DIR=..
 fi
-SCRIPT_DIR=${CURRENT_SCRIPT_DIR%scripts}
+SCRIPT_DIR=${CURRENT_SCRIPT_DIR%/scripts}
 
 set +e
 SECRET_DIR=$(readlink -e ${SECRETS})
@@ -40,24 +37,19 @@ then
     exit 1
 fi
 
-OUTPUT_DIR=$(readlink -f ${SCRIPT_DIR}/bootstrap-generated)
-mkdir -p ${OUTPUT_DIR}/pipelines
-
 echo "Deploy on ${FLY_TARGET} using secrets in $SECRET_DIR"
-for depls in ${DEPLS_LIST};do
-    ${SCRIPT_DIR}/generate-depls.rb -d ${depls} -p ${SECRET_DIR} -o ${OUTPUT_DIR} --no-dump
-    PIPELINE="${depls}-init-generated"
-    echo "Load ${PIPELINE} on ${FLY_TARGET}"
-    set +e
-    fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${OUTPUT_DIR}/pipelines/${PIPELINE}.yml  \
-                -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml \
-                -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-mattermost-certs.yml \
-                -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml
-    set -e
-    fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
-    if [ "$SKIP_TRIGGER" != "true" ]
-    then
-        fly -t ${FLY_TARGET} trigger-job -j "${PIPELINE}/update-pipeline-${depls}"
-    fi
-done
+
+PIPELINE="bootstrap-all-init-pipelines"
+echo "Load ${PIPELINE} on ${FLY_TARGET}"
+set +e
+fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml  \
+            -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml \
+            -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-mattermost-certs.yml \
+            -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml
+set -e
+fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
+if [ "$SKIP_TRIGGER" != "true" ]
+then
+    fly -t ${FLY_TARGET} trigger-job -j "${PIPELINE}/bootstrap-init-pipelines"
+fi
 
