@@ -71,7 +71,7 @@ describe 'generate-depls' do
 
     context 'when only a pipeline is selected' do
       let(:depls_name) { 'dummy-depls' }
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i ./concourse/pipelines/template/depls-pipeline.yml.erb -no-dump" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i ./concourse/pipelines/template/depls-pipeline.yml.erb --no-dump" }
 
       stdout_str, stderr_str, = ''
       before do
