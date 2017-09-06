@@ -160,12 +160,12 @@ jobs:
       on_success:
         put: PR-develop
         params:
-          path: PR-develop
+          path: cf-ops-automation
           status: success
       on_failure:
         put: PR-develop
         params:
-          path: PR-develop
+          path: cf-ops-automation
           status: failure
 
 
