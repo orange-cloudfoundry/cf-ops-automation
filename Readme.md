@@ -251,6 +251,8 @@ The following tools are required to run [create-root-depls](scripts/create-root-
 
 # Development
 
+Active development happens on `develop` 
+
 ## Running the Test Suite
 
 If you are running the full test suite, some of the integration tests are dependent on the fly CLI.
@@ -269,3 +271,11 @@ After these are set up, you will be able to run the test suite via:
 ```sh
 bundler exec rspec
 ```
+
+## Contributing Code
+
+If you've got a feature you want to see or a bug you'd like to fix, pull requests are the way to go.
+
+### Submitting Pull Requests
+
+ * All pull requests should be made to `develop`. Only Pull Request based on this branch trigger automated build.
