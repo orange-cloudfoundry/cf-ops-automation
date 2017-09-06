@@ -12,6 +12,7 @@ usage(){
     echo -e "\t FLY_TARGET: fly target name to use. DEFAULT: $FLY_TARGET " 1>&2
     echo -e "\t SECRETS: path to secrets directory. DEFAULT: $SECRETS " 1>&2
     echo -e "\t SKIP_TRIGGER: skip job triggering after pipeline loading. DEFAULT: [$SKIP_TRIGGER] " 1>&2
+    echo -e "\t FLY_SET_PIPELINE_OPTION: set custom option like '--non-interactive'. DEFAULT: empty " 1>&2
     exit 1
 }
 
@@ -42,7 +43,7 @@ echo "Deploy on ${FLY_TARGET} using secrets in $SECRET_DIR"
 PIPELINE="bootstrap-all-init-pipelines"
 echo "Load ${PIPELINE} on ${FLY_TARGET}"
 set +e
-fly -t ${FLY_TARGET} set-pipeline -p ${PIPELINE} -c ${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml  \
+fly -t ${FLY_TARGET} set-pipeline ${FLY_SET_PIPELINE_OPTION} -p ${PIPELINE} -c ${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml  \
             -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml \
             -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-mattermost-certs.yml \
             -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml

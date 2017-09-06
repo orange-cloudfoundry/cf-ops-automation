@@ -54,6 +54,13 @@ resources:
 jobs:
 
 - name: bootstrap-init-pipelines
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
   - aggregate:
     - get: weekday-morning
@@ -68,23 +75,9 @@ jobs:
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
     file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
   - task: set-all-init-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
     params:
       ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
       FLY_USERNAME: {{concourse-micro-depls-username}}
@@ -113,13 +106,6 @@ jobs:
           DEPLS=${PIPELINE%%-init-generated}
           echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
   - task: fly-into-concourse
     input_mapping: {fly-cmd: init-auto-trigger-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
@@ -128,10 +114,59 @@ jobs:
       ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
       FLY_USERNAME: {{concourse-micro-depls-username}}
       FLY_PASSWORD:  {{concourse-micro-depls-password}}
-    on_failure:
-      put: failure-alert
+
+
+
+- name: update-bootstrap-all-init-pipelines
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+    - get: secrets-full
+      params: { submodules: none}
+
+  - task: update-bootstrap-pipeline
+    input_mapping: {script-resource: cf-ops-automation,secrets: secrets-full}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: governmentpaas/curl-ssl}
+      inputs:
+        - name: script-resource
+        - name: secrets
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          apk add bash coreutils --no-cache
+          export SECRETS=$(pwd)/secrets
+          export ATC_EXTERNAL_URL=$(grep ${ATC_EXTERNAL_URL_KEY} ${SECRETS}/${CREDENTIALS_FILENAME} |cut -d':' -f2-|tr -d [:blank:])
+          export FLY_USERNAME=$(grep ${FLY_USERNAME_KEY} ${SECRETS}/${CREDENTIALS_FILENAME} |cut -d':' -f2-|tr -d [:blank:])
+          export FLY_PASSWORD=$(grep ${FLY_PASSWORD_KEY} ${SECRETS}/${CREDENTIALS_FILENAME} |cut -d':' -f2-|tr -d [:blank:])
+
+          mkdir -p /usr/local/bin
+          FLY=/usr/local/bin/fly
+          echo "Fetching fly...";
+          curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+          chmod +x $FLY;
+
+          fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
+
+          export FLY_TARGET=main
+          export FLY_SET_PIPELINE_OPTION="--non-interactive"
+          cd script-resource/
+          ./concourse-bootstrap.sh
       params:
-        channel: {{slack-channel}}
-        text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+        CREDENTIALS_FILENAME: micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
+        ATC_EXTERNAL_URL_KEY: concourse-micro-depls-target
+        FLY_USERNAME_KEY: concourse-micro-depls-username
+        FLY_PASSWORD_KEY:  concourse-micro-depls-password
