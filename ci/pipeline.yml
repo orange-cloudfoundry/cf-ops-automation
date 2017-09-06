@@ -5,6 +5,11 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
 
+  - name: pull-request
+    type: docker-image
+    source:
+      repository: jtarchie/pr
+
 resources:
 - name: cf-ops-automation-docker-image
   type: docker-image
@@ -12,6 +17,18 @@ resources:
     repository: orangecloudfoundry/cf-ops-automation
     username: ((dockerhub-username))
     password: ((dockerhub-password))
+
+
+- name: version
+  type: semver
+  source:
+    driver: git
+    uri: ((cf-ops-automation-git-uri))
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-password))
+    branch: version
+    initial_version: 1.3.1
+    file: version
 
 - name: ci-develop
   type: git
@@ -29,6 +46,16 @@ resources:
     username: ((cf-ops-automation-git-username))
     password: ((cf-ops-automation-git-password))
     branch: master
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+
+- name: PR-develop
+  type: pull-request
+  source:
+    repo: ((cf-ops-automation-git-hub-repository))
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-password))
+    access_token: ((cf-ops-automation-git-hub-token))
+    base: develop
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
 
@@ -52,7 +79,7 @@ jobs:
   - put: cf-ops-automation-docker-image
     params:
       build: cf-ops-automation-dependencies
-      build_args:
+      build_args: &docker_build_args
         CONCOURSE_VERSION: 3.4.1
         CONCOURSE_SHA: 7259f5dc26dba6b10bc515f7fae2ccf559579e61320f071656a6444806260289
 
@@ -70,7 +97,7 @@ jobs:
     trigger: true
   - task: run-tests
     image: cf-ops-automation-docker-image
-    config:
+    config: &test_config
       platform: linux
       inputs:
       - name: cf-ops-automation
@@ -95,3 +122,76 @@ jobs:
     - put: ci-master
       params:
         repository: cf-ops-automation
+
+
+- name: build-PR-cached-image
+  plan:
+    - get: PR-develop
+      trigger: true
+      version: every
+
+    - put: PR-develop
+      params:
+        path: PR-develop
+        status: pending
+
+    - put: cf-ops-automation-docker-image
+      params:
+        build: PR-develop
+        tag: PR-develop/.git/id
+        tag_prefix: PR-
+        build_args: *docker_build_args
+
+- name: test-PR-develop
+  plan:
+    - aggregate:
+      - get: cf-ops-automation-docker-image
+        passed: [build-PR-cached-image]
+        trigger: true
+      - get: cf-ops-automation
+        resource: PR-develop
+        trigger: true
+        version: every
+        passed: [build-PR-cached-image]
+
+    - task: test-pr
+      image: cf-ops-automation-docker-image
+      config: *test_config
+      on_success:
+        put: PR-develop
+        params:
+          path: PR-develop
+          status: success
+      on_failure:
+        put: PR-develop
+        params:
+          path: PR-develop
+          status: failure
+
+
+- name: major
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: major, pre: rc}
+  - put: version
+    params: {file: version/version}
+
+- name: minor
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: minor, pre: rc}
+  - put: version
+    params: {file: version/version}
+
+- name: patch
+  serial_groups: [version]
+  plan:
+  - get: version
+    params: {bump: patch, pre: rc}
+  - put: version
+    params: {file: version/version}
+
+
+
