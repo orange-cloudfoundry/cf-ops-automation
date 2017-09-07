@@ -76,7 +76,13 @@ jobs:
 
 - name: retrigger-all-jobs
   <% jobs['utils'] << "retrigger-all-jobs" %>
-
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
     - aggregate:
       - get: cf-ops-automation
@@ -102,13 +108,6 @@ jobs:
             <% end %>
         params:
           BUILD_PIPELINE_NAME: <%= depls %>-cf-apps-generated
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
     - task: fly-into-concourse
       input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
@@ -117,13 +116,6 @@ jobs:
         ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
         FLY_USERNAME: {{concourse-<%= depls %>-username}}
         FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
 
 <% end %>
 
@@ -131,6 +123,13 @@ jobs:
 
 - name: cf-push-<%= app_name %>
 <% jobs["app-#{app_name[0]}*"] << "cf-push-#{app_name}" %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
     - aggregate:
       - get: secrets-<%= app_name %>
@@ -155,13 +154,6 @@ jobs:
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= cf_app_info["base-dir"] %>/template
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
     - task: push-<%= app_name %>
       attempts: 3
       input_mapping: {scripts-resource: cf-ops-automation, templates-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
@@ -177,14 +169,6 @@ jobs:
         CF_USERNAME: <%= cf_app_info["cf_username"] %>
         CF_PASSWORD: <%= cf_app_info["cf_password"] %>
 
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed cannot spiff manifest [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
-
     - task: update-<%= app_name %>-files
       input_mapping: {reference-resource: secrets-<%= app_name %>, generated-resource: final-release-manifest}
       output_mapping: {updated-git-resource: updated-<%= app_name %>-secrets}
@@ -193,13 +177,6 @@ jobs:
         OLD_FILE: <%= cf_app_info["base-dir"] %>/<%= app_name %>_manifest.yml
         NEW_FILE: "<%= app_name %>_manifest.yml"
         COMMIT_MESSAGE: "<%= app_name %> generated CF manifest auto update - [skip ci]"
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
     - put: secrets-<%= app_name %>
       get_params: {submodules: none}
       params:
@@ -212,13 +189,6 @@ jobs:
       params:
         CUSTOM_SCRIPT_DIR: template-resource/<%= cf_app_info["base-dir"] %>/template
         SECRETS_DIR: credentials-resource/<%= cf_app_info["base-dir"] %>
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
 
 <% end %>
 
