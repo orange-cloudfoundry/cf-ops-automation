@@ -13,7 +13,7 @@ The goal is to automate most (if not all) interactive operations of Bosh, CF API
 This repo takes templates and instances as input, and generates concourse pipelines that automatically reload and execute. As a result, resources gets provisionned and operated:
 * Templates are specified in a git repo (referred to as "paas-templates"). It contains a hierarchical structure with root deployment and nested deployment templates.
 * Instances are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
-* Generated pipeline triggers provisionning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
+* Generated pipeline triggers provisioning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
  
 A `root deployment` contains infrastructure to operate `nested deployment`s. 
 * A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
@@ -52,10 +52,24 @@ If a template directory contains hook scripts with specific name, then these scr
 
   1: `post-generate.sh`: can execute shell operation or spruce task.
      **Restrictions**: as the post-generation script is executed in the same docker image running spruce, no spiff is available.
+     Environment variables available:
+
+      - GENERATE_DIR: directory holding generated files. It's an absolute path.
+      - BASE_TEMPLATE_DIR: directory where `post-generate.sh` is located. It's an relative path. 
 
   2: `pre-bosh-deploy.sh`: can execute shell operation or spiff task. 
+     Environment variables available:
+     
+      - GENERATE_DIR: directory holding generated files. It's an absolute path. 
+      - BASE_TEMPLATE_DIR: directory where `pre-bosh-deploy.sh` is located. It's an relative path. 
+      - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
 
-  3: `post-bosh-deploy.sh`: can execute shell operation (including curl). 
+  3: `post-bosh-deploy.sh`: can execute shell operation (including curl).
+     Environment variables available:
+     
+      - GENERATE_DIR: directory holding generated files. It's an absolute path. 
+      - BASE_TEMPLATE_DIR: directory where `post-bosh-deploy.sh` is located. It's an relative path.
+      - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
 
 * to generate an additional errand step, in a `deployment-dependencies.yml` file, insert a key ```errands``` with a subkey named like the errand job to execute 
   
@@ -121,6 +135,13 @@ For each cf-application, when a `enable-cf-app.yml` file is found, it is going t
 If a template directory contains a `pre-cf-push.sh` file, then this script is run:
     - you are already logged in CF,
     - you have to download your binaries before uploading to CF
+
+Environment variables available:
+     
+  - GENERATE_DIR: directory holding generated files. It's an absolute path. 
+  - BASE_TEMPLATE_DIR: directory where `pre-cf-push.sh` is located. It's an relative path.
+  - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
+
 
 #### `enable-cf-app.yml` file format
 
@@ -225,7 +246,7 @@ There is no yet public template sample. Orange employees can have a look to the 
 
 ## How to bootstrap pipelines to a new concourse
 
-simply run [concourse-bootstrap.sh](concourse-bootstrap.sh) with the appropriate environment variable set. It loads the
+simply run [concourse-bootstrap.sh](scripts/concourse-bootstrap.sh) with the appropriate environment variable set. It loads the
 ```bootstrap-all-init-pipelines``` pipeline and triggers it.  
 
 
@@ -234,7 +255,7 @@ SECRETS=<path_to_your_secret_dir> FLY_TARGET=<your_target> ./concourse-bootstrap
 ```
 
 ### pre requisite
-The following tools are required to run [concourse-bootstrap.sh](concourse-bootstrap.sh)
+The following tools are required to run [concourse-bootstrap.sh](scripts/concourse-bootstrap.sh)
  - git 
  - fly, the concourse CLI
     - Login to concourse in main team
