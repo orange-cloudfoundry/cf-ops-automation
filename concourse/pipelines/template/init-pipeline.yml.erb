@@ -62,6 +62,14 @@ jobs:
 <% pipeline_name="#{depls}-init-generated" %>
 
 - name: update-pipeline-<%= depls %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+      text: |
+        ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      username: Concourse
   plan:
   - aggregate:
     - get: paas-templates-full
@@ -101,13 +109,6 @@ jobs:
           cp -rf secrets/. result-dir
           cd result-dir/
           ./scripts/generate-depls.rb --depls <%= depls %> -t ../templates -p . -o concourse
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
 
   - put: <%= all_ci_deployments[depls]["target_name"] %>
     params:

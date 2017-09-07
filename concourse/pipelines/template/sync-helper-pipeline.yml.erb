@@ -67,6 +67,13 @@ jobs:
 <% if ! all_ci_deployments.empty? %>
 
 - name: anonymize-secrets-value
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
   - aggregate:
     - get: at-nine
@@ -102,26 +109,12 @@ jobs:
           gem update bundler
           bundle install
           bundle exec scripts/anonymize_secrets.rb -s ../secrets -o ../result-dir
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
   - task: update-anonymized-files
     input_mapping: {reference-resource: anonymized-secrets, generated-resource: anonymized-secrets-dir}
     output_mapping: {updated-git-resource: updated-anonymized-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_all_files_from_generated.yml
     params:
       COMMIT_MESSAGE: "auto anonymized new secrets"
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
   - put: anonymized-secrets
     get_params: {submodules: none}
     params:
@@ -131,6 +124,13 @@ jobs:
 <% %w(inception micro-depls master-depls ops-depls expe-depls shared).each do |depls| %>
 
 - name: compare-anonymized-<%= depls %>-secrets
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
   - aggregate :
     - get: anonymized-secrets
@@ -156,13 +156,6 @@ jobs:
         - -xc
         - |
           diff -r anonymized-secrets/<%= depls %> anonymized-secrets-compare/<%= depls %>
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
     ensure:
       task: diff-secrets
       output_mapping: {result-dir: compared-anonymized-<%= depls %>-secrets}
@@ -189,6 +182,13 @@ jobs:
 <% subdir_list&.sort&.each do |subdir| %>
 
 - name: <%= depls %>-<%= subdir %>-comparison
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
   - aggregate :
     - get: anonymized-secrets
@@ -219,13 +219,6 @@ jobs:
           else
             echo "skipping: anonymized-secrets/<%= depls %>/<%= subdir %> and anonymized-secrets-compare/<%= depls %>/<%= subdir %> do not exist"
           fi
-    on_failure:
-      put: failure-alert
-      params:
-        channel: {{slack-channel}}
-        text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
   <% end %>
 <% end %>
 
