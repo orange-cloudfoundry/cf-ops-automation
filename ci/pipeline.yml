@@ -96,8 +96,10 @@ jobs:
 #    passed: [build-cached-image]
     trigger: true
   - task: run-tests
-    image: cf-ops-automation-docker-image
     config: &test_config
+      image_resource:
+        type: docker-image
+        source: {repository: cf-ops-automation-docker-image}
       platform: linux
       inputs:
       - name: cf-ops-automation
@@ -155,7 +157,6 @@ jobs:
         passed: [build-PR-cached-image]
 
     - task: test-pr
-      image: cf-ops-automation-docker-image
       config: *test_config
       on_success:
         put: PR-develop
