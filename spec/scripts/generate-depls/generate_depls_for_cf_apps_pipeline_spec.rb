@@ -26,7 +26,7 @@ describe 'generate-depls for cf-apps pipeline' do
     end
 
     context 'when only templates dir is initialized' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i ./concourse/pipelines/template/cf-apps-pipeline.yml.erb" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/cf-apps-pipeline.yml.erb" }
 
       stdout_str = stderr_str = ''
       before do
