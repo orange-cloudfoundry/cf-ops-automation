@@ -1,0 +1,6 @@
+---
+applications:
+- name: sample-php-info
+  path: sample-php-info
+  memory: 128M
+  domain: (( grab secrets.cloudfoundry.apps_domain ))

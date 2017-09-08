@@ -111,7 +111,7 @@ describe 'generate-depls' do
       let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path}" }
 
       it 'failed because versions.yml is missing' do
-        stdout_str, stderr_str, _ = Open3.capture3( "#{ci_path}/scripts/generate-depls.rb #{options}")
+        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
         expect(stderr_str).to include('dummy-depls-versions.yml: file not found')
       end
     end
@@ -141,19 +141,19 @@ describe 'generate-depls' do
         expect(stdout_str).to include("#{erb_file_counter} concourse pipeline templates were processed")
       end
 
-      context 'when cf-apps pipeline is checked' do
+      context 'when cf-apps pipeline is empty' do
         it_behaves_like 'pipeline checker', 'dummy-depls-cf-apps-generated.yml', 'empty-cf-apps.yml'
       end
 
-      context 'when depls pipeline is checked' do
+      context 'when depls pipeline is empty' do
         it_behaves_like 'pipeline checker', 'dummy-depls-generated.yml', 'empty-depls.yml'
       end
 
-      context 'when init pipeline is checked' do
+      context 'when init pipeline is empty' do
         it_behaves_like 'pipeline checker', 'dummy-depls-init-generated.yml', 'empty-init.yml'
       end
 
-      context 'when news pipeline is checked' do
+      context 'when news pipeline is empty' do
         it_behaves_like 'pipeline checker', 'dummy-depls-news-generated.yml', 'empty-news.yml'
       end
 
