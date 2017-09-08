@@ -184,6 +184,7 @@ resources:
 jobs:
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
 - name: execute-deploy-script
+  <% jobs['utils'] << 'execute-deploy-script' %>
   on_failure:
     put: failure-alert
     params:
@@ -191,7 +192,6 @@ jobs:
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
-  <% jobs['utils'] << 'execute-deploy-script' %>
   plan:
     - get: at-noon
       trigger: true
@@ -220,6 +220,13 @@ jobs:
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
   <% jobs['utils'] << "cloud-config-and-runtime-config-for-#{depls}" %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
     - get: secrets-<%=depls %>
       params: { submodules: none}
@@ -360,6 +367,7 @@ jobs:
 <% all_dependencies.sort.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
+  <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   on_failure:
     put: failure-alert
     params:
@@ -367,7 +375,6 @@ jobs:
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
-  <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   plan:
     - aggregate:
       - get: bosh-stemcell
