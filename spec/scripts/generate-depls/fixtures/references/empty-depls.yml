@@ -82,7 +82,13 @@ resources:
 
 jobs:
 - name: execute-deploy-script
-  
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
     - get: at-noon
       trigger: true
@@ -108,16 +114,17 @@ jobs:
         BOSH_CLIENT: {{bosh-username}}
         BOSH_CLIENT_SECRET: {{bosh-password}}
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-      on_failure:
-        put: failure-alert
-        params:
-          channel: {{slack-channel}}
-          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
+
 
 - name: cloud-config-and-runtime-config-for-dummy-depls
-  
+
+  on_failure:
+   put: failure-alert
+   params:
+     channel: {{slack-channel}}
+     text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+     icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+     username: Concourse
   plan:
     - get: secrets-dummy-depls
       params: { submodules: none}
@@ -258,6 +265,13 @@ jobs:
 
 
 - name: recreate-all
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   serial_groups: [recreate]
   plan:
     - aggregate:
