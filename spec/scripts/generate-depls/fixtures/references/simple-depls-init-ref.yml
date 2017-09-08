@@ -22,16 +22,15 @@ resources:
     - domain: {{slack-custom-root-domain}}
       cert: {{slack-custom-root-cert}}
 
-<% if ! all_ci_deployments.empty? %>
-- name: <%= all_ci_deployments[depls]["target_name"] %>
+- name: TO_BE_DEFINED
   type: concourse-pipeline
   source:
-    target: {{concourse-<%= depls %>-target}}
-    insecure: {{concourse-<%= depls %>-insecure}}
+    target: {{concourse-simple-depls-target}}
+    insecure: {{concourse-simple-depls-insecure}}
     teams:
     - name: main
-      username: {{concourse-<%= depls %>-username}}
-      password: {{concourse-<%= depls %>-password}}
+      username: {{concourse-simple-depls-username}}
+      password: {{concourse-simple-depls-password}}
 
 - name: secrets-full
   type: git
@@ -54,14 +53,11 @@ resources:
     branch: {{cf-ops-automation-branch}}
     tag_filter: {{cf-ops-automation-tag-filter}}
     skip_ssl_verification: true
-<% end %>
 
 jobs:
 
-<% if ! all_ci_deployments.empty? %>
-<% pipeline_name="#{depls}-init-generated" %>
 
-- name: update-pipeline-<%= depls %>
+- name: update-pipeline-simple-depls
   on_failure:
     put: failure-alert
     params:
@@ -85,9 +81,9 @@ jobs:
       attempts: 3
       trigger: false
 
-  - task: generate-<%= depls %>-pipelines
+  - task: generate-simple-depls-pipelines
     input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
-    output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
+    output_mapping: {result-dir: concourse-simple-depls-pipeline}
     config:
       platform: linux
       image_resource:
@@ -108,20 +104,27 @@ jobs:
           cp -r script-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/
-          ./scripts/generate-depls.rb --depls <%= depls %> -t ../templates -p . -o concourse
+          ./scripts/generate-depls.rb --depls simple-depls -t ../templates -p . -o concourse
 
-  - put: <%= all_ci_deployments[depls]["target_name"] %>
+  - put: TO_BE_DEFINED
     params:
       pipelines:
-      <% all_ci_deployments[depls]["pipelines"].each do |pipeline_name,pipeline_details| %>
-      - name: <%= pipeline_name %>
+      
+      - name: simple-depls-generated
         team: main
-        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
+        config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-generated.yml
         vars_files:
-          <% pipeline_details["vars_files"].each do |a_vars_file| %>
+          
           # trick to manage <depls>-versions.yml (not included in secrets)
-         <%= "- secrets-full/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-templates-full/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
-          <% end %>
-     <% end %>
-<% end %>
+         
+         - paas-templates-full/simple-depls/simple-depls-versions.yml
+          
+     
+      - name: simple-depls-cf-apps-generated
+        team: main
+        config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-cf-apps-generated.yml
+        vars_files:
+          
+          # trick to manage <depls>-versions.yml (not included in secrets)
+         
+         - paas-templates-full/simple-depls/simple-depls-versions.yml

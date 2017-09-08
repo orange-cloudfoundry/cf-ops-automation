@@ -48,7 +48,13 @@ describe 'generate-depls for depls pipeline' do
       # end
 
       it 'generate deployment using bosh cli v2, by default'
+
+      context 'when depls pipeline is generated' do
+        it_behaves_like 'pipeline checker', 'simple-depls-generated.yml', 'simple-depls-ref.yml'
+      end
+
     end
+
 
   end
 
@@ -56,11 +62,7 @@ describe 'generate-depls for depls pipeline' do
     context 'when template is processed' do
 
       before do
-
       end
-
-
-
     end
   end
 
