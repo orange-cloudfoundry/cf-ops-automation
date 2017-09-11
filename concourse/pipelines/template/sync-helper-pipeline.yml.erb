@@ -236,7 +236,7 @@ groups:
 
 - name: <%= depls %>
   jobs:
-  <% subdir_list&.each do |subdir| %>
+  <% subdir_list&.sort&.each do |subdir| %>
   - <%= depls %>-<%= subdir %>-comparison
   <% end %>
 <% end %>
