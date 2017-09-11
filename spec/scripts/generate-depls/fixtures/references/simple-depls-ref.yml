@@ -402,6 +402,30 @@ jobs:
         params:
           BOSH_TARGET: {{bosh-target}}
     
+    - task: generate-empty-ops-and-vars-files
+      # this task is required as long as all deployments still don't use ops/vars files
+      output_mapping: {result-dir: ops-and-vars-files}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: final-release-manifest
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            mkdir -p result-dir/ops
+            mkdir -p result-dir/vars
+            find final-release-manifest/ -name "*-ops.yml" -type f -exec cp {} result-dir/ops \;
+            find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+            echo '---' > result-dir/ops/0-empty-ops.yml
+            echo '---' > result-dir/vars/0-empty-vars.yml
+
     - put: ntp-deployment
       attempts: 3
       params:
@@ -413,7 +437,10 @@ jobs:
         releases: 
         
         - ntp_boshrelease/release.tgz
-        
+        ops_files:
+          - ops-and-vars-files/ops/*
+        vars_files:
+          - ops-and-vars-files/vars/*
         cleanup: true
     - task: execute-ntp-post-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-ntp, credentials-resource: secrets-ntp, additional-resource: final-release-manifest}
