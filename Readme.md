@@ -73,6 +73,15 @@ If a template directory contains hook scripts with specific name, then these scr
 
 * to generate an additional errand step, in a `deployment-dependencies.yml` file, insert a key ```errands``` with a subkey named like the errand job to execute 
   
+### Bosh cli v2 specific features support
+The newest bosh feature are not implemented in bosh cli v1. So some feature are only available to deployments using bosh cli v2.
+ 
+#### ops-files and vars-files
+By convention, all files in template dir matching ```*-ops-tpl.yml``` are processed by spruce and generate ```*-ops.yml``` files.
+Then files are used by ```bosh-deployment``` as ```ops-files``` inputs.
+The same mechanism is used for ```*-vars-tpl.yml``` with vars-files.
+
+**Migration v1 to v2 tips**: empty vars-files and ops-files are generated to avoid an error message
 
 ### git submodules
 By default, git submodules are not checked out (this can be very time consuming). But some bosh releases require these 

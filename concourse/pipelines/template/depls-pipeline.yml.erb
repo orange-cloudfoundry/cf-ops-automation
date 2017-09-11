@@ -466,20 +466,49 @@ jobs:
             echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
         params:
           BOSH_TARGET: {{bosh-target}}
+    - task: generate-empty-ops-and-vars-files
+      # this task is required as long as all deployments still don't use ops/vars files
+      output_mapping: {result-dir: ops-and-vars-files}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: final-release-manifest
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            mkdir -p result-dir/ops
+            mkdir -p result-dir/vars
+            find final-release-manifest/ -name "*-ops.yml" -type f -exec cp {} result-dir/ops \;
+            find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+            echo '---' > result-dir/ops/0-empty-ops.yml
+            echo '---' > result-dir/vars/0-empty-vars.yml
     <% end %>
     - put: <%= name %>-deployment
       attempts: 3
       params:
         manifest: final-release-manifest/<%= name %>.yml
 #        source_file: bosh-generated-config/bosh_config.json
-        <% if boshrelease['cli_version'] == "v1" %>
+        <% if boshrelease['cli_version'] == 'v1' %>
         target_file: bosh-generated-config/bosh_target
         <% end %>
         stemcells:
-        - bosh-stemcell/stemcell.tgz
+          - bosh-stemcell/stemcell.tgz
         releases: <%= '[]' if boshrelease['releases']&.empty? %>
-        <% boshrelease['releases']&.sort.each do |release, info| %>
-        - <%= release %>/release.tgz
+          <% boshrelease['releases']&.sort.each do |release, info| %>
+          - <%= release %>/release.tgz
+          <% end %>
+        <% unless boshrelease['cli_version'] == 'v1' %>
+        ops_files:
+          - ops-and-vars-files/ops/*
+        vars_files:
+          - ops-and-vars-files/vars/*
         <% end %>
         cleanup: true
     - task: execute-<%= name %>-post-bosh-deploy
@@ -939,10 +968,10 @@ groups:
    <% end %>
   <% end %>
 
-<% jobs.sort.each do |group_name, jobs_list| %>
+<% jobs&.sort&.each do |group_name, jobs_list| %>
 - name: <%= group_name.capitalize %>
   jobs:
-   <% jobs_list.each do |a_job| %>
+   <% jobs_list&.each do |a_job| %>
     - <%= a_job %>
    <% end %>
 <% end %>
