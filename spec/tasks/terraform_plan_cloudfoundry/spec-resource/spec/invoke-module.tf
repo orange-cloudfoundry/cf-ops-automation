@@ -1,3 +1,3 @@
 module "mymodule" {
-  source = "modules"
+  source = "my-module"
 }
