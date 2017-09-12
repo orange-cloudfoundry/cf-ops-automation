@@ -1,0 +1,3 @@
+module "mymodule" {
+  source = "modules"
+}
