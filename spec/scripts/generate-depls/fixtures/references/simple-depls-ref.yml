@@ -419,11 +419,11 @@ jobs:
           args:
           - -exc
           - |
-            mkdir -p result-dir/ops
+            mkdir -p result-dir/operators
             mkdir -p result-dir/vars
-            find final-release-manifest/ -name "*-ops.yml" -type f -exec cp {} result-dir/ops \;
+            find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
             find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-            echo '---' > result-dir/ops/0-empty-ops.yml
+            echo '---' > result-dir/ops/0-empty-operators.yml
             echo '---' > result-dir/vars/0-empty-vars.yml
 
     - put: ntp-deployment
@@ -438,7 +438,7 @@ jobs:
         
         - ntp_boshrelease/release.tgz
         ops_files:
-          - ops-and-vars-files/ops/*
+          - ops-and-vars-files/operators/*
         vars_files:
           - ops-and-vars-files/vars/*
         cleanup: true
