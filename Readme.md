@@ -77,7 +77,7 @@ If a template directory contains hook scripts with specific name, then these scr
 The newest bosh feature are not implemented in bosh cli v1. So some feature are only available to deployments using bosh cli v2.
  
 #### ops-files and vars-files
-By convention, all files in template dir matching ```*-ops-tpl.yml``` are processed by spruce and generate ```*-ops.yml``` files.
+By convention, all files in template dir matching ```*-operators-tpl.yml``` are processed by spruce and generate ```*-operators.yml``` files.
 Then files are used by ```bosh-deployment``` as ```ops-files``` inputs.
 The same mechanism is used for ```*-vars-tpl.yml``` with vars-files.
 
