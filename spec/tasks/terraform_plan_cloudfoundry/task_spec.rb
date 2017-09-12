@@ -42,7 +42,7 @@ describe 'terraform_plan_cloudfoundry task' do
 
   end
 
-  context 'when specs are only in spec-resource' do
+  context 'when specs are only in template' do
 
     before(:context) do
       @generated_files = Dir.mktmpdir
@@ -87,7 +87,7 @@ describe 'terraform_plan_cloudfoundry task' do
 
   end
 
-  context 'when specs are in resource dirs' do
+  context 'when specs are in resource dirs (template + secret)' do
 
     before(:context) do
       @generated_files = Dir.mktmpdir
@@ -137,7 +137,7 @@ describe 'terraform_plan_cloudfoundry task' do
 
   end
 
-  context 'when secrets specs overrides others' do
+  context 'when secrets overrides template (e.g. specs or others)' do
 
     before(:context) do
       @generated_files = Dir.mktmpdir
