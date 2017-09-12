@@ -144,6 +144,10 @@ jobs:
 
 - name: test-PR-develop
   plan:
+    - put: PR-develop
+      params:
+        path: PR-develop
+        status: pending
     - aggregate:
       - get: cf-ops-automation-docker-image
         passed: [build-PR-cached-image]
