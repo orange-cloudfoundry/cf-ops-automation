@@ -47,13 +47,13 @@ run:
     # copy generated tfvars
     find terraform-tfvars/ -type f -exec cp {} generated-files/ \;
 
-    # copy spec in spec
-    find spec-resource/${SPEC_PATH}/ -type f -exec cp {} spec-applied/ \;
+    # copy spec in spec, preserving the nested modules if any
+    find spec-resource/${SPEC_PATH}/ -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
 
-    # copy spec in secrets
+    # copy spec in secrets, preserving the nested modules if any
     if [ -d "secret-state-resource/${SPEC_PATH}" ]
     then
-    find secret-state-resource/${SPEC_PATH}/ -type f -exec cp {} spec-applied/ \;
+    find secret-state-resource/${SPEC_PATH}/ -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
 
     cd generated-files/
