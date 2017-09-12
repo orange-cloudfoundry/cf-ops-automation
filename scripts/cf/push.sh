@@ -1,7 +1,7 @@
 #!/bin/sh
 
 set -e
-
+set -o pipefail
 
 validate(){
     FAILURE=0
@@ -59,4 +59,13 @@ else
 fi
 
 cf target -o "$CF_ORG" -s "$CF_SPACE"
-cf push -f ${CF_MANIFEST}
+
+set +e
+cf push -f ${CF_MANIFEST} |tee /tmp/cf-push.log
+ret_code=$?
+if [ $ret_code -ne 0 ]
+then
+    DISPLAY_LOG_CMD=$(grep "TIP: use 'cf logs" /tmp/cf-push.log |cut -d\' -f2)
+    eval $DISPLAY_LOG_CMD
+    exit $ret_code
+fi
