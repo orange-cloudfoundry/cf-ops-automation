@@ -57,6 +57,7 @@ run:
     fi
 
     cd generated-files/
+    terraform get  ../spec-applied/
     terraform apply  ../spec-applied/
 
 params:
