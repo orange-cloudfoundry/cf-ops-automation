@@ -80,7 +80,9 @@ resources:
     tag_filter: {{cf-ops-automation-tag-filter}}
     skip_ssl_verification: true
 
-<% all_dependencies.sort.each do |name,boshrelease| %>
+<% active_deployments = all_dependencies.select{|name,boshrelease| boshrelease['status']=='active'} %>
+<% puts active_deployments %>
+<% active_deployments.sort.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
   type: git
   source:
@@ -160,7 +162,7 @@ resources:
 
 
 <% uniq_releases= {} %>
-<% all_dependencies.sort.each do |name,boshrelease| %>
+<% active_deployments.sort.each do |name,boshrelease| %>
 <% boshrelease['releases']&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
@@ -364,7 +366,7 @@ jobs:
               rebase: true
 
 
-<% all_dependencies.sort.each do |name,boshrelease| %>
+<% active_deployments.sort.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
@@ -558,7 +560,7 @@ jobs:
 
 <% end %>
 
-<% unless all_dependencies.empty? %>
+<% unless active_deployments.empty? %>
 - name: retrigger-all-jobs
   <% jobs['utils'] << 'retrigger-all-jobs' %>
   on_failure:
@@ -588,7 +590,7 @@ jobs:
           args:
           - -exc
           - |
-            <% all_dependencies.sort.each do |name,_| %>
+            <% active_deployments.sort.each do |name,_| %>
             echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
             <% end %>
         params:
@@ -626,7 +628,7 @@ jobs:
          params: { submodules: none}
          <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
 
-<% all_dependencies.sort.each do |name,boshrelease| %>
+<% active_deployments.sort.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
   <% jobs['recreate'] << "recreate-#{name}" %>
   on_failure:
@@ -685,7 +687,7 @@ jobs:
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
-<% unless all_dependencies.empty? %>
+<% unless active_deployments.empty? %>
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
   <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
   on_failure:
@@ -767,7 +769,7 @@ jobs:
       params: { submodules: none}
       attempts: 3
       trigger: true
-    <% all_dependencies.sort.each do |name,_| %>
+    <% active_deployments.sort.each do |name,_| %>
     - get: secrets-<%= name %>
       params: { submodules: none}
     - get: paas-template-<%= name %>
@@ -975,5 +977,3 @@ groups:
     - <%= a_job %>
    <% end %>
 <% end %>
-
-<% puts "#{all_dependencies} - #{all_dependencies.empty?} "%>
