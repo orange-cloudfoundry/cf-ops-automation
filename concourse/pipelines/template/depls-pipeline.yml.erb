@@ -80,9 +80,9 @@ resources:
     tag_filter: {{cf-ops-automation-tag-filter}}
     skip_ssl_verification: true
 
-<% active_deployments = all_dependencies.select{|name,boshrelease| boshrelease['status']=='active'} %>
-<% puts active_deployments %>
-<% active_deployments.sort.each do |name,boshrelease| %>
+<% enabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='enabled'} %>
+<% puts enabled_deployments %>
+<% enabled_deployments.sort.each do |name,boshrelease| %>
 - name: secrets-<%= name %>
   type: git
   source:
@@ -162,7 +162,7 @@ resources:
 
 
 <% uniq_releases= {} %>
-<% active_deployments.sort.each do |name,boshrelease| %>
+<% enabled_deployments.sort.each do |name,boshrelease| %>
 <% boshrelease['releases']&.each do |release, info|  %>
 <% uniq_releases[release]= info %>
 <% end %>
@@ -185,6 +185,102 @@ resources:
 
 jobs:
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
+
+<% disabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='disabled'} %>
+<% unless disabled_deployments.empty? %>
+- name: delete-deployments-review
+  <% jobs['utils'] << 'delete-deployments-review' %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+        passed: [update-pipeline-<%= depls %>-generated]
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: secrets-full
+        trigger: true
+        passed: [update-pipeline-<%= depls %>-generated]
+        params: { submodules: none}
+    <%  disabled_deployments&.each do |deployment_name, _| %>
+    - task: <%= deployment_name %>_to_be_deleted
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: alpine}
+        run:
+          path: echo
+          args: ["This bosh deployment is going to be deleted. Waiting for manual approval"]
+    <% end %>
+- name: delete-manual-approval
+  <% jobs['utils'] << 'delete-manual-approval' %>
+  plan:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [delete-deployments-review]
+    - get: secrets-full
+      params: { submodules: none}
+      passed: [delete-deployments-review]
+
+- name: delete-disabled-deployments
+  <% jobs['utils'] << 'delete-disabled-deployments' %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+        passed: [delete-manual-approval]
+        trigger: true
+      - get: secrets-full
+        params: { submodules: none}
+        passed: [delete-manual-approval]
+        trigger: true
+
+    <%  disabled_deployments&.each do |deployment_name, _| %>
+    - task: delete_<%= deployment_name %>
+      input_mapping: {script-resource: cf-ops-automation, secrets: secrets-full}
+      config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: orangecloudfoundry/bosh-cli-v2
+          inputs:
+            - name: script-resource
+            - name: secrets
+          outputs:
+            - name: run-resource
+          run:
+            path: sh
+            args:
+              - -e
+              - -c
+              - |
+                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+                echo "DELETE bosh -n -d <%= deployment_name %> "
+      params:
+         BOSH_TARGET: {{bosh-target}}
+         BOSH_CLIENT: {{bosh-username}}
+         BOSH_CLIENT_SECRET: {{bosh-password}}
+         BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+    <% end %>
+
+<% end %>
+
+
 - name: execute-deploy-script
   <% jobs['utils'] << 'execute-deploy-script' %>
   on_failure:
@@ -366,7 +462,7 @@ jobs:
               rebase: true
 
 
-<% active_deployments.sort.each do |name,boshrelease| %>
+<% enabled_deployments.sort.each do |name,boshrelease| %>
 
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
@@ -560,7 +656,7 @@ jobs:
 
 <% end %>
 
-<% unless active_deployments.empty? %>
+<% unless enabled_deployments.empty? %>
 - name: retrigger-all-jobs
   <% jobs['utils'] << 'retrigger-all-jobs' %>
   on_failure:
@@ -590,7 +686,7 @@ jobs:
           args:
           - -exc
           - |
-            <% active_deployments.sort.each do |name,_| %>
+            <% enabled_deployments.sort.each do |name,_| %>
             echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
             <% end %>
         params:
@@ -628,7 +724,7 @@ jobs:
          params: { submodules: none}
          <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
 
-<% active_deployments.sort.each do |name,boshrelease| %>
+<% enabled_deployments.sort.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
   <% jobs['recreate'] << "recreate-#{name}" %>
   on_failure:
@@ -687,7 +783,7 @@ jobs:
 <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
 
-<% unless active_deployments.empty? %>
+<% unless enabled_deployments.empty? %>
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
   <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
   on_failure:
@@ -769,7 +865,7 @@ jobs:
       params: { submodules: none}
       attempts: 3
       trigger: true
-    <% active_deployments.sort.each do |name,_| %>
+    <% enabled_deployments.sort.each do |name,_| %>
     - get: secrets-<%= name %>
       params: { submodules: none}
     - get: paas-template-<%= name %>
