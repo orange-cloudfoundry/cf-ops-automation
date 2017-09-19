@@ -16,7 +16,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: hashicorp/terraform, tag: 0.9.8}
+  source: {repository: hashicorp/terraform, tag: 0.10.2}
 
 inputs:
   - name: secret-state-resource
@@ -57,10 +57,10 @@ run:
     fi
 
     cd generated-files/
-    terraform get  ../spec-applied/
+    terraform init -input=false -upgrade ../spec-applied/
     terraform plan  ../spec-applied/
 
 params:
   SPEC_PATH:
   SECRET_STATE_FILE_PATH:
-  PROVIDER_CLOUDFOUNDRY_VERSION: v0.7.3
+  PROVIDER_CLOUDFOUNDRY_VERSION: v0.9.1
