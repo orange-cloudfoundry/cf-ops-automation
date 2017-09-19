@@ -5,7 +5,7 @@ require 'tmpdir'
 describe 'terraform_apply_cloudfoundry task' do
   EXPECTED_TERRAFORM_VERSION='0.10.2'
   EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION='v0.9.1'
-  SKIP_REMOTE_FLY_DOWNLOAD=false
+  SKIP_TMP_FILE_CLEANUP=false
 
   context 'when pre-requisite are valid' do
     before(:context) do
@@ -60,7 +60,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     after(:context) do
-      unless SKIP_REMOTE_FLY_DOWNLOAD
+      unless SKIP_TMP_FILE_CLEANUP
         FileUtils.rm_rf @generated_files
         FileUtils.rm_rf @spec_applied
       end
@@ -114,7 +114,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     after(:context) do
-      unless SKIP_REMOTE_FLY_DOWNLOAD
+      unless SKIP_TMP_FILE_CLEANUP
         FileUtils.rm_rf @generated_files
         FileUtils.rm_rf @spec_applied
       end
@@ -168,7 +168,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     after(:context) do
-      unless SKIP_REMOTE_FLY_DOWNLOAD
+      unless SKIP_TMP_FILE_CLEANUP
         FileUtils.rm_rf @generated_files
         FileUtils.rm_rf @spec_applied
         FileUtils.rm_rf @terraform_tfvars
