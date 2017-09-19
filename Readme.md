@@ -285,6 +285,11 @@ Active development happens on `develop`
 
 ## Running the Test Suite
 
+Prereqs:
+- install ruby, gems and bundler (version >= 1.15.1):
+   - `gem install bundler` 
+- install dependent gems: `bundle install --path vendor/bundle`
+
 If you are running the full test suite, some of the integration tests are dependent on the fly CLI.
 
 
