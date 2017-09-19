@@ -3,8 +3,9 @@ require 'yaml'
 require 'tmpdir'
 
 describe 'terraform_plan_cloudfoundry task' do
-  EXPECTED_TERRAFORM_VERSION='0.9.8'
-  EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION='v0.7.3'
+  EXPECTED_TERRAFORM_VERSION='0.10.2'
+  EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION='v0.9.1'
+  SKIP_REMOTE_FLY_DOWNLOAD=false
 
   context 'when pre-requisite are valid' do
     before(:context) do
@@ -23,8 +24,10 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     after(:context) do
-      FileUtils.rm_rf @generated_files
-      FileUtils.rm_rf @spec_applied
+      unless SKIP_REMOTE_FLY_DOWNLOAD
+        FileUtils.rm_rf @generated_files
+        FileUtils.rm_rf @spec_applied
+      end
     end
 
     it 'ensures terraform version is correct' do
@@ -60,8 +63,10 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     after(:context) do
-      FileUtils.rm_rf @generated_files
-      FileUtils.rm_rf @spec_applied
+      unless SKIP_REMOTE_FLY_DOWNLOAD
+        FileUtils.rm_rf @generated_files
+        FileUtils.rm_rf @spec_applied
+      end
     end
 
     it 'plans to add only one change' do
@@ -79,7 +84,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'copies terraform-tfvars files in generated-files output' do
-      cred_dir= %w[.gitkeep]
+      cred_dir= %w[.gitkeep .terraform]
 
       expected_dirs = Dir.entries(@terraform_tfvars) + cred_dir
       expect(Dir.entries(@generated_files).sort).to eq(expected_dirs.sort)
@@ -107,8 +112,10 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     after(:context) do
-      FileUtils.rm_rf @generated_files
-      FileUtils.rm_rf @spec_applied
+      unless SKIP_REMOTE_FLY_DOWNLOAD
+        FileUtils.rm_rf @generated_files
+        FileUtils.rm_rf @spec_applied
+      end
     end
 
     it 'plans to add resources' do
@@ -159,9 +166,11 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     after(:context) do
-      FileUtils.rm_rf @generated_files
-      FileUtils.rm_rf @spec_applied
-      FileUtils.rm_rf @terraform_tfvars
+      unless SKIP_REMOTE_FLY_DOWNLOAD
+        FileUtils.rm_rf @generated_files
+        FileUtils.rm_rf @spec_applied
+        FileUtils.rm_rf @terraform_tfvars
+      end
     end
 
     it 'plans to add only one resource' do
@@ -184,7 +193,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'does not contain any files in generated-files output' do
-      expect(Dir.entries(@generated_files).sort).to eq(%w[. .. .gitkeep].sort)
+      expect(Dir.entries(@generated_files).sort).to eq(%w[. .. .gitkeep .terraform].sort)
     end
 
   end
