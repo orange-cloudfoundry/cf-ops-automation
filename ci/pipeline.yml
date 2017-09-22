@@ -57,6 +57,7 @@ resources:
     access_token: ((cf-ops-automation-git-hub-token))
     base: develop
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
+    disable_forks: true
 
 
 - name: cf-ops-automation-dependencies
