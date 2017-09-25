@@ -101,7 +101,7 @@ root_deployment_versions = RootDeploymentVersion.load_file("#{OPTIONS[:paas_temp
 
 deployment_factory = DeploymentFactory.new(depls.to_s, root_deployment_versions.versions)
 puts root_deployment_versions.versions
-all_dependencies = RootDeployment.new(depls.to_s, OPTIONS[:paas_template_root].to_s, File.join(OPTIONS[:secret_path], depls, '/*')).overview_from_hash(deployment_factory)
+all_dependencies = RootDeployment.new(depls.to_s, OPTIONS[:paas_template_root].to_s, OPTIONS[:secret_path].to_s).overview_from_hash(deployment_factory)
 
 all_ci_deployments = CiDeploymentOverview.new("#{OPTIONS[:secret_path]}/" + depls).overview
 

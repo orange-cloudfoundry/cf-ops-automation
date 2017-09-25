@@ -1,0 +1,382 @@
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-test
+  - name: bosh-config
+    type: docker-image
+    source:
+      repository: dellemcdojo/bosh-config-resource
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+  - name: bosh-deployment-v2
+    type: docker-image
+    source:
+      repository: cloudfoundry/bosh-deployment-resource
+  - name: bosh-errand
+    type: docker-image
+    source:
+      repository: starkandwayne/bosh2-errand-resource
+
+resources:
+  - name: at-noon
+    type: cron-resource
+    source:
+      expression: 15 12 * * 1-5
+      location: Europe/Paris
+      fire_immediately: true
+  - name: failure-alert
+    type: slack-notification
+    source:
+      url: {{slack-webhook}}
+      ca_certs:
+      - domain: {{slack-custom-domain}}
+        cert: {{slack-custom-cert}}
+      - domain: {{slack-custom-root-domain}}
+        cert: {{slack-custom-root-cert}}
+  - name: bosh-stemcell
+    type: bosh-io-stemcell
+    source:
+      name: {{stemcell-name}}
+  - name: secrets-delete-depls
+    type: git
+    source:
+      uri: {{secrets-uri}}
+      paths:
+      - delete-depls/secrets
+      - shared
+      branch: {{secrets-branch}}
+      skip_ssl_verification: true
+  - name: paas-template-delete-depls
+    type: git
+    source:
+      uri: {{paas-templates-uri}}
+      paths:
+      - delete-depls/template
+      branch: {{paas-templates-branch}}
+      skip_ssl_verification: true
+  - name: cf-ops-automation
+    type: git
+    source:
+      uri: {{cf-ops-automation-uri}}
+      branch: {{cf-ops-automation-branch}}
+      tag_filter: {{cf-ops-automation-tag-filter}}
+      skip_ssl_verification: true
+  - name: secrets-full
+    type: git
+    source:
+      uri: {{secrets-uri}}
+      branch: {{secrets-branch}}
+      skip_ssl_verification: true
+  - name: paas-templates-full
+    type: git
+    source:
+      uri: {{paas-templates-uri}}
+      branch: {{paas-templates-branch}}
+      skip_ssl_verification: true
+jobs:
+  - name: delete-deployments-review
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params:
+          submodules: none
+      - get: paas-templates-full
+        params:
+          submodules: none
+      - get: secrets-full
+        trigger: true
+        params:
+          submodules: none
+    - task: ntp_to_be_deleted
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: alpine
+        run:
+          path: sh
+          args:
+            - -ce
+            - |
+              echo "ntp deployment has been detected as 'inactive', ie :"
+              echo "  - paas-template contains deployment descriptiors"
+              echo "  - secrets does not enable this deployment"
+              echo "This bosh deployment is going to be deleted when exists.
+              echo "Otherwise deletion is run on an unknown deployment.
+              echo "! Waiting for manual approval !"
+  - name: approve-and-delete-disabled-deployments
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params:
+          submodules: none
+        passed:
+        - delete-deployments-review
+      - get: secrets-full
+        params:
+          submodules: none
+        passed:
+        - delete-deployments-review
+    - task: delete_ntp
+      input_mapping:
+        script-resource: cf-ops-automation
+        secrets: secrets-full
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: orangecloudfoundry/bosh-cli-v2
+        inputs:
+        - name: script-resource
+        - name: secrets
+        outputs:
+        - name: run-resource
+        run:
+          path: sh
+          args:
+          - "-cex"
+          - |
+            source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+            bosh -n -d ntp delete-deployment
+      params:
+        BOSH_TARGET: {{bosh-target}}
+        BOSH_CLIENT: {{bosh-username}}
+        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+  - name: execute-deploy-script
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - get: at-noon
+      trigger: true
+    - aggregate:
+      - get: secrets-delete-depls
+        params:
+          submodules: none
+      - get: paas-template-delete-depls
+        params:
+          submodules: none
+      - get: cf-ops-automation
+        params:
+          submodules: none
+    - task: run-deploy.sh
+      input_mapping:
+        script-resource: cf-ops-automation
+        templates: paas-template-delete-depls
+        secrets: secrets-delete-depls
+      file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
+      params:
+        CURRENT_DEPLS: delete-depls/template
+        COMMON_SCRIPT_DIR: script-resource/scripts
+        SECRETS_DIR: secrets
+        BOSH_TARGET:
+        BOSH_TARGET: {{bosh-target}}
+        BOSH_CLIENT: {{bosh-username}}
+        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+  - name: cloud-config-and-runtime-config-for-delete-depls
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - get: secrets-delete-depls
+      params:
+        submodules: none
+      trigger: true
+    - get: paas-template-delete-depls
+      params:
+        submodules: none
+      trigger: true
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      trigger: true
+    - task: generate-delete-depls-all-config
+      input_mapping:
+        scripts-resource: cf-ops-automation
+        credentials-resource: secrets-delete-depls
+        additional-resource: paas-template-delete-depls
+      output_mapping:
+        generated-files: config-manifest
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/delete-depls/
+        YML_TEMPLATE_DIR: additional-resource/delete-depls/template
+        YML_FILES: |
+          ./credentials-resource/delete-depls/secrets/meta.yml
+          ./credentials-resource/delete-depls/secrets/secrets.yml
+          ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: additional-resource/delete-depls/template
+    - aggregate:
+      - task: update-cloud-config-for-delete-depls
+        attempts: 3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
+          inputs:
+          - name: config-manifest
+          - name: secrets-delete-depls
+          - name: cf-ops-automation
+          run:
+            path: sh
+            args:
+            - "-e"
+            - "-c"
+            - |
+              ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+              OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
+              bosh cloud-config >$OLD_CONFIG
+              diff $OLD_CONFIG config-manifest/cloud-config.yml || true
+              bosh update cloud-config config-manifest/cloud-config.yml
+        ensure:
+          task: update-cloud-config
+          input_mapping:
+            reference-resource: secrets-delete-depls
+            generated-resource: config-manifest
+          output_mapping:
+            updated-git-resource: updated-cloud-config
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: delete-depls/cloud-config.yml
+            NEW_FILE: cloud-config.yml
+            COMMIT_MESSAGE: delete-depls cloud-config auto update - [skip ci]
+          on_failure:
+            put: failure-alert
+            params:
+              channel: {{slack-channel}}
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-delete-depls
+            get_params:
+              submodules: none
+            params:
+              repository: updated-cloud-config
+              rebase: true
+      - task: update-runtime-config-for-delete-depls
+        attempts: 3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli
+          inputs:
+          - name: config-manifest
+          - name: secrets-delete-depls
+          - name: cf-ops-automation
+          run:
+            path: sh
+            args:
+            - "-e"
+            - "-c"
+            - |
+              ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+              cat config-manifest/runtime-config.yml
+              OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
+              bosh runtime-config >$OLD_CONFIG
+              diff $OLD_CONFIG config-manifest/runtime-config.yml || true
+              bosh update runtime-config config-manifest/runtime-config.yml
+        ensure:
+          task: update-runtime-config
+          input_mapping:
+            reference-resource: secrets-delete-depls
+            generated-resource: config-manifest
+          output_mapping:
+            updated-git-resource: updated-runtime-config
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: delete-depls/runtime-config.yml
+            NEW_FILE: runtime-config.yml
+            COMMIT_MESSAGE: delete-depls runtime-config auto update - [skip ci]
+          on_failure:
+            put: failure-alert
+            params:
+              channel: {{slack-channel}}
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-delete-depls
+            get_params:
+              submodules: none
+            params:
+              repository: updated-runtime-config
+              rebase: true
+  - name: recreate-all
+    on_failure:
+      put: failure-alert
+      params:
+        channel: {{slack-channel}}
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    serial_groups:
+    - recreate
+    plan:
+    - aggregate:
+      - get: secrets-delete-depls
+        params:
+          submodules: none
+      - get: paas-template-delete-depls
+        params:
+          submodules: none
+      - get: cf-ops-automation
+        params:
+          submodules: none
+
+groups:
+  - name: Delete-depls
+    jobs:
+      - delete-deployments-review
+      - approve-and-delete-disabled-deployments
+      - execute-deploy-script
+      - cloud-config-and-runtime-config-for-delete-depls
+      - recreate-all
+      - recreate-all
+  - name: Recreate
+    jobs:
+      - recreate-all
+  - name: Utils
+    jobs:
+      - delete-deployments-review
+      - approve-and-delete-disabled-deployments
+      - execute-deploy-script
+      - cloud-config-and-runtime-config-for-delete-depls
+      - recreate-all

@@ -11,9 +11,9 @@ require_relative 'test_helper'
 
 describe 'generate-depls' do
 
-  # old_path = ENV.fetch('PATH', nil)
   ci_path = Dir.pwd
   test_path = File.join(ci_path, '/spec/scripts/generate-depls')
+  # old_path = ENV.fetch('PATH', nil)
   # test_reference = File.join(test_path, 'cflinuxfs2-release/blobs')
 
   # before(:context) do
@@ -24,11 +24,6 @@ describe 'generate-depls' do
   #   ENV.store('PATH', old_path)
   # end
 
-
-  #     Dir.chdir("#{ci_path}/spec/tasks/overwrite-cflinuxfs2-release") do
-
-  #     expect(File.exist?(blob_destination)).to eq(true)
-  #     expect(File.read(blob_destination)).to eq('new-tarball')
 
   describe 'parameter validation' do
     let(:output_path) { Dir.mktmpdir }
@@ -161,19 +156,6 @@ describe 'generate-depls' do
         it_behaves_like 'pipeline checker', 'dummy-depls-sync-helper-generated.yml', 'empty-sync-helper.yml'
       end
 
-
-      # it 'depls pipeline matches reference' do
-        #   reference_file = {}#YAML.load "#{}"
-        #   generated_file = YAML.load_file "#{output_path}/pipelines/dummy-depls-generated.yml"
-        #   expect(generated_file).to eq(reference_file)
-        # end
-        #
-        # it 'sync-helper pipeline matches reference' do
-        #   reference_file = {}#YAML.load "#{}"
-        #   generated_file = YAML.load_file "#{output_path}/pipelines/dummy-depls-sync-helper-generated.yml"
-        #   expect(generated_file).to eq(reference_file)
-        # end
-      # end
     end
   end
 end

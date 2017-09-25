@@ -16,7 +16,7 @@ class DeploymentFactory
 
   def load(data = {})
     deployments = []
-    data['deployment'].each do |deployment_name, deployment_details|
+    data['deployment']&.each do |deployment_name, deployment_details|
       update_deployment_version!(deployment_details)
       deployments << Deployment.new(deployment_name, deployment_details)
     end
@@ -34,7 +34,7 @@ class DeploymentFactory
 
   def update_stemcell_version!(deployment_details)
     deployment_details['stemcells'].each do |a_stemcell, _|
-      raise "Invalid stemcell: expected <#{@version_reference['stemcells-name']}> - Found <#{a_stemcell}>" if a_stemcell != @version_reference['stemcell-name']
+      raise "Invalid stemcell: expected <#{@version_reference['stemcells-name'] || 'version reference not empty'}> - Found <#{a_stemcell}>" if a_stemcell != @version_reference['stemcell-name']
       version = @version_reference['stemcell-version']
     end
   end
