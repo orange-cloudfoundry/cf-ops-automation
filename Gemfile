@@ -6,9 +6,8 @@ ruby '~>2.3'
 
 gem 'rhcl', '>= 0.1.0'
 
-group :test do
-  gem 'rspec', '>= 3.6.0'
-end
+gem 'rspec', '>= 3.6.0'
+gem 'rspec-rerun'
 
 
 group :development do
