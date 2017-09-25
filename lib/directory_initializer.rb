@@ -1,6 +1,7 @@
 require 'fileutils'
 require 'yaml'
 require_relative '../lib/root_deployment_version'
+require_relative '../lib/root_deployment'
 
 class DirectoryInitializer
   attr_reader :root_deployment_name, :secrets_dir, :template_dir
@@ -44,7 +45,37 @@ class DirectoryInitializer
     create_non_existing_files files_to_create
   end
 
+  def add_deployment(deployment_name)
+    dirs_to_create = []
+
+    dirs_to_create << "#{@template_dir}/#{@root_deployment_name}/#{deployment_name}"
+    dirs_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}"
+    create_non_existing_dirs dirs_to_create
+    generate_default_deployment_dependencies(deployment_name)
+  end
+
+  def enable_deployment(deployment_name)
+    files_to_create = []
+    files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}/#{RootDeployment::ENABLE_DEPLOYMENT_FILENAME}"
+    create_non_existing_files(files_to_create)
+  end
+
+  def disable_deployment(deployment_name)
+    files_to_delete = []
+    files_to_delete << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}/#{RootDeployment::ENABLE_DEPLOYMENT_FILENAME}"
+    delete_existing_files(files_to_delete)
+  end
+
   private
+
+  def generate_default_deployment_dependencies(deployment_name)
+    deployment = Deployment.default(deployment_name)
+    filename = File.join(@template_dir, @root_deployment_name, deployment_name, 'deployment-dependencies.yml')
+    file_content = {'deployment' => { deployment_name => deployment.details}}
+    File.open(filename, 'w') {
+        |file| file << YAML.dump(file_content)
+    }
+  end
 
   def generate_default_ci_deployment_overview
     ci_deployment_overview = {}
@@ -78,6 +109,12 @@ class DirectoryInitializer
         file_ref = File.new(file, 'w')
         file_ref.close
       end
+    end
+  end
+
+  def delete_existing_files(files)
+    files.each do |file|
+      File.delete(file) if File.exist? file
     end
   end
 
