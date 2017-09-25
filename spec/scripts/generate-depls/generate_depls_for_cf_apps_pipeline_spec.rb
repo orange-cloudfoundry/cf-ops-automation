@@ -25,7 +25,7 @@ describe 'generate-depls for cf-apps pipeline' do
       # FileUtils.rm_rf(output_path) unless output_path.nil?
     end
 
-    context 'when only templates dir is initialized' do
+    context 'when generate-depls is executed' do
       let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/cf-apps-pipeline.yml.erb" }
 
       stdout_str = stderr_str = ''
@@ -43,7 +43,7 @@ describe 'generate-depls for cf-apps pipeline' do
       end
 
 
-      context 'when cf-apps pipeline is generated' do
+      context 'when a generated reference cf-app pipeline file is used' do
         it_behaves_like 'pipeline checker', 'apps-depls-cf-apps-generated.yml', 'apps-depls-cf-apps-ref.yml'
       end
 

@@ -80,6 +80,7 @@ resources:
     tag_filter: {{cf-ops-automation-tag-filter}}
     skip_ssl_verification: true
 
+<% disabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='disabled'} %>
 <% enabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='enabled'} %>
 <% puts enabled_deployments %>
 <% enabled_deployments.sort.each do |name,boshrelease| %>
@@ -133,7 +134,7 @@ resources:
 
 <% end %>
 
-<% if ! all_ci_deployments.empty? %>
+<% unless all_ci_deployments.empty? %>
 - name: <%= all_ci_deployments[depls]['target_name'] %>
   type: concourse-pipeline
   source:
@@ -143,7 +144,9 @@ resources:
     - name: main
       username: {{concourse-<%= depls %>-username}}
       password: {{concourse-<%= depls %>-password}}
+<% end %>
 
+<% unless all_ci_deployments.empty? && disabled_deployments.empty? %>
 - name: secrets-full
   type: git
   source:
@@ -186,7 +189,6 @@ resources:
 jobs:
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
 
-<% disabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='disabled'} %>
 <% unless disabled_deployments.empty? %>
 - name: delete-deployments-review
   <% jobs['utils'] << 'delete-deployments-review' %>
@@ -201,12 +203,12 @@ jobs:
     - aggregate:
       - get: cf-ops-automation
         params: { submodules: none}
-        passed: [update-pipeline-<%= depls %>-generated]
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
       - get: paas-templates-full
         params: { submodules: none}
       - get: secrets-full
         trigger: true
-        passed: [update-pipeline-<%= depls %>-generated]
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
         params: { submodules: none}
     <%  disabled_deployments&.each do |deployment_name, _| %>
     - task: <%= deployment_name %>_to_be_deleted
@@ -216,21 +218,19 @@ jobs:
           type: docker-image
           source: {repository: alpine}
         run:
-          path: echo
-          args: ["This bosh deployment is going to be deleted. Waiting for manual approval"]
+          path: sh
+          args:
+            - -ce
+            - |
+              echo "<%= deployment_name %> deployment has been detected as 'inactive', ie :"
+              echo "  - paas-template contains deployment descriptiors"
+              echo "  - secrets does not enable this deployment"
+              echo "This bosh deployment is going to be deleted when exists.
+              echo "Otherwise deletion is run on an unknown deployment.
+              echo "! Waiting for manual approval !"
     <% end %>
-- name: delete-manual-approval
-  <% jobs['utils'] << 'delete-manual-approval' %>
-  plan:
-    - get: cf-ops-automation
-      params: { submodules: none}
-      passed: [delete-deployments-review]
-    - get: secrets-full
-      params: { submodules: none}
-      passed: [delete-deployments-review]
-
-- name: delete-disabled-deployments
-  <% jobs['utils'] << 'delete-disabled-deployments' %>
+- name: approve-and-delete-disabled-deployments
+  <% jobs['utils'] << 'approve-and-delete-disabled-deployments' %>
   on_failure:
     put: failure-alert
     params:
@@ -242,12 +242,10 @@ jobs:
     - aggregate:
       - get: cf-ops-automation
         params: { submodules: none}
-        passed: [delete-manual-approval]
-        trigger: true
+        passed: [delete-deployments-review]
       - get: secrets-full
         params: { submodules: none}
-        passed: [delete-manual-approval]
-        trigger: true
+        passed: [delete-deployments-review]
 
     <%  disabled_deployments&.each do |deployment_name, _| %>
     - task: delete_<%= deployment_name %>
@@ -266,11 +264,10 @@ jobs:
           run:
             path: sh
             args:
-              - -e
-              - -c
+              - -cex
               - |
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-                echo "DELETE bosh -n -d <%= deployment_name %> "
+                bosh -n -d <%= deployment_name %> delete-deployment
       params:
          BOSH_TARGET: {{bosh-target}}
          BOSH_CLIENT: {{bosh-username}}

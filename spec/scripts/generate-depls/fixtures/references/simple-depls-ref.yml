@@ -464,10 +464,7 @@ jobs:
         repository: updated-ntp-secrets
         rebase: true
 
-
-
 - name: retrigger-all-jobs
-  
   on_failure:
     put: failure-alert
     params:
@@ -495,9 +492,9 @@ jobs:
           args:
           - -exc
           - |
-            
+
             echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-ntp" >> result-dir/flight-plan
-            
+
         params:
           BUILD_PIPELINE_NAME: simple-depls-generated
     - task: fly-into-concourse

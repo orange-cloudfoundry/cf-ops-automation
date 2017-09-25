@@ -1,0 +1,5 @@
+---
+deployment-name: delete-depls
+
+stemcell-version: 3363.14
+stemcell-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
