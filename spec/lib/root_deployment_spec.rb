@@ -45,6 +45,22 @@ describe RootDeployment do
     it 'cannot initialize if a parameter is nil'
   end
 
+  describe 'default_exclude' do
+    expected_default_exclude = %w[secrets cf-apps-deployments terraform-config template].freeze
+
+    context 'when default is used' do
+      RootDeployment::DEFAULT_EXCLUDE.each do |excluded_dir|
+        it "excludes #{excluded_dir} dir" do
+          expect(expected_default_exclude).to include(excluded_dir)
+        end
+      end
+
+      it 'excludes only expected dir' do
+        expect(RootDeployment::DEFAULT_EXCLUDE.size).to eq(expected_default_exclude.size)
+      end
+    end
+  end
+
   describe '#overview_from_hash' do
 
     let(:root_deployment) { described_class.new(root_deployment_name, templates, secrets) }
