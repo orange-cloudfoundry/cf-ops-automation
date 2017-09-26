@@ -210,7 +210,7 @@ jobs:
         trigger: true
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
         params: { submodules: none}
-    <%  disabled_deployments&.each do |deployment_name, _| %>
+    <%  disabled_deployments&.sort&.each do |deployment_name, _| %>
     - task: <%= deployment_name %>_to_be_deleted
       config:
         platform: linux
@@ -247,7 +247,7 @@ jobs:
         params: { submodules: none}
         passed: [delete-deployments-review]
 
-    <%  disabled_deployments&.each do |deployment_name, _| %>
+    <%  disabled_deployments&.sort&.each do |deployment_name, _| %>
     - task: delete_<%= deployment_name %>
       input_mapping: {script-resource: cf-ops-automation, secrets: secrets-full}
       config:
