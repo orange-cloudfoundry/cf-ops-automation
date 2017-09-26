@@ -146,12 +146,23 @@ describe 'generate-depls for depls pipeline' do
       expect(current_task).to include('config')
     end
 
+    it 'ignores root-deployment template dir in delete-deployments-review' do
+      current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
+      tasks = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] }
+      expect(tasks.count).to eq(1)
+    end
+
     it 'generates approve-and-delete-disabled-deployments job' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
       current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete_ntp' }&.first
       expect(current_task).to include('config')
     end
 
+    it 'ignores root-deployment template dir in approve-and-delete-disabled-deployments' do
+      current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
+      tasks = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] }
+      expect(tasks.count).to eq(1)
+    end
   end
 
   describe 'depls-pipeline template pre-requisite' do
