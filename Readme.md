@@ -200,16 +200,45 @@ ci-deployment:
         - xxx/ops-depls-versions.yml
 ```
 
+### delete lifecycle support
+
+#### bosh deployment
+It scans secrets/<root_deployment> for directories. If a ```enable-deployment.yml``` is found, deployment status is set 
+to ```enabled```, otherwise to ```disabled```. 
+```disabled``` deployment are going to be candidates for deletion. 
+
+#### cf-app deployment
+NYI
+
+# Pipelines
+## standalone
+
+* [bootstraps-all-init-pipelines](concourse/pipelines/bootstraps-all-init-pipelines.yml): bootstrap all init pipelines 
+* [micro-bosh-init-pipeline](concourse/pipelines/micro-bosh-init-pipeline.yml): !!! WIP !!! to manage bosh-micro
+* [sync-feature-branches](concourse/pipelines/sync-feature-branches.yml): manage a WIP branch based on develop and any feature branches  
+* [sync-hotfix-branches](concourse/pipelines/sync-hotfix-branches.yml): manage a WIP branch based on master and any hotfix branches
+
+## template
+
+* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml): to manage cf-app associated to a root-deployment
+* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml): to manage deployments associated to a root-deployment
+* [init-pipeline](concourse/pipelines/templates/init-pipeline.yml): to initialize all pipelines related to a root-deployment
+* [news-pipeline](concourse/pipelines/templates/news-pipeline.yml): to be notified on new bosh release version for a root-deployment  
+* [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml): to ease secret repo management
+
+
 # anonimyzation
 
        
 # Status and roadmap
 
-See [status](docs/work-in-progress.md) as well as git hub issues.
+See ~~~[status](docs/work-in-progress.md)~~~ as well as git hub issues.
 
 # Credits
 
-This repo was inspired by great work shared in https://github.com/alphagov/paas-cf
+This repo was inspired by great work shared in
+ * https://github.com/alphagov/paas-cf
+ * https://github.com/cloudfoundry/buildpacks-ci/ 
 
 # FAQ
 
