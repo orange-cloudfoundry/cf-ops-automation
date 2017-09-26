@@ -232,7 +232,7 @@ NYI
        
 # Status and roadmap
 
-See ~~~[status](docs/work-in-progress.md)~~~ as well as git hub issues.
+See ~~~[status](docs/work-in-progress.md)~~~ as well as [github issues](https://github.com/orange-cloudfoundry/cf-ops-automation/issues).
 
 # Credits
 
