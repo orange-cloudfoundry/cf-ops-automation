@@ -226,6 +226,9 @@ NYI
 * [news-pipeline](concourse/pipelines/templates/news-pipeline.yml): to be notified on new bosh release version for a root-deployment  
 * [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml): to ease secret repo management
 
+The following diagram illustrates the sequence of pipeline generation  
+
+![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/bootstrap.puml?lastRefreshOn=29092017).
 
 # anonimyzation
 
