@@ -1,0 +1,21 @@
+@startuml
+scale 350 width
+[*] --> bootstrap_all_init_pipelines
+
+state bootstrap_all_init_pipelines {
+        init_pipeline: generates and loads using fly cli
+
+ }
+
+
+init_pipeline --> master_depls_init_generated
+init_pipeline --> ops_depls_init_generated
+init_pipeline --> xx_depls_init_generated
+
+master_depls_init_generated --> master_depls_generated: load pipelines specified \n ci-deployment-overview.yml
+ops_depls_init_generated --> news_ops_depls_generated: loads
+ops_depls_init_generated --> sync_helper_ops_depls_generated: loads
+ops_depls_init_generated --> ops_depls_generated: loads
+xx_depls_init_generated --> xx_depls_generated: loads
+
+@enduml
