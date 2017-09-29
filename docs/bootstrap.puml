@@ -1,5 +1,4 @@
 @startuml
-scale 350 width
 [*] --> bootstrap_all_init_pipelines
 
 state bootstrap_all_init_pipelines {
