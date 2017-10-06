@@ -4,12 +4,10 @@ require 'yaml'
 
 describe 'generate_manifest task' do
 
-
-  after(:context) do
-    FileUtils.rm_rf @generated_files if File.exist? @generated_files
-  end
-
   context 'when no template are detected' do
+    after(:context) do
+      FileUtils.rm_rf @generated_files
+    end
 
     before(:context) do
       @generated_files = Dir.mktmpdir
@@ -50,6 +48,10 @@ describe 'generate_manifest task' do
         'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
         'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
         'SUFFIX' => '')
+    end
+
+    after(:context) do
+      FileUtils.rm_rf @generated_files
     end
 
     it 'generates a file per valid template' do
