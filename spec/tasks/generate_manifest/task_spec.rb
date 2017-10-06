@@ -58,7 +58,7 @@ describe 'generate_manifest task' do
       tpl_yml_files .map { |filename| File.basename(filename, '-tpl.yml') }
                     .each do |base_filename|
                       expected_filename = File.join(@generated_files, base_filename + '.yml')
-                      expect(File,).to exist(expected_filename)
+                      expect(File).to exist(expected_filename), 'expected ' + base_filename + '.yml'
       end
     end
 
@@ -66,7 +66,7 @@ describe 'generate_manifest task' do
       operators_yml_files .map { |filename| File.basename(filename) }
                           .each do |base_filename|
         expected_filename = File.join(@generated_files, base_filename)
-        expect(File).to exist(expected_filename), 'expected ' + base_filename + ''
+        expect(File).to exist(expected_filename), 'expected ' + base_filename + 'to exist'
       end
     end
 

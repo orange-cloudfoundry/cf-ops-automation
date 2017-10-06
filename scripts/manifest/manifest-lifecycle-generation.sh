@@ -6,7 +6,7 @@ OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files/}
 COMMON_SCRIPT_DIR=${COMMON_SCRIPT_DIR:-scripts-resource/scripts/manifest}
 
 echo "Coping operators files from '${YML_TEMPLATE_DIR}' to '${OUTPUT_DIR}'"
-find ${YML_TEMPLATE_DIR} -maxdepth 1 -type f -name "*-operators.yml" -exec cp --verbose {} ${OUTPUT_DIR} \;
+find ${YML_TEMPLATE_DIR} -maxdepth 1 -name "*-operators.yml" -exec cp --verbose {} ${OUTPUT_DIR} \;
 
 ${COMMON_SCRIPT_DIR}/generate-manifest.sh
 
