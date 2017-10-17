@@ -374,12 +374,24 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp/template
     - task: execute-ntp-spiff-pre-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-ntp, credentials-resource: secrets-ntp, additional-resource: release-manifest}
-      output_mapping: {generated-files: final-release-manifest}
+      output_mapping: {generated-files: pre-bosh-deploy-resource}
       file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
       params:
         CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
         SECRETS_DIR: credentials-resource/simple-depls/ntp
-
+    - task: copy-ntp-required-files
+      input_mapping:
+        scripts-resource: cf-ops-automation
+        template-resource: paas-template-ntp
+        credentials-resource: secrets-ntp
+        additional-resource: pre-bosh-deploy-resource
+      output_mapping:
+        generated-files: final-release-manifest
+      file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
+        SECRETS_DIR: credentials-resource/simple-depls/ntp
+        MANIFEST_NAME: ntp.yml
     - task: convert-bosh-dns-to-ip
       output_mapping: {result-dir: bosh-generated-config}
       config:
