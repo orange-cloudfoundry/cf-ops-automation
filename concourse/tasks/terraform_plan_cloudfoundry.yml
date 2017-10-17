@@ -58,7 +58,7 @@ run:
 
     cd generated-files/
     terraform init -input=false -upgrade ../spec-applied/
-    terraform plan  ../spec-applied/
+    terraform plan -input=false ../spec-applied/
 
 params:
   SPEC_PATH:
