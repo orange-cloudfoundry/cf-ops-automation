@@ -90,7 +90,7 @@ resources:
     uri: {{secrets-uri}}
     <% ext_scan_path = boshrelease['resources']['secrets']['extended_scan_path'] if ( boshrelease['resources'] && boshrelease['resources']['secrets']['extended_scan_path'] ) %>
     <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
-    paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || ""%>]
+    paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || '' %>]
     branch: {{secrets-branch}}
     skip_ssl_verification: true
 
@@ -492,12 +492,12 @@ jobs:
       - get: secrets-<%= name %>
         params: { submodules: none}
         trigger: true
-        <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
+        <%= "passed: [update-pipeline-#{depls}-generated]" unless all_ci_deployments.empty? %>
       - get: paas-template-<%= name %>
         trigger: true
         <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
         params: { submodules: <%= current_git_submodule || 'none' %>}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if  ! all_ci_deployments.empty? %>
+        <%= "passed: [update-pipeline-#{depls}-generated]" unless all_ci_deployments.empty? %>
     - task: generate-<%= name %>-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-template-<%= name %>}
       output_mapping: {generated-files: release-manifest}
@@ -512,12 +512,20 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
     - task: execute-<%= name %>-spiff-pre-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
-      output_mapping: {generated-files: final-release-manifest}
+      output_mapping: {generated-files: pre-bosh-deploy-resource}
       file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
       params:
         CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
         SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
-    <% if boshrelease['cli_version'] == "v1" %>
+    - task: copy-<%= name %>-required-files
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: pre-bosh-deploy-resource}
+      output_mapping: {generated-files: final-release-manifest}
+      file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
+        SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
+        MANIFEST_NAME: <%= name %>.yml
+    <% if boshrelease['cli_version'] == 'v1' %>
     - task: convert-bosh-dns-to-bosh-target-v1
       output_mapping: {result-dir: bosh-generated-config}
       config:

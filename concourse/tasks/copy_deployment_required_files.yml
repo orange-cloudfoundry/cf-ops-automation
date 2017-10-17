@@ -1,0 +1,18 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: concourse/busyboxplus, tag: "git"}
+inputs:
+  - name: scripts-resource
+  - name: template-resource
+  - name: credentials-resource
+  - name: additional-resource
+outputs:
+  - name: generated-files
+run:
+  path: scripts-resource/scripts/manifest/copy-deployment-required-files.sh
+params:
+  SECRETS_DIR:
+  CUSTOM_SCRIPT_DIR:
+  MANIFEST_NAME:
