@@ -13,4 +13,5 @@ gem 'rspec-rerun'
 group :development do
   gem 'rubocop', '>= 0.49.1'
   gem 'rubocop-rspec', '>= 1.15.1'
+  gem 'github_changelog_generator', '>= 1.14.3'
 end
