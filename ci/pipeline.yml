@@ -51,7 +51,7 @@ resources:
 - name: PR-develop
   type: pull-request
   source:
-    repo: ((cf-ops-automation-git-hub-repository))
+    repo: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
     username: ((cf-ops-automation-git-username))
     password: ((cf-ops-automation-git-password))
     access_token: ((cf-ops-automation-git-hub-token))
@@ -68,7 +68,12 @@ resources:
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
     paths: [ "Gemfile*", "Dockerfile" ]
 
-
+- name: gh-release
+  type: github-release
+  source:
+    owner: ((cf-ops-automation-git-hub-owner))
+    repository: ((cf-ops-automation-git-hub-repository))
+    access_token: ((cf-ops-automation-git-hub-token))
 
 jobs:
 
@@ -81,8 +86,8 @@ jobs:
     params:
       build: cf-ops-automation-dependencies
       build_args: &docker_build_args
-        CONCOURSE_VERSION: 3.4.1
-        CONCOURSE_SHA: 7259f5dc26dba6b10bc515f7fae2ccf559579e61320f071656a6444806260289
+        CONCOURSE_VERSION: 3.5.0
+        CONCOURSE_SHA: 22332c485ad222d257ebe55c28367145ee7a9da774e132058f48ca02790ab3b6
 
 
 - name: test
@@ -124,6 +129,18 @@ jobs:
       params:
         repository: cf-ops-automation
 
+- name: ship-it
+  serial: true
+  plan:
+    - aggregate:
+      - get: version
+      - get: cf-ops-automation
+        resource: ci-master
+#        trigger: true
+        passed: [merge-to-master]
+    - put: gh-release
+      params:
+        tag_prefix: v
 
 - name: build-PR-cached-image
   plan:
@@ -145,10 +162,6 @@ jobs:
 
 - name: test-PR-develop
   plan:
-    - put: PR-develop
-      params:
-        path: PR-develop
-        status: pending
     - aggregate:
       - get: cf-ops-automation-docker-image
         passed: [build-PR-cached-image]
@@ -158,6 +171,10 @@ jobs:
         trigger: true
         version: every
         passed: [build-PR-cached-image]
+    - put: PR-develop
+      params:
+        path: cf-ops-automation
+        status: pending
 
     - task: test-pr
       image: cf-ops-automation-docker-image
