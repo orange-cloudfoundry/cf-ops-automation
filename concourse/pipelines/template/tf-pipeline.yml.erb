@@ -1,0 +1,158 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+
+resources:
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: {{slack-webhook}}
+    ca_certs:
+    - domain: {{slack-custom-domain}}
+      cert: {{slack-custom-cert}}
+    - domain: {{slack-custom-root-domain}}
+      cert: {{slack-custom-root-cert}}
+
+# Scan the whole subdeployment from its root, not only the secret part
+# Only used to trigger builds from service broker inputs
+- name: secrets-<%=depls %>-trigger
+  type: git
+  source:
+    uri: {{secrets-uri}}
+    paths: ["<%= depls %>/"]
+    branch: {{secrets-branch}}
+    skip_ssl_verification: true
+
+- name: paas-template-<%=depls %>
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    paths: ["<%= depls %>/template"]
+    branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: {{cf-ops-automation-uri}}
+    branch: {{cf-ops-automation-branch}}
+    tag_filter: {{cf-ops-automation-tag-filter}}
+    skip_ssl_verification: true
+
+
+<% unless all_ci_deployments.empty? && disabled_deployments.empty? %>
+# Used to get other deployments secrets (e.g. micro/master for mattermost/git) as well as shared secrets updates
+# This does not trigger automatically a new build, operators have to trigger it manually.
+- name: secrets-full
+  type: git
+  source:
+    uri: {{secrets-uri}}
+    branch: {{secrets-branch}}
+    skip_ssl_verification: true
+
+- name: paas-templates-full
+  type: git
+  source:
+    uri: {{paas-templates-uri}}
+    branch: {{paas-templates-branch}}
+    skip_ssl_verification: true
+
+<% end %>
+
+
+jobs:
+<% jobs = Hash.new {|h,k| h[k]=[]} %>
+
+<% if ! all_ci_deployments[depls]['terraform_config'].nil? %>
+<% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
+<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>
+
+- name: terraform-apply
+  <% jobs['terraform'] << 'terraform-apply' %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: {{slack-channel}}
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+        trigger: true
+      - get: paas-template-<%=depls %>
+        params: { submodules: none}
+        trigger: true
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: secrets-full
+        params: { submodules: none}
+      - get: secrets-<%=depls %>-trigger
+        params: { submodules: none}
+        trigger: true
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        YML_FILES: |
+          ./credentials-resource/shared/secrets.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
+        YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
+        SUFFIX: -tpl.tfvars.yml
+    - task: terraform-apply
+      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
+      output_mapping: {generated-files: terraform-cf}
+      file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
+      params:
+        SPEC_PATH: "<%= terraform_config_path %>/spec"
+        SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
+      ensure:
+        task: update-terraform-state-file
+        input_mapping: {reference-resource: secrets-full, generated-resource: terraform-cf}
+        output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+        file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+        params:
+          OLD_FILE: "<%= terraform_config_path %>/terraform.tfstate"
+          NEW_FILE: "terraform.tfstate"
+          COMMIT_MESSAGE: "Terraform Cloudfoundry auto update - [skip ci]"
+        on_failure:
+          put: failure-alert
+          params:
+            channel: {{slack-channel}}
+            text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
+        on_success:
+          put: secrets-full
+          get_params: {submodules: none}
+          params:
+            repository: updated-terraform-state-secrets
+            rebase: true
+<% end %>
+
+
+groups:
+- name: <%= depls.capitalize %>
+  jobs:
+  <% jobs.each_value do |jobs_list| %>
+   <% jobs_list.each do |a_job| %>
+    - <%= a_job %>
+   <% end %>
+  <% end %>
+
+<% jobs&.sort&.each do |group_name, jobs_list| %>
+- name: <%= group_name.capitalize %>
+  jobs:
+   <% jobs_list&.each do |a_job| %>
+    - <%= a_job %>
+   <% end %>
+<% end %>

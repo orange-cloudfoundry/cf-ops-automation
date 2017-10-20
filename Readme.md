@@ -343,6 +343,19 @@ After these are set up, you will be able to run the test suite via:
 bundler exec rspec
 ```
 
+## Generating pipelines locally and uploading a test version 
+
+While developing new pipelines, it might be easier to generate them locally and upload them manually to a concourse instance 
+
+```bash
+fly -t preprod login -u login -p password -c concourse-url
+./scripts/generate-depls.rb --depls cloudflare-depls -t ../paas-template/ -p ../bosh-cloudwatt-preprod-secrets/ --no-dump -i ./concourse/pipelines/template/tf-pipeline.yml.erb 
+SECRETS=../bosh-cloudwatt-preprod-secrets/ TARGET_NAME=preprod ./scripts/concourse-manual-pipelines-update.rb -dcloudflare-depls
+```
+
+Once pipelines are correct, commit, pipelines would perform automated deployment, see [scripts/concourse-generate-all-pipelines.sh](scripts/concourse-generate-all-pipelines.sh)  
+
+
 ## Local terraform development
 
 In order to leverage IDE capabilities for terraform when editing TF config files (completion, syntax highlighting, etc.)
