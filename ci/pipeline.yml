@@ -77,143 +77,234 @@ resources:
 
 jobs:
 
-- name: build-cached-image
-  plan:
-#  - get: cf-ops-automation
-  - get: cf-ops-automation-dependencies
-    trigger: true
-  - put: cf-ops-automation-docker-image
-    params:
-      build: cf-ops-automation-dependencies
-      build_args: &docker_build_args
-        CONCOURSE_VERSION: 3.5.0
-        CONCOURSE_SHA: 22332c485ad222d257ebe55c28367145ee7a9da774e132058f48ca02790ab3b6
-
-
-- name: test
-  plan:
-  - aggregate:
-    - get: cf-ops-automation-docker-image
-      passed: [build-cached-image]
+  - name: build-cached-image
+    plan:
+  #  - get: cf-ops-automation
+    - get: cf-ops-automation-dependencies
       trigger: true
-    - get: cf-ops-automation
-      resource: ci-develop
-      trigger: true
-#    passed: [build-cached-image]
-    trigger: true
-  - task: run-tests
-    image: cf-ops-automation-docker-image
-    config: &test_config
-      platform: linux
-      inputs:
-      - name: cf-ops-automation
-      run:
-        dir: cf-ops-automation
-        path: /bin/bash
-        args:
-        - -ce
-        - |
-          fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
-          bundle exec rspec
+    - put: cf-ops-automation-docker-image
+      params:
+        build: cf-ops-automation-dependencies
+        build_args: &docker_build_args
+          CONCOURSE_VERSION: 3.5.0
+          CONCOURSE_SHA: 22332c485ad222d257ebe55c28367145ee7a9da774e132058f48ca02790ab3b6
 
-- name: merge-to-master
-  serial: true
-  plan:
+
+  - name: test
+    plan:
     - aggregate:
-      - get: ci-master
+      - get: cf-ops-automation-docker-image
+        passed: [build-cached-image]
+        trigger: true
       - get: cf-ops-automation
         resource: ci-develop
         trigger: true
-        passed: [test]
-    - put: ci-master
-      params:
-        repository: cf-ops-automation
-
-- name: ship-it
-  serial: true
-  plan:
-    - aggregate:
-      - get: version
-      - get: cf-ops-automation
-        resource: ci-master
-#        trigger: true
-        passed: [merge-to-master]
-    - put: gh-release
-      params:
-        tag_prefix: v
-
-- name: build-PR-cached-image
-  plan:
-    - get: PR-develop
+  #    passed: [build-cached-image]
       trigger: true
-      version: every
+    - task: run-tests
+      image: cf-ops-automation-docker-image
+      config: &test_config
+        platform: linux
+        inputs:
+        - name: cf-ops-automation
+        run:
+          dir: cf-ops-automation
+          path: /bin/bash
+          args:
+          - -ce
+          - |
+            fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+            bundle exec rspec
 
-    - put: PR-develop
-      params:
-        path: PR-develop
-        status: pending
+  - name: merge-to-master
+    serial: true
+    plan:
+      - aggregate:
+        - get: ci-master
+        - get: cf-ops-automation
+          resource: ci-develop
+          trigger: true
+          passed: [test]
+        - get: cf-ops-automation-docker-image
+          passed: [test]
+      - put: ci-master
+        params:
+          repository: cf-ops-automation
 
-    - put: cf-ops-automation-docker-image
-      params:
-        build: PR-develop
-        tag: PR-develop/.git/id
-        tag_prefix: PR-
-        build_args: *docker_build_args
+  - name: ship-it
+    serial: true
+    serial_groups: [version]
+    plan:
+      - aggregate:
+        - get: version
+          params: {bump: final}
+        - get: cf-ops-automation
+          resource: ci-master
+  #        trigger: true
+          passed: [merge-to-master]
+#        - get: cf-ops-automation-docker-image
+#          passed: [merge-to-master]
+      - task: generate-changelog
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: orangecloudfoundry/cf-ops-automation
+          inputs:
+          - name: cf-ops-automation
+          - name: version
+          outputs:
+          - name: cf-ops-automation-changelog
+          run:
+            path: /bin/bash
+            args:
+            - -ce
+            - |
+              git config --global user.email "$GIT_USER_EMAIL"
+              git config --global user.name "$GIT_USER_NAME"
 
-- name: test-PR-develop
-  plan:
-    - aggregate:
-      - get: cf-ops-automation-docker-image
-        passed: [build-PR-cached-image]
-        trigger: true
-      - get: cf-ops-automation
-        resource: PR-develop
+              RELEASE_VERSION=$(cat version/version)
+              git clone cf-ops-automation cf-ops-automation-changelog
+              cd cf-ops-automation-changelog/
+              bundle exec github_changelog_generator --no-author --future-release "v${RELEASE_VERSION}"
+              git add -A
+              CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
+              if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
+              then
+                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION}"
+              else
+                 echo "No change detected, skip commit"
+              fi
+          params:
+            GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+            GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+            CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
+      - put: ci-master
+        params:
+          repository: cf-ops-automation-changelog
+          rebase: true
+      - task: generate-release
+#        image: cf-ops-automation-docker-image
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: orangecloudfoundry/cf-ops-automation
+          platform: linux
+          inputs:
+          - name: cf-ops-automation
+          - name: version
+          outputs:
+          - name: github-info
+          run:
+            dir: cf-ops-automation
+            path: /bin/bash
+            args:
+            - -ce
+            - |
+              RELEASE_VERSION=$(cat ../version/version)
+              OUTPUT_DIR="../github-info"
+              OUTPUT_FILE="${OUTPUT_DIR}/github_release.md"
+              bundle exec github_changelog_generator --no-author  -o ${OUTPUT_FILE} --header-label "**Release notes**" --future-release "v${RELEASE_VERSION}" --since-tag "v${RELEASE_VERSION}"
+              cd ${OUTPUT_DIR}
+              tar czvf cf-ops-automation.tgz ../cf-ops-automation
+          params:
+            CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
+      - put: gh-release
+        params:
+          name: version/version
+          tag_prefix: v
+          tag: version/version
+          body: github-info/github_release.md
+          globs:
+           - github-info/cf-ops-automation.tgz
+      - put: version
+        params: {bump: patch, pre: rc}
+
+  - name: merge-changelog-to-develop
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation
+          resource: ci-master
+          trigger: true
+          passed: [ship-it]
+        - get: ci-develop
+      - put: ci-develop
+        params:
+          repository: cf-ops-automation
+
+  - name: build-PR-cached-image
+    plan:
+      - get: PR-develop
         trigger: true
         version: every
-        passed: [build-PR-cached-image]
-    - put: PR-develop
-      params:
-        path: cf-ops-automation
-        status: pending
 
-    - task: test-pr
-      image: cf-ops-automation-docker-image
-      config: *test_config
-      on_success:
-        put: PR-develop
+      - put: PR-develop
+        params:
+          path: PR-develop
+          status: pending
+
+      - put: cf-ops-automation-docker-image
+        params:
+          build: PR-develop
+          tag: PR-develop/.git/id
+          tag_prefix: PR-
+          build_args: *docker_build_args
+
+  - name: test-PR-develop
+    plan:
+      - aggregate:
+        - get: cf-ops-automation-docker-image
+          passed: [build-PR-cached-image]
+          trigger: true
+        - get: cf-ops-automation
+          resource: PR-develop
+          trigger: true
+          version: every
+          passed: [build-PR-cached-image]
+      - put: PR-develop
         params:
           path: cf-ops-automation
-          status: success
-      on_failure:
-        put: PR-develop
-        params:
-          path: cf-ops-automation
-          status: failure
+          status: pending
+
+      - task: test-pr
+        image: cf-ops-automation-docker-image
+        config: *test_config
+        on_success:
+          put: PR-develop
+          params:
+            path: cf-ops-automation
+            status: success
+        on_failure:
+          put: PR-develop
+          params:
+            path: cf-ops-automation
+            status: failure
 
 
-- name: major
-  serial_groups: [version]
-  plan:
-  - get: version
-    params: {bump: major, pre: rc}
-  - put: version
-    params: {file: version/version}
+  - name: major
+    serial_groups: [version]
+    plan:
+    - get: version
+      params: {bump: major, pre: rc}
+    - put: version
+      params: {file: version/version}
 
-- name: minor
-  serial_groups: [version]
-  plan:
-  - get: version
-    params: {bump: minor, pre: rc}
-  - put: version
-    params: {file: version/version}
+  - name: minor
+    serial_groups: [version]
+    plan:
+    - get: version
+      params: {bump: minor, pre: rc}
+    - put: version
+      params: {file: version/version}
 
-- name: patch
-  serial_groups: [version]
-  plan:
-  - get: version
-    params: {bump: patch, pre: rc}
-  - put: version
-    params: {file: version/version}
-
-
-
+  - name: patch
+    serial_groups: [version]
+    plan:
+    - get: version
+      params: {bump: patch, pre: rc}
+    - put: version
+      params: {file: version/version}
