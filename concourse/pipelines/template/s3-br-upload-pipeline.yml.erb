@@ -1,0 +1,199 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+
+resources:
+
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+    ca_certs:
+    - domain: ((slack-custom-domain))
+      cert: ((slack-custom-cert))
+    - domain: ((slack-custom-root-domain))
+      cert: ((slack-custom-root-cert))
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+
+<% uniq_releases= {} %>
+<% all_dependencies.sort.each do |name,boshrelease| %>
+<% boshrelease["releases"]&.each do |release, info|  %>
+<% uniq_releases[release]= info %>
+<% end %>
+<% end %>
+
+<% uniq_releases.sort.each do |release, info|  %>
+- name: <%= release %>
+  <% if info["base_location"].include?("bosh.io") %>
+  type: bosh-io-release
+  source:
+    repository: <%= info["repository"] %>
+  <% else %>
+  type: github-release
+  source:
+    user: <%= info["repository"].split('/').first %>
+    repository: <%= info["repository"].split('/').last %>
+  <% end %>
+
+- name: <%= release %>-s3
+  type: s3
+  source:
+    bucket: ((s3-br-bucket))
+    region_name: ((s3-br-region-name))
+    regexp: <%= release %>/<%= release %>-(.*).tgz
+    access_key_id: ((s3-br-access-key-id))
+    secret_access_key: ((s3-br-secret-key))
+    endpoint: ((s3-br-endpoint))
+    skip_ssl_verification: ((s3-br-skip-ssl-verification))
+<% end %>
+
+
+jobs:
+
+- name: init-concourse-boshrelease-for-<%= depls %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 3
+  - task: generate-<%= depls %>-flight-plan
+    output_mapping: {result-dir: init-<%= depls %>-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          <% uniq_releases.sort.each do |name,_| %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
+          <% end %>
+
+      params:
+        BUILD_PIPELINE_NAME: <%= depls %>-s3-br-upload-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: init-<%= depls %>-plan}
+    output_mapping: {flight-report: concourse-<%= depls %>-init-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
+      FLY_USERNAME: ((concourse-<%= depls %>-username))
+      FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+
+<% uniq_releases.sort.each do |release, info|  %>
+
+- name: upload-current-<%= release %>
+  serial_groups: [<%= release %>]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: <%= release %>
+        attempts: 3
+        version: {version: ((<%= release %>-version))}
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 3
+        passed: [ init-concourse-boshrelease-for-<%= depls %> ]
+    - task: generate-<%= release %>-name
+      input_mapping: {release: <%= release %>}
+      output_mapping: {result-dir: <%= release %>}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: <%= release %>
+    - put: <%= release %>-s3
+      params:
+        file: <%= release %>/*.tgz
+        acl: public-read
+
+- name: upload-latest-<%= release %>
+  serial_groups: [<%= release %>]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: <%= release %>
+        attempts: 3
+        version: every
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 3
+        passed: [ upload-current-<%= release %> ]
+    - task: generate-<%= release %>-name
+      input_mapping: {release: <%= release %>}
+      output_mapping: {result-dir: <%= release %>}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: <%= release %>
+    - put: <%= release %>-s3
+      params:
+        file: <%= release %>/*.tgz
+        acl: public-read
+
+<% end %>
