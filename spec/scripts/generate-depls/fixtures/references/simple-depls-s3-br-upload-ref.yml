@@ -1,0 +1,190 @@
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+resources:
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: "((slack-webhook))"
+    ca_certs:
+    - domain: "((slack-custom-domain))"
+      cert: "((slack-custom-cert))"
+    - domain: "((slack-custom-root-domain))"
+      cert: "((slack-custom-root-cert))"
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: "((cf-ops-automation-uri))"
+    branch: "((cf-ops-automation-branch))"
+    tag_filter: "((cf-ops-automation-tag-filter))"
+    skip_ssl_verification: true
+- name: ntp_boshrelease
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/ntp-release
+- name: ntp_boshrelease-s3
+  type: s3
+  source:
+    bucket: "((s3-br-bucket))"
+    region_name: "((s3-br-region-name))"
+    regexp: ntp_boshrelease/ntp_boshrelease-(.*).tgz
+    access_key_id: "((s3-br-access-key-id))"
+    secret_access_key: "((s3-br-secret-key))"
+    endpoint: "((s3-br-endpoint))"
+    skip_ssl_verification: "((s3-br-skip-ssl-verification))"
+jobs:
+- name: init-concourse-boshrelease-for-simple-depls
+  on_failure:
+    put: failure-alert
+    params:
+      channel: "((slack-channel))"
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      attempts: 3
+  - task: generate-simple-depls-flight-plan
+    output_mapping:
+      result-dir: init-simple-depls-plan
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/busyboxplus
+          tag: git
+      outputs:
+      - name: result-dir
+      run:
+        path: sh
+        args:
+        - "-exc"
+        - |2
+
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
+      params:
+        BUILD_PIPELINE_NAME: simple-depls-s3-br-upload-generated
+  - task: fly-into-concourse
+    input_mapping:
+      fly-cmd: init-simple-depls-plan
+    output_mapping:
+      flight-report: concourse-simple-depls-init-report
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: "((concourse-simple-depls-target))"
+      FLY_USERNAME: "((concourse-simple-depls-username))"
+      FLY_PASSWORD: "((concourse-simple-depls-password))"
+- name: upload-current-ntp_boshrelease
+  serial_groups:
+  - ntp_boshrelease
+  on_failure:
+    put: failure-alert
+    params:
+      channel: "((slack-channel))"
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: ntp_boshrelease
+      attempts: 3
+      version:
+        version: "((ntp_boshrelease-version))"
+      trigger: true
+      params:
+        tarball: true
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      attempts: 3
+      passed:
+      - init-concourse-boshrelease-for-simple-depls
+  - task: generate-ntp_boshrelease-name
+    input_mapping:
+      release: ntp_boshrelease
+    output_mapping:
+      result-dir: ntp_boshrelease
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/busyboxplus
+          tag: git
+      inputs:
+      - name: release
+      outputs:
+      - name: result-dir
+      run:
+        path: sh
+        args:
+        - "-exc"
+        - |
+          VERSION=$(cat release/version)
+          cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+      params:
+        RELEASE_PREFIX: ntp_boshrelease
+  - put: ntp_boshrelease-s3
+    params:
+      file: ntp_boshrelease/*.tgz
+      acl: public-read
+- name: upload-latest-ntp_boshrelease
+  serial_groups:
+  - ntp_boshrelease
+  on_failure:
+    put: failure-alert
+    params:
+      channel: "((slack-channel))"
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: ntp_boshrelease
+      attempts: 3
+      version: every
+      trigger: true
+      params:
+        tarball: true
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      attempts: 3
+      passed:
+      - upload-current-ntp_boshrelease
+  - task: generate-ntp_boshrelease-name
+    input_mapping:
+      release: ntp_boshrelease
+    output_mapping:
+      result-dir: ntp_boshrelease
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/busyboxplus
+          tag: git
+      inputs:
+      - name: release
+      outputs:
+      - name: result-dir
+      run:
+        path: sh
+        args:
+        - "-exc"
+        - |
+          VERSION=$(cat release/version)
+          cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+      params:
+        RELEASE_PREFIX: ntp_boshrelease
+  - put: ntp_boshrelease-s3
+    params:
+      file: ntp_boshrelease/*.tgz
+      acl: public-read
