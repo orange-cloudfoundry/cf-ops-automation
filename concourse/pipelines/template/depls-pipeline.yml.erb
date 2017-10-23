@@ -255,7 +255,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: orangecloudfoundry/bosh-cli-v2
+              repository: governmentpaas/bosh-cli-v2
           inputs:
             - name: script-resource
             - name: secrets
@@ -335,22 +335,6 @@ jobs:
       params: { submodules: none}
       trigger: true
       <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
-#    - task: generate-<%= depls %>-terraform-outputs-cloud-config
-#      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-<%=depls %>, additional-resource: terraform-outputs}
-#      output_mapping: {generated-files: cloud-config-manifest}
-#      file: paas-template/concourse/tasks/extract_terraform_outputs.yml
-#      params:
-#        STATE_FILE: "state-file-resource/terraform.tfstate"
-#        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
-#
-#        SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
-#        YML_TEMPLATE_DIR: scripts-resource/<%= depls %>/template
-#        YML_FILES: |
-#            ./credentials-resource/<%= depls %>/secrets/meta.yml
-#            ./credentials-resource/<%= depls %>/secrets/secrets.yml
-#            ./credentials-resource/shared/secrets.yml
-#        CUSTOM_SCRIPT_DIR: scripts-resource/<%= depls %>/template
-
     - task: generate-<%= depls %>-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-template-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
@@ -372,7 +356,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
+              repository: governmentpaas/bosh-cli-v2
           inputs:
             - name: config-manifest
             - name: secrets-<%=depls %>
@@ -383,11 +367,18 @@ jobs:
               - -e
               - -c
               - |
-                ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+                cat config-manifest/cloud-config.yml
                 OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
                 bosh cloud-config >$OLD_CONFIG
                 diff $OLD_CONFIG config-manifest/cloud-config.yml || true
-                bosh update cloud-config config-manifest/cloud-config.yml
+                bosh -n update-cloud-config config-manifest/cloud-config.yml
+          params:
+             BOSH_TARGET: {{bosh-target}}
+             BOSH_CLIENT: {{bosh-username}}
+             BOSH_CLIENT_SECRET: {{bosh-password}}
+             BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+
         ensure:
           task: update-cloud-config
           input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
@@ -418,7 +409,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
+              repository: governmentpaas/bosh-cli-v2
           inputs:
             - name: config-manifest
             - name: secrets-<%=depls %>
@@ -429,12 +420,18 @@ jobs:
               - -e
               - -c
               - |
-                ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 cat config-manifest/runtime-config.yml
                 OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
                 bosh runtime-config >$OLD_CONFIG
                 diff $OLD_CONFIG config-manifest/runtime-config.yml || true
-                bosh update runtime-config config-manifest/runtime-config.yml
+                bosh -n update-runtime-config config-manifest/runtime-config.yml
+          params:
+             BOSH_TARGET: {{bosh-target}}
+             BOSH_CLIENT: {{bosh-username}}
+             BOSH_CLIENT_SECRET: {{bosh-password}}
+             BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+
         ensure:
           task: update-runtime-config
           input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
@@ -761,7 +758,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: orangecloudfoundry/bosh-cli-v2
+              repository: governmentpaas/bosh-cli-v2
           inputs:
             - name: script-resource
             - name: secrets
