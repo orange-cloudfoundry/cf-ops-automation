@@ -148,7 +148,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: orangecloudfoundry/bosh-cli-v2
+            repository: governmentpaas/bosh-cli-v2
         inputs:
         - name: script-resource
         - name: secrets
@@ -247,7 +247,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
+              repository: governmentpaas/bosh-cli-v2
           inputs:
           - name: config-manifest
           - name: secrets-delete-depls
@@ -258,11 +258,17 @@ jobs:
             - "-e"
             - "-c"
             - |
-              ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+              source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+              cat config-manifest/cloud-config.yml
               OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
               bosh cloud-config >$OLD_CONFIG
               diff $OLD_CONFIG config-manifest/cloud-config.yml || true
-              bosh update cloud-config config-manifest/cloud-config.yml
+              bosh -n update-cloud-config config-manifest/cloud-config.yml
+          params:
+            BOSH_TARGET: {{bosh-target}}
+            BOSH_CLIENT: {{bosh-username}}
+            BOSH_CLIENT_SECRET: {{bosh-password}}
+            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
           input_mapping:
@@ -296,7 +302,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli
+              repository: governmentpaas/bosh-cli-v2
           inputs:
           - name: config-manifest
           - name: secrets-delete-depls
@@ -307,12 +313,17 @@ jobs:
             - "-e"
             - "-c"
             - |
-              ./cf-ops-automation/scripts/bosh_login.sh {{bosh-target}} {{bosh-username}} {{bosh-password}}
+              source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
               cat config-manifest/runtime-config.yml
               OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
               bosh runtime-config >$OLD_CONFIG
               diff $OLD_CONFIG config-manifest/runtime-config.yml || true
-              bosh update runtime-config config-manifest/runtime-config.yml
+              bosh -n update-runtime-config config-manifest/runtime-config.yml
+          params:
+            BOSH_TARGET: {{bosh-target}}
+            BOSH_CLIENT: {{bosh-username}}
+            BOSH_CLIENT_SECRET: {{bosh-password}}
+            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
           input_mapping:
