@@ -8,7 +8,7 @@ RSpec.shared_examples 'pipeline checker' do |generated_pipeline_name, reference_
     reference_file = YAML.load_file("#{test_path}/fixtures/references/#{reference_pipeline}") || {}
     expected_generated_dir = File.join(output_path, 'pipelines')
     expected_generated_filename = File.join(expected_generated_dir, generated_pipeline_name)
-    raise "file not found: #{expected_generated_filename}. Dir content: #{Dir[expected_generated_dir '/../*']}"  unless File.exist?(expected_generated_filename)
+    raise "file not found: #{expected_generated_filename}. Dir content: #{Dir.glob(expected_generated_dir + '/*')}" unless File.exist?(expected_generated_filename)
     generated_file = YAML.load_file(expected_generated_filename)
     expect(generated_file.to_yaml).to eq(reference_file.to_yaml)
   end
