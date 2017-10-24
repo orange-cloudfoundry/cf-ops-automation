@@ -156,6 +156,14 @@ describe 'generate-depls' do
         it_behaves_like 'pipeline checker', 'dummy-depls-sync-helper-generated.yml', 'empty-sync-helper.yml'
       end
 
+      context 'when s3-stemcell-upload pipeline is checked' do
+        it_behaves_like 'pipeline checker', 'dummy-depls-s3-stemcell-upload-generated.yml', 'empty-s3-stemcell-upload.yml'
+      end
+
+      context 'when s3-br-upload pipeline is checked' do
+        it_behaves_like 'pipeline checker', 'dummy-depls-s3-br-upload-generated.yml', 'empty-s3-br-upload.yml'
+      end
+
     end
   end
 end

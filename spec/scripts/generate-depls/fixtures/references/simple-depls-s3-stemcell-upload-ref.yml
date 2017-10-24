@@ -1,0 +1,139 @@
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+resources:
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: "((slack-webhook))"
+    ca_certs:
+    - domain: "((slack-custom-domain))"
+      cert: "((slack-custom-cert))"
+    - domain: "((slack-custom-root-domain))"
+      cert: "((slack-custom-root-cert))"
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: "((cf-ops-automation-uri))"
+    branch: "((cf-ops-automation-branch))"
+    tag_filter: "((cf-ops-automation-tag-filter))"
+    skip_ssl_verification: true
+- name: bosh-openstack-kvm-ubuntu-trusty-go_agent
+  type: bosh-io-stemcell
+  source:
+    name: bosh-openstack-kvm-ubuntu-trusty-go_agent
+- name: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
+  type: s3
+  source:
+    bucket: "((s3-stemcell-bucket))"
+    region_name: "((s3-stemcell-region-name))"
+    regexp: bosh-openstack-kvm-ubuntu-trusty-go_agent/bosh-stemcell-(.*)-openstack-kvm-ubuntu-trusty-go_agent.tgz
+    access_key_id: "((s3-stemcell-access-key-id))"
+    secret_access_key: "((s3-stemcell-secret-key))"
+    endpoint: "((s3-stemcell-endpoint))"
+    skip_ssl_verification: "((s3-stemcell-skip-ssl-verification))"
+jobs:
+- name: init-concourse-stemcells-for-simple-depls
+  on_failure:
+    put: failure-alert
+    params:
+      channel: "((slack-channel))"
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      attempts: 3
+  - task: generate-simple-depls-flight-plan
+    output_mapping:
+      result-dir: init-simple-depls-plan
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: concourse/busyboxplus
+          tag: git
+      outputs:
+      - name: result-dir
+      run:
+        path: sh
+        args:
+        - "-exc"
+        - |2
+
+          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-kvm-ubuntu-trusty-go_agent --from version:((stemcell-version))" >> result-dir/flight-plan
+
+      params:
+        BUILD_PIPELINE_NAME: simple-depls-s3-stemcell-upload-generated
+  - task: fly-into-concourse
+    input_mapping:
+      fly-cmd: init-simple-depls-plan
+    output_mapping:
+      flight-report: concourse-simple-depls-init-report
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: "((concourse-simple-depls-target))"
+      FLY_USERNAME: "((concourse-simple-depls-username))"
+      FLY_PASSWORD: "((concourse-simple-depls-password))"
+- name: upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent
+  on_failure:
+    put: failure-alert
+    params:
+      channel: "((slack-channel))"
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: bosh-openstack-kvm-ubuntu-trusty-go_agent
+      attempts: 3
+      version:
+        version: "((stemcell-version))"
+      trigger: true
+      params:
+        tarball: true
+        preserve_filename: true
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      attempts: 3
+      passed:
+      - init-concourse-stemcells-for-simple-depls
+  - put: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
+    params:
+      file: bosh-openstack-kvm-ubuntu-trusty-go_agent/*.tgz
+      acl: public-read
+- name: upload-lastest-bosh-openstack-kvm-ubuntu-trusty-go_agent
+  on_failure:
+    put: failure-alert
+    params:
+      channel: "((slack-channel))"
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: bosh-openstack-kvm-ubuntu-trusty-go_agent
+      attempts: 3
+      version: every
+      trigger: true
+      params:
+        tarball: true
+        preserve_filename: true
+    - get: cf-ops-automation
+      params:
+        submodules: none
+      attempts: 3
+      passed:
+      - upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent
+  - put: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
+    params:
+      file: bosh-openstack-kvm-ubuntu-trusty-go_agent/*.tgz
+      acl: public-read
