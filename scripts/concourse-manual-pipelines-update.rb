@@ -88,12 +88,16 @@ def set_pipeline(target_name:,name:, config:, load: [],options: [])
   return if OPTIONS.has_key?(:without) && name.include?(OPTIONS[:without])
   puts "   #{name} pipeline"
 
-  puts system(%{bash -c "fly -t #{target_name} set-pipeline \
+  fly_cmd=(%{bash -c "fly -t #{target_name} set-pipeline \
     -p #{PIPELINE_PREFIX}#{name} \
     -c #{config} \
-    #{load.collect { |l| "-l #{l}" }.join(' ')} \
-    #{options.collect { |opt| "#{opt}" }.join(' ')}
+  #{load.collect { |l| "-l #{l}" }.join(' ')} \
+  #{options.collect { |opt| "#{opt}" }.join(' ')}
   "})
+
+  puts "Executing: #{fly_cmd}"
+
+  puts system(fly_cmd)
 end
 
 def generate_full_path_for_concourse_vars_files(vars_files)
