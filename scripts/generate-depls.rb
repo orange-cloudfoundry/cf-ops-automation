@@ -81,14 +81,7 @@ depls = OPTIONS[:depls]
 opt_parser.abort("#{opt_parser}") if depls.nil?
 
 if OPTIONS[:input_pipelines].nil?
-  OPTIONS[:input_pipelines] =
-  [
-    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/depls-pipeline.yml.erb",
-    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/cf-apps-pipeline.yml.erb",
-    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/news-pipeline.yml.erb",
-    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/sync-helper-pipeline.yml.erb",
-    "#{OPTIONS[:ops_automation]}/concourse/pipelines/template/init-pipeline.yml.erb"
-  ]
+  OPTIONS[:input_pipelines] = Dir["#{OPTIONS[:ops_automation]}/concourse/pipelines/template/*.yml.erb"]
 end
 
 BOSH_CERT = BoshCertificates.new.load_from_location OPTIONS[:secret_path], BOSH_CERT_LOCATIONS
