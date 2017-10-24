@@ -34,7 +34,7 @@ class CiDeploymentOverview
       puts "Processing #{dirname}"
       Dir[filename + '/ci-deployment-overview.yml'].each do |deployment_file|
         puts "CI deployment detected: #{dirname}"
-        current_deployment=YAML.load_file(deployment_file)
+        current_deployment = YAML.load_file(deployment_file)
         raise "#{deployment_file} - Invalid deployment: expected 'ci-deployment' key as yaml root" if (current_deployment.nil? || current_deployment['ci-deployment'].nil?)
         current_deployment['ci-deployment'].each do |deployment_name, deployment_details|
           raise "#{deployment_file} - missing keys: expecting keys target and pipelines" if deployment_details.nil?
@@ -52,11 +52,11 @@ class CiDeploymentOverview
           end
         end
       end
-      #puts "##############################"
+      # puts "##############################"
       #    ci_deployment.each do |aDep|
       #        puts aDep
       #    end
-      #puts "##############################"
+      # puts "##############################"
     end
     puts "ci_deployment loaded: \n#{YAML.dump(ci_deployment)}"
     ci_deployment
