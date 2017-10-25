@@ -132,7 +132,7 @@ describe 'generate-depls' do
 
       it 'generate a pipeline for each pipeline template' do
         erb_file_counter = 0
-        Dir["#{ci_path}/concourse/pipelines/template/*.erb"]&.each{ erb_file_counter += 1 }
+        Dir["#{ci_path}/concourse/pipelines/template/*.erb"]&.each { erb_file_counter += 1 }
         expect(stdout_str).to include("#{erb_file_counter} concourse pipeline templates were processed")
       end
 
