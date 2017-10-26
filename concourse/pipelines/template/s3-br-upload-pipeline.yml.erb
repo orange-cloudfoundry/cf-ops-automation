@@ -90,7 +90,6 @@ jobs:
           <% uniq_releases.sort.each do |name,_| %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
           <% end %>
-
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-s3-br-upload-generated
   - task: fly-into-concourse
