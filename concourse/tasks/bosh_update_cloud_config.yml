@@ -19,8 +19,8 @@ image_resource:
     repository: governmentpaas/bosh-cli-v2
 inputs:
   - name: config-manifest
-  - name: script-resource
   - name: secrets
+  - name: script-resource
 run:
   path: sh
   args:
