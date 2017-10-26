@@ -343,6 +343,18 @@ After these are set up, you will be able to run the test suite via:
 bundler exec rspec
 ```
 
+## Local terraform development
+
+In order to leverage IDE capabilities for terraform when editing TF config files (completion, syntax highlighting, etc.)
+, a consistent local environment is required, with spruce templates interpolated, 
+and tf config files merged from template and secrets repo.
+
+This also enables local execution for `terraform plan` and `tf apply` providing shorter feedback cycles.
+
+The `scripts/setUpTfDevEnv.sh` script partially automates the set up of such local environment.
+
+
+
 ## Contributing Code
 
 If you've got a feature you want to see or a bug you'd like to fix, pull requests are the way to go.
