@@ -30,10 +30,8 @@ function setUpDevEnv {
 
     mkdir -p generated-files
     mkdir -p spec-applied
-    ln -snf ${WORKDIR}/${SECRET_REPO} credentials-resource
+    ln -snf ${WORKDIR}/${SECRET_REPO} secret-state-resource
     cd generated-files/
-
-    # ln -s secret-state-resource ${WORKDIR}/${SECRET_REPO}/ops-depls/cloudfoundry/terraform-config
 
     ln -snf  ${WORKDIR}/${SECRET_REPO}/${DEPLOYMENT_PATH}/terraform.tfstate terraform.tfstate
 
