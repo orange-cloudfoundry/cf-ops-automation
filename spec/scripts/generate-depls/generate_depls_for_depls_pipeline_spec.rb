@@ -82,8 +82,7 @@ describe 'generate-depls for depls pipeline' do
               lifecycle['pre-bosh-deploy'] = index
             when 'execute-ntp-post-bosh-deploy' then
               lifecycle['post-bosh-deploy'] = index
-            else
-              raise "unexpected value found for task['task']: #{task['task']}"
+            # do not add an else as other task may exist
             end
           end
         lifecycle
