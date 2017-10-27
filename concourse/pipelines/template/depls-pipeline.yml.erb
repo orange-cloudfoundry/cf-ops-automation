@@ -436,7 +436,7 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
-      <% boshrelease['releases']&.sort.each do |release, info| %>
+      <% boshrelease['releases']&.sort&.each do |release, info| %>
       - get: <%= release %>
         <% if info['base_location'].include?('bosh.io') %>
         version: { version: {{<%= release %>-version}} }
@@ -561,7 +561,7 @@ jobs:
         stemcells:
           - bosh-stemcell/stemcell.tgz
         releases: <%= '[]' if boshrelease['releases']&.empty? %>
-          <% boshrelease['releases']&.sort.each do |release, info| %>
+          <% boshrelease['releases']&.sort&.each do |release, info| %>
           - <%= release %>/release.tgz
           <% end %>
         <% unless boshrelease['cli_version'] == 'v1' %>
