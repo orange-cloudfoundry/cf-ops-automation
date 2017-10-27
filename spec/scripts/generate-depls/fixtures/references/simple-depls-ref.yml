@@ -558,12 +558,13 @@ jobs:
               - -c
               - |
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-                bosh -n -d ntp recreate
+                bosh -n recreate
       params:
          BOSH_TARGET: {{bosh-target}}
          BOSH_CLIENT: {{bosh-username}}
          BOSH_CLIENT_SECRET: {{bosh-password}}
          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+         BOSH_DEPLOYMENT: ntp
 
 
 - name: init-concourse-boshrelease-and-stemcell-for-simple-depls
@@ -676,7 +677,10 @@ jobs:
           cp -r script-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/
-          ./scripts/generate-depls.rb --depls simple-depls -t ../templates -p . -o concourse
+          ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse
+      params:
+        ROOT_DEPLOYMENT: simple-depls
+
   - put: TO_BE_DEFINED
     params:
       pipelines:
