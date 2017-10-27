@@ -1,0 +1,6 @@
+---
+deployment:
+  bosh:
+    stemcells:
+      bosh-openstack-kvm-ubuntu-trusty-go_agent:
+    releases:
