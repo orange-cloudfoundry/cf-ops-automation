@@ -931,7 +931,7 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
     - task: terraform-plan
-      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
+      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full, credentials-resource: secrets-full}
       file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
       params:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
