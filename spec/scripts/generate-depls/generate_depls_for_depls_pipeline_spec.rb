@@ -64,57 +64,63 @@ describe 'generate-depls for depls pipeline' do
 
     context 'when scripting lifecycle feature is valid' do
       # if template directory contains scripts with specific name, then these scripts are executed, using the following order :
-      #   1: post-generate.sh: can execute shell operation or spruce task.
+      #  1: post-generate.sh: can execute shell operation or spruce task.
       #         **Restrictions**: as the post-generation script is executed in the same docker image running spruce, no spiff is available.
-      #   2: pre-bosh-deploy.sh: can execute shell operation or spiff task.
-      #   3: post-bosh-deploy.sh: can execute shell operation (including curl).
+      #  2: pre-bosh-deploy.sh: can execute shell operation or spiff task.
+      #  3: post-bosh-deploy.sh: can execute shell operation (including curl).
 
-        let(:deploy_ntp) { pipeline['jobs'].select{ |job| job['name'] == 'deploy-ntp' }.first }
-        let(:deployment_plan) { deploy_ntp.select{ |item| item['plan'] }['plan'] }
-        let(:lifecycle_order) {lifecycle={}
-          deployment_plan&.select{ |item| item['task'] }
-            .each_with_index do|task, index |
+      let(:deploy_ntp) { pipeline['jobs'].select { |job| job['name'] == 'deploy-ntp' }.first }
+      let(:deployment_plan) { deploy_ntp.select { |item| item['plan'] }['plan'] }
+      let(:lifecycle_order) do
+        lifecycle = {}
+        deployment_plan&.select { |item| item['task'] }
+          .each_with_index do |task, index|
             case task['task']
-              when 'generate-ntp-manifest' then lifecycle['post-generate']=index
-              when 'execute-ntp-spiff-pre-bosh-deploy' then lifecycle['pre-bosh-deploy']=index
-              when 'execute-ntp-post-bosh-deploy' then lifecycle['post-bosh-deploy']=index
+            when 'generate-ntp-manifest' then
+              lifecycle['post-generate'] = index
+            when 'execute-ntp-spiff-pre-bosh-deploy' then
+              lifecycle['pre-bosh-deploy'] = index
+            when 'execute-ntp-post-bosh-deploy' then
+              lifecycle['post-bosh-deploy'] = index
+            else
+              raise "unexpected value found for task['task']: #{task['task']}"
             end
           end
         lifecycle
-        }
+      end
 
 
-        before do
-          setup_certificates
-          @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-        end
+      before do
+        setup_certificates
+        @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+      end
 
-        it 'generates a post-generate task' do
-          manifest_generation_task = deployment_plan.select{ |task| task['task'] == 'generate-ntp-manifest' }.first
-          expect(manifest_generation_task).to include('file' => 'cf-ops-automation/concourse/tasks/generate-manifest.yml')
-        end
+      it 'generates a post-generate task' do
+        manifest_generation_task = deployment_plan.select{ |task| task['task'] == 'generate-ntp-manifest' }.first
+        expect(manifest_generation_task).to include('file' => 'cf-ops-automation/concourse/tasks/generate-manifest.yml')
+      end
 
-        it 'generates a pre-bosh-deploy task' do
-          pre_bosh_deploy_task = deployment_plan.select{ |task| task['task'] == 'execute-ntp-spiff-pre-bosh-deploy' }.first
-          expect(pre_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml')
-        end
+      it 'generates a pre-bosh-deploy task' do
+        pre_bosh_deploy_task = deployment_plan.select{ |task| task['task'] == 'execute-ntp-spiff-pre-bosh-deploy' }.first
+        expect(pre_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml')
+      end
 
-        it 'generates a post-bosh task' do
-          post_bosh_deploy_task = deployment_plan.select{ |task| task['task'] == 'execute-ntp-post-bosh-deploy' }.first
-          expect(post_bosh_deploy_task).to include('file'=>'cf-ops-automation/concourse/tasks/post_bosh_deploy.yml')
-        end
+      it 'generates a post-bosh task' do
+        post_bosh_deploy_task = deployment_plan.select{ |task| task['task'] == 'execute-ntp-post-bosh-deploy' }.first
+        expect(post_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/post_bosh_deploy.yml')
+      end
 
-        it 'executes post-generate task first' do
-          expect(lifecycle_order['post-generate']).to be < lifecycle_order['pre-bosh-deploy']
-        end
+      it 'executes post-generate task first' do
+        expect(lifecycle_order['post-generate']).to be < lifecycle_order['pre-bosh-deploy']
+      end
 
-        it 'executes post-generate task second ' do
-          expect(lifecycle_order['pre-bosh-deploy']).to be < lifecycle_order['post-bosh-deploy']
-        end
+      it 'executes post-generate task second ' do
+        expect(lifecycle_order['pre-bosh-deploy']).to be < lifecycle_order['post-bosh-deploy']
+      end
 
-        it 'executes post-generate task third ' do
-          expect(lifecycle_order['post-bosh-deploy']).to be > lifecycle_order['pre-bosh-deploy']
-        end
+      it 'executes post-generate task third ' do
+        expect(lifecycle_order['post-bosh-deploy']).to be > lifecycle_order['pre-bosh-deploy']
+      end
     end
 
   end
@@ -137,19 +143,20 @@ describe 'generate-depls for depls pipeline' do
     end
 
     it 'generates on-failure on each job' do
-      expect(pipeline['jobs'].select{|jobs| !jobs['on_failure']}).to be_empty
+      expect(pipeline['jobs'].reject { |jobs| jobs['on_failure'] }).to be_empty
     end
 
     it 'generates delete-deployments-review job' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
-      current_task = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] == 'ntp_to_be_deleted' }&.first
+      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'ntp_to_be_deleted' }&.first
       expect(current_task).to include('config')
     end
 
     it 'ignores root-deployment template dir in delete-deployments-review' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
       tasks = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] }
-      expect(tasks.count).to eq(1)
+      number_of_expected_delete_deployments_review_tasks = 1
+      expect(tasks.count).to eq(number_of_expected_delete_deployments_review_tasks)
     end
 
     it 'generates approve-and-delete-disabled-deployments job' do
@@ -161,8 +168,35 @@ describe 'generate-depls for depls pipeline' do
     it 'ignores root-deployment template dir in approve-and-delete-disabled-deployments' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
       tasks = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] }
-      expect(tasks.count).to eq(1)
+      number_of_expected_approve_and_delete_disabled_deployments_tasks = 1
+
+      expect(tasks.count).to eq(number_of_expected_approve_and_delete_disabled_deployments_tasks)
     end
+  end
+
+
+  context 'when a deployment without explicit dependency is used' do
+    let(:depls_name) { 'no-dependency-depls' }
+
+    before do
+      setup_certificates
+      @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+    end
+
+    it 'no error message are displayed' do
+      expect(@stderr_str).to eq('')
+    end
+
+    it 'generates on-failure on each job' do
+      expect(pipeline['jobs'].reject { |jobs| jobs['on_failure'] }).to be_empty
+    end
+
+    it 'does not generate bosh release resource' do
+      current_resources = pipeline['resources'].select { |resource| resource['type'] == 'type: bosh-io-release' || resource['type'] == 'type: github-release'}&.first
+
+      expect(current_resources).to match(nil)
+    end
+
   end
 
   describe 'depls-pipeline template pre-requisite' do
