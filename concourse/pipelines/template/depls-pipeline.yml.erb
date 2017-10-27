@@ -222,12 +222,14 @@ jobs:
           args:
             - -ce
             - |
-              echo "<%= deployment_name %> deployment has been detected as 'inactive', ie :"
+              echo "${BOSH_DEPLOYMENT} deployment has been detected as 'inactive', ie :"
               echo "  - paas-template contains deployment descriptiors"
               echo "  - secrets does not enable this deployment"
               echo "This bosh deployment is going to be deleted when exists.
               echo "Otherwise deletion is run on an unknown deployment.
               echo "! Waiting for manual approval !"
+      params:
+        BOSH_DEPLOYMENT: <%= deployment_name %>
     <% end %>
 - name: approve-and-delete-disabled-deployments
   <% jobs['utils'] << 'approve-and-delete-disabled-deployments' %>
@@ -267,12 +269,13 @@ jobs:
               - -cex
               - |
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-                bosh -n -d <%= deployment_name %> delete-deployment
+                bosh -n delete-deployment
       params:
          BOSH_TARGET: {{bosh-target}}
          BOSH_CLIENT: {{bosh-username}}
          BOSH_CLIENT_SECRET: {{bosh-password}}
          BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+         BOSH_DEPLOYMENT: <%= deployment_name %>
     <% end %>
 
 <% end %>
@@ -731,12 +734,13 @@ jobs:
               - -c
               - |
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-                bosh -n -d <%= name %> recreate
+                bosh -n recreate
       params:
          BOSH_TARGET: {{bosh-target}}
          BOSH_CLIENT: {{bosh-username}}
          BOSH_CLIENT_SECRET: {{bosh-password}}
          BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+         BOSH_DEPLOYMENT: <%= name %>
 <% end %>
 
 <% if ! all_ci_deployments.empty? %>
@@ -857,7 +861,9 @@ jobs:
           cp -r script-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/
-          ./scripts/generate-depls.rb --depls <%= depls %> -t ../templates -p . -o concourse
+          ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse
+      params:
+        ROOT_DEPLOYMENT: <%= depls %>
   - put: <%= all_ci_deployments[depls]['target_name'] %>
     params:
       pipelines:

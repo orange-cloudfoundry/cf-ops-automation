@@ -113,12 +113,15 @@ jobs:
           args:
             - -ce
             - |
-              echo "ntp deployment has been detected as 'inactive', ie :"
+              echo "${BOSH_DEPLOYMENT} deployment has been detected as 'inactive', ie :"
               echo "  - paas-template contains deployment descriptiors"
               echo "  - secrets does not enable this deployment"
               echo "This bosh deployment is going to be deleted when exists.
               echo "Otherwise deletion is run on an unknown deployment.
               echo "! Waiting for manual approval !"
+      params:
+       BOSH_DEPLOYMENT: ntp
+
   - name: approve-and-delete-disabled-deployments
     on_failure:
       put: failure-alert
@@ -160,12 +163,13 @@ jobs:
           - "-cex"
           - |
             source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-            bosh -n -d ntp delete-deployment
+            bosh -n delete-deployment
       params:
         BOSH_TARGET: {{bosh-target}}
         BOSH_CLIENT: {{bosh-username}}
         BOSH_CLIENT_SECRET: {{bosh-password}}
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        BOSH_DEPLOYMENT: ntp
   - name: execute-deploy-script
     on_failure:
       put: failure-alert
