@@ -7,6 +7,20 @@ describe 'terraform_apply_cloudfoundry task' do
   EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION='v0.9.1'
   SKIP_TMP_FILE_CLEANUP=false
 
+  context 'Pre-requisite' do
+    let(:task) { YAML.load_file 'concourse/tasks/terraform_apply_cloudfoundry.yml' }
+
+    it 'uses official hashicorp/terraform image' do
+      docker_image_used = task['image_resource']['source']['repository'].to_s
+      expect(docker_image_used).to match('hashicorp/terraform')
+    end
+
+    it 'uses a tagged image' do
+      docker_tag_used = task['image_resource']['source']['tag'].to_s
+      expect(docker_tag_used).to match(EXPECTED_TERRAFORM_VERSION)
+    end
+  end
+
   context 'when pre-requisite are valid' do
     before(:context) do
       @generated_files = Dir.mktmpdir
