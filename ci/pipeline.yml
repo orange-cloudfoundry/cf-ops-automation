@@ -253,6 +253,11 @@ jobs:
           tag: PR-develop/.git/id
           tag_prefix: PR-
           build_args: *docker_build_args
+        on_failure:
+          put: PR-develop
+          params:
+            path: PR-develop
+            status: failure
 
   - name: test-PR-develop
     plan:
