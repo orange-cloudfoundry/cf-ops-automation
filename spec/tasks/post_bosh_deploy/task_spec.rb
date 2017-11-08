@@ -4,6 +4,16 @@ require 'yaml'
 
 describe 'post_bosh_deploy task' do
 
+  context 'Pre-requisite' do
+    let(:task) { YAML.load_file 'concourse/tasks/post_bosh_deploy.yml' }
+
+    it 'uses alphagov cf-cli image' do
+      docker_image_used = task['image_resource']['source']['repository'].to_s
+      expect(docker_image_used).to match('governmentpaas/cf-cli')
+    end
+
+  end
+
 
   context 'when no script is detected' do
 
