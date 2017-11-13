@@ -5,8 +5,7 @@ ARG CONCOURSE_SHA
 
 
 # install cf-ops-automation Gemfile
-# There is an error with rubygems 2.7.0 and 2.7.1. Don't do a gem update --system unless a new version fix it
-#RUN gem update --system
+RUN gem update --system
 RUN gem install bundler
 COPY Gemfile /usr/local/Gemfile
 COPY Gemfile.lock /usr/local/Gemfile.lock
