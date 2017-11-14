@@ -32,8 +32,13 @@ run:
     cp -r script-resource/. run-resource
     cp -r templates/. run-resource
     source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-    run-resource/${CURRENT_DEPLS}/deploy.sh
-
+    DEPLOY_SCRIPT=run-resource/${CURRENT_DEPLS}/deploy.sh
+    if [ -f "${DEPLOY_SCRIPT}" ]
+    then
+      echo "manual deploy script detected"
+      chmod +x ${DEPLOY_SCRIPT}
+      ${DEPLOY_SCRIPT}
+    fi
 params:
   BOSH_TARGET:
   BOSH_CA_CERT:
