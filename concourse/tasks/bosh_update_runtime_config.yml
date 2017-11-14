@@ -31,7 +31,7 @@ run:
       source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
       cat config-manifest/runtime-config.yml
       OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
-      bosh runtime-config >$OLD_CONFIG
+      bosh runtime-config >$OLD_CONFIG || true
       diff $OLD_CONFIG config-manifest/runtime-config.yml || true
       bosh -n update-runtime-config config-manifest/runtime-config.yml
 params:
