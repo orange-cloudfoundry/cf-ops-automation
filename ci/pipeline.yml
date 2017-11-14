@@ -102,6 +102,7 @@ jobs:
   #    passed: [build-cached-image]
       trigger: true
     - task: run-tests
+      attempts: 3
       image: cf-ops-automation-docker-image
       config: &test_config
         platform: linux
@@ -276,6 +277,7 @@ jobs:
           status: pending
 
       - task: test-pr
+        attempts: 3
         image: cf-ops-automation-docker-image
         config: *test_config
         on_success:
