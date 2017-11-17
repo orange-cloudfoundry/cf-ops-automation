@@ -97,7 +97,7 @@ jobs:
         params: { submodules: none}
         trigger: true
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>-trigger, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
