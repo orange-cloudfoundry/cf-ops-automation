@@ -45,7 +45,7 @@ resources:
     skip_ssl_verification: true
 
 
-<% unless all_ci_deployments.empty? && disabled_deployments.empty? %>
+<% unless all_ci_deployments.empty? %>
 # Used to get other deployments secrets (e.g. micro/master for mattermost/git) as well as shared secrets updates
 # This does not trigger automatically a new build, operators have to trigger it manually.
 - name: secrets-full
@@ -68,7 +68,7 @@ resources:
 jobs:
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
 
-<% if ! all_ci_deployments[depls]['terraform_config'].nil? %>
+<% if ! all_ci_deployments[depls].nil? && ! all_ci_deployments[depls]['terraform_config'].nil? %>
 <% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>
 
