@@ -19,8 +19,7 @@ resources:
       cert: {{slack-custom-root-cert}}
 
 # Scan the whole subdeployment from its root, not only the secret part
-# Only used to trigger builds from service broker inputs
-- name: secrets-<%=depls %>-trigger
+- name: secrets-<%=depls %>
   type: git
   source:
     uri: {{secrets-uri}}
@@ -48,12 +47,12 @@ resources:
 <% unless all_ci_deployments.empty? %>
 # Used to get other deployments secrets (e.g. micro/master for mattermost/git) as well as shared secrets updates
 # This does not trigger automatically a new build, operators have to trigger it manually.
-- name: secrets-full
-  type: git
-  source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
-    skip_ssl_verification: true
+#- name: secrets-full
+#  type: git
+#  source:
+#    uri: {{secrets-uri}}
+#    branch: {{secrets-branch}}
+#    skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
@@ -91,13 +90,11 @@ jobs:
         trigger: true
       - get: paas-templates-full
         params: { submodules: none}
-      - get: secrets-full
-        params: { submodules: none}
-      - get: secrets-<%=depls %>-trigger
+      - get: secrets-<%=depls %>
         params: { submodules: none}
         trigger: true
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>-trigger, additional-resource: paas-templates-full}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -109,7 +106,7 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
     - task: terraform-apply
-      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
+      input_mapping: {secret-state-resource: secrets-<%=depls %>,spec-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-cf}
       file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
       params:
@@ -117,7 +114,7 @@ jobs:
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
       ensure:
         task: update-terraform-state-file
-        input_mapping: {reference-resource: secrets-full, generated-resource: terraform-cf}
+        input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: terraform-cf}
         output_mapping: {updated-git-resource: updated-terraform-state-secrets}
         file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
         params:
@@ -132,7 +129,7 @@ jobs:
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse
         on_success:
-          put: secrets-full
+          put: secrets-<%=depls %>
           get_params: {submodules: none}
           params:
             repository: updated-terraform-state-secrets
