@@ -1,5 +1,5 @@
 ---
 deployment-name: simple-cf-apps-depls
 
-stemcell-version: 3363.14
+stemcell-version: "3468.1"
 stemcell-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
