@@ -75,6 +75,13 @@ resources:
     repository: ((cf-ops-automation-git-hub-repository))
     access_token: ((cf-ops-automation-git-hub-token))
 
+- name: bucc-release
+  type: github-release
+  source:
+    owner: starkandwayne
+    repository: bucc
+    access_token: ((cf-ops-automation-git-hub-token))
+
 jobs:
 
   - name: build-cached-image
@@ -315,3 +322,107 @@ jobs:
       params: {bump: patch, pre: rc}
     - put: version
       params: {file: version/version}
+
+
+
+  - name: IT
+    plan:
+      - aggregate:
+        - get: bucc-release
+          trigger: true
+          params: {include_source_tarball: true}
+      - task: install-bucc
+        attempts: 3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli-v2
+          inputs:
+          - name: bucc-release
+          outputs:
+          - name: bucc
+          run:
+            path: /bin/bash
+            args:
+            - -ce
+            - |
+              tar -xzv -f bucc-release/source.tar.gz
+              cp -r -p starkandwayne-bucc-*/. bucc
+              cd bucc/ops/cpis/openstack
+              echo "Installing cloudwatt customization"
+              ln -s ../../../src/bosh-deployment/openstack/keystone-v2.yml keystone-v2.yml
+              ln -s ../../../src/bosh-deployment/external-ip-not-recommended.yml external-ip-not-recommended.yml
+              echo ${CUSTOM_CPI} > custom.yml
+              ls -al
+              cat custom.yml
+              cd ../..
+              ${CUSTOM_CONCOURSE} > custom-concourse.yml
+        params:
+          CUSTOM_CPI: ((cpi-customization))
+          CUSTOM_CONCOURSE: ((concourse-customization))
+
+
+      - task: launch-bucc
+        attempts: 3
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: starkandwayne/concourse
+          inputs:
+            - name: bucc
+          caches:
+            - path: bosh-cache
+          outputs:
+            - name: bucc-state
+#            - name: bosh-cache
+          run:
+            dir: bucc
+            path: /bin/bash
+            args:
+            - -cx
+            - |
+              echo ${VARS} > "vars.yml"
+              echo ${BOSH_PEM} > "bosh.pem"
+              ls -alrt ../bosh-cache/
+              cp -r ../bosh-cache/.bosh ${HOME} | true
+              source <(bin/bucc env) # should not be necessary when using direnv
+              ./bin/bucc up --cpi openstack
+              bosh alias-env bucc
+              mv {vars.yml,state} ../bucc-state/
+#              cp -r ${HOME}/.bosh ../bosh-cache
+#              ls -alrt ../bosh-cache/
+
+        params:
+          VARS: ((bucc-vars))
+          BOSH_PEM: ((bosh-pem))
+          BOSH_LOG_LEVEL: debug
+
+      - task: destroy-bucc
+        attempts: 1
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: starkandwayne/concourse
+          inputs:
+            - name: bucc
+            - name: bucc-state
+#            - name: bosh-cache
+          caches:
+            - path: bosh-cache
+          run:
+            path: /bin/bash
+            args:
+            - -cex
+            - |
+              cp -r bosh-cache/.bosh ${HOME} | true
+              mv bucc-state/{vars.yml,state} bucc/
+              cd bucc
+              echo ${BOSH_PEM} > "bosh.pem"
+              ./bin/bucc down
+              exit 1
