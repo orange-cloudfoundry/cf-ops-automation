@@ -29,12 +29,24 @@ describe DirectoryInitializer do
         subject.setup_secrets!
       end
 
-      it 'create a shared dir' do
-        expect( Dir.exist?("#{secrets_dir}/shared") ).to be_truthy
+      context 'when shared_dir structure is valid' do
+        it 'creates a shared dir' do
+          expect( Dir).to exist("#{secrets_dir}/shared")
+        end
+
+        it 'contains a secrets.yml' do
+          expect( File).to exist("#{secrets_dir}/shared/secrets.yml")
+        end
+
+        it 'contains a meta.yml' do
+          expect( File).to exist("#{secrets_dir}/shared/meta.yml")
+        end
+
       end
 
+
       it 'create a ci-deployment-overview.yml in new root deployment' do
-        expect(File.exist?("#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml")).to be_truthy
+        expect(File).to exist("#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml")
       end
 
       it 'create meta and secrets files in new root deployment' do
