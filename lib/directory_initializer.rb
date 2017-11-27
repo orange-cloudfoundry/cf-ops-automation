@@ -24,9 +24,10 @@ class DirectoryInitializer
 
     files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/secrets/meta.yml"
     files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/secrets/secrets.yml"
-    # files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/ci-deployment-overview.yml"
 
     create_non_existing_files files_to_create
+    generate_empty_map_yaml "#{@secrets_dir}/shared/secrets.yml"
+    generate_empty_map_yaml "#{@secrets_dir}/shared/meta.yml"
     generate_default_ci_deployment_overview
   end
 
@@ -75,6 +76,15 @@ class DirectoryInitializer
     File.open(filename, 'w') {
         |file| file << YAML.dump(file_content)
     }
+  end
+
+  def generate_empty_map_yaml(filename)
+    empty_map = {}
+
+    File.new(filename, 'w') do
+        |file| file << YAML.dump(empty_map)
+    end
+
   end
 
   def generate_default_ci_deployment_overview
