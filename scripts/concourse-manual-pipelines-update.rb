@@ -29,7 +29,9 @@ require 'optparse'
 # Argument parsing
 OPTIONS = {
   :depls => 'ops-depls',
-  :no_interactive => false
+  :no_interactive => false,
+  :fail_fast => false,
+  :fail_on_error => false
 }
 opt_parser = OptionParser.new do |opts|
   opts.banner = 'Usage: ./scripts/concourse-manual-pipelines-update.sh [options]
@@ -62,6 +64,14 @@ Customization using ENVIRONMENT_VARIABLE:
     OPTIONS[:no_interactive] = true
   end
 
+  opts.on('--fail-fast', 'Fail on first loading error') do |_|
+    OPTIONS[:fail_fast] = true
+  end
+
+  opts.on('--fail-on-error', 'Fail on loading error') do |_|
+    OPTIONS[:fail_on_error] = true
+  end
+
 end
 opt_parser.parse!
 
@@ -83,13 +93,17 @@ def header(msg)
   puts " #{msg}"
 end
 
-def set_pipeline(target_name:,name:, config:, load: [],options: [])
+def get_pipeline_name(name)
+  "#{PIPELINE_PREFIX}#{name}"
+end
+
+def set_pipeline(target_name:, name:, config:, load: [], options: [])
   return if OPTIONS.has_key?(:match) && !name.include?(OPTIONS[:match])
   return if OPTIONS.has_key?(:without) && name.include?(OPTIONS[:without])
   puts "   #{name} pipeline"
 
   fly_cmd=(%{bash -c "fly -t #{target_name} set-pipeline \
-    -p #{PIPELINE_PREFIX}#{name} \
+    -p #{get_pipeline_name(name)} \
     -c #{config} \
   #{load.collect { |l| "-l #{l}" }.join(' ')} \
   #{options.collect { |opt| "#{opt}" }.join(' ')}
@@ -97,7 +111,12 @@ def set_pipeline(target_name:,name:, config:, load: [],options: [])
 
   puts "Executing: #{fly_cmd}"
 
-  puts system(fly_cmd)
+  pipeline_successfully_loaded=system(fly_cmd)
+  puts "Pipeline successfully loaded: #{pipeline_successfully_loaded}"
+  if OPTIONS[:fail_fast] && !pipeline_successfully_loaded
+    raise "Failed to load pipeline #{get_pipeline_name(name)} from template #{name}"
+  end
+  pipeline_successfully_loaded
 end
 
 def generate_full_path_for_concourse_vars_files(vars_files)
@@ -112,9 +131,10 @@ def generate_full_path_for_concourse_vars_files(vars_files)
   vars_files_with_path
 end
 
-def update_bosh_lite_pipelines(target_name)
+def update_pipelines(target_name)
   header("For pipelines in #{PIPELINES_DIR}")
-  depls=OPTIONS[:depls]
+  loaded_pipelines_status = {}
+  depls = OPTIONS[:depls]
   Dir["#{PIPELINES_DIR}/*.yml"].each do |filename|
     # puts "Found #{filename}"
     next if OPTIONS.key?(:depls) && !filename.include?(OPTIONS[:depls])
@@ -126,24 +146,29 @@ def update_bosh_lite_pipelines(target_name)
     pipelines=ci_deployment_overview['ci-deployment'][depls]['pipelines']
     current_pipeline = pipelines[deployment_name]
     if current_pipeline.nil?
-      puts "invalid config #{SECRETS}/#{depls}/ci-deployment-overview.yml should contains a key ...[pipelines][vars_files]"
+      puts "invalid config #{SECRETS}/#{depls}/ci-deployment-overview.yml should contains a key ...[pipelines][#{deployment_name}][vars_files]"
       puts "ignoring pipeline #{filename} (invalid config #{SECRETS}/#{depls}/ci-deployment-overview.yml)"
       next
     end
+
     additional_config = []
     additional_config << "--non-interactive" if OPTIONS[:no_interactive]
 
     vars_files_with_path = generate_full_path_for_concourse_vars_files(current_pipeline['vars_files'])
-    set_pipeline(
+    result = set_pipeline(
       target_name: target_name,
       name: deployment_name,
       config: filename,
       load: vars_files_with_path,
       options: additional_config
     )
+    loaded_pipelines_status[deployment_name] = result
+  end
+  if OPTIONS[:fail_on_error]
+    raise "pipeline loading error. Summary #{loaded_pipelines_status}" unless loaded_pipelines_status.select {|name, status| !status.nil? && !status}.empty?
   end
 end
 
 
-update_bosh_lite_pipelines target_name
+update_pipelines target_name
 
