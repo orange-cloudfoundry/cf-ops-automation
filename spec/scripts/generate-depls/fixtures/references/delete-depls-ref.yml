@@ -255,6 +255,8 @@ jobs:
           ./credentials-resource/delete-depls/secrets/secrets.yml
           ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/delete-depls/template
+        IAAS_TYPE: {{iaas-type}}
+
     - aggregate:
       - task: update-cloud-config-for-delete-depls
         attempts: 3
