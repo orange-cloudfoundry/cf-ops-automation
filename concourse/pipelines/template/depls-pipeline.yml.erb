@@ -364,6 +364,7 @@ jobs:
             ./credentials-resource/<%= depls %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/template
+        IAAS_TYPE: {{iaas-type}}
 
     - aggregate:
       - task: update-cloud-config-for-<%= depls %>
@@ -484,6 +485,7 @@ jobs:
             ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
+        IAAS_TYPE: {{iaas-type}}
     - task: execute-<%= name %>-spiff-pre-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: pre-bosh-deploy-resource}
@@ -951,6 +953,7 @@ jobs:
         YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
+        IAAS_TYPE: {{iaas-type}}
     - task: terraform-plan
       input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
       file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
@@ -1006,6 +1009,7 @@ jobs:
         YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
+        IAAS_TYPE: {{iaas-type}}
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-cf}

@@ -239,6 +239,7 @@ jobs:
             ./credentials-resource/simple-depls/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/template
+        IAAS_TYPE: {{iaas-type}}
 
     - aggregate:
       - task: update-cloud-config-for-simple-depls
@@ -358,6 +359,7 @@ jobs:
             ./credentials-resource/simple-depls/ntp/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp/template
+        IAAS_TYPE: {{iaas-type}}
     - task: execute-ntp-spiff-pre-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-ntp, credentials-resource: secrets-ntp, additional-resource: release-manifest}
       output_mapping: {generated-files: pre-bosh-deploy-resource}
