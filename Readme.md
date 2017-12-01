@@ -72,18 +72,31 @@ If a template directory contains hook scripts with specific name, then these scr
       - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
 
 * to generate an additional errand step, in a `deployment-dependencies.yml` file, insert a key ```errands``` with a subkey named like the errand job to execute 
+
+### Iaas specifics support
+Manifest generation supports dedicated part to
+Add directories (like openstack, cloudstack, etc...) for each specific iaas, in the template directory.
+Set a `iaas-type` credential in secrets repo to match the directory name. 
+
   
 ### Bosh cli v2 specific features support
 The newest bosh feature are not implemented in bosh cli v1. So some feature are only available to deployments using bosh cli v2.
- 
+This can be combined with iaas specifics support 
 #### ops-files
 By convention, all files in template dir matching ```*-operators.yml``` are used by ```bosh-deployment``` 
-as ```ops-files``` inputs. Theses files **are not processed by spruce**.
-
+as ```ops-files``` inputs. Theses files **are not processed by spruce**. 
  
 #### vars-files
 By convention, all files in template dir matching ```*-vars-tpl.yml``` are processed by spruce and generate ```*-vars.yml``` files.
 Then files are used by ```bosh-deployment``` as ```vars-files``` inputs.
+
+#### Cloud and runtime config
+Rules for ops-files and vars-files here. 
+To support operators and vars files for cloud and runtime config, we have to define addition convention, as there are in the same directory.
+ - ```*cloud-operators.yml```: operators for cloud-config 
+ - ```*cloud-vars.yml```: vars for cloud-config
+ - ```*runtime-operators.yml```: operators for runtime-config
+ - ```*runtime-vars.yml```: vars for runtime-config
 
 **Migration v1 to v2 tips**: empty vars-files and ops-files are generated to avoid an error message
 
