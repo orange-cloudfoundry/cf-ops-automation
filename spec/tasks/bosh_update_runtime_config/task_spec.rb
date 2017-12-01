@@ -11,13 +11,18 @@ describe 'bosh_update_runtime_config task' do
       @config_manifest = Dir.mktmpdir
       @secrets = Dir.mktmpdir
 
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-config-vars.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-config-operator.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-vars.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operator.yml'))
+
       @output = execute('-c concourse/tasks/bosh_update_runtime_config.yml ' \
         '-i script-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@config_manifest} ", \
-        'BOSH_TARGET' =>'https://dummy-bosh',
-        'BOSH_CLIENT' =>'aUser',
-        'BOSH_CLIENT_SECRET' =>'aPassword',
+        'BOSH_TARGET' => 'https://dummy-bosh',
+        'BOSH_CLIENT' => 'aUser',
+        'BOSH_CLIENT_SECRET' => 'aPassword',
         'BOSH_CA_CERT' => 'secrets/dummy' )
     end
 
@@ -33,6 +38,15 @@ describe 'bosh_update_runtime_config task' do
     it 'displays an error message' do
       expect(@output).to include("Expected to extract host from URL 'https://:25555'")
     end
+
+    it 'selects only runtime operators' do
+      expect(@output).to include('Operators detected: <-o ./config-manifest/my-custom-runtime-operator.yml >')
+    end
+
+    it 'selects only runtime vars' do
+      expect(@output).to include('Vars files detected: <-l ./config-manifest/my-custom-runtime-vars.yml >')
+    end
+
 
   end
 
