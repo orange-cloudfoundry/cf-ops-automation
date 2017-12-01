@@ -22,22 +22,11 @@ inputs:
   - name: secrets
   - name: script-resource
 run:
-  path: sh
-  args:
-    - -e
-    - -c
-    - |
-      ls -lrt
-      ls -lrt script-resource
-      source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-      cat config-manifest/cloud-config.yml
-      OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
-      bosh cloud-config >$OLD_CONFIG || true
-      diff $OLD_CONFIG config-manifest/cloud-config.yml || true
-      bosh -n update-cloud-config config-manifest/cloud-config.yml
-
+  path: script-resource/concourse/tasks/bosh_update_cloud_config/run.sh
 params:
    BOSH_TARGET:
    BOSH_CLIENT:
    BOSH_CLIENT_SECRET:
    BOSH_CA_CERT:
+   VARS_FILES_SUFFIX: cloud-vars.yml
+   OPS_FILES_SUFFIX:  cloud-operator.yml

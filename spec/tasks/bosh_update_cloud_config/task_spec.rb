@@ -11,14 +11,20 @@ describe 'bosh_update_cloud_config task' do
       @config_manifest = Dir.mktmpdir
       @secrets = Dir.mktmpdir
 
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-vars.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-operator.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-vars.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operator.yml'))
+
       @output = execute('-c concourse/tasks/bosh_update_cloud_config.yml ' \
         '-i script-resource=. ' \
-        "-i config-manifest=#{@config_manifest} " \
-        "-i secrets=#{@secrets} ",
-        'BOSH_TARGET' =>'https://dummy-bosh',
-        'BOSH_CLIENT' =>'aUser',
-        'BOSH_CLIENT_SECRET' =>'aPassword',
-        'BOSH_CA_CERT' => 'secrets/dummy' )
+        "-i secrets=#{@secrets} " \
+        "-i config-manifest=#{@config_manifest} ", \
+                        'BOSH_TARGET' => 'https://dummy-bosh',
+                        'BOSH_CLIENT' => 'aUser',
+                        'BOSH_CLIENT_SECRET' => 'aPassword',
+                        'BOSH_CA_CERT' => 'secrets/shared/certs/internal_paas-ca/server-ca.crt' )
+
     end
 
     after(:context) do
@@ -28,6 +34,14 @@ describe 'bosh_update_cloud_config task' do
 
     it 'tries to login' do
       expect(@output).to include('targeting https://dummy-bosh')
+    end
+
+    it 'selects only config operators' do
+      expect(@output).to include('Operators detected: <-o ./config-manifest/my-custom-cloud-operator.yml >')
+    end
+
+    it 'selects only config vars' do
+      expect(@output).to include('Vars files detected: <-l ./config-manifest/my-custom-cloud-vars.yml >')
     end
 
     it 'displays an error message' do
