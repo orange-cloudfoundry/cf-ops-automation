@@ -377,7 +377,11 @@ and tf config files merged from template and secrets repo.
 
 This also enables local execution for `terraform plan` and `tf apply` providing shorter feedback cycles.
 
-The `scripts/setUpTfDevEnv.sh` script partially automates the set up of such local environment.
+The `scripts/setUpTfDevEnv.sh` script partially automates the set up of such local environment:
+
+```bash
+source scripts/setUpTfDevEnv.sh
+```
 
 
 
