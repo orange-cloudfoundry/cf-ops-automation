@@ -10,7 +10,7 @@ describe DirectoryInitializer do
 
   let(:root_deployment_name) { nil }
   let(:secrets_dir) { Dir.mktmpdir('secrets-') }
-  let(:template_dir) { Dir.mktmpdir( 'templates-' ) }
+  let(:template_dir) { Dir.mktmpdir('templates-') }
 
 
 
@@ -31,15 +31,23 @@ describe DirectoryInitializer do
 
       context 'when shared_dir structure is valid' do
         it 'creates a shared dir' do
-          expect( Dir).to exist("#{secrets_dir}/shared")
+          expect(Dir).to exist("#{secrets_dir}/shared")
         end
 
         it 'contains a secrets.yml' do
-          expect( File).to exist("#{secrets_dir}/shared/secrets.yml")
+          expect(File).to exist("#{secrets_dir}/shared/secrets.yml")
         end
 
         it 'contains a meta.yml' do
-          expect( File).to exist("#{secrets_dir}/shared/meta.yml")
+          expect(File).to exist("#{secrets_dir}/shared/meta.yml")
+        end
+
+        it 'shared/secrets.yml is valid' do
+
+          shared_secrets = YAML.load_file("#{secrets_dir}/shared/secrets.yml")
+          # YAML.load_file returns false if file is empty.
+
+          expect(shared_secrets).to be_falsey
         end
 
       end
@@ -57,19 +65,18 @@ describe DirectoryInitializer do
     end
 
     context 'when files are generated with default value' do
-        it 'ci-deployment-overview.yml is valid' do
-          subject.setup_secrets!
+      it 'ci-deployment-overview.yml is valid' do
+        subject.setup_secrets!
 
-          generated_ci_overview = YAML.load_file("#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml")
+        generated_ci_overview = YAML.load_file("#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml")
 
-          b = binding
-          b.local_variable_set(:depls, 'dummy-depls')
-          reference = YAML.load(ERB.new(File.read("#{File.dirname __FILE__}/fixtures/ci-deployment-overview.yml.erb"), 0, '<>').result(b))
+        b = binding
+        b.local_variable_set(:depls, 'dummy-depls')
+        reference = YAML.load(ERB.new(File.read("#{File.dirname __FILE__}/fixtures/ci-deployment-overview.yml.erb"), 0, '<>').result(b))
 
 
-          expect(generated_ci_overview).to eq(reference)#, "#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml"
-        end
-
+        expect(generated_ci_overview).to eq(reference)#, "#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml"
+      end
     end
   end
 
