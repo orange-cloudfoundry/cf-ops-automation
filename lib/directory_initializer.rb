@@ -81,9 +81,8 @@ class DirectoryInitializer
   def generate_empty_map_yaml(filename)
     empty_map = {}
 
-    File.new(filename, 'w') do
-        |file| file << YAML.dump(empty_map)
-    end
+    puts "Skipping #{filename} generation: file already exists" if File.exist? filename
+    File.new(filename, 'w') { |file| file << YAML.dump(empty_map) } unless File.exist? filename
 
   end
 
