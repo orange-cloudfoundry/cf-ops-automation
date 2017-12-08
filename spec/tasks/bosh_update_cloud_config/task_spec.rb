@@ -12,9 +12,9 @@ describe 'bosh_update_cloud_config task' do
       @secrets = Dir.mktmpdir
 
       FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-vars.yml'))
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-operator.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-operators.yml'))
       FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-vars.yml'))
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operator.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operators.yml'))
 
       @output = execute('-c concourse/tasks/bosh_update_cloud_config.yml ' \
         '-i script-resource=. ' \
@@ -37,7 +37,7 @@ describe 'bosh_update_cloud_config task' do
     end
 
     it 'selects only config operators' do
-      expect(@output).to include('Operators detected: <-o ./config-manifest/my-custom-cloud-operator.yml >')
+      expect(@output).to include('Operators detected: <-o ./config-manifest/my-custom-cloud-operators.yml >')
     end
 
     it 'selects only config vars' do
