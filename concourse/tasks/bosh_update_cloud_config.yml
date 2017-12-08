@@ -29,4 +29,4 @@ params:
    BOSH_CLIENT_SECRET:
    BOSH_CA_CERT:
    VARS_FILES_SUFFIX: cloud-vars.yml
-   OPS_FILES_SUFFIX:  cloud-operator.yml
+   OPS_FILES_SUFFIX:  cloud-operators.yml

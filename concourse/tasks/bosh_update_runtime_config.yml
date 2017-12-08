@@ -30,4 +30,4 @@ params:
    BOSH_CLIENT_SECRET:
    BOSH_CA_CERT:
    VARS_FILES_SUFFIX: runtime-vars.yml
-   OPS_FILES_SUFFIX:  runtime-operator.yml
+   OPS_FILES_SUFFIX:  runtime-operators.yml
