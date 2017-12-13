@@ -81,6 +81,13 @@ resources:
     type: git
     source:
       uri: ((paas-templates-uri))
+      branch: pipeline-current-((paas-templates-branch))
+      skip_ssl_verification: true
+
+  - name: paas-templates-wip
+    type: git
+    source:
+      uri: ((paas-templates-uri))
       branch: ((paas-templates-branch))
       skip_ssl_verification: true
 jobs:
@@ -97,6 +104,7 @@ jobs:
       - get: cf-ops-automation
         params:
           submodules: none
+        trigger: true
       - get: paas-templates-full
         params:
           submodules: none
