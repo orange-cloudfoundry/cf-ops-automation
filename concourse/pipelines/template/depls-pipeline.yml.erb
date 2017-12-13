@@ -47,16 +47,16 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
     ca_certs:
-    - domain: {{slack-custom-domain}}
-      cert: {{slack-custom-cert}}
-    - domain: {{slack-custom-root-domain}}
-      cert: {{slack-custom-root-cert}}
+    - domain: ((slack-custom-domain))
+      cert: ((slack-custom-cert))
+    - domain: ((slack-custom-root-domain))
+      cert: ((slack-custom-root-cert))
 
 <% unless all_dependencies.empty? %>
 - name: bosh-stemcell
-#    name: {{stemcell-name}}
+#    name: ((stemcell-name))
   type: s3
   source:
     bucket: ((s3-stemcell-bucket))
@@ -73,25 +73,25 @@ resources:
 - name: secrets-<%=depls %>
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     paths: ["<%= depls %>/secrets","shared"]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-<%=depls %>
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["<%= depls %>/template"]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 <% disabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='disabled'} %>
@@ -101,36 +101,36 @@ resources:
 - name: secrets-<%= name %>
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     <% ext_scan_path = boshrelease['resources']['secrets']['extended_scan_path'] if ( boshrelease['resources'] && boshrelease['resources']['secrets']['extended_scan_path'] ) %>
     <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
     paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || '' %>]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-<%= name %>
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["<%= depls %>/<%= name %>"<%= ',.gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 <% if boshrelease['cli_version'] == "v1" %>
 - name: <%= name %>-deployment
   type: bosh-deployment
   source:
-#    target: https://{{bosh-target)):25555
-    username: {{bosh-username}}
-    password: {{bosh-password}}
+#    target: https://((bosh-target)):25555
+    username: ((bosh-username))
+    password: ((bosh-password))
     deployment: <%= name %>
 <% else %>
 - name: <%= name %>-deployment
   type: bosh-deployment-v2
   source:
-    target: {{bosh-target}}
-    client: {{bosh-username}}
-    client_secret: {{bosh-password}}
+    target: ((bosh-target))
+    client: ((bosh-username))
+    client_secret: ((bosh-password))
     deployment: <%= name %>
     ca_cert: <%= bosh_cert[depls]&.dump %>
 <% end %>
@@ -139,9 +139,9 @@ resources:
 - name: errand-<%= name %>
   type: bosh-errand
   source:
-    target: {{bosh-target}}
-    client: {{bosh-username}}
-    client_secret: {{bosh-password}}
+    target: ((bosh-target))
+    client: ((bosh-username))
+    client_secret: ((bosh-password))
     deployment: <%= name %>
     ca_cert: <%= bosh_cert[depls].dump %>
 <% end %>
@@ -152,27 +152,27 @@ resources:
 - name: <%= all_ci_deployments[depls]['target_name'] %>
   type: concourse-pipeline
   source:
-    target: {{concourse-<%= depls %>-target}}
-    insecure: {{concourse-<%= depls %>-insecure}}
+    target: ((concourse-<%= depls %>-target))
+    insecure: ((concourse-<%= depls %>-insecure))
     teams:
     - name: main
-      username: {{concourse-<%= depls %>-username}}
-      password: {{concourse-<%= depls %>-password}}
+      username: ((concourse-<%= depls %>-username))
+      password: ((concourse-<%= depls %>-password))
 <% end %>
 
 <% unless all_ci_deployments.empty? && disabled_deployments.empty? %>
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 <% end %>
@@ -209,7 +209,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -250,7 +250,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -285,9 +285,9 @@ jobs:
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 bosh -n delete-deployment
       params:
-         BOSH_TARGET: {{bosh-target}}
-         BOSH_CLIENT: {{bosh-username}}
-         BOSH_CLIENT_SECRET: {{bosh-password}}
+         BOSH_TARGET: ((bosh-target))
+         BOSH_CLIENT: ((bosh-username))
+         BOSH_CLIENT_SECRET: ((bosh-password))
          BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
          BOSH_DEPLOYMENT: <%= deployment_name %>
     <% end %>
@@ -300,7 +300,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -325,9 +325,9 @@ jobs:
         CURRENT_DEPLS: <%= depls %>/template
         COMMON_SCRIPT_DIR: script-resource/scripts
         SECRETS_DIR: secrets
-        BOSH_TARGET: {{bosh-target}}
-        BOSH_CLIENT: {{bosh-username}}
-        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
@@ -335,7 +335,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -364,7 +364,7 @@ jobs:
             ./credentials-resource/<%= depls %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/template
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
 
     - aggregate:
       - task: update-cloud-config-for-<%= depls %>
@@ -372,9 +372,9 @@ jobs:
         input_mapping: {script-resource: cf-ops-automation, secrets: secrets-<%= depls %>}
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
-           BOSH_TARGET: {{bosh-target}}
-           BOSH_CLIENT: {{bosh-username}}
-           BOSH_CLIENT_SECRET: {{bosh-password}}
+           BOSH_TARGET: ((bosh-target))
+           BOSH_CLIENT: ((bosh-username))
+           BOSH_CLIENT_SECRET: ((bosh-password))
            BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
 
         ensure:
@@ -389,7 +389,7 @@ jobs:
           on_failure:
             put: failure-alert
             params:
-              channel: {{slack-channel}}
+              channel: ((slack-channel))
               text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
@@ -405,9 +405,9 @@ jobs:
         input_mapping: {script-resource: cf-ops-automation, secrets: secrets-<%= depls %>}
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
-           BOSH_TARGET: {{bosh-target}}
-           BOSH_CLIENT: {{bosh-username}}
-           BOSH_CLIENT_SECRET: {{bosh-password}}
+           BOSH_TARGET: ((bosh-target))
+           BOSH_CLIENT: ((bosh-username))
+           BOSH_CLIENT_SECRET: ((bosh-password))
            BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
 
         ensure:
@@ -422,7 +422,7 @@ jobs:
           on_failure:
             put: failure-alert
             params:
-              channel: {{slack-channel}}
+              channel: ((slack-channel))
               text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
@@ -441,7 +441,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -457,9 +457,9 @@ jobs:
       <% boshrelease['releases']&.sort&.each do |release, info| %>
       - get: <%= release %>
         <% if info['base_location'].include?('bosh.io') %>
-        version: { version: {{<%= release %>-version}} }
+        version: { version: ((<%= release %>-version)) }
         <% else %>
-        version: { tag: v{{<%= release %>-version}} }
+        version: { tag: v((<%= release %>-version)) }
         <% end %>
         trigger: true
         attempts: 3
@@ -485,7 +485,7 @@ jobs:
             ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
     - task: execute-<%= name %>-spiff-pre-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: pre-bosh-deploy-resource}
@@ -522,7 +522,7 @@ jobs:
             export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
             echo "https://$BOSH_ENVIRONMENT:25555" > result-dir/bosh_target
         params:
-          BOSH_TARGET: {{bosh-target}}
+          BOSH_TARGET: ((bosh-target))
     <% else %>
     - task: convert-bosh-dns-to-ip
       output_mapping: {result-dir: bosh-generated-config}
@@ -544,7 +544,7 @@ jobs:
             export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
             echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
         params:
-          BOSH_TARGET: {{bosh-target}}
+          BOSH_TARGET: ((bosh-target))
     - task: generate-empty-ops-and-vars-files
       # this task is required as long as all deployments still don't use ops/vars files
       output_mapping: {result-dir: ops-and-vars-files}
@@ -618,7 +618,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -643,7 +643,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -677,9 +677,9 @@ jobs:
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
       file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
-        ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
-        FLY_USERNAME: {{concourse-<%= depls %>-username}}
-        FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
+        ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
+        FLY_USERNAME: ((concourse-<%= depls %>-username))
+        FLY_PASSWORD:  ((concourse-<%= depls %>-password))
 <% end %>
 
 - name: recreate-all
@@ -688,7 +688,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -711,7 +711,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -752,9 +752,9 @@ jobs:
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 bosh -n recreate
       params:
-         BOSH_TARGET: {{bosh-target}}
-         BOSH_CLIENT: {{bosh-username}}
-         BOSH_CLIENT_SECRET: {{bosh-password}}
+         BOSH_TARGET: ((bosh-target))
+         BOSH_CLIENT: ((bosh-username))
+         BOSH_CLIENT_SECRET: ((bosh-password))
          BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
          BOSH_DEPLOYMENT: <%= name %>
 <% end %>
@@ -771,7 +771,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -800,7 +800,7 @@ jobs:
         - -exc
         - |
           <% uniq_releases.sort.each do |name,_| %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:{{<%= name %>-version}}" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
           <% end %>
 
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
@@ -812,9 +812,9 @@ jobs:
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
-      FLY_USERNAME: {{concourse-<%= depls %>-username}}
-      FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
+      ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
+      FLY_USERNAME: ((concourse-<%= depls %>-username))
+      FLY_PASSWORD:  ((concourse-<%= depls %>-password))
 <% end %>
 
 - name: update-pipeline-<%= depls %>-generated
@@ -822,7 +822,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -926,7 +926,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -953,7 +953,7 @@ jobs:
         YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
     - task: terraform-plan
       input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
       file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
@@ -979,7 +979,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -1009,7 +1009,7 @@ jobs:
         YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-cf}
@@ -1029,7 +1029,7 @@ jobs:
         on_failure:
           put: failure-alert
           params:
-            channel: {{slack-channel}}
+            channel: ((slack-channel))
             text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse

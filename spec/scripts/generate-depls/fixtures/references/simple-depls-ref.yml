@@ -47,12 +47,12 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
     ca_certs:
-    - domain: {{slack-custom-domain}}
-      cert: {{slack-custom-cert}}
-    - domain: {{slack-custom-root-domain}}
-      cert: {{slack-custom-root-cert}}
+    - domain: ((slack-custom-domain))
+      cert: ((slack-custom-cert))
+    - domain: ((slack-custom-root-domain))
+      cert: ((slack-custom-root-cert))
 
 - name: bosh-stemcell
   type: s3
@@ -68,51 +68,51 @@ resources:
 - name: secrets-simple-depls
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     paths: ["simple-depls/secrets","shared"]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-simple-depls
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["simple-depls/template"]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 - name: secrets-ntp
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     
     
     paths: ["simple-depls/ntp","shared"]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-ntp
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["simple-depls/ntp"]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: ntp-deployment
   type: bosh-deployment-v2
   source:
-    target: {{bosh-target}}
-    client: {{bosh-username}}
-    client_secret: {{bosh-password}}
+    target: ((bosh-target))
+    client: ((bosh-username))
+    client_secret: ((bosh-password))
     deployment: ntp
     ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE3MDkwODE0NTI1OVoXDTE5MDkwODE0NTI1OVowPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALQTi5oWSpKAY5n9KtyZ\nZlo3TQBL1DWgbTgkDeSortVOL/F2niP9DI81acbIjLo2o572Z41jnz3K6GaSwviJ\nvY/K5XAgE0A66KV3ZJm6eNI7LmLXyxV59q+rtp75NuYQqqdS8FEiKUVDPUD5nJca\nQk/b+b6V/wHXz7KV6A/j/NQb9qaQu4X7WWfCXk2v2JzRd5PdBO2XNuF8WArm3zXG\nVeg3j7rB782iAKjUX93U+VYu3m7DyPQkA/owIHpw7nEaJS7KdDFFDubLwD6d0FG3\nAr9b4ttL83UlJOvvgNBo+zuIuUuOFCBtpYMI9N84fUhkh62jZa4vtfeI0tI9UBIk\nBbECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFJ+LRoMZCoJoPXETODONOO29xTkAMB8GA1UdIwQYMBaAFJ+LRoMZCoJo\nPXETODONOO29xTkAMA0GCSqGSIb3DQEBCwUAA4IBAQCz0iumGgPuIGttcuFCaHc8\nmBVH7D/yj8otzZAMyz91aiArooUlnzCO9xHtnwIv6qe5V4D4D8YuaIiv/tXD86tL\nVwE2TyfLeTpvHcclRAB+thhbYkVC2GgAbEOeA/JtSLGOhPbgrf/BKdjLTOEqsFJi\nqmpMrzEb08TG9CRiWo68LPu6GE84P3WFXVhC/s0ymlb5cITwTHKOwcVyu+8dIw1I\nwZ5atyWiFB040HeKe+kwxWHEG9L6NT3+R9cCTMpfYCdv4DcUlEt8WNtDcNJa5Cv1\nzVke99FdeG0PzuWmaymHrTRaAAIbjaARrp98mwxtJF1e2ANl9Qli9qiHqI4mX0Qw\n-----END CERTIFICATE-----\n"
 
@@ -121,25 +121,25 @@ resources:
 - name: TO_BE_DEFINED
   type: concourse-pipeline
   source:
-    target: {{concourse-simple-depls-target}}
-    insecure: {{concourse-simple-depls-insecure}}
+    target: ((concourse-simple-depls-target))
+    insecure: ((concourse-simple-depls-insecure))
     teams:
     - name: main
-      username: {{concourse-simple-depls-username}}
-      password: {{concourse-simple-depls-password}}
+      username: ((concourse-simple-depls-username))
+      password: ((concourse-simple-depls-password))
 
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 
@@ -159,7 +159,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -184,9 +184,9 @@ jobs:
         CURRENT_DEPLS: simple-depls/template
         COMMON_SCRIPT_DIR: script-resource/scripts
         SECRETS_DIR: secrets
-        BOSH_TARGET: {{bosh-target}}
-        BOSH_CLIENT: {{bosh-username}}
-        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 
 - name: cloud-config-and-runtime-config-for-simple-depls
@@ -194,7 +194,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -239,7 +239,7 @@ jobs:
             ./credentials-resource/simple-depls/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/template
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
 
     - aggregate:
       - task: update-cloud-config-for-simple-depls
@@ -249,9 +249,9 @@ jobs:
           secrets: secrets-simple-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
-          BOSH_TARGET: {{bosh-target}}
-          BOSH_CLIENT: {{bosh-username}}
-          BOSH_CLIENT_SECRET: {{bosh-password}}
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
@@ -265,7 +265,7 @@ jobs:
           on_failure:
             put: failure-alert
             params:
-              channel: {{slack-channel}}
+              channel: ((slack-channel))
               text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
@@ -283,9 +283,9 @@ jobs:
           secrets: secrets-simple-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
-          BOSH_TARGET: {{bosh-target}}
-          BOSH_CLIENT: {{bosh-username}}
-          BOSH_CLIENT_SECRET: {{bosh-password}}
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
@@ -299,7 +299,7 @@ jobs:
           on_failure:
             put: failure-alert
             params:
-              channel: {{slack-channel}}
+              channel: ((slack-channel))
               text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
@@ -317,7 +317,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -333,7 +333,7 @@ jobs:
       
       - get: ntp_boshrelease
         
-        version: { version: {{ntp_boshrelease-version}} }
+        version: { version: ((ntp_boshrelease-version)) }
         
         trigger: true
         attempts: 3
@@ -359,7 +359,7 @@ jobs:
             ./credentials-resource/simple-depls/ntp/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp/template
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
     - task: execute-ntp-spiff-pre-bosh-deploy
       input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-ntp, credentials-resource: secrets-ntp, additional-resource: release-manifest}
       output_mapping: {generated-files: pre-bosh-deploy-resource}
@@ -400,7 +400,7 @@ jobs:
             export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
             echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
         params:
-          BOSH_TARGET: {{bosh-target}}
+          BOSH_TARGET: ((bosh-target))
     
     - task: generate-empty-ops-and-vars-files
       # this task is required as long as all deployments still don't use ops/vars files
@@ -468,7 +468,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -502,15 +502,15 @@ jobs:
       output_mapping: {flight-report: concourse-simple-depls-trigger-report}
       file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
-        ATC_EXTERNAL_URL: {{concourse-simple-depls-target}}
-        FLY_USERNAME: {{concourse-simple-depls-username}}
-        FLY_PASSWORD:  {{concourse-simple-depls-password}}
+        ATC_EXTERNAL_URL: ((concourse-simple-depls-target))
+        FLY_USERNAME: ((concourse-simple-depls-username))
+        FLY_PASSWORD:  ((concourse-simple-depls-password))
 
 - name: recreate-all
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -532,7 +532,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -573,9 +573,9 @@ jobs:
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 bosh -n recreate
       params:
-         BOSH_TARGET: {{bosh-target}}
-         BOSH_CLIENT: {{bosh-username}}
-         BOSH_CLIENT_SECRET: {{bosh-password}}
+         BOSH_TARGET: ((bosh-target))
+         BOSH_CLIENT: ((bosh-username))
+         BOSH_CLIENT_SECRET: ((bosh-password))
          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
          BOSH_DEPLOYMENT: ntp
 
@@ -585,7 +585,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -614,7 +614,7 @@ jobs:
         - -exc
         - |
           
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:{{ntp_boshrelease-version}}" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
           
 
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
@@ -625,16 +625,16 @@ jobs:
     output_mapping: {flight-report: concourse-simple-depls-init-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: {{concourse-simple-depls-target}}
-      FLY_USERNAME: {{concourse-simple-depls-username}}
-      FLY_PASSWORD:  {{concourse-simple-depls-password}}
+      ATC_EXTERNAL_URL: ((concourse-simple-depls-target))
+      FLY_USERNAME: ((concourse-simple-depls-username))
+      FLY_PASSWORD:  ((concourse-simple-depls-password))
 
 - name: update-pipeline-simple-depls-generated
   
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
