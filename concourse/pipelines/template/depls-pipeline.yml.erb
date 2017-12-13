@@ -172,6 +172,13 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-wip
+  type: git
+  source:
+    uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
@@ -218,8 +225,10 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+        trigger: true
       - get: paas-templates-full
         params: { submodules: none}
+        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
       - get: secrets-full
         trigger: true
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
@@ -310,10 +319,10 @@ jobs:
     - aggregate:
       - get: secrets-<%= depls %>
         params: { submodules: none}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>-->
       - get: paas-template-<%= depls %>
         params: { submodules: none}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>-->
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
@@ -343,11 +352,11 @@ jobs:
     - get: secrets-<%=depls %>
       params: { submodules: none}
       trigger: true
-      <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+#      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>-->
     - get: paas-template-<%=depls %>
       params: { submodules: none}
       trigger: true
-      <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+#      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>-->
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
@@ -454,6 +463,7 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if ! all_ci_deployments.empty? %>
+        trigger: true
       <% boshrelease['releases']&.sort&.each do |release, info| %>
       - get: <%= release %>
         <% if info['base_location'].include?('bosh.io') %>
@@ -467,12 +477,12 @@ jobs:
       - get: secrets-<%= name %>
         params: { submodules: none}
         trigger: true
-        <%= "passed: [update-pipeline-#{depls}-generated]" unless all_ci_deployments.empty? %>
+#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" unless all_ci_deployments.empty? %>-->
       - get: paas-template-<%= name %>
         trigger: true
         <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
         params: { submodules: <%= current_git_submodule || 'none' %>}
-        <%= "passed: [update-pipeline-#{depls}-generated]" unless all_ci_deployments.empty? %>
+#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" unless all_ci_deployments.empty? %>-->
     - task: generate-<%= name %>-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-template-<%= name %>}
       output_mapping: {generated-files: release-manifest}
@@ -831,6 +841,9 @@ jobs:
     - get: paas-template-<%= depls %>
       params: { submodules: none}
       attempts: 3
+    - get: paas-templates-wip
+      params: { submodules: none}
+      attempts: 3
       trigger: true
     - get: secrets-<%= depls %>
       params: { submodules: none}
@@ -843,20 +856,13 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 3
-      trigger: true
+
     - get: secrets-full
       params: { submodules: none}
       attempts: 3
-      trigger: true
-    <% enabled_deployments.sort.each do |name,_| %>
-    - get: secrets-<%= name %>
-      params: { submodules: none}
-    - get: paas-template-<%= name %>
-      params: { submodules: none}
-    <% end %>
 
   - task: generate-<%= depls %>-pipeline
-    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
+    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux
@@ -892,7 +898,7 @@ jobs:
           <% pipeline_details['vars_files'].each do |a_vars_file| %>
           # trick to manage <depls>-versions.yml (not included in secrets)
          <%= "- secrets-full/#{a_vars_file}" if ! a_vars_file.end_with?('-versions.yml') %>
-         <%= "- paas-templates-full/#{a_vars_file}" if a_vars_file.end_with?('-versions.yml') %>
+         <%= "- paas-templates-wip/#{a_vars_file}" if a_vars_file.end_with?('-versions.yml') %>
           <% end %>
      <% end %>
   - task: update-concourse-depls-pipeline
@@ -916,6 +922,12 @@ jobs:
     params:
       repository: updated-secrets
       rebase: true
+  - put: paas-templates-full
+    get_params: {submodules: none}
+    params:
+      repository: paas-templates-wip
+      force: true
+
 
 <% if ! all_ci_deployments[depls]['terraform_config'].nil? %>
 <% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
@@ -936,6 +948,7 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [update-pipeline-<%= depls %>-generated]
+      trigger: true
     - get: paas-templates-full
       params: { submodules: none}
     - get: secrets-full

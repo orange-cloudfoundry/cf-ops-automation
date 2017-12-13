@@ -139,11 +139,15 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 
-
-
+- name: paas-templates-wip
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
 
 - name: ntp_boshrelease
   
@@ -169,10 +173,8 @@ jobs:
     - aggregate:
       - get: secrets-simple-depls
         params: { submodules: none}
-        passed: [update-pipeline-simple-depls-generated]
       - get: paas-template-simple-depls
         params: { submodules: none}
-        passed: [update-pipeline-simple-depls-generated]
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-simple-depls-generated]
@@ -202,11 +204,9 @@ jobs:
     - get: secrets-simple-depls
       params: { submodules: none}
       trigger: true
-      passed: [update-pipeline-simple-depls-generated]
     - get: paas-template-simple-depls
       params: { submodules: none}
       trigger: true
-      passed: [update-pipeline-simple-depls-generated]
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
@@ -330,7 +330,8 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-simple-depls-generated]
-      
+        trigger: true
+
       - get: ntp_boshrelease
         
         version: { version: ((ntp_boshrelease-version)) }
@@ -341,12 +342,10 @@ jobs:
       - get: secrets-ntp
         params: { submodules: none}
         trigger: true
-        passed: [update-pipeline-simple-depls-generated]
       - get: paas-template-ntp
         trigger: true
         
         params: { submodules: none}
-        passed: [update-pipeline-simple-depls-generated]
     - task: generate-ntp-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-ntp, additional-resource: paas-template-ntp}
       output_mapping: {generated-files: release-manifest}
@@ -643,6 +642,10 @@ jobs:
     - get: paas-template-simple-depls
       params: { submodules: none}
       attempts: 3
+    - get: paas-templates-wip
+      params:
+        submodules: none
+      attempts: 3
       trigger: true
     - get: secrets-simple-depls
       params: { submodules: none}
@@ -655,20 +658,11 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 3
-      trigger: true
     - get: secrets-full
       params: { submodules: none}
       attempts: 3
-      trigger: true
-    
-    - get: secrets-ntp
-      params: { submodules: none}
-    - get: paas-template-ntp
-      params: { submodules: none}
-    
-
   - task: generate-simple-depls-pipeline
-    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
+    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}
     config:
       platform: linux
@@ -705,7 +699,7 @@ jobs:
           
           # trick to manage <depls>-versions.yml (not included in secrets)
          
-         - paas-templates-full/simple-depls/simple-depls-versions.yml
+         - paas-templates-wip/simple-depls/simple-depls-versions.yml
           
      
       - name: simple-depls-cf-apps-generated
@@ -715,7 +709,7 @@ jobs:
           
           # trick to manage <depls>-versions.yml (not included in secrets)
          
-         - paas-templates-full/simple-depls/simple-depls-versions.yml
+         - paas-templates-wip/simple-depls/simple-depls-versions.yml
           
      
   - task: update-concourse-depls-pipeline
@@ -739,7 +733,12 @@ jobs:
     params:
       repository: updated-secrets
       rebase: true
-
+  - put: paas-templates-full
+    get_params:
+      submodules: none
+    params:
+      repository: paas-templates-wip
+      force: true
 
 
 
