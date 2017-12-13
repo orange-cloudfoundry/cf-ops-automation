@@ -39,12 +39,13 @@ resources:
   - name: failure-alert
     type: slack-notification
     source:
-      url: {{slack-webhook}}
+      url: ((slack-webhook))
       ca_certs:
-      - domain: {{slack-custom-domain}}
-        cert: {{slack-custom-cert}}
-      - domain: {{slack-custom-root-domain}}
-        cert: {{slack-custom-root-cert}}
+      - domain: ((slack-custom-domain))
+        cert: ((slack-custom-cert))
+      - domain: ((slack-custom-root-domain))
+        cert: ((slack-custom-root-cert))
+
   - name: bosh-stemcell
     type: s3
     source:
@@ -59,45 +60,46 @@ resources:
   - name: secrets-delete-depls
     type: git
     source:
-      uri: {{secrets-uri}}
+      uri: ((secrets-uri))
       paths:
       - delete-depls/secrets
       - shared
-      branch: {{secrets-branch}}
+      branch: ((secrets-branch))
       skip_ssl_verification: true
   - name: paas-template-delete-depls
     type: git
     source:
-      uri: {{paas-templates-uri}}
+      uri: ((paas-templates-uri))
       paths:
       - delete-depls/template
-      branch: {{paas-templates-branch}}
+      branch: ((paas-templates-branch))
       skip_ssl_verification: true
   - name: cf-ops-automation
     type: git
     source:
-      uri: {{cf-ops-automation-uri}}
-      branch: {{cf-ops-automation-branch}}
-      tag_filter: {{cf-ops-automation-tag-filter}}
+      uri: ((cf-ops-automation-uri))
+      branch: ((cf-ops-automation-branch))
+      tag_filter: ((cf-ops-automation-tag-filter))
       skip_ssl_verification: true
+
   - name: secrets-full
     type: git
     source:
-      uri: {{secrets-uri}}
-      branch: {{secrets-branch}}
+      uri: ((secrets-uri))
+      branch: ((secrets-branch))
       skip_ssl_verification: true
   - name: paas-templates-full
     type: git
     source:
-      uri: {{paas-templates-uri}}
-      branch: {{paas-templates-branch}}
+      uri: ((paas-templates-uri))
+      branch: ((paas-templates-branch))
       skip_ssl_verification: true
 jobs:
   - name: delete-deployments-review
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -138,7 +140,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -177,16 +179,16 @@ jobs:
             source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
             bosh -n delete-deployment
       params:
-        BOSH_TARGET: {{bosh-target}}
-        BOSH_CLIENT: {{bosh-username}}
-        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         BOSH_DEPLOYMENT: ntp
   - name: execute-deploy-script
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -214,15 +216,15 @@ jobs:
         COMMON_SCRIPT_DIR: script-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET:
-        BOSH_TARGET: {{bosh-target}}
-        BOSH_CLIENT: {{bosh-username}}
-        BOSH_CLIENT_SECRET: {{bosh-password}}
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
   - name: cloud-config-and-runtime-config-for-delete-depls
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -255,7 +257,7 @@ jobs:
           ./credentials-resource/delete-depls/secrets/secrets.yml
           ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/delete-depls/template
-        IAAS_TYPE: {{iaas-type}}
+        IAAS_TYPE: ((iaas-type))
 
     - aggregate:
       - task: update-cloud-config-for-delete-depls
@@ -265,9 +267,9 @@ jobs:
           secrets: secrets-delete-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
-          BOSH_TARGET: {{bosh-target}}
-          BOSH_CLIENT: {{bosh-username}}
-          BOSH_CLIENT_SECRET: {{bosh-password}}
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
@@ -284,7 +286,7 @@ jobs:
           on_failure:
             put: failure-alert
             params:
-              channel: {{slack-channel}}
+              channel: ((slack-channel))
               text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
@@ -302,9 +304,9 @@ jobs:
           secrets: secrets-delete-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
-          BOSH_TARGET: {{bosh-target}}
-          BOSH_CLIENT: {{bosh-username}}
-          BOSH_CLIENT_SECRET: {{bosh-password}}
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
@@ -321,7 +323,7 @@ jobs:
           on_failure:
             put: failure-alert
             params:
-              channel: {{slack-channel}}
+              channel: ((slack-channel))
               text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
@@ -336,7 +338,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
