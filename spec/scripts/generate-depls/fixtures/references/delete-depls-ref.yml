@@ -46,17 +46,6 @@ resources:
       - domain: ((slack-custom-root-domain))
         cert: ((slack-custom-root-cert))
 
-  - name: bosh-stemcell
-    type: s3
-    source:
-      bucket: ((s3-stemcell-bucket))
-      region_name: ((s3-stemcell-region-name))
-      regexp: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-(.*)-((stemcell-main-name)).tgz
-      access_key_id: ((s3-stemcell-access-key-id))
-      secret_access_key: ((s3-stemcell-secret-key))
-      endpoint: ((s3-stemcell-endpoint))
-      skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
-
   - name: secrets-delete-depls
     type: git
     source:
