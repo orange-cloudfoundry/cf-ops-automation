@@ -188,6 +188,11 @@ cf-app:
 If a ci_deployments descriptor (i.e. a file called `ci-deployment-overview.yml`) is detected in secrets dir/<depls>, then an
 auto-update job is generated.
 
+### Concourse team
+By default all pipelines deploy into `main` team. But it is possible to add a `team` key to specify another team. See File format bellow.
+
+Pre-requisite: team to deploy must exist
+
 ### terraform
 
 `ci-deployment-overview.yml` may include a `terraform_config` key to generate a terraform  pipeline.The `terraform_config` key
@@ -206,6 +211,7 @@ ci-deployment:
       state_file_path: ops-depls/tf-config-dir
     pipelines:
       ops-depls-generated:
+        team: bootstrap #optional - Default: main
         config_file: xxxx/pipelines/ops-depls-generated.yml
         vars_files:
         - xxx/pipelines/credentials-ops-depls-pipeline.yml

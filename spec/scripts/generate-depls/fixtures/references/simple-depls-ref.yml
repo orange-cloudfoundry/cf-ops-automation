@@ -703,7 +703,7 @@ jobs:
           
      
       - name: simple-depls-cf-apps-generated
-        team: main
+        team: custom-team-name
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-cf-apps-generated.yml
         vars_files:
           
