@@ -83,12 +83,15 @@ Set a `iaas-type` credential in secrets repo to match the directory name.
 The newest bosh feature are not implemented in bosh cli v1. So some feature are only available to deployments using bosh cli v2.
 This can be combined with iaas specifics support 
 #### ops-files
-By convention, all files in template dir matching ```*-operators.yml``` are used by ```bosh-deployment``` 
+By convention, all files in template dir matching `*-operators.yml` are used by `bosh-deployment` 
 as ```ops-files``` inputs. Theses files **are not processed by spruce**. 
  
 #### vars-files
-By convention, all files in template dir matching ```*-vars-tpl.yml``` are processed by spruce and generate ```*-vars.yml``` files.
-Then files are used by ```bosh-deployment``` as ```vars-files``` inputs.
+By convention, all files in template dir matching `*-vars-tpl.yml` are processed by spruce and generate `*-vars.yml` files.
+As spruce is no longer required, it is also possible to include vars files directly, files matching `*-vars.yml` are used by `bosh-deployment`  but ignored by spruce.
+Theses files are used by ```bosh-deployment``` as ```vars-files``` inputs.
+
+**Warning**: if there is a naming conflict between `*-vars-tpl.yml` and `*-vars.yml`, the `tpl` wins !
 
 #### Cloud and runtime config
 Rules for ops-files and vars-files here. 
