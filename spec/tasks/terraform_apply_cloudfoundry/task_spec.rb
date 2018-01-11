@@ -1,23 +1,22 @@
 # encoding: utf-8
 require 'yaml'
 require 'tmpdir'
+require_relative '../terraform_plan_cloudfoundry/task_spec'
 
 describe 'terraform_apply_cloudfoundry task' do
-  EXPECTED_TERRAFORM_VERSION='0.10.2'
-  EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION='v0.9.1'
-  SKIP_TMP_FILE_CLEANUP=false
+  SKIP_TMP_FILE_CLEANUP = false
 
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/terraform_apply_cloudfoundry.yml' }
 
-    it 'uses official hashicorp/terraform image' do
+    it 'uses official orange-cloudfoundry/terraform image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('hashicorp/terraform')
+      expect(docker_image_used).to match('orangecloudfoundry/terraform')
     end
 
     it 'uses a tagged image' do
       docker_tag_used = task['image_resource']['source']['tag'].to_s
-      expect(docker_tag_used).to match(EXPECTED_TERRAFORM_VERSION)
+      expect(docker_tag_used).to match(EXPECTED_TERRAFORM_IMAGE_TAG)
     end
   end
 
@@ -47,7 +46,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'ensures terraform cloudfoundry provider version is correct' do
-      expect(@output).to include("terraform-provider-cloudfoundry-#{EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION} has been installed")
+      expect(@output).to include("provider.cloudfoundry #{EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION}")
     end
 
     it 'ensures tfvars files are also in generated-files' do
@@ -102,7 +101,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'matches files in generated-files output' do
-      expected_files = %w[. .. .gitkeep .terraform terraform.tfvars terraform.tfstate spec-only.txt].sort
+      expected_files = %w[. .. .gitkeep terraform.tfvars terraform.tfstate spec-only.txt].sort
       expect(Dir.entries(@generated_files).sort).to eq(expected_files)
     end
 
@@ -213,7 +212,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'matches files in generated-files output' do
-      expected_files = %w[. .. .gitkeep .terraform terraform.tfstate secrets.txt].sort
+      expected_files = %w[. .. .gitkeep terraform.tfstate secrets.txt].sort
       expect(Dir.entries(@generated_files).sort).to eq(expected_files)
     end
   end
