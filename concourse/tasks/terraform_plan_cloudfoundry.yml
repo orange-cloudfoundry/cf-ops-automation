@@ -16,7 +16,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: hashicorp/terraform, tag: 0.10.2}
+  source: {repository: orangecloudfoundry/terraform, tag: f9b52b72631f192ad3710e47f98e10f13b09801c}
 
 inputs:
   - name: secret-state-resource
@@ -32,7 +32,6 @@ run:
   args:
   - -exc
   - |
-    sh -c "$(curl -fsSL https://raw.github.com/orange-cloudfoundry/terraform-provider-cloudfoundry/master/bin/install.sh)"
     terraform version
     CURRENT_DIR=$(pwd)
 
@@ -53,7 +52,7 @@ run:
     # copy spec in secrets, preserving the nested modules if any
     if [ -d "secret-state-resource/${SPEC_PATH}" ]
     then
-    find secret-state-resource/${SPEC_PATH}/ -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
 
     cd generated-files/
@@ -63,4 +62,3 @@ run:
 params:
   SPEC_PATH:
   SECRET_STATE_FILE_PATH:
-  PROVIDER_CLOUDFOUNDRY_VERSION: v0.9.1
