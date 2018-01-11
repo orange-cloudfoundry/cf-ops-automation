@@ -16,14 +16,16 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: hashicorp/terraform, tag: 0.8.7}
+  source: {repository: orangecloudfoundry/terraform, tag: f9b52b72631f192ad3710e47f98e10f13b09801c}
 
 inputs:
   - name: secret-state-resource
   - name: spec-resource
+  - name: terraform-tfvars
 
 outputs:
   - name: generated-files
+  - name: spec-applied
 
 run:
   path: sh
@@ -32,9 +34,30 @@ run:
   - |
     terraform version
     CURRENT_DIR=$(pwd)
-    find secret-state-resource/${SECRET_STATE_FILE_PATH}/ -type f -maxdepth 1 -exec cp {} generated-files/ \;
+
+    ###
+    ### don't use cp to copy file, or you'll get an error on empty dir
+    ### cp: can't stat 'terraform-tfvars/*': No such file or directory
+    ###
+
+    # copy tfstate and secrets
+    find secret-state-resource/${SECRET_STATE_FILE_PATH}/ -type f -exec cp {} generated-files/ \;
+
+    # copy generated tfvars
+    find terraform-tfvars -type f -exec cp {} generated-files/ \;
+
+    # copy spec in spec, preserving the nested modules if any
+    find spec-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+
+    # copy spec in secrets, preserving the nested modules if any
+    if [ -d "secret-state-resource/${SPEC_PATH}" ]
+    then
+    find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    fi
+
     cd generated-files/
-    terraform apply  ../spec-resource/$SPEC_PATH
+    terraform init -input=false -upgrade ../spec-applied/
+    terraform apply -input=false -auto-approve ../spec-applied/
 
 params:
   SPEC_PATH:

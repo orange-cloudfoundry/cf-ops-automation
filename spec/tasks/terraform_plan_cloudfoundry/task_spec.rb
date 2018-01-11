@@ -3,21 +3,22 @@ require 'yaml'
 require 'tmpdir'
 
 describe 'terraform_plan_cloudfoundry task' do
-  EXPECTED_TERRAFORM_VERSION='0.10.2'
-  EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION='v0.9.1'
-  SKIP_TMP_FILE_CLEANUP=false
+  EXPECTED_TERRAFORM_IMAGE_TAG = 'f9b52b72631f192ad3710e47f98e10f13b09801c'.freeze
+  EXPECTED_TERRAFORM_VERSION = '0.11.2'.freeze
+  EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION = 'v0.9.1'.freeze
+  SKIP_TMP_FILE_CLEANUP = false
 
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/terraform_plan_cloudfoundry.yml' }
 
-    it 'uses official hashicorp/terraform image' do
+    it 'uses official orange-cloudfoundry/terraform image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('hashicorp/terraform')
+      expect(docker_image_used).to match('orangecloudfoundry/terraform')
     end
 
     it 'uses a tagged image' do
       docker_tag_used = task['image_resource']['source']['tag'].to_s
-      expect(docker_tag_used).to match(EXPECTED_TERRAFORM_VERSION)
+      expect(docker_tag_used).to match(EXPECTED_TERRAFORM_IMAGE_TAG)
     end
   end
 
@@ -49,7 +50,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'ensures terraform cloudfoundry provider version is correct' do
-      expect(@output).to include("terraform-provider-cloudfoundry-#{EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION} has been installed")
+      expect(@output).to include("provider.cloudfoundry #{EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION}")
     end
 
     it 'ensures tfvars files are also in generated-files' do
@@ -98,7 +99,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'copies terraform-tfvars files in generated-files output' do
-      cred_dir= %w[.gitkeep .terraform]
+      cred_dir = %w[.gitkeep]
 
       expected_dirs = Dir.entries(@terraform_tfvars) + cred_dir
       expect(Dir.entries(@generated_files).sort).to eq(expected_dirs.sort)
@@ -207,7 +208,7 @@ describe 'terraform_plan_cloudfoundry task' do
     end
 
     it 'does not contain any files in generated-files output' do
-      expect(Dir.entries(@generated_files).sort).to eq(%w[. .. .gitkeep .terraform].sort)
+      expect(Dir.entries(@generated_files).sort).to eq(%w[. .. .gitkeep].sort)
     end
 
   end
