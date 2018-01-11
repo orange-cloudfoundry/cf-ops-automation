@@ -3,7 +3,7 @@ require 'yaml'
 require 'tmpdir'
 
 describe 'terraform_plan_cloudfoundry task' do
-  EXPECTED_TERRAFORM_IMAGE_TAG = 'f9b52b72631f192ad3710e47f98e10f13b09801c'.freeze
+  EXPECTED_TERRAFORM_IMAGE_TAG = 'c3ef911c742e569b78cd51d1b65d6f16d3d87e0e'.freeze
   EXPECTED_TERRAFORM_VERSION = '0.11.2'.freeze
   EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION = 'v0.9.1'.freeze
   SKIP_TMP_FILE_CLEANUP = false

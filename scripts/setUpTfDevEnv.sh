@@ -69,7 +69,7 @@ setUpDevEnv terraform-prod-ops-deps-env      bosh-cloudwatt-secrets          ops
 
 cd \${WORKDIR}/terraform-preprod-env/generated-files
 bash -c "\$(curl -fsSL https://raw.github.com/orange-cloudfoundry/terraform-provider-cloudfoundry/master/bin/install.sh)"
-terraform init -input=false -upgrade ../spec-applied/
+terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/
 terraform plan -input=false ../spec-applied/
 EOF
 

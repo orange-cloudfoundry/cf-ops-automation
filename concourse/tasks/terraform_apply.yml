@@ -16,7 +16,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: orangecloudfoundry/terraform, tag: f9b52b72631f192ad3710e47f98e10f13b09801c}
+  source: {repository: orangecloudfoundry/terraform, tag: c3ef911c742e569b78cd51d1b65d6f16d3d87e0e}
 
 inputs:
   - name: secret-state-resource
@@ -56,7 +56,7 @@ run:
     fi
 
     cd generated-files/
-    terraform init -input=false -upgrade ../spec-applied/
+    terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/
     terraform apply -input=false -auto-approve ../spec-applied/
 
 params:
