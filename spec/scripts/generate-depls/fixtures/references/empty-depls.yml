@@ -63,6 +63,13 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
+- name: secrets-full-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
 - name: paas-template-dummy-depls
   type: git
   source:
@@ -131,6 +138,9 @@ jobs:
      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
      username: Concourse
   plan:
+    - get: secrets-full-writer
+      params: { submodules: none}
+
     - get: secrets-dummy-depls
       params: { submodules: none}
       trigger: true
@@ -202,7 +212,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-dummy-depls
+            put: secrets-full-writer
             get_params: {submodules: none}
             params:
               repository: updated-cloud-config
@@ -236,7 +246,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-dummy-depls
+            put: secrets-full-writer
             get_params: {submodules: none}
             params:
               repository: updated-runtime-config

@@ -62,6 +62,13 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
+- name: secrets-full-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
 - name: paas-template-simple-depls
   type: git
   source:
@@ -201,6 +208,8 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
+    - get: secrets-full-writer
+      params: { submodules: none}
     - get: secrets-simple-depls
       params: { submodules: none}
       trigger: true
@@ -270,7 +279,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-simple-depls
+            put: secrets-full-writer
             get_params: {submodules: none}
             params:
               repository: updated-cloud-config
@@ -304,7 +313,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-simple-depls
+            put: secrets-full-writer
             get_params: {submodules: none}
             params:
               repository: updated-runtime-config
@@ -323,6 +332,8 @@ jobs:
       username: Concourse
   plan:
     - aggregate:
+      - get: secrets-full-writer
+        params: { submodules: none}
       - get: bosh-stemcell
         version: { path: "((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" }
         trigger: true
@@ -457,7 +468,7 @@ jobs:
         OLD_FILE: simple-depls/ntp/ntp.yml
         NEW_FILE: "manifest.yml"
         COMMIT_MESSAGE: "ntp generated manifest auto update - [skip ci]"
-    - put: secrets-ntp
+    - put: secrets-full-writer
       get_params: {submodules: none}
       params:
         repository: updated-ntp-secrets
@@ -639,6 +650,8 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
+    - get: secrets-full-writer
+      params: { submodules: none}
     - get: paas-template-simple-depls
       params: { submodules: none}
       attempts: 3
@@ -728,7 +741,7 @@ jobs:
       OLD_FILE: concourse/pipelines/simple-depls-cf-apps-generated.yml
       NEW_FILE: "concourse/pipelines/simple-depls-cf-apps-generated.yml"
       COMMIT_MESSAGE: "simple-depls cf-apps generated pipeline auto update - [skip ci]"
-  - put: secrets-full
+  - put: secrets-full-writer
     get_params: {submodules: none}
     params:
       repository: updated-secrets
