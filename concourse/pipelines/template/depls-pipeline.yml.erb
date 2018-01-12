@@ -1024,8 +1024,6 @@ jobs:
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
-      - get: secrets-full-writer
-        params: { submodules: none}
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
