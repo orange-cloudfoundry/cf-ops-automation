@@ -62,6 +62,13 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
+- name: secrets-full-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
 - name: paas-template-<%=depls %>
   type: git
   source:
@@ -349,6 +356,8 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
+    - get: secrets-full-writer
+      params: { submodules: none}
     - get: secrets-<%=depls %>
       params: { submodules: none}
       trigger: true
@@ -403,7 +412,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-<%=depls %>
+            put: secrets-full-writer
             get_params: {submodules: none}
             params:
               repository: updated-cloud-config
@@ -436,7 +445,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-<%=depls %>
+            put: secrets-full-writer
             get_params: {submodules: none}
             params:
               repository: updated-runtime-config
@@ -456,6 +465,8 @@ jobs:
       username: Concourse
   plan:
     - aggregate:
+      - get: secrets-full-writer
+        params: { submodules: none}
       - get: bosh-stemcell
         version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
         trigger: true
@@ -616,7 +627,7 @@ jobs:
         OLD_FILE: <%= depls %>/<%= name %>/<%= name %>.yml
         NEW_FILE: "manifest.yml"
         COMMIT_MESSAGE: "<%= name %> generated manifest auto update - [skip ci]"
-    - put: secrets-<%= name %>
+    - put: secrets-full-writer
       get_params: {submodules: none}
       params:
         repository: updated-<%= name %>-secrets
@@ -838,6 +849,8 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
+    - get: secrets-full-writer
+      params: { submodules: none}
     - get: paas-template-<%= depls %>
       params: { submodules: none}
       attempts: 3
@@ -856,7 +869,6 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 3
-
     - get: secrets-full
       params: { submodules: none}
       attempts: 3
@@ -917,7 +929,7 @@ jobs:
       OLD_FILE: <%= current_cf_apps_generated['config_file'] %>
       NEW_FILE: "concourse/pipelines/<%= depls %>-cf-apps-generated.yml"
       COMMIT_MESSAGE: "<%= depls %> cf-apps generated pipeline auto update - [skip ci]"
-  - put: secrets-full
+  - put: secrets-full-writer
     get_params: {submodules: none}
     params:
       repository: updated-secrets
@@ -998,6 +1010,8 @@ jobs:
       username: Concourse
   plan:
     - aggregate:
+      - get: secrets-full-writer
+        params: { submodules: none}
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [cf-manual-approval]
@@ -1010,6 +1024,8 @@ jobs:
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
+      - get: secrets-full-writer
+        params: { submodules: none}
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
@@ -1047,7 +1063,7 @@ jobs:
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse
         on_success:
-          put: secrets-full
+          put: secrets-full-writer
           get_params: {submodules: none}
           params:
             repository: updated-terraform-state-secrets

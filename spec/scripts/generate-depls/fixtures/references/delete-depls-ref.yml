@@ -55,6 +55,14 @@ resources:
       - shared
       branch: ((secrets-branch))
       skip_ssl_verification: true
+
+  - name: secrets-full-writer
+    type: git
+    source:
+      uri: ((secrets-uri))
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+
   - name: paas-template-delete-depls
     type: git
     source:
@@ -226,6 +234,8 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
+    - get: secrets-full-writer
+      params: { submodules: none}
     - get: secrets-delete-depls
       params:
         submodules: none
@@ -288,7 +298,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-delete-depls
+            put: secrets-full-writer
             get_params:
               submodules: none
             params:
@@ -325,7 +335,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
-            put: secrets-delete-depls
+            put: secrets-full-writer
             get_params:
               submodules: none
             params:
