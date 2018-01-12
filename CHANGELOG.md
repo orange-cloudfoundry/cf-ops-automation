@@ -1,11 +1,28 @@
 # Change Log
 
-## [v1.7.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.7.1) (2017-12-08)
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.7.0...v1.7.1)
+## [v1.8.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.0) (2018-01-12)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.7.1...v1.8.0)
 
 **Implemented enhancements:**
 
 - Support ops-files and var-files for \[cloud|runtime\]-config [\#50](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/50)
+- Split out pipelines in distinct teams \(concourse ops vs template/secrets contributors\) [\#21](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/21)
+
+**Fixed bugs:**
+
+- \[skip ci\] is ignored on secrets repo updates and builds are triggered twice [\#74](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/74)
+- Failed to load root deployment composed only by `disabled` deployment [\#64](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/64)
+- Race condition between ops-depls-generated/update-pipeline-ops-depls-generated and  ops-depls-cf-apps-generated [\#19](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/19)
+
+**Merged pull requests:**
+
+- pipeline\(depls\): add new resource to handle git commit [\#75](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/75)
+- task\(terraform\_\*\): switch to custom image with providers and bump TF 0.11.2 [\#73](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/73)
+- task\(generate\_manifest\): supports vars-file without spruce processing [\#71](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/71)
+- pipeline\(depls\): introduces a new staging branch on paas-templates [\#68](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/68)
+
+## [v1.7.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.7.1) (2017-12-08)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.7.0...v1.7.1)
 
 ## [v1.7.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.7.0) (2017-12-04)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.6.0...v1.7.0)
