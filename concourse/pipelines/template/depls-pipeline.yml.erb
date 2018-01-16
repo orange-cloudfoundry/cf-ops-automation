@@ -54,11 +54,16 @@ resources:
     - domain: ((slack-custom-root-domain))
       cert: ((slack-custom-root-cert))
 
+<% terraform_config_path = nil %>
+<% unless all_ci_deployments.empty? || all_ci_deployments[depls]['terraform_config'].nil? %>
+  <% terraform_config_path = all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
+<% end %>
+<% terraform_config_path_value = ",\"#{terraform_config_path}\"" if terraform_config_path %>
 - name: secrets-<%=depls %>
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["<%= depls %>/secrets","shared"]
+    paths: ["<%= depls %>/secrets","shared"<%= terraform_config_path_value || '' %>]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -73,7 +78,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["<%= depls %>/template"]
+    paths: ["<%= depls %>/template"<%= terraform_config_path_value || '' %>]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
@@ -942,7 +947,6 @@ jobs:
 
 
 <% if ! all_ci_deployments[depls]['terraform_config'].nil? %>
-<% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
 <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>
 
 - name: check-terraform-cf-consistency
@@ -961,13 +965,13 @@ jobs:
       params: { submodules: none}
       passed: [update-pipeline-<%= depls %>-generated]
       trigger: true
-    - get: paas-templates-full
+    - get: paas-template-<%=depls %>
       params: { submodules: none}
-    - get: secrets-full
+    - get: secrets-<%= depls %>
       passed: [update-pipeline-<%= depls %>-generated]
       params: { submodules: none}
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
       output_mapping: {generated-files: terraform-tfvars}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -980,7 +984,7 @@ jobs:
         SUFFIX: -tpl.tfvars.yml
         IAAS_TYPE: ((iaas-type))
     - task: terraform-plan
-      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
+      input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-template-<%=depls %>}
       file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
       params:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
@@ -992,10 +996,10 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [check-terraform-cf-consistency]
-    - get: paas-templates-full
+    - get: paas-template-<%=depls %>
       params: { submodules: none}
       passed: [check-terraform-cf-consistency]
-    - get: secrets-full
+    - get: secrets-<%= depls %>
       params: { submodules: none}
       passed: [check-terraform-cf-consistency]
 
@@ -1016,16 +1020,16 @@ jobs:
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
-      - get: paas-templates-full
+      - get: paas-template-<%=depls %>
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
-      - get: secrets-full
+      - get: secrets-<%= depls %>
         params: { submodules: none}
         passed: [cf-manual-approval]
         trigger: true
     - task: generate-terraform-tfvars
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-full, additional-resource: paas-templates-full}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
       output_mapping: {generated-files: terraform-tfvars}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -1038,7 +1042,7 @@ jobs:
         SUFFIX: -tpl.tfvars.yml
         IAAS_TYPE: ((iaas-type))
     - task: terraform-apply
-      input_mapping: {secret-state-resource: secrets-full,spec-resource: paas-templates-full}
+      input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-template-<%=depls %>}
       output_mapping: {generated-files: terraform-cf}
       file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
       params:
@@ -1046,7 +1050,7 @@ jobs:
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
       ensure:
         task: update-terraform-state-file
-        input_mapping: {reference-resource: secrets-full, generated-resource: terraform-cf}
+        input_mapping: {reference-resource: secrets-<%= depls %>, generated-resource: terraform-cf}
         output_mapping: {updated-git-resource: updated-terraform-state-secrets}
         file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
         params:
