@@ -236,6 +236,12 @@ to ```enabled```, otherwise to ```disabled```.
 #### cf-app deployment
 NYI
 
+### shared and private configuration
+we provide a new config mechanism shared across all root deployments. A [default](lib/config.rb#L11) will be provided by cf-ops-automation, 
+but it is possible to override these values with a `shared-config.yml` file located in paas-template root directory. It 
+also possible to override again with a `private-config.yml` file located in secrets root directory.
+
+
 # Pipelines
 ## standalone
 
