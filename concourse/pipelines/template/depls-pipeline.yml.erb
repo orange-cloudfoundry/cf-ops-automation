@@ -55,8 +55,8 @@ resources:
       cert: ((slack-custom-root-cert))
 
 <% terraform_config_path = nil %>
-<% unless all_ci_deployments[depls]['terraform_config'].nil? %>
-<% terraform_config_path = all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
+<% unless all_ci_deployments.empty? || all_ci_deployments[depls]['terraform_config'].nil? %>
+  <% terraform_config_path = all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
 <% end %>
 <% terraform_config_path_value = ",\"#{terraform_config_path}\"" if terraform_config_path %>
 - name: secrets-<%=depls %>
