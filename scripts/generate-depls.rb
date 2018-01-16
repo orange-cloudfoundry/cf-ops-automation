@@ -2,6 +2,7 @@
 # encoding: utf-8
 
 require 'optparse'
+require_relative '../lib/config'
 require_relative '../lib/bosh_certificates'
 require_relative '../lib/deployment_factory'
 require_relative '../lib/template_processor'
@@ -102,6 +103,11 @@ all_cf_apps = CfAppOverview.new(File.join(OPTIONS[:secret_path], depls, '/*'), d
 
 git_submodules = GitModules.list(OPTIONS[:git_submodule_path])
 
+shared_config = File.join(OPTIONS[:paas_template_root], 'shared-config.yml')
+private_shared_config = File.join(OPTIONS[:secret_path], 'private-config.yml')
+loaded_config = Config.new(shared_config, private_shared_config).load
+puts "loaded config: #{loaded_config}"
+
 erb_context = {
   depls: depls,
   bosh_cert: BOSH_CERT,
@@ -110,7 +116,8 @@ erb_context = {
   all_dependencies: all_dependencies,
   all_ci_deployments: all_ci_deployments,
   all_cf_apps: all_cf_apps,
-  git_submodules: git_submodules
+  git_submodules: git_submodules,
+  config: loaded_config
 }
 
 processor = TemplateProcessor.new depls, OPTIONS, erb_context
