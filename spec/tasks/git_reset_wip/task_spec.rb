@@ -16,7 +16,7 @@ describe 'git_reset_wip task' do
   end
 
 
-  context 'when executed' do
+  context 'when executed with develop as base branch' do
 
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
@@ -25,7 +25,7 @@ describe 'git_reset_wip task' do
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
         'SKIP_SSL_VERIFICATION' =>'true',
-        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"' )
+        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"')
     end
 
     after(:context) do
@@ -48,8 +48,8 @@ describe 'git_reset_wip task' do
 
     end
 
-    it "not contains files from a-branch" do
-      expect(File).to_not exist(File.join(@updated_git_resource, "a-branch.md"))
+    it 'does not contain files from a-branch' do
+      expect(File).not_to exist(File.join(@updated_git_resource, 'a-branch.md'))
     end
 
     context 'when skip_ssl is enabled' do
@@ -60,6 +60,30 @@ describe 'git_reset_wip task' do
 
   end
 
+  context 'when executed with master as base branch' do
 
+    before(:context) do
+      @updated_git_resource = Dir.mktmpdir
+
+      @output = execute('-c concourse/tasks/git_reset_wip.yml ' \
+        '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
+        "-o updated-git-resource=#{@updated_git_resource} ",
+                        'GIT_BRANCH_FILTER' => '"unknown-branch"',
+                        'GIT_CHECKOUT_BRANCH' => 'master')
+    end
+
+    after(:context) do
+      FileUtils.rm_rf @updated_git_resource
+    end
+
+    it 'reset master branch' do
+      expect(@output).to include("Reset branch 'master'", "Your branch is up-to-date with 'origin/master'")
+    end
+
+    it "contains master.md file" do
+      expect(File).to exist(File.join(@updated_git_resource, 'master.md'))
+    end
+
+  end
 
 end

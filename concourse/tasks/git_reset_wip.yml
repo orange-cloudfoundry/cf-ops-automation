@@ -23,7 +23,7 @@ outputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
     git config --global user.email "$GIT_USER_EMAIL"
     git config --global user.name "$GIT_USER_NAME"
@@ -43,7 +43,7 @@ run:
 
     git clone $URI ${FINAL_RELEASE_REPO}
     cd ${FINAL_RELEASE_REPO}
-    git checkout -B develop -t origin/develop
+    git checkout -B ${GIT_CHECKOUT_BRANCH} -t origin/${GIT_CHECKOUT_BRANCH}
 
     git_br=$(echo $current_heads |awk '{ for (i=2;i<=NF;i+=2) $i=""; print}' )
 
@@ -54,4 +54,6 @@ params:
     GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
     GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
     GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+    GIT_CHECKOUT_BRANCH: develop
     SKIP_SSL_VERIFICATION:
+
