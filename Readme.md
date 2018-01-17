@@ -194,6 +194,8 @@ auto-update job is generated.
 ### Concourse team
 By default all pipelines deploy into `main` team. But it is possible to add a `team` key to specify another team. See File format bellow.
 
+**WARNING**: `bootstrap` or `*-init` pipelines must belong to `main` team 
+
 Pre-requisite: team to deploy must exist
 
 ### terraform
