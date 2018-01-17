@@ -43,7 +43,7 @@ run:
 
     git clone $URI ${FINAL_RELEASE_REPO}
     cd ${FINAL_RELEASE_REPO}
-    git checkout -b develop -t origin/develop
+    git checkout -B develop -t origin/develop
 
     git_br=$(echo $current_heads |awk '{ for (i=2;i<=NF;i+=2) $i=""; print}' )
 
