@@ -461,7 +461,7 @@ jobs:
         SECRETS_DIR: credentials-resource/simple-depls/ntp
 
     - task: update-ntp-files
-      input_mapping: {reference-resource: secrets-ntp, generated-resource: ntp-deployment}
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: ntp-deployment}
       output_mapping: {updated-git-resource: updated-ntp-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
