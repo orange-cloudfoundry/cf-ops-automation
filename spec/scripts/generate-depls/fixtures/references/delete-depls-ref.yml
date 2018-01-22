@@ -190,6 +190,7 @@ jobs:
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         BOSH_DEPLOYMENT: ntp
   - name: execute-deploy-script
+    serial: true
     on_failure:
       put: failure-alert
       params:
@@ -226,6 +227,7 @@ jobs:
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
   - name: cloud-config-and-runtime-config-for-delete-depls
+    serial: true
     on_failure:
       put: failure-alert
       params:
