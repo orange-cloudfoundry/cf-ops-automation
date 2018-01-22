@@ -625,7 +625,7 @@ jobs:
         SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
 
     - task: update-<%= name %>-files
-      input_mapping: {reference-resource: secrets-<%= name %>, generated-resource: <%= name %>-deployment}
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: <%= name %>-deployment}
       output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
