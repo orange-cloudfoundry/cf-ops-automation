@@ -166,7 +166,7 @@ resources:
 
 jobs:
 - name: execute-deploy-script
-  
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -199,7 +199,7 @@ jobs:
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 
 - name: cloud-config-and-runtime-config-for-simple-depls
-  
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -322,7 +322,7 @@ jobs:
 
 
 - name: deploy-ntp
-  
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -538,7 +538,7 @@ jobs:
          passed: [update-pipeline-simple-depls-generated]
 
 - name: recreate-ntp
-  
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -640,7 +640,7 @@ jobs:
       FLY_PASSWORD:  ((concourse-simple-depls-password))
 
 - name: update-pipeline-simple-depls-generated
-  
+  serial: true
   on_failure:
     put: failure-alert
     params:

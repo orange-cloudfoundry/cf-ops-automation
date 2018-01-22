@@ -94,6 +94,7 @@ resources:
 
 jobs:
 - name: execute-deploy-script
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -129,7 +130,7 @@ jobs:
 
 
 - name: cloud-config-and-runtime-config-for-dummy-depls
-
+  serial: true
   on_failure:
    put: failure-alert
    params:
