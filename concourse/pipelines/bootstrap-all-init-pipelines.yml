@@ -11,7 +11,6 @@ resource_types:
       repository: cftoolsmiths/cron-resource
 
 resources:
-
 - name: failure-alert
   type: slack-notification
   source:
@@ -52,7 +51,6 @@ resources:
     skip_ssl_verification: true
 
 jobs:
-
 - name: bootstrap-init-pipelines
   on_failure:
     put: failure-alert
@@ -82,8 +80,12 @@ jobs:
       ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
       FLY_USERNAME: {{concourse-micro-depls-username}}
       FLY_PASSWORD:  {{concourse-micro-depls-password}}
-  - task: generate-auto-trigger-flight-plan
-    output_mapping: {result-dir: init-auto-trigger-flight-plan}
+  - task: get-pipeline-teams
+    input_mapping: {secrets: secrets-full}
+    output_mapping: {ci-deployment-overview: concourse-teams}
+    file: cf-ops-automation/concourse/tasks/list_used_ci_team/task.yml
+  - task: generate-flight-plan
+    output_mapping: {result-dir: initialized-flight-plan}
     config:
       platform: linux
       image_resource:
@@ -91,6 +93,7 @@ jobs:
         source: {repository: concourse/busyboxplus, tag: "git"}
       inputs:
         - name: all-pipelines
+        - name: concourse-teams
       outputs:
         - name: result-dir
       run:
@@ -106,8 +109,15 @@ jobs:
           DEPLS=${PIPELINE%%-init-generated}
           echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
+          cd ..
+          for team_name in $(cat concourse-teams/teams.yml|tail -n +2|cut -c3-); do
+          echo "set-team -n $team_name --basic-auth-username=\"$FLY_USERNAME\" --basic-auth-password=\"$FLY_PASSWORD\" --non-interactive"  >> ${DEST_DIR}/flight-plan
+          done
+      params:
+        FLY_USERNAME: {{concourse-micro-depls-username}}
+        FLY_PASSWORD:  {{concourse-micro-depls-password}}
   - task: fly-into-concourse
-    input_mapping: {fly-cmd: init-auto-trigger-flight-plan}
+    input_mapping: {fly-cmd: initialized-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
