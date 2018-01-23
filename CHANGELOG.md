@@ -1,10 +1,29 @@
 # Change Log
 
+## [v1.8.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.2) (2018-01-23)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.1...v1.8.2)
+
+**Implemented enhancements:**
+
+- Use dedicated concourse resource to handle cf app binary [\#28](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/28)
+- Update terraform-provider-cloudfoundry version [\#23](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/23)
+
+**Fixed bugs:**
+
+- Failled to commit generated manifest [\#85](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/85)
+- Cannot reset wip due to an error about develop branch [\#78](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/78)
+- New deployments freeze on first launch [\#29](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/29)
+
+**Closed issues:**
+
+- Avoid same deployment to be executed in parallel [\#86](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/86)
+
 ## [v1.8.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.1) (2018-01-16)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.0...v1.8.1)
 
 **Merged pull requests:**
 
+- script\(generate-depls\): supports shared config with override [\#77](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/77)
 - pipeline\(depls\): restores terraform scan during update-pipeline [\#76](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/76)
 
 ## [v1.8.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.0) (2018-01-12)
