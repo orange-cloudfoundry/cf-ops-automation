@@ -283,7 +283,7 @@ jobs:
         ensure:
           task: update-cloud-config
           input_mapping:
-            reference-resource: secrets-delete-depls
+            reference-resource: secrets-full-writer
             generated-resource: config-manifest
           output_mapping:
             updated-git-resource: updated-cloud-config
@@ -320,7 +320,7 @@ jobs:
         ensure:
           task: update-runtime-config
           input_mapping:
-            reference-resource: secrets-delete-depls
+            reference-resource: secrets-full-writer
             generated-resource: config-manifest
           output_mapping:
             updated-git-resource: updated-runtime-config

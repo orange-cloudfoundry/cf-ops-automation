@@ -404,7 +404,7 @@ jobs:
 
         ensure:
           task: update-cloud-config
-          input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-cloud-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
@@ -437,7 +437,7 @@ jobs:
 
         ensure:
           task: update-runtime-config
-          input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-runtime-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
@@ -924,7 +924,7 @@ jobs:
           <% end %>
      <% end %>
   - task: update-concourse-depls-pipeline
-    input_mapping: {reference-resource: secrets-full, generated-resource: concourse-<%= depls %>-pipeline}
+    input_mapping: {reference-resource: secrets-full-writer, generated-resource: concourse-<%= depls %>-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
@@ -1057,7 +1057,7 @@ jobs:
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
       ensure:
         task: update-terraform-state-file
-        input_mapping: {reference-resource: secrets-<%= depls %>, generated-resource: terraform-cf}
+        input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}
         output_mapping: {updated-git-resource: updated-terraform-state-secrets}
         file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
         params:
