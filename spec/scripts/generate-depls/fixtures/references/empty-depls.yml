@@ -198,7 +198,7 @@ jobs:
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
-          input_mapping: {reference-resource: secrets-dummy-depls, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-cloud-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
@@ -232,7 +232,7 @@ jobs:
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
-          input_mapping: {reference-resource: secrets-dummy-depls, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
           output_mapping: {updated-git-resource: updated-runtime-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
