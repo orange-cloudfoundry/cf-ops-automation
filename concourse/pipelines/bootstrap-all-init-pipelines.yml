@@ -109,7 +109,10 @@ jobs:
           DEPLS=${PIPELINE%%-init-generated}
           echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
-          cd ..
+          cd ../..
+          echo "Dump teams.yml content:"
+          cat concourse-teams/teams.yml
+          echo "=== end: dump ==="
           for team_name in $(cat concourse-teams/teams.yml|tail -n +2|cut -c3-); do
           echo "set-team -n $team_name --basic-auth-username=\"$FLY_USERNAME\" --basic-auth-password=\"$FLY_PASSWORD\" --non-interactive"  >> ${DEST_DIR}/flight-plan
           done
