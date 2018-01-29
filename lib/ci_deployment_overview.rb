@@ -62,5 +62,14 @@ class CiDeploymentOverview
     ci_deployment
   end
 
+  def self.getTeams(overview)
+    overview.map{ |_,root_depls| root_depls }
+        .map { |root_depls| root_depls['pipelines'] }
+        .inject([]) { |array, item| array + item.to_a }
+        .map { |_, pipeline_config| pipeline_config['team'] }
+        .compact
+        .uniq
+  end
+
 
 end
