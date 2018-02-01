@@ -10,24 +10,9 @@ resource_types:
     source:
       repository: cftoolsmiths/cron-resource
 
-#  - name: maven-resource
-#    type: docker-image
-#    source:
-#      repository: patrickcrocker/maven-resource
-#      tag: latest
-
 resources:
-#- name: at-noon
-#  type: cron-resource
-#  source:
-#    expression: "15 12 * * 1-5"
-#    location: "Europe/Paris"
-#    fire_immediately: true
-
-
 
 jobs:
-
 - name: this-is-an-empty-pipeline
 
 

@@ -27,39 +27,39 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
     ca_certs:
-    - domain: {{slack-custom-domain}}
-      cert: {{slack-custom-cert}}
+    - domain: ((slack-custom-domain))
+      cert: ((slack-custom-cert))
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
     skip_ssl_verification: true
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    tag_filter: ((cf-ops-automation-tag-filter))
 
 - name: secrets-test-app
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     paths: ["apps-depls/my_cf_app", "shared"]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-test-app
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["apps-depls/my_cf_app"]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 jobs:
@@ -70,7 +70,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -104,9 +104,9 @@ jobs:
       output_mapping: {flight-report: concourse-apps-depls-trigger-report}
       file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
-        ATC_EXTERNAL_URL: {{concourse-apps-depls-target}}
-        FLY_USERNAME: {{concourse-apps-depls-username}}
-        FLY_PASSWORD:  {{concourse-apps-depls-password}}
+        ATC_EXTERNAL_URL: ((concourse-apps-depls-target))
+        FLY_USERNAME: ((concourse-apps-depls-username))
+        FLY_PASSWORD:  ((concourse-apps-depls-password))
 
 
 
@@ -114,7 +114,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -177,7 +177,11 @@ jobs:
       params:
         CUSTOM_SCRIPT_DIR: template-resource/apps-depls/my_cf_app/template
         SECRETS_DIR: credentials-resource/apps-depls/my_cf_app
-
+        CF_API_URL: https://my-cloudfroundry.org
+        CF_ORG: my-test-org
+        CF_SPACE: my-test-space
+        CF_USERNAME: a-test-User
+        CF_PASSWORD: a-test-Password
 
 
 groups:
