@@ -28,41 +28,41 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
     ca_certs:
-    - domain: {{slack-custom-domain}}
-      cert: {{slack-custom-cert}}
+    - domain: ((slack-custom-domain))
+      cert: ((slack-custom-cert))
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
     skip_ssl_verification: true
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    tag_filter: ((cf-ops-automation-tag-filter))
 <% end %>
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
 - name: secrets-<%= app_name %>
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     paths: ["<%= cf_app_info["base-dir"] %>", "shared"]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-<%= app_name %>
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["<%= cf_app_info["base-dir"] %>"]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 <% end %>
 
@@ -79,7 +79,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -113,9 +113,9 @@ jobs:
       output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
       file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
-        ATC_EXTERNAL_URL: {{concourse-<%= depls %>-target}}
-        FLY_USERNAME: {{concourse-<%= depls %>-username}}
-        FLY_PASSWORD:  {{concourse-<%= depls %>-password}}
+        ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
+        FLY_USERNAME: ((concourse-<%= depls %>-username))
+        FLY_PASSWORD:  ((concourse-<%= depls %>-password))
 
 <% end %>
 
@@ -126,7 +126,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -189,6 +189,11 @@ jobs:
       params:
         CUSTOM_SCRIPT_DIR: template-resource/<%= cf_app_info["base-dir"] %>/template
         SECRETS_DIR: credentials-resource/<%= cf_app_info["base-dir"] %>
+        CF_API_URL: <%= cf_app_info["cf_api_url"] %>
+        CF_ORG: <%= cf_app_info["cf_organization"] %>
+        CF_SPACE: <%= cf_app_info["cf_space"] %>
+        CF_USERNAME: <%= cf_app_info["cf_username"] %>
+        CF_PASSWORD: <%= cf_app_info["cf_password"] %>
 
 <% end %>
 
