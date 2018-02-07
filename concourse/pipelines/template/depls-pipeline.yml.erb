@@ -1068,7 +1068,7 @@ jobs:
         params:
           OLD_FILE: "<%= terraform_config_path %>/terraform.tfstate"
           NEW_FILE: "terraform.tfstate"
-          COMMIT_MESSAGE: "Terraform Cloudfoundry auto update - [skip ci]"
+          COMMIT_MESSAGE: "Terraform TFState auto update"
         on_failure:
           put: failure-alert
           params:
