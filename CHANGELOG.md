@@ -1,11 +1,22 @@
 # Change Log
 
-## [v1.8.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.3) (2018-01-30)
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.2...v1.8.3)
+## [v1.8.4](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.4) (2018-02-07)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.3...v1.8.4)
 
 **Implemented enhancements:**
 
 - bump spruce 1.14 - better hybrid spruce / bosh 2 interop [\#70](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/70)
+
+**Closed issues:**
+
+- Terraform update are not detected by depls-pipeline [\#94](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/94)
+
+**Merged pull requests:**
+
+- pipeline\(cf-apps\): injects CF info as environment variable in post-cf-deploy [\#97](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/97)
+
+## [v1.8.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.3) (2018-01-30)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.2...v1.8.3)
 
 ## [v1.8.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.2) (2018-01-23)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.1...v1.8.2)
