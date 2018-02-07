@@ -4,7 +4,17 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+- name: cron-resource
+  type: docker-image
+  source:
+    repository: cftoolsmiths/cron-resource
 resources:
+- name: weekday-morning
+  type: cron-resource
+  source:
+    expression: 40 8 * * 1-5
+    location: Europe/Paris
+    fire_immediately: true
 - name: failure-alert
   type: slack-notification
   source:
@@ -30,7 +40,7 @@ resources:
   source:
     bucket: "((s3-br-bucket))"
     region_name: "((s3-br-region-name))"
-    regexp: ntp_boshrelease/ntp_boshrelease-(.*).tgz
+    regexp: cloudfoundry-community/ntp_boshrelease-(.*).tgz
     access_key_id: "((s3-br-access-key-id))"
     secret_access_key: "((s3-br-secret-key))"
     endpoint: "((s3-br-endpoint))"
@@ -50,6 +60,8 @@ jobs:
       params:
         submodules: none
       attempts: 3
+    - get: weekday-morning
+      trigger: true
   - task: generate-simple-depls-flight-plan
     output_mapping:
       result-dir: init-simple-depls-plan

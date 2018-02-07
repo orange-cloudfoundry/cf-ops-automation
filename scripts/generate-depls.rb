@@ -125,7 +125,8 @@ processor = TemplateProcessor.new depls, OPTIONS, erb_context
 
 processed_template_count = 0
 OPTIONS[:input_pipelines].each do |dir|
-  processed_template_count += processor.process(dir)
+  processed_template = processor.process(dir)
+  processed_template_count += processed_template.length
 end
 
 if processed_template_count.positive?

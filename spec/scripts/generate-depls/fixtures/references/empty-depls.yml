@@ -283,32 +283,16 @@ jobs:
 groups:
 - name: Dummy-depls
   jobs:
-  
-   
-    - execute-deploy-script
-   
     - cloud-config-and-runtime-config-for-dummy-depls
-   
+    - execute-deploy-script
     - recreate-all
-   
-  
-   
-    - recreate-all
-   
-  
-
 - name: Recreate
   jobs:
-   
     - recreate-all
-   
 - name: Utils
   jobs:
-   
-    - execute-deploy-script
-   
     - cloud-config-and-runtime-config-for-dummy-depls
-   
+    - execute-deploy-script
     - recreate-all
    
 
