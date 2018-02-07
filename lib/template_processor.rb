@@ -16,11 +16,10 @@ class TemplateProcessor
   end
 
   def process(dir)
-    processed_template_count = 0
-    return processed_template_count if dir.nil?
+    processed_template = {}
+    return processed_template if dir.nil?
 
     Dir[dir]&.each do |filename|
-      processed_template_count += 1
 
       puts "processing #{filename}"
       output = ERB.new(File.read(filename), 0, '<>').result(load_context_into_a_binding)
@@ -34,6 +33,7 @@ class TemplateProcessor
       a_pipeline = File.new(File.join(target_dir, pipeline_name), 'w')
       a_pipeline << output
       a_pipeline.close
+      processed_template[filename] = pipeline_name
       puts "Trying to parse generated Yaml: #{pipeline_name} (#{a_pipeline&.path})"
       raise "invalid #{pipeline_name} file" unless YAML.load_file(a_pipeline)
       puts "> #{pipeline_name} seems a valid Yaml file"
@@ -41,7 +41,7 @@ class TemplateProcessor
       puts '####################################################################################'
     end
 
-    processed_template_count
+    processed_template
   end
 
   private
@@ -61,7 +61,7 @@ class TemplateProcessor
 
   def load_context_into_a_binding
     new_binding = binding
-    context.each do |k, v|
+    context&.each do |k, v|
       new_binding.local_variable_set k.to_sym, v
     end
     puts "Local var: #{new_binding.local_variables}"

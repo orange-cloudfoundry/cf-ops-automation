@@ -47,13 +47,13 @@ describe TemplateProcessor do
       subject { described_class.new(root_deployment_name) }
 
       it 'supports nil' do
-        count = subject.process nil
-        expect(count).to eq(0)
+        all_processed_template = subject.process nil
+        expect(all_processed_template.length).to eq(0)
       end
 
       it 'supports empty string' do
-        count = subject.process ''
-        expect(count).to eq(0)
+        all_processed_template = subject.process ''
+        expect(all_processed_template.length).to eq(0)
       end
     end
 
@@ -126,7 +126,7 @@ describe TemplateProcessor do
         }
 
 
-        before {@count=subject.process(@pipelines_dir + '/*') }
+        before {@processed_template = subject.process(@pipelines_dir + '/*') }
 
         # before do
         #   allow(Dir).to receive(:[]).and_return([@template_pipeline_name.to_s])
@@ -143,7 +143,7 @@ describe TemplateProcessor do
           expect(Dir).to receive(:[]).with(@pipelines_dir)
           expect(File).to receive(:read).with(File.join(@pipelines_output_dir, @template_pipeline_name))
 
-          expect(@count).to eq(1)
+          expect(@processed_template.length).to eq(1)
           expect(File.read(File.join(@pipelines_output_dir, @template_pipeline_name))).to eq(expected_yaml_file)
         end
 
