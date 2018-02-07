@@ -31,7 +31,15 @@ resources:
     ca_certs:
     - domain: ((slack-custom-domain))
       cert: ((slack-custom-cert))
+
 - name: secrets-full
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
+- name: secrets-full-writer
   type: git
   source:
     uri: ((secrets-uri))
@@ -96,7 +104,6 @@ jobs:
           - |
 
             echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-test-app" >> result-dir/flight-plan
-
         params:
           BUILD_PIPELINE_NAME: apps-depls-cf-apps-generated
     - task: fly-into-concourse
@@ -123,6 +130,8 @@ jobs:
       - get: secrets-test-app
         params: { submodules: none}
         trigger: true
+      - get: secrets-full-writer
+        params: { submodules: none}
       - get: paas-template-test-app
         trigger: true
         params: { submodules: none }
@@ -158,14 +167,14 @@ jobs:
         CF_PASSWORD: a-test-Password
 
     - task: update-test-app-files
-      input_mapping: {reference-resource: secrets-test-app, generated-resource: final-release-manifest}
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
       output_mapping: {updated-git-resource: updated-test-app-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
         OLD_FILE: apps-depls/my_cf_app/test-app_manifest.yml
         NEW_FILE: "test-app_manifest.yml"
         COMMIT_MESSAGE: "test-app generated CF manifest auto update - [skip ci]"
-    - put: secrets-test-app
+    - put: secrets-full-writer
       get_params: {submodules: none}
       params:
         repository: updated-test-app-secrets

@@ -38,6 +38,12 @@ resources:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
+- name: secrets-full-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
@@ -135,6 +141,8 @@ jobs:
       - get: secrets-<%= app_name %>
         params: { submodules: none}
         trigger: true
+      - get: secrets-full-writer
+        params: { submodules: none}
       - get: paas-template-<%= app_name %>
         trigger: true
         params: { submodules: none }
@@ -170,14 +178,14 @@ jobs:
         CF_PASSWORD: <%= cf_app_info["cf_password"] %>
 
     - task: update-<%= app_name %>-files
-      input_mapping: {reference-resource: secrets-<%= app_name %>, generated-resource: final-release-manifest}
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
       output_mapping: {updated-git-resource: updated-<%= app_name %>-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
         OLD_FILE: <%= cf_app_info["base-dir"] %>/<%= app_name %>_manifest.yml
         NEW_FILE: "<%= app_name %>_manifest.yml"
         COMMIT_MESSAGE: "<%= app_name %> generated CF manifest auto update - [skip ci]"
-    - put: secrets-<%= app_name %>
+    - put: secrets-full-writer
       get_params: {submodules: none}
       params:
         repository: updated-<%= app_name %>-secrets
