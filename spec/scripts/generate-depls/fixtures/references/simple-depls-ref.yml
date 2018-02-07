@@ -759,57 +759,29 @@ jobs:
 groups:
 - name: Simple-depls
   jobs:
-  
-   
-    - execute-deploy-script
-   
     - cloud-config-and-runtime-config-for-simple-depls
-   
-    - retrigger-all-jobs
-   
-    - recreate-all
-   
-    - init-concourse-boshrelease-and-stemcell-for-simple-depls
-   
-    - update-pipeline-simple-depls-generated
-   
-  
-   
     - deploy-ntp
-   
-  
-   
+    - execute-deploy-script
+    - init-concourse-boshrelease-and-stemcell-for-simple-depls
     - recreate-all
-   
     - recreate-ntp
-   
-  
+    - retrigger-all-jobs
+    - update-pipeline-simple-depls-generated
 
 - name: Deploy-n*
   jobs:
-   
     - deploy-ntp
    
 - name: Recreate
   jobs:
-   
     - recreate-all
-   
     - recreate-ntp
    
 - name: Utils
   jobs:
-   
-    - execute-deploy-script
-   
     - cloud-config-and-runtime-config-for-simple-depls
-   
-    - retrigger-all-jobs
-   
-    - recreate-all
-   
+    - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-simple-depls
-   
+    - recreate-all
+    - retrigger-all-jobs
     - update-pipeline-simple-depls-generated
-   
-

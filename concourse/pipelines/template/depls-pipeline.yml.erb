@@ -55,10 +55,11 @@ resources:
       cert: ((slack-custom-root-cert))
 
 <% terraform_config_path = nil %>
-<% unless all_ci_deployments.empty? || all_ci_deployments[depls]['terraform_config'].nil? %>
+<% unless all_ci_deployments&.empty? || all_ci_deployments[depls]['terraform_config'].nil? %>
   <% terraform_config_path = all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
 <% end %>
 <% terraform_config_path_value = ",\"#{terraform_config_path}\"" if terraform_config_path %>
+
 - name: secrets-<%=depls %>
   type: git
   source:
@@ -211,6 +212,17 @@ resources:
 
 <% uniq_releases.sort.each do |release, info|  %>
 - name: <%= release %>
+  <% if !config['offline-mode'].nil? && config['offline-mode']['boshreleases'] %>
+  type: s3
+  source:
+    bucket: ((s3-br-bucket))
+    region_name: ((s3-br-region-name))
+    regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*).tgz
+    access_key_id: ((s3-br-access-key-id))
+    secret_access_key: ((s3-br-secret-key))
+    endpoint: ((s3-br-endpoint))
+    skip_ssl_verification: ((s3-br-skip-ssl-verification))
+  <% else %>
   <% if info['base_location'].include?('bosh.io') %>
   type: bosh-io-release
   source:
@@ -220,6 +232,7 @@ resources:
   source:
     user: <%= info['repository'].split('/').first %>
     repository: <%= info['repository'].split('/').last %>
+  <% end %>
   <% end %>
 <% end %>
 
@@ -490,10 +503,14 @@ jobs:
         trigger: true
       <% boshrelease['releases']&.sort&.each do |release, info| %>
       - get: <%= release %>
+        <% if !config['offline-mode'].nil? && config['offline-mode']['boshreleases'] %>
+        version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
+        <% else %>
         <% if info['base_location'].include?('bosh.io') %>
         version: { version: ((<%= release %>-version)) }
         <% else %>
         version: { tag: v((<%= release %>-version)) }
+        <% end %>
         <% end %>
         trigger: true
         attempts: 3
@@ -615,7 +632,11 @@ jobs:
           - bosh-stemcell/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
         releases: <%= '[]' if boshrelease['releases']&.empty? %>
           <% boshrelease['releases']&.sort&.each do |release, info| %>
+          <% if !config['offline-mode'].nil? && config['offline-mode']['boshreleases'] %>
+          - <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz
+          <% else %>
           - <%= release %>/release.tgz
+          <% end %>
           <% end %>
         <% unless boshrelease['cli_version'] == 'v1' %>
         ops_files:
@@ -1089,16 +1110,14 @@ jobs:
 groups:
 - name: <%= depls.capitalize %>
   jobs:
-  <% jobs.each_value do |jobs_list| %>
-   <% jobs_list.each do |a_job| %>
+  <% jobs.map {|k,jobs_list| jobs_list}.flatten.uniq.sort.each do |a_job| %>
     - <%= a_job %>
-   <% end %>
   <% end %>
 
 <% jobs&.sort&.each do |group_name, jobs_list| %>
 - name: <%= group_name.capitalize %>
   jobs:
-   <% jobs_list&.each do |a_job| %>
+   <% jobs_list&.sort&.each do |a_job| %>
     - <%= a_job %>
    <% end %>
 <% end %>

@@ -368,19 +368,18 @@ jobs:
 groups:
   - name: Delete-depls
     jobs:
-      - delete-deployments-review
       - approve-and-delete-disabled-deployments
-      - execute-deploy-script
       - cloud-config-and-runtime-config-for-delete-depls
-      - recreate-all
+      - delete-deployments-review
+      - execute-deploy-script
       - recreate-all
   - name: Recreate
     jobs:
       - recreate-all
   - name: Utils
     jobs:
-      - delete-deployments-review
       - approve-and-delete-disabled-deployments
-      - execute-deploy-script
       - cloud-config-and-runtime-config-for-delete-depls
+      - delete-deployments-review
+      - execute-deploy-script
       - recreate-all
