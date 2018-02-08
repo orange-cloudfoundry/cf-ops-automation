@@ -116,17 +116,14 @@ jobs:
         team: main
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-generated.yml
         vars_files:
-          
-          # trick to manage <depls>-versions.yml (not included in secrets)
-         
          - paas-templates-full/simple-depls/simple-depls-versions.yml
-          
-     
       - name: simple-depls-cf-apps-generated
         team: custom-team-name
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-cf-apps-generated.yml
         vars_files:
-          
-          # trick to manage <depls>-versions.yml (not included in secrets)
-         
          - paas-templates-full/simple-depls/simple-depls-versions.yml
+      - name: simple-depls-s3-br-upload-generated
+        team: custom-team-name
+        config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-s3-br-upload-generated.yml
+        vars_files:
+        - paas-templates-full/simple-depls/simple-depls-versions.yml

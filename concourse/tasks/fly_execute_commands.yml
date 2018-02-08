@@ -35,7 +35,7 @@ run:
     chmod +x $FLY;
 
     fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
-    PREFIX="fly -t main"
+    PREFIX="fly -t $FLY_TEAM"
 
     old_IFS=$IFS     # sauvegarde du séparateur de champ
     IFS=$'\n'     # nouveau séparateur de champ, le caractère fin de ligne
@@ -51,6 +51,7 @@ params:
   ATC_EXTERNAL_URL:
   FLY_USERNAME:
   FLY_PASSWORD:
+  FLY_TEAM: main
 
 
 

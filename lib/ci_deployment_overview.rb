@@ -13,16 +13,16 @@ class CiDeploymentOverview
   #     ops-depls:
   #     target_name: concourse-ops
   #     pipelines:
-  # ops-depls-generated:
-  #     config_file: concourse/pipelines/ops-depls-generated.yml
-  # vars_files:
-  #     - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-  # - ops-depls/ops-depls-versions.yml
-  # ops-depls-cf-apps-generated:
-  #     config_file: concourse/pipelines/ops-depls-cf-apps-generated.yml
-  # vars_files:
-  #     - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-  # - ops-depls/ops-depls-versions.yml
+  #     ops-depls-generated:
+  #         config_file: concourse/pipelines/ops-depls-generated.yml
+  #     vars_files:
+  #         - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
+  #     - ops-depls/ops-depls-versions.yml
+  #     ops-depls-cf-apps-generated:
+  #         config_file: concourse/pipelines/ops-depls-cf-apps-generated.yml
+  #     vars_files:
+  #         - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
+  #     - ops-depls/ops-depls-versions.yml
   #
 
   def overview
@@ -71,5 +71,11 @@ class CiDeploymentOverview
         .uniq
   end
 
+  def self.team(overview, root_deployment, pipeline_name)
+    ci_root_deployment = overview[root_deployment]
+    ci_pipelines = ci_root_deployment['pipelines'] unless ci_root_deployment.nil?
+    ci_pipeline_found = ci_pipelines[pipeline_name] unless ci_pipelines.nil?
+    ci_pipeline_found['team'] unless ci_pipeline_found.nil?
+  end
 
 end

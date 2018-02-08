@@ -96,6 +96,8 @@ jobs:
           <% end %>
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-s3-stemcell-upload-generated
+
+  <% current_team = CiDeploymentOverview.team(all_ci_deployments, depls, "#{depls}-s3-br-upload-generated") %>
   - task: fly-into-concourse
     input_mapping: {fly-cmd: init-<%= depls %>-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
@@ -104,6 +106,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
       FLY_USERNAME: ((concourse-<%= depls %>-username))
       FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+      FLY_TEAM: <%= current_team || 'main' %>
 
 <% uniq_stemcells.sort.each do |stemcell, _|  %>
 
