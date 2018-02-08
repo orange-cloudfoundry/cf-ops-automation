@@ -35,7 +35,7 @@ run:
     chmod +x $FLY;
 
     fly login -t concourse-target --team-name="$FLY_TEAM" -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
-    PREFIX="fly -t concourse-target --team-name=$FLY_TEAM"
+    PREFIX="fly -t concourse-target"
 
     old_IFS=$IFS     # sauvegarde du séparateur de champ
     IFS=$'\n'     # nouveau séparateur de champ, le caractère fin de ligne
