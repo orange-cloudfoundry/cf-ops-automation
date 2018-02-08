@@ -32,7 +32,11 @@ resources:
     - name: main
       username: {{concourse-<%= depls %>-username}}
       password: {{concourse-<%= depls %>-password}}
-
+    <% CiDeploymentOverview.getTeams(all_ci_deployments)&.each do |team| %>
+    - name: <%= team %>
+      username: ((concourse-<%= depls %>-username))
+      password: ((concourse-<%= depls %>-password))
+    <% end %>
 - name: secrets-full
   type: git
   source:
@@ -115,7 +119,7 @@ jobs:
       pipelines:
       <% all_ci_deployments[depls]["pipelines"].each do |pipeline_name,pipeline_details| %>
       - name: <%= pipeline_name %>
-        team: main
+        team: <%= pipeline_details['team'] || 'main' %>
         config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
         vars_files:
           <% pipeline_details["vars_files"].each do |a_vars_file| %>
