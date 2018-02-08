@@ -31,7 +31,9 @@ resources:
     - name: main
       username: {{concourse-simple-depls-username}}
       password: {{concourse-simple-depls-password}}
-
+    - name: custom-team-name
+      username: "((concourse-simple-depls-username))"
+      password: "((concourse-simple-depls-password))"
 - name: secrets-full
   type: git
   source:
@@ -121,7 +123,7 @@ jobs:
           
      
       - name: simple-depls-cf-apps-generated
-        team: main
+        team: custom-team-name
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-cf-apps-generated.yml
         vars_files:
           
