@@ -77,3 +77,4 @@ jobs:
       ATC_EXTERNAL_URL: "((concourse-dummy-depls-target))"
       FLY_USERNAME: "((concourse-dummy-depls-username))"
       FLY_PASSWORD: "((concourse-dummy-depls-password))"
+      FLY_TEAM: main
