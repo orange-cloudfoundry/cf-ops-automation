@@ -34,8 +34,8 @@ run:
     curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
     chmod +x $FLY;
 
-    fly login -t $FLY_TEAM -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
-    PREFIX="fly -t $FLY_TEAM"
+    fly login -t concourse-target --team-name="$FLY_TEAM" -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
+    PREFIX="fly -t concourse-target --team-name=$FLY_TEAM"
 
     old_IFS=$IFS     # sauvegarde du séparateur de champ
     IFS=$'\n'     # nouveau séparateur de champ, le caractère fin de ligne
