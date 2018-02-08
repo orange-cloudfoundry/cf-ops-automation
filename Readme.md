@@ -170,7 +170,13 @@ Environment variables available:
   - GENERATE_DIR: directory holding generated files. It's an absolute path. 
   - BASE_TEMPLATE_DIR: directory where `pre-cf-push.sh` is located. It's an relative path.
   - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
-
+  - CF_API_URL: current application Cloud Foundry API url
+  - CF_USERNAME: current Cloud Foundry application user
+  - CF_PASSWORD: current Cloud Foundry application user password
+  - CF_ORG: current Cloud Foundry application organization
+  - CF_SPACE: current Cloud Foundry application space
+  
+It is also possible to use a `post-bosh-deploy.sh`, it is like a 'post-cf-push' script with an inconsistent name (we reuse the same concourse task)... To interact easily with cloudfoundry, previously listed environment variables are available.  
 
 #### `enable-cf-app.yml` file format
 
