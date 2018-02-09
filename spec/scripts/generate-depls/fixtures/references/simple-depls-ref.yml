@@ -624,9 +624,10 @@ jobs:
         args:
         - -exc
         - |
-          
+
+
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
-          
+
 
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
       params:

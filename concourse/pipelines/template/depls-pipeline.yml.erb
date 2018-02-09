@@ -814,13 +814,6 @@ jobs:
          BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
          BOSH_DEPLOYMENT: <%= name %>
 <% end %>
-
-<% if ! all_ci_deployments.empty? %>
-<% current_depls_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] || all_ci_deployments[depls]["pipelines"].to_a[0][1] %>
-<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil %>
-<% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
-<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
-
 <% unless enabled_deployments.empty? %>
 - name: init-concourse-boshrelease-and-stemcell-for-<%= depls %>
   <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{depls}" %>
@@ -855,10 +848,13 @@ jobs:
         args:
         - -exc
         - |
-          <% uniq_releases.sort.each do |name,_| %>
+          <% uniq_releases.sort.each do |name,info| %>
+          <% if !config['offline-mode'].nil? && config['offline-mode']['boshreleases'] %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" >> result-dir/flight-plan
+          <% else %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
           <% end %>
-
+          <% end %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
 
       params:
@@ -872,6 +868,14 @@ jobs:
       FLY_USERNAME: ((concourse-<%= depls %>-username))
       FLY_PASSWORD:  ((concourse-<%= depls %>-password))
 <% end %>
+
+<% if ! all_ci_deployments.empty? %>
+<% current_depls_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] || all_ci_deployments[depls]["pipelines"].to_a[0][1] %>
+<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]"  if current_depls_generated == nil %>
+<% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1]%>
+<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]"  if current_cf_apps_generated == nil  %>
+
+
 
 - name: update-pipeline-<%= depls %>-generated
   <% jobs['utils'] << "update-pipeline-#{depls}-generated" %>
