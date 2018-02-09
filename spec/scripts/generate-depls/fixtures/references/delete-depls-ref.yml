@@ -51,6 +51,8 @@ resources:
     source:
       uri: ((secrets-uri))
       paths:
+      - private-config.yml
+      - delete-depls/ci-deployment-overview.yml
       - delete-depls/secrets
       - shared
       branch: ((secrets-branch))
@@ -68,6 +70,7 @@ resources:
     source:
       uri: ((paas-templates-uri))
       paths:
+      - shared-config.yml
       - delete-depls/template
       branch: ((paas-templates-branch))
       skip_ssl_verification: true

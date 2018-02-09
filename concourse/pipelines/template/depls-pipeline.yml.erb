@@ -64,7 +64,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["<%= depls %>/secrets","shared"<%= terraform_config_path_value || '' %>]
+    paths: ["private-config.yml","<%= depls %>/ci-deployment-overview.yml","<%= depls %>/secrets","shared"<%= terraform_config_path_value || '' %>]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -79,7 +79,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["<%= depls %>/template"<%= terraform_config_path_value || '' %>]
+    paths: ["shared-config.yml","<%= depls %>/template"<%= terraform_config_path_value || '' %>]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
