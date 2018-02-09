@@ -58,7 +58,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["simple-depls/secrets","shared"]
+    paths: ["private-config.yml","simple-depls/ci-deployment-overview.yml","simple-depls/secrets","shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -73,7 +73,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/template"]
+    paths: ["shared-config.yml","simple-depls/template"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 

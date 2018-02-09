@@ -59,7 +59,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["dummy-depls/secrets","shared"]
+    paths: ["private-config.yml","dummy-depls/ci-deployment-overview.yml","dummy-depls/secrets","shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -74,7 +74,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["dummy-depls/template"]
+    paths: ["shared-config.yml","dummy-depls/template"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
