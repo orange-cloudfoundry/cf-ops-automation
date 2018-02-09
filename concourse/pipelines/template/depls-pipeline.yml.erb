@@ -633,7 +633,7 @@ jobs:
         releases: <%= '[]' if boshrelease['releases']&.empty? %>
           <% boshrelease['releases']&.sort&.each do |release, info| %>
           <% if !config['offline-mode'].nil? && config['offline-mode']['boshreleases'] %>
-          - <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz
+          - <%= release %>/<%= release %>-((<%= release %>-version)).tgz
           <% else %>
           - <%= release %>/release.tgz
           <% end %>
