@@ -203,13 +203,16 @@ describe 'DeplsPipelineTemplateProcessing' do
       let(:expected_boshrelease_get_version) do
         expected_boshreleases.flat_map { |name, repo| { name => "#{repo}/#{name}-((#{name}-version)).tgz" } }
       end
+      let(:expected_boshrelease_put_version) do
+        expected_boshreleases.flat_map { |name, repo| { name => "#{name}/#{name}-((#{name}-version)).tgz" } }
+      end
       let(:expected_s3_deployment_put) do
         expected_yaml = <<~YAML
           - bui-deployment:
-            - #{expected_boshrelease_get_version.flat_map { |br| br['haproxy-boshrelease'] }.compact.first}
-            - #{expected_boshrelease_get_version.flat_map { |br| br['route-registrar-boshrelease'] }.compact.first}
+            - #{expected_boshrelease_put_version.flat_map { |br| br['haproxy-boshrelease'] }.compact.first}
+            - #{expected_boshrelease_put_version.flat_map { |br| br['route-registrar-boshrelease'] }.compact.first}
           - shield-expe-deployment:
-            - #{expected_boshrelease_get_version.flat_map { |br| br['cf-routing-release'] }.compact.first}
+            - #{expected_boshrelease_put_version.flat_map { |br| br['cf-routing-release'] }.compact.first}
         YAML
         YAML.safe_load expected_yaml
       end
