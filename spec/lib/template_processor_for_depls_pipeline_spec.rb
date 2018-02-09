@@ -238,6 +238,17 @@ describe 'DeplsPipelineTemplateProcessing' do
                                                            .flat_map { |resource| { resource['put'] => resource['params']['releases'] } }
         expect(deployment_put_version).to include(*expected_s3_deployment_put)
       end
+
+      it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
+        expected_init_version = expected_boshrelease_get_version.flat_map(&:values).flatten.flat_map{|get_version| "path:#{get_version}"}
+        init_args = generated_pipeline['jobs']
+                                      .select {|job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}"}
+                                      .flat_map { |job| job['plan'] }
+                                      .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
+                                      .flat_map {|task| task['config']['run']['args']}
+          expect(init_args[1]).to include(*expected_init_version)
+      end
+
     end
     context 'with ci deployment overview without terraform' do
       let(:all_ci_deployments) do
