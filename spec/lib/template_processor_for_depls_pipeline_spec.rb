@@ -105,6 +105,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           'deploy-bui',
           'deploy-shield-expe',
           'execute-deploy-script',
+          'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
           'recreate-all',
           'recreate-bui',
           'recreate-shield-expe',
@@ -119,6 +120,7 @@ describe 'DeplsPipelineTemplateProcessing' do
          'cloud-config-and-runtime-config-for-my-root-depls',
          'delete-deployments-review',
          'execute-deploy-script',
+         'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
          'recreate-all',
          'retrigger-all-jobs'] }
     ]
@@ -276,7 +278,6 @@ describe 'DeplsPipelineTemplateProcessing' do
 
       it 'generates all groups' do
         groups.select { |item| %w(Utils My-root-depls).include?(item['name']) }.each do |item|
-          item['jobs'] << 'init-concourse-boshrelease-and-stemcell-for-my-root-depls'
           item['jobs'] << 'update-pipeline-my-root-depls-generated'
           item['jobs'].sort!
         end
