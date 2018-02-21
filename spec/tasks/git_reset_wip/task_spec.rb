@@ -4,8 +4,8 @@ require 'yaml'
 
 describe 'git_reset_wip task' do
   before(:context) do
-    @git_test_reference_repo = "https://github.com/orange-cloudfoundry/cf-ops-automation-git-reset-wip-it"
-    dest_dir='spec/tasks/git_reset_wip/reference-resource'
+    @git_test_reference_repo = 'https://github.com/orange-cloudfoundry/cf-ops-automation-git-reset-wip-it'
+    dest_dir = 'spec/tasks/git_reset_wip/reference-resource'
     FileUtils.rm_rf dest_dir if Dir.exist? dest_dir
     out, err, status = Open3.capture3("git clone #{@git_test_reference_repo} #{dest_dir}")
     expect(err).to eq("Cloning into 'spec/tasks/git_reset_wip/reference-resource'...\n")
@@ -16,16 +16,16 @@ describe 'git_reset_wip task' do
   end
 
 
-  context 'when executed' do
+  context 'when executed with develop as base branch' do
 
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/git_reset_wip.yml ' \
+      @output = execute('--include-ignored -c concourse/tasks/git_reset_wip.yml ' \
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
         'SKIP_SSL_VERIFICATION' =>'true',
-        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"' )
+        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"')
     end
 
     after(:context) do
@@ -48,8 +48,8 @@ describe 'git_reset_wip task' do
 
     end
 
-    it "not contains files from a-branch" do
-      expect(File).to_not exist(File.join(@updated_git_resource, "a-branch.md"))
+    it 'does not contain files from a-branch' do
+      expect(File).not_to exist(File.join(@updated_git_resource, 'a-branch.md'))
     end
 
     context 'when skip_ssl is enabled' do
@@ -59,7 +59,5 @@ describe 'git_reset_wip task' do
     end
 
   end
-
-
 
 end
