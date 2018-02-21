@@ -9,6 +9,7 @@ end box
 box "Ruby ERB template" #LightBlue
 	participant depls
 	participant "cf-apps"
+	participant concourse
 	participant news
 	participant "sync-helper"
 	participant init
@@ -17,6 +18,7 @@ end box
 box "Subsystem" #Green
 	entity bosh
 	entity CloudFondry as CF
+	entity "Concourse-CI" as CI
 end box
 autonumber
 
@@ -29,11 +31,11 @@ depls -> depls: post-generate.sh
      can execute shell operation or spruce task.
      **Restrictions**: see Readme.md
     end note
-depls -> depls:  pre-bosh-deploy.sh
+depls -> depls:  pre-deploy.sh
     note right: can execute shell operation or spiff task.
 
 depls -> bosh: bosh release deployment
-depls -> depls: post-bosh-deploy.sh
+depls -> depls: post-deploy.sh
 depls -> bosh: run errands
 ... ~~in parallel~~ ...
 autonumber stop
@@ -53,8 +55,31 @@ generator -> "cf-apps": generate pipeline
     note right: convert using spruce <xxx>**_manifest-tpl**.yml to <xxx>.yml
 "cf-apps" -> "cf-apps": pre-cf-push.sh
 "cf-apps" -> CF: push application
-"cf-apps" -> "cf-apps": post-bosh-deploy.sh
+"cf-apps" -> "cf-apps": post-deploy.sh
     note right: this script can also be use in this pipeline
+autonumber stop
+... ~~in parallel~~ ...
+
+== ==
+autonumber 1
+
+generator -> concourse: generate pipeline
+concourse -> concourse: yaml processing
+    note right: convert using spruce <xxx>**-tpl**.yml to <xxx>.yml
+ 
+concourse -> concourse: post-generate.sh
+    note right
+     can execute shell operation or spruce task.
+     **Restrictions**: see Readme.md
+    end note
+concourse -> concourse:  pre-deploy.sh
+    note right: can execute shell operation or spiff task.
+
+concourse -> CI: load pipelines
+concourse -> concourse: post-deploy.sh
+... ~~in parallel~~ ...
+autonumber stop
+
 
 == ==
 autonumber 1

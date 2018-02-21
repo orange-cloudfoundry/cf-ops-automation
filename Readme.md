@@ -57,18 +57,20 @@ If a template directory contains hook scripts with specific name, then these scr
       - GENERATE_DIR: directory holding generated files. It's an absolute path.
       - BASE_TEMPLATE_DIR: directory where `post-generate.sh` is located. It's an relative path. 
 
-  2: `pre-bosh-deploy.sh`: can execute shell operation or spiff task. 
+  2: `pre-deploy.sh`: can execute shell operation or spiff task.
+     **Legacy support**: script named `pre-bosh-deploy.sh` are still supported  
      Environment variables available:
      
       - GENERATE_DIR: directory holding generated files. It's an absolute path. 
-      - BASE_TEMPLATE_DIR: directory where `pre-bosh-deploy.sh` is located. It's an relative path. 
+      - BASE_TEMPLATE_DIR: directory where `pre-deploy.sh` is located. It's an relative path. 
       - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
 
-  3: `post-bosh-deploy.sh`: can execute shell operation (including curl).
+  3: `post-deploy.sh`: can execute shell operation (including curl).
+     **Legacy support**: script named `post-bosh-deploy.sh` are still supported
      Environment variables available:
      
       - GENERATE_DIR: directory holding generated files. It's an absolute path. 
-      - BASE_TEMPLATE_DIR: directory where `post-bosh-deploy.sh` is located. It's an relative path.
+      - BASE_TEMPLATE_DIR: directory where `post-deploy.sh` is located. It's an relative path.
       - SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
 
 * to generate an additional errand step, in a `deployment-dependencies.yml` file, insert a key ```errands``` with a subkey named like the errand job to execute 
@@ -176,7 +178,7 @@ Environment variables available:
   - CF_ORG: current Cloud Foundry application organization
   - CF_SPACE: current Cloud Foundry application space
   
-It is also possible to use a `post-bosh-deploy.sh`, it is like a 'post-cf-push' script with an inconsistent name (we reuse the same concourse task)... To interact easily with cloudfoundry, previously listed environment variables are available.  
+It is also possible to use a `post-deploy.sh`, it is like a 'post-cf-push' script with an inconsistent name (we reuse the same concourse task)... To interact easily with cloudfoundry, previously listed environment variables are available.  
 
 #### `enable-cf-app.yml` file format
 
