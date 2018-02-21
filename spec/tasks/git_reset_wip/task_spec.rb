@@ -4,8 +4,8 @@ require 'yaml'
 
 describe 'git_reset_wip task' do
   before(:context) do
-    @git_test_reference_repo = "https://github.com/orange-cloudfoundry/cf-ops-automation-git-reset-wip-it"
-    dest_dir='spec/tasks/git_reset_wip/reference-resource'
+    @git_test_reference_repo = 'https://github.com/orange-cloudfoundry/cf-ops-automation-git-reset-wip-it'
+    dest_dir = 'spec/tasks/git_reset_wip/reference-resource'
     FileUtils.rm_rf dest_dir if Dir.exist? dest_dir
     out, err, status = Open3.capture3("git clone #{@git_test_reference_repo} #{dest_dir}")
     expect(err).to eq("Cloning into 'spec/tasks/git_reset_wip/reference-resource'...\n")
@@ -21,7 +21,7 @@ describe 'git_reset_wip task' do
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/git_reset_wip.yml ' \
+      @output = execute('--include-ignored -c concourse/tasks/git_reset_wip.yml ' \
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
         'SKIP_SSL_VERIFICATION' =>'true',
@@ -65,7 +65,7 @@ describe 'git_reset_wip task' do
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/git_reset_wip.yml ' \
+      @output = execute('--include-ignored -c concourse/tasks/git_reset_wip.yml ' \
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
                         'GIT_BRANCH_FILTER' => '"unknown-branch"',
@@ -80,7 +80,7 @@ describe 'git_reset_wip task' do
       expect(@output).to include("Reset branch 'master'", "Your branch is up-to-date with 'origin/master'")
     end
 
-    it "contains master.md file" do
+    it 'contains master.md file' do
       expect(File).to exist(File.join(@updated_git_resource, 'master.md'))
     end
 
