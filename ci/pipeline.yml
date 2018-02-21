@@ -75,6 +75,21 @@ resources:
     repository: ((cf-ops-automation-git-hub-repository))
     access_token: ((cf-ops-automation-git-hub-token))
 
+- name: cf-ops-automation-test-secrets
+  type: git
+  source:
+    uri: ((cf-ops-automation-test-secrets-uri))
+    branch: master
+    skip_ssl_verification: ((cf-ops-automation-test-git-insecure))
+
+- name: cf-ops-automation-test-templates
+  type: git
+  source:
+    uri: ((cf-ops-automation-test-templates-uri))
+    branch: master
+    skip_ssl_verification: ((cf-ops-automation-test-git-insecure))
+
+
 jobs:
 
   - name: build-cached-image
@@ -86,8 +101,8 @@ jobs:
       params:
         build: cf-ops-automation-dependencies
         build_args: &docker_build_args
-          CONCOURSE_VERSION: 3.5.0
-          CONCOURSE_SHA: 22332c485ad222d257ebe55c28367145ee7a9da774e132058f48ca02790ab3b6
+          CONCOURSE_VERSION: 3.6.0
+          CONCOURSE_SHA: 8638c75c3294c104da75526cab827d1b61c8ab2c05bb999340214cade37a7516
 
 
   - name: test
@@ -116,6 +131,135 @@ jobs:
           - |
             fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
             bundle exec rspec
+
+  - name: integration-tests
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation
+          resource: ci-develop
+          trigger: true
+          passed: [test]
+        - get: cf-ops-automation-docker-image
+          passed: [test]
+        - get: cf-ops-automation-test-templates
+        - get: cf-ops-automation-test-secrets
+          trigger: true
+
+
+      - task: setup-pre-requisites
+        attempts: 1
+        image: cf-ops-automation-docker-image
+        config:
+          platform: linux
+          inputs:
+          - name: cf-ops-automation
+          outputs:
+          - name: paas-templates
+#          - name: secrets
+          - name: all-pipelines
+          run:
+            dir: cf-ops-automation
+            path: /bin/bash
+            args:
+            - -cex
+#              fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+#              cp -r spec/scripts/generate-depls/fixtures/secrets/{shared,simple-depls} ../secrets|true
+#              cd ../secrets
+#              git init .
+#              git add .
+#              git commit -m "update secrets"
+#              PIPELINE_DIR=../all-pipelines/pipelines
+#              mkdir -p ${PIPELINE_DIR}
+#              cp -r spec/scripts/generate-depls/fixtures/references/simple-depls*.yml ${PIPELINE_DIR}|true
+            - |
+              git config --global user.email "$GIT_USER_EMAIL"
+              git config --global user.name "$GIT_USER_NAME"
+
+              cp -r spec/scripts/generate-depls/fixtures/templates/simple-depls ../paas-templates|true
+              cd ../paas-templates
+              git init .
+              git add .
+              git commit -m "update templates"
+        params:
+          GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+          GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+#      - put: cf-ops-automation-test-secrets
+#        params:
+#          repository: secrets
+#          force: true
+      - put: cf-ops-automation-test-templates
+        params:
+          repository: paas-templates
+          force: true
+      - task: generate-all-pipelines
+        input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates,secrets-resource: cf-ops-automation-test-secrets}
+        output_mapping: {result-dir: all-pipelines}
+        file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
+#      - task: set-all-init-pipelines
+#        input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates,secrets-resource: cf-ops-automation-test-secrets, pipelines-resource: all-pipelines}
+#        file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
+#        params:
+#          ATC_EXTERNAL_URL: ((concourse-url))
+#          FLY_USERNAME: ((concourse-username))
+#          FLY_PASSWORD:  ((concourse-password))
+      - task: upload-pipelines
+        input_mapping: {secrets-resource: cf-ops-automation-test-secrets}
+        attempts: 1
+        image: cf-ops-automation-docker-image
+        config:
+          platform: linux
+          inputs:
+          - name: cf-ops-automation
+          - name: paas-templates
+          - name: secrets-resource
+          - name: all-pipelines
+          run:
+            dir: cf-ops-automation
+            path: /bin/bash
+            args:
+            - -cex
+            - |
+              fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+              export SECRETS=../secrets-resource
+              export TARGET_NAME=cf-ops-automation
+              export PIPELINES_DIR=../all-pipelines/pipelines
+              ./scripts/concourse-manual-pipelines-update.rb -dsimple-depls --no-interactive --fail-on-error
+
+
+      - task: generate-auto-trigger-flight-plan
+        output_mapping: {result-dir: init-auto-trigger-flight-plan}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source: {repository: concourse/busyboxplus, tag: "git"}
+          inputs:
+            - name: all-pipelines
+          outputs:
+            - name: result-dir
+          run:
+            path: sh
+            args:
+            - -exc
+            - |
+              DEST_DIR=$(pwd)/result-dir
+              cd all-pipelines/pipelines
+              for aFile in $(ls *init-ref.yml)
+              do
+              PIPELINE=$(basename ${aFile} .yml)
+              DEPLS=${PIPELINE%%-init-ref}
+              echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
+              done
+      - task: fly-into-concourse
+        input_mapping: {fly-cmd: init-auto-trigger-flight-plan}
+        output_mapping: {flight-report: concourse-<%= depls %>-init-report}
+        file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+        params:
+          ATC_EXTERNAL_URL: ((concourse-url))
+          FLY_USERNAME: ((concourse-username))
+          FLY_PASSWORD:  ((concourse-password))
+
 
   - name: merge-to-master
     serial: true
