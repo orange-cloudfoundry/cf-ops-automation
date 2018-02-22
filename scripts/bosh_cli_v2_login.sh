@@ -5,6 +5,9 @@ BOSH_HOST=$1
 BOSH_CERT_FILE=$2
 
 bosh --version
+echo "checking nslookup is available"
+which nslookup
+echo "nslookup found"
 
 function my_realpath { echo $(cd $(dirname $1); pwd)/$(basename $1); }
 
@@ -38,7 +41,6 @@ if [ $ERROR_COUNT -ne 0 ]
 then
     exit $ERROR_COUNT
 fi
-
 
 if [ -n "$BOSH_CA_CERT"  ]
 then

@@ -17,6 +17,7 @@ image_resource:
   type: docker-image
   source:
     repository: governmentpaas/bosh-cli-v2
+    tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
 inputs:
   - name: script-resource
   - name: templates
