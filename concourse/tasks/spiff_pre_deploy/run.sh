@@ -4,7 +4,6 @@ set -e
 
 CURRENT_DIR=$(pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files}
-COMMON_SCRIPT_DIR=${COMMON_SCRIPT_DIR:-scripts-resource/scripts/manifest}
 
 cp -r additional-resource/. ${OUTPUT_DIR}/
 

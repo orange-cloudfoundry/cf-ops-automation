@@ -1,9 +1,8 @@
-# encoding: utf-8
+
 # require 'spec_helper.rb'
 require 'yaml'
 
 describe 'generate_manifest task' do
-
   context 'when no template are detected' do
     after(:context) do
       FileUtils.rm_rf @generated_files
@@ -17,11 +16,11 @@ describe 'generate_manifest task' do
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         '-i additional-resource=spec/tasks/generate_manifest/additional-resource ' \
         "-o generated-files=#{@generated_files} ",
-        'IAAS_TYPE' =>'',
-        'YML_TEMPLATE_DIR' =>'',
-        'SPRUCE_FILE_BASE_PATH' =>'',
-        'YML_FILES' =>'',
-        'SUFFIX' => '' )
+                        'IAAS_TYPE' => '',
+                        'YML_TEMPLATE_DIR' => '',
+                        'SPRUCE_FILE_BASE_PATH' => '',
+                        'YML_FILES' => '',
+                        'SUFFIX' => '')
     end
 
     it 'displays an error message but does not fail concourse task' do
@@ -29,26 +28,27 @@ describe 'generate_manifest task' do
     end
   end
 
-  context 'when common templates are found' do
-
-    let(:tpl_yml_files) { Dir[File.join(@additional_resource, 'template', '*-tpl.yml')].sort }
-    let(:operators_yml_files) { Dir[File.join(@additional_resource, 'template', '*-operators.yml')].sort }
-    let(:generated_files_dir_content) { Dir[File.join(@generated_files,'*')] }
+  context 'when only common templates are found' do
+    let(:paas_template_path) { File.join(@additional_resource, 'template') }
+    let(:tpl_yml_files) { Dir[File.join(paas_template_path, '*-tpl.yml')].sort }
+    let(:operators_yml_files) { Dir[File.join(paas_template_path, '*-operators.yml')].sort }
+    let(:vars_yml_files) { Dir[File.join(paas_template_path, '*-vars.yml')].sort }
+    let(:unspruced_yml_files) { (operators_yml_files + vars_yml_files).sort }
+    let(:generated_files_dir_content) { Dir[File.join(@generated_files, '*')] }
 
     before(:context) do
       @generated_files = Dir.mktmpdir
       @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
-
 
       @output = execute('-c concourse/tasks/generate-manifest.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         "-i additional-resource=#{@additional_resource} " \
         "-o generated-files=#{@generated_files} ",
-        'YML_TEMPLATE_DIR' => 'additional-resource/template',
-        'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
-        'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
-        'SUFFIX' => '')
+                        'YML_TEMPLATE_DIR' => 'additional-resource/template',
+                        'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
+                        'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
+                        'SUFFIX' => '')
     end
 
     after(:context) do
@@ -58,8 +58,8 @@ describe 'generate_manifest task' do
     it 'generates a file per valid template' do
       tpl_yml_files .map { |filename| File.basename(filename, '-tpl.yml') }
                     .each do |base_filename|
-                      expected_filename = File.join(@generated_files, base_filename + '.yml')
-                      expect(File).to exist(expected_filename), 'expected ' + base_filename + '.yml'
+        expected_filename = File.join(@generated_files, base_filename + '.yml')
+        expect(File).to exist(expected_filename), 'expected ' + base_filename + '.yml'
       end
     end
 
@@ -71,9 +71,9 @@ describe 'generate_manifest task' do
       end
     end
 
-    it 'processes only -tpl.yml files and -operators.yml' do
+    it 'processes only common *-tpl.yml files, *-operators.yml and *-vars.yml' do
       generated_files_dir_content = Dir[File.join(@generated_files, '*')]&.map! { |filename| File.basename(filename, '.yml') }
-      expected_content = tpl_yml_files + operators_yml_files
+      expected_content = tpl_yml_files + unspruced_yml_files
       expected_content.map! { |filename| File.basename(filename, '.yml') }
                       .map! { |filename| filename.chomp('-tpl') }
 
@@ -85,9 +85,7 @@ describe 'generate_manifest task' do
     end
 
     context 'when processing an invalid template' do
-
       before(:context) do
-
         @output = execute('-c concourse/tasks/generate-manifest.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
@@ -109,22 +107,18 @@ describe 'generate_manifest task' do
       end
     end
 
-
     context 'when a post generate script is detected' do
-
       before(:context) do
-
         @output = execute('-c concourse/tasks/generate-manifest.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         '-i additional-resource=spec/tasks/generate_manifest/additional-resource ' \
         "-o generated-files=#{@generated_files} ",
-        'YML_TEMPLATE_DIR' => 'additional-resource/template',
-        'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
-        'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
-        'SUFFIX' => '',
-        'CUSTOM_SCRIPT_DIR' => 'additional-resource/a-root-depls'
-        )
+                          'YML_TEMPLATE_DIR' => 'additional-resource/template',
+                          'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
+                          'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
+                          'SUFFIX' => '',
+                          'CUSTOM_SCRIPT_DIR' => 'additional-resource/a-root-depls')
       end
       after(:context) do
         FileUtils.rm_rf @generated_files
@@ -139,23 +133,25 @@ describe 'generate_manifest task' do
           expect(@output).to include("variable #{env_var} is available")
         end
       end
-
     end
   end
 
   context 'when common and iaas specific templates are found' do
-
     let(:iaas_type) { 'openstack' }
-    let(:tpl_yml_files) { Dir[File.join(@additional_resource, 'template-with-iaas', '*-tpl.yml')].sort }
-    let(:operators_yml_files) { Dir[File.join(@additional_resource, 'template-with-iaas', '*-operators.yml')].sort }
-    let(:iaas_tpl_yml_files) { Dir[File.join(@additional_resource, 'template-with-iaas', iaas_type, '*-tpl.yml')].sort }
-    let(:iaas_operators_yml_files) { Dir[File.join(@additional_resource, 'template-with-iaas', iaas_type, '*-operators.yml')].sort }
-    let(:generated_files_dir_content) { Dir[File.join(@generated_files,'*')] }
+    let(:paas_template_path) { File.join(@additional_resource, 'template-with-iaas') }
+    let(:tpl_yml_files) { Dir[File.join(paas_template_path, '*-tpl.yml')].sort }
+    let(:operators_yml_files) { Dir[File.join(paas_template_path, '*-operators.yml')].sort }
+    let(:vars_yml_files) { Dir[File.join(paas_template_path, '*-vars.yml')].sort }
+    let(:unspruced_yml_files) { (operators_yml_files + vars_yml_files).sort }
+    let(:iaas_tpl_yml_files) { Dir[File.join(paas_template_path, iaas_type, '*-tpl.yml')].sort }
+    let(:iaas_operators_yml_files) { Dir[File.join(paas_template_path, iaas_type, '*-operators.yml')].sort }
+    let(:iaas_vars_yml_files) { Dir[File.join(paas_template_path, iaas_type, '*-vars.yml')].sort }
+    let(:iaas_unspruced_yml_files) { (iaas_operators_yml_files + iaas_vars_yml_files).sort }
+    let(:generated_files_dir_content) { Dir[File.join(@generated_files, '*')] }
 
     before(:context) do
       @generated_files = Dir.mktmpdir
       @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
-
 
       @output = execute('-c concourse/tasks/generate-manifest.yml ' \
         '-i scripts-resource=. ' \
@@ -176,32 +172,30 @@ describe 'generate_manifest task' do
     it 'generates a file per valid template' do
       all_yml = tpl_yml_files + iaas_tpl_yml_files
       all_yml
-          .map { |filename| File.basename(filename, '-tpl.yml') }
-          .each do |base_filename|
+        .map { |filename| File.basename(filename, '-tpl.yml') }
+        .each do |base_filename|
         expected_filename = File.join(@generated_files, base_filename + '.yml')
         expect(File).to exist(expected_filename), 'expected ' + base_filename + '.yml'
       end
     end
 
-    it 'copies operators file to generated_files' do
-      all_operators = operators_yml_files + iaas_operators_yml_files
+    it 'copies vars file to generated_files' do
+      all_operators = unspruced_yml_files + iaas_operators_yml_files
       all_operators
-          .map { |filename| File.basename(filename) }
-          .each do |base_filename|
+        .map { |filename| File.basename(filename) }
+        .each do |base_filename|
         expected_filename = File.join(@generated_files, base_filename)
         expect(File).to exist(expected_filename), 'expected ' + base_filename + ' to exist'
       end
     end
 
-    it 'processes only shared and iaas-specific files (ie -tpl.yml and -operators.yml)' do
+    it 'processes only shared and iaas-specific files (ie -tpl.yml, -operators.yml and -vars.yml)' do
       generated_files_dir_content = Dir[File.join(@generated_files, '*')]&.map! { |filename| File.basename(filename, '.yml') }
-      expected_content = tpl_yml_files + operators_yml_files + iaas_tpl_yml_files + iaas_operators_yml_files
+      expected_content = tpl_yml_files + unspruced_yml_files + iaas_tpl_yml_files + iaas_unspruced_yml_files
       expected_content.map! { |filename| File.basename(filename, '.yml') }
-          .map! { |filename| filename.chomp('-tpl') }
+                      .map! { |filename| filename.chomp('-tpl') }
 
       expect(generated_files_dir_content).to match_array(expected_content)
     end
-
   end
-
 end
