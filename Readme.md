@@ -417,3 +417,21 @@ If you've got a feature you want to see or a bug you'd like to fix, pull request
 ### Submitting Pull Requests
 
  * All pull requests should be made to `develop`. Only Pull Request based on this branch trigger automated build.
+
+## Releasing
+
+### Standard release
+Use cf-ops-automation pipeline to perform a release. You may need to bump the version using one of the following jobs: `major`, `minor` or `patch`.
+Once the version is ok, simply launch `ship-it` job
+ 
+### Hotfix release
+This type of release requires manual work.
+
+  1. checkouts the hotfix branch, and sets it to the expected tag
+  1. fixes the issue 
+  1. adds release description files :
+     1. `hotfix.version`: add the expected release version. Format is <major>.<minor>.<patch>, e.g. 1.1.0 or 1.7.2
+     1. `hotfix_release_notes.md`: the release note to publish on github   
+  1. commits and push
+  1. ensures `run-tests-for-hotfix-branch` is successful
+  1. triggers `ship-hotfix` to publish the release on github

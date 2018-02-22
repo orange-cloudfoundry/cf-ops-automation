@@ -89,6 +89,14 @@ resources:
     branch: master
     skip_ssl_verification: ((cf-ops-automation-test-git-insecure))
 
+- name: hotfix-branch
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-password))
+    branch: hotfix
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
 jobs:
 
@@ -435,6 +443,58 @@ jobs:
             path: cf-ops-automation
             status: failure
 
+  - name: run-tests-for-hotfix-branch
+    plan:
+    - aggregate:
+      - get: cf-ops-automation-docker-image
+        passed: [build-cached-image]
+        trigger: true
+      - get: cf-ops-automation
+        resource: hotfix-branch
+        trigger: true
+    - task: run-tests
+      attempts: 3
+      image: cf-ops-automation-docker-image
+      config: *test_config
+
+  - name: ship-hotfix
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation
+          resource: hotfix-branch
+          passed: [run-tests-for-hotfix-branch]
+      - task: generate-release
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: alpine
+          inputs:
+          - name: cf-ops-automation
+          outputs:
+          - name: github-info
+          run:
+            dir: cf-ops-automation
+            path: sh
+            args:
+            - -ce
+            - |
+              OUTPUT_DIR="../github-info"
+              OUTPUT_FILE="${OUTPUT_DIR}/github_release.md"
+              cp hotfix.version ${OUTPUT_DIR}/hotfix.version
+              cp hotfix_release_notes.md ${OUTPUT_FILE}
+              cd ${OUTPUT_DIR}
+              tar czvf cf-ops-automation.tgz ../cf-ops-automation
+      - put: gh-release
+        params:
+          name: github-info/hotfix.version
+          tag_prefix: v
+          tag: github-info/hotfix.version
+          body: github-info/github_release.md
+          globs:
+           - github-info/cf-ops-automation.tgz
 
   - name: major
     serial_groups: [version]
