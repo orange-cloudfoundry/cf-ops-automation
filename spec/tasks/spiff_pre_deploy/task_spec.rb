@@ -37,7 +37,10 @@ describe 'spiff_pre_deploy task' do
 
     it 'displays an ignore message' do
       expect(@output).to include('ignoring pre-deploy. No my-custom-script-dir/pre-deploy.sh or pre-bosh-deploy.sh detected')
+    end
 
+    it 'adds additional resource to generated' do
+      expect(File).to exist(File.join(generated_files, 'my_additional_file.yml'))
     end
   end
 
