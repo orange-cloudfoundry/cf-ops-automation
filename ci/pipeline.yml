@@ -487,12 +487,14 @@ jobs:
               cp hotfix_release_notes.md ${OUTPUT_FILE}
               cd ${OUTPUT_DIR}
               tar czvf cf-ops-automation.tgz ../cf-ops-automation
+              echo "hotfix" > branch.name
       - put: gh-release
         params:
           name: github-info/hotfix.version
           tag_prefix: v
           tag: github-info/hotfix.version
           body: github-info/github_release.md
+          commitish: github-info/branch.name
           globs:
            - github-info/cf-ops-automation.tgz
 

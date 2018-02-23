@@ -262,11 +262,13 @@ also possible to override again with a `private-config.yml` file located in secr
 
 ## template
 
-* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml): to manage cf-app associated to a root-deployment
-* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml): to manage deployments associated to a root-deployment
-* [init-pipeline](concourse/pipelines/templates/init-pipeline.yml): to initialize all pipelines related to a root-deployment
-* [news-pipeline](concourse/pipelines/templates/news-pipeline.yml): to be notified on new bosh release version for a root-deployment  
-* [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml): to ease secret repo management
+* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml.erb): to manage cf-app associated to a root-deployment
+* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml.erb): to manage deployments associated to a root-deployment
+* [init-pipeline](concourse/pipelines/templates/init-pipeline.yml.erb): to initialize all pipelines related to a root-deployment
+* [news-pipeline](concourse/pipelines/templates/news-pipeline.yml.erb): to be notified on new bosh release version for a root-deployment  
+* [s3-br-upload-pipeline](concourse/pipelines/template/s3-br-upload-pipeline.yml.erb): to upload boshrelease used by this root deployment to S3
+* [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcell used by this root deployment to S3
+* [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml.erb): to ease secret repo management
 
 The following diagram illustrates the sequence of pipeline generation  
 
