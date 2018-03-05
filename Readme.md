@@ -17,7 +17,7 @@
      * [Bosh cli v2 specific features support](#bosh-cli-v2-specific-features-support)
         * [ops-files](#ops-files)
         * [vars-files](#vars-files)
-        * [Cloud and runtime config](#cloud-and-runtime-config)
+        * [cloud and runtime config](#cloud-and-runtime-config)
      * [git submodules](#git-submodules)
         * [enable deployment format (enable-deployment.yml)](#enable-deployment-format-enable-deploymentyml)
         * [deployment dependencies format (deployment-dependencies.yml)](#deployment-dependencies-format-deployment-dependenciesyml)
@@ -43,13 +43,13 @@
          * [pre requisite](#pre-requisite)
       * [How to create a new root deployment](#how-to-create-a-new-root-deployment)
          * [pre requisite](#pre-requisite-1)
-   * [Development](#development)
+   * [COA development](#coa-development)
       * [Running the Test Suite](#running-the-test-suite)
       * [Generating pipelines locally and uploading a test version](#generating-pipelines-locally-and-uploading-a-test-version)
       * [Local terraform development](#local-terraform-development)
       * [Contributing Code](#contributing-code)
          * [Submitting Pull Requests](#submitting-pull-requests)
-      * [Releasing](#releasing)
+      * [Releasing COA](#releasing-coa)
          * [Standard release](#standard-release)
          * [Hotfix release](#hotfix-release)
 
@@ -467,7 +467,7 @@ To setup a new paas-template repo, a new secrets repo or to add a new root deplo
 The following tools are required to run [create-root-depls](scripts/create-root-depls.rb)
  - ruby
 
-# Development
+# COA development
 
 Active development happens on `develop` 
 
@@ -532,7 +532,7 @@ If you've got a feature you want to see or a bug you'd like to fix, pull request
 
  * All pull requests should be made to `develop`. Only Pull Request based on this branch trigger automated build.
 
-## Releasing
+## Releasing COA
 
 ### Standard release
 Use cf-ops-automation pipeline to perform a release. You may need to bump the version using one of the following jobs: `major`, `minor` or `patch`.
