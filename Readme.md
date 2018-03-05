@@ -1,4 +1,4 @@
-# cf-ops-automation
+# cf-ops-automation (COA)
 
 This repo contains automation for managing cloudfoundry and services used by Orange CF SKC. 
 
