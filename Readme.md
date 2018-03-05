@@ -101,7 +101,7 @@ The goal is to automate most (if not all) interactive operations of Bosh, CF API
 COA framework strives to limit skills prereqs for each persona, which the following table summarizes
 
 | Persona                | Skills                                                            |
-|-------------------------|-------------------------------------------------------------------|
+| :----------------------| :-----------------------------------------------------------------|
 | service operator       | git <br>concourse concepts (UI usage, no authoring as pipelines are generated)|
 | template author        | git <br>bosh <br>terraform (\*) <br>cf app manifest (\*) <br>concourse-pipelines (\*) <br>k8s (\*)|
 | COA framework developer | ruby <br>concourse <br>shell <br>bosh <br>terraform <br>git|
