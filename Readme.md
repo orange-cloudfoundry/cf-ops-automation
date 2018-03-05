@@ -3,8 +3,8 @@
 ### Table of Contents
 
   * [Introduction](#introduction)
-     * [Overview](#overview)
      * [Core principles](#core-principles)
+     * [Model overview](#model-overview)
   * [Orange CF-SKC Deployment topology](#orange-cf-skc-deployment-topology)
   * [Script lifecycle overview](#script-lifecycle-overview)
   * [Concourse pipeline generation](#concourse-pipeline-generation)
@@ -57,41 +57,18 @@ Note: TOC Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc
 
 ## Introduction
 
-This repo contains automation for managing cloudfoundry and services used by Orange CF SKC. 
-
-It provides:
-- concourse-based continuous deployment pipeline generator for common resource types: bosh deployments, cf apps, terraform resources
-- templating engine supporting operations of multiple environments (e.g. preprod/prod-region1/prod-region2) 
+This repo provides a collaboration framework for operating cloudfoundry and services.
 
 The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
-
-### Overview
-
-COA takes templates and configurations as inputs, and generates concourse pipelines that automatically reload and execute. As a result, resources gets provisionned and operated:
-
-<!-- edit image source at https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=coab#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1qaLM6Ca-3RerlEsQ-BEJHHfIYVWZdeVF%26export%3Ddownload -->
-
-<p align="center">
-<img src="coab.png" width="300">
- <em>Diagram inspired from <a title="Dreftymac [GFDL (http://www.gnu.org/copyleft/fdl.html), CC-BY-SA-3.0 (http://creativecommons.org/licenses/by-sa/3.0/) or CC BY 2.5 (http://creativecommons.org/licenses/by/2.5)], via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File%3ATempEngGen015.svg">Dreftymac</a>
-</em>
-</p>
-
-* Templates are specified in a git repo (referred to as "paas-templates"). It contains a hierarchical structure with root deployment and nested deployment templates.
-* Configurations are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
-* Generated pipeline triggers provisioning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
- 
-A `root deployment` contains infrastructure to operate `nested deployment`s. 
-* A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
-* Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ... 
 
 ### Core principles
 
 * foster **open-source** collaboration across operators through
    * automation of bosh/terraform best practices
-   * **simplified operations** of large scale complex deployments (eg: cloudfoundry + n dataservices + monitoring + logs ...):
+   * **simplified operations** of large scale complex deployments (e.g. cloudfoundry + n dataservices incl. monitoring/alerting/logs ...):
       * portable distribution which bootstraps from raw Iaas with minimal external prereqs 
       * concourse & git as primary UIs for operators
+      * consistent operations of multiple environments (e.g. preprod/prod-region1/prod-region2/...) 
       * scalability through multiple bosh directors
       * high avaibility through indepent regions support
       * offline/airgap support
@@ -115,6 +92,28 @@ A `root deployment` contains infrastructure to operate `nested deployment`s.
     * vars & operators, bosh cli v2 interpolate enable leveraging current bosh v2 syntax
   * conditional activation of deployments 
   * extensibility through terraform providers 
+
+
+### Model Overview
+
+COA takes templates and configurations as inputs, and generates concourse pipelines that automatically reload and execute. As a result, resources (Iaas, Bosh, CF) gets provisionned and operated through pipelines:
+
+<!-- edit image source at https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=coab#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1qaLM6Ca-3RerlEsQ-BEJHHfIYVWZdeVF%26export%3Ddownload -->
+
+<p align="center">
+<img src="coab.png" width="300">
+ <em>Diagram inspired from <a title="Dreftymac [GFDL (http://www.gnu.org/copyleft/fdl.html), CC-BY-SA-3.0 (http://creativecommons.org/licenses/by-sa/3.0/) or CC BY 2.5 (http://creativecommons.org/licenses/by/2.5)], via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File%3ATempEngGen015.svg">Dreftymac</a>
+</em>
+</p>
+
+* Templates are specified in a git repo (referred to as "paas-templates"). It contains a hierarchical structure with root deployment and nested deployment templates.
+* Configurations are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
+* Generated pipeline triggers provisioning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
+ 
+A `root deployment` contains infrastructure to operate `nested deployment`s. 
+* A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
+* Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ... 
+
 
  
 ## Orange CF-SKC Deployment topology
