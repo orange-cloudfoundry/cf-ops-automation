@@ -60,7 +60,7 @@ Note: TOC Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc
 
 This repo provides a collaboration framework for operating cloudfoundry and services.
 
-The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
+The goal is to automate most (if not all) interactive operations of Bosh/CF API/Iaas APIs through concourse pipelines, while keeping volume of boilerplate code low, and limit skills prereqs required to contribute services automation.
 
 ### Core principles
 
