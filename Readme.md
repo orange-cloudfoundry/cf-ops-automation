@@ -31,7 +31,7 @@ The `inception`, `micro-depls`, `master-depls`, `ops-depls`, `expe-depls` are `r
 
 The nested deployment model enables a split of responsibility as the operations team scales.
 
-The plan is to open source the Orange's CF skill center team template git repo in the future (once the remaining secrets get cleaned up).
+The plan is to open source the Orange's CF skill center team template git repo in the future (once the remaining secrets get cleaned up), watch [paas-templates](https://github.com/orange-cloudfoundry/paas-templates) repo for incoming commits
 
 ## Script lifecycle overview
 
