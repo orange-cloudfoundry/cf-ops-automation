@@ -6,7 +6,7 @@
      * [Core principles](#core-principles)
      * [Model overview](#model-overview)
      * [Skills prereqs](#skills-prereqs)     
-  * [Orange CF-SKC Deployment topology](#orange-cf-skc-deployment-topology)
+  * [Sample deployment topology](#sample-deployment-topology)
   * [Script lifecycle overview](#script-lifecycle-overview)
   * [Concourse pipeline generation](#concourse-pipeline-generation)
      * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
@@ -130,18 +130,18 @@ A `root deployment` contains infrastructure to operate `nested deployment`s.
 
 
  
-## Orange CF-SKC Deployment topology
+## Sample deployment topology
 
-This repo is maintained by the Orange CF skill center team for its deployments. The team's infrastructure deployment topology and bootstrapping process is illustred below:    
+This section provides an overview of the deployment topology and bootstrapping process used by the Orange CloudFoundy skill center team. 
 ![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/overview.puml?lastRefreshOn=17082017).
 
-Source is in the [plantuml](http://plantuml.com/) file: [bosh overview](docs/overview.puml), see [caching tips](https://stackoverflow.com/questions/32203610/how-to-integrate-uml-diagrams-into-gitlab-or-github)
+Nb: source is in the [plantuml](http://plantuml.com/) file: [bosh overview](docs/overview.puml), see [caching tips](https://stackoverflow.com/questions/32203610/how-to-integrate-uml-diagrams-into-gitlab-or-github)
 
-The `inception`, `micro-depls`, `master-depls`, `ops-depls`, `expe-depls` are `root deployment`s in Orange CF skill center infrastructure.
+The `inception`, `micro-depls`, `master-depls`, `ops-depls`, `expe-depls` are `root deployment`s in Orange CF skill center infrastructure (each associated with a dedicated bosh director)
 
 The nested deployment model enables a split of responsibility as the operations team scales.
 
-The plan is to open source the Orange's CF skill center team template git repo in the future (once the remaining secrets get cleaned up), watch [paas-templates](https://github.com/orange-cloudfoundry/paas-templates) repo for incoming commits
+The plan is to open source the Orange's CF skill center team template git repo in the near future (once the remaining secrets get cleaned up), watch [paas-templates](https://github.com/orange-cloudfoundry/paas-templates) repo for incoming commits.
 
 ## Script lifecycle overview
 
