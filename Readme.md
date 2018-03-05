@@ -5,6 +5,7 @@
   * [Introduction](#introduction)
      * [Core principles](#core-principles)
      * [Model overview](#model-overview)
+     * [Skills prereqs](#skills-prereqs)     
   * [Orange CF-SKC Deployment topology](#orange-cf-skc-deployment-topology)
   * [Script lifecycle overview](#script-lifecycle-overview)
   * [Concourse pipeline generation](#concourse-pipeline-generation)
@@ -93,6 +94,19 @@ The goal is to automate most (if not all) interactive operations of Bosh, CF API
   * conditional activation of deployments 
   * extensibility through terraform providers 
 
+### Skills prereqs
+
+<!-- table initiated through https://www.tablesgenerator.com/markdown_tables# -->
+
+COA framework strives to limit skills prereqs for each persona, which the following table summarizes
+
+| Persona                | Skills                                                            |
+|-------------------------|-------------------------------------------------------------------|
+| service operator       | git <br>concourse concepts (UI usage, no authoring as pipelines are generated)|
+| template author        | git <br>bosh <br>terraform (\*) <br>cf app manifest (\*) <br>concourse-pipelines (\*) <br>k8s (\*)|
+| COA framework developer | ruby <br>concourse <br>shell <br>bosh <br>terraform <br>git|
+
+(\*) optional depending on contributed templates
 
 ### Model Overview
 
