@@ -8,8 +8,6 @@
      * [Skills prereqs](#skills-prereqs)     
      * [Sample deployment topology](#sample-deployment-topology)
      * [Generated pipelines](#generated-pipelines)
-       * [singletons](#singletons)
-       * [per-root-deployment](#per-root-deployment)
   * [Template engine reference documentation](#template-engine-reference-documentation)
      * [Resource lifecycle overview](#resource-lifecycle-overview)
      * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
