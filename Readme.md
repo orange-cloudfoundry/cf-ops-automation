@@ -1,5 +1,61 @@
 # cf-ops-automation (COA)
 
+### Table of Contents
+
+  * [Introduction](#introduction)
+  * [Overview](#overview)
+  * [Orange CF-SKC Deployment topology](#orange-cf-skc-deployment-topology)
+  * [Script lifecycle overview](#script-lifecycle-overview)
+  * [Concourse pipeline generation](#concourse-pipeline-generation)
+     * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
+     * [Iaas specifics support](#iaas-specifics-support)
+     * [Bosh cli v2 specific features support](#bosh-cli-v2-specific-features-support)
+        * [ops-files](#ops-files)
+        * [vars-files](#vars-files)
+        * [Cloud and runtime config](#cloud-and-runtime-config)
+     * [git submodules](#git-submodules)
+        * [enable deployment format (enable-deployment.yml)](#enable-deployment-format-enable-deploymentyml)
+        * [deployment dependencies format (deployment-dependencies.yml)](#deployment-dependencies-format-deployment-dependenciesyml)
+     * [Cloudfoundry application resources template format](#cloudfoundry-application-resources-template-format)
+        * [enable-cf-app.yml file format](#enable-cf-appyml-file-format)
+     * [pipeline auto-update](#pipeline-auto-update)
+     * [Concourse team](#concourse-team)
+     * [terraform](#terraform)
+        * [file format](#file-format)
+     * [delete lifecycle support](#delete-lifecycle-support)
+        * [bosh deployment](#bosh-deployment)
+        * [cf-app deployment](#cf-app-deployment)
+     * [shared and private configuration](#shared-and-private-configuration)
+   * [Pipelines](#pipelines)
+      * [standalone](#standalone)
+      * [template](#template)
+   * [anonimyzation](#anonimyzation)
+   * [Status and roadmap](#status-and-roadmap)
+   * [Credits](#credits)
+   * [FAQ](#faq)
+      * [How to initialize a new bosh deployment template ?](#how-to-initialize-a-new-bosh-deployment-template-)
+      * [How to enable a bosh deployment template ?](#how-to-enable-a-bosh-deployment-template-)
+      * [How to upload a bosh release not available on bosh.io?](#how-to-upload-a-bosh-release-not-available-on-boshio)
+      * [How to generate a tfvars in json from a yaml template?](#how-to-generate-a-tfvars-in-json-from-a-yaml-template)
+         * [Sample](#sample)
+      * [How to bootstrap pipelines to a new concourse](#how-to-bootstrap-pipelines-to-a-new-concourse)
+         * [pre requisite](#pre-requisite)
+      * [How to create a new root deployment](#how-to-create-a-new-root-deployment)
+         * [pre requisite](#pre-requisite-1)
+   * [Development](#development)
+      * [Running the Test Suite](#running-the-test-suite)
+      * [Generating pipelines locally and uploading a test version](#generating-pipelines-locally-and-uploading-a-test-version)
+      * [Local terraform development](#local-terraform-development)
+      * [Contributing Code](#contributing-code)
+         * [Submitting Pull Requests](#submitting-pull-requests)
+      * [Releasing](#releasing)
+         * [Standard release](#standard-release)
+         * [Hotfix release](#hotfix-release)
+
+Note: TOC Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
+## Introduction
+
 This repo contains automation for managing cloudfoundry and services used by Orange CF SKC. 
 
 It provides:
@@ -7,6 +63,10 @@ It provides:
 - templating engine supporting operations of multiple environments (e.g. preprod/prod-region1/prod-region2) 
 
 The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
+
+# Overview
+
+COA takes templates and configuration as inputs, and generates concourse pipelines that automatically reload and execute. 
 
 <!-- edit image source at https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=coab#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1qaLM6Ca-3RerlEsQ-BEJHHfIYVWZdeVF%26export%3Ddownload -->
 
@@ -16,10 +76,7 @@ The goal is to automate most (if not all) interactive operations of Bosh, CF API
 </em>
 </p>
 
-
-# Overview
-
-This repo takes templates and instances as input, and generates concourse pipelines that automatically reload and execute. As a result, resources gets provisionned and operated:
+As a result, resources gets provisionned and operated:
 * Templates are specified in a git repo (referred to as "paas-templates"). It contains a hierarchical structure with root deployment and nested deployment templates.
 * Configuration are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
 * Generated pipeline triggers provisioning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
