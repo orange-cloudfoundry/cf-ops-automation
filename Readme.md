@@ -66,7 +66,7 @@ The goal is to automate most (if not all) interactive operations of Bosh, CF API
 
 # Overview
 
-COA takes templates and configuration as inputs, and generates concourse pipelines that automatically reload and execute. 
+COA takes templates and configurations as inputs, and generates concourse pipelines that automatically reload and execute. As a result, resources gets provisionned and operated:
 
 <!-- edit image source at https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=coab#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1qaLM6Ca-3RerlEsQ-BEJHHfIYVWZdeVF%26export%3Ddownload -->
 
@@ -76,9 +76,8 @@ COA takes templates and configuration as inputs, and generates concourse pipelin
 </em>
 </p>
 
-As a result, resources gets provisionned and operated:
 * Templates are specified in a git repo (referred to as "paas-templates"). It contains a hierarchical structure with root deployment and nested deployment templates.
-* Configuration are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
+* Configurations are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
 * Generated pipeline triggers provisioning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
  
 A `root deployment` contains infrastructure to operate `nested deployment`s. 
