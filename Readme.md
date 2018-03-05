@@ -3,7 +3,8 @@
 ### Table of Contents
 
   * [Introduction](#introduction)
-  * [Overview](#overview)
+     * [Overview](#overview)
+     * [Core principles](#core-principles)
   * [Orange CF-SKC Deployment topology](#orange-cf-skc-deployment-topology)
   * [Script lifecycle overview](#script-lifecycle-overview)
   * [Concourse pipeline generation](#concourse-pipeline-generation)
@@ -64,7 +65,7 @@ It provides:
 
 The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
 
-# Overview
+### Overview
 
 COA takes templates and configurations as inputs, and generates concourse pipelines that automatically reload and execute. As a result, resources gets provisionned and operated:
 
@@ -84,7 +85,38 @@ A `root deployment` contains infrastructure to operate `nested deployment`s.
 * A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
 * Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ... 
 
+### Core principles
 
+* foster **open-source** collaboration across operators through
+   * automation of bosh/terraform best practices
+   * **simplified operations** of large scale complex deployments (eg: cloudfoundry + n dataservices + monitoring + logs ...):
+      * portable distribution which bootstraps from raw Iaas with minimal external prereqs 
+      * concourse & git as primary UIs for operators
+      * scalability through multiple bosh directors
+      * high avaibility through indepent regions support
+      * offline/airgap support
+  * **opiniated collaboration** framework
+     * strict separation between template and configuration
+       * template: shared across operation teams
+       * configuration: specific to each operated environment
+     * differentiated support for template authors and service operators:
+       * feature branches, template release versions
+  * **declarative idempotent** approach, leveraging:
+    * terraform configurations (for Iaas, CF, K8S resources)
+    * bosh deployment manifests 
+    * cloudfoundry application manifests
+  * convention-over-configuration
+    * concourse pipelines are generated and updated from directory/file naming conventions
+    * consolidated bosh release version management
+* **diversity** of supported cloud and operators **customizations**
+  * multiple iaas support (eg: openstack / vsphere / cloudstack)
+  * rich yaml manifest templating support:
+    * spiff, spruce enable leveraging bosh v1 legay manifests
+    * vars & operators, bosh cli v2 interpolate enable leveraging current bosh v2 syntax
+  * conditional activation of deployments 
+  * extensibility through terraform providers 
+
+ 
 ## Orange CF-SKC Deployment topology
 
 This repo is maintained by the Orange CF skill center team for its deployments. The team's infrastructure deployment topology and bootstrapping process is illustred below:    
