@@ -8,7 +8,10 @@ It provides:
 
 The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
 
-![Overview of pipeline generation for bosh deployments](coab.png =300x).
+<p align="center">
+<img src="coab.png" width="300">
+</p>
+
 
 # Overview
 
