@@ -2,6 +2,8 @@
 
 ### Table of Contents
 
+<!-- TOC initiated with [gh-md-toc](https://github.com/ekalinin/github-markdown-toc) -->
+
   * [Introduction](#introduction)
      * [Core principles](#core-principles)
      * [Model overview](#model-overview)
@@ -50,7 +52,7 @@
          * [pre requisite](#pre-requisite-1)
    * [Credits](#credits)
 
-Note: TOC Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
 
 ## Introduction
 
