@@ -6,9 +6,9 @@
      * [Core principles](#core-principles)
      * [Model overview](#model-overview)
      * [Skills prereqs](#skills-prereqs)     
-  * [Sample deployment topology](#sample-deployment-topology)
-  * [Script lifecycle overview](#script-lifecycle-overview)
-  * [Concourse pipeline generation](#concourse-pipeline-generation)
+     * [Sample deployment topology](#sample-deployment-topology)
+  * [Template engine reference documentation](#template-engine-reference-documentation)
+     * [Resource lifecycle overview](#resource-lifecycle-overview)
      * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
      * [Iaas specifics support](#iaas-specifics-support)
      * [Bosh cli v2 specific features support](#bosh-cli-v2-specific-features-support)
@@ -129,8 +129,7 @@ A `root deployment` contains infrastructure to operate `nested deployment`s.
 * Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ... 
 
 
- 
-## Sample deployment topology
+### Sample deployment topology
 
 This section provides an overview of the deployment topology and bootstrapping process used by the Orange CloudFoundy skill center team. 
 ![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/overview.puml?lastRefreshOn=17082017).
@@ -143,16 +142,17 @@ The nested deployment model enables a split of responsibility as the operations 
 
 The plan is to open source the Orange's CF skill center team template git repo in the near future (once the remaining secrets get cleaned up), watch [paas-templates](https://github.com/orange-cloudfoundry/paas-templates) repo for incoming commits.
 
-## Script lifecycle overview
+## Template engine reference documentation
 
-The diagram below illustrates the concourse pipeline generation for 2 types of supported resources (Bosh deployments and CF apps). The diagram includes the main hooks that templating engine supports during the resources life cycle. 
+This section details the format supported by the templating engine in both the template repo and the secrets repo. 
+
+### Resource lifecycle overview
+
+The diagram below illustrates the concourse pipeline generation for two types of supported resources (Bosh deployments and CF apps). The diagram includes the main hooks that templating engine supports during the resources life cycle. 
 
 ![script lifecycle overview](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/script-lifecycle-overview.puml?lastRefreshOn=17082017). 
 
 
-## Concourse pipeline generation
-
-This section details the format supported by the templating engine in both the template repo and the secrets repo. 
 
 ### Bosh deployment resources template format
 
