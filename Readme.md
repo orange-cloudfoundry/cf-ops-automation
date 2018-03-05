@@ -8,6 +8,8 @@ It provides:
 
 The goal is to automate most (if not all) interactive operations of Bosh, CF API, Iaas APIs, while keeping volume of concourse boilerplate code low, and limit concourse learning prereqs before contributing to automation.
 
+![Overview of pipeline generation for bosh deployments](coab.png =300x).
+
 # Overview
 
 This repo takes templates and instances as input, and generates concourse pipelines that automatically reload and execute. As a result, resources gets provisionned and operated:
