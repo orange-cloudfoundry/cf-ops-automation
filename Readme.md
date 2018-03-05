@@ -29,8 +29,15 @@
         * [bosh deployment](#bosh-deployment)
         * [cf-app deployment](#cf-app-deployment)
      * [shared and private configuration](#shared-and-private-configuration)
-   * [Status and roadmap](#status-and-roadmap)
-   * [Credits](#credits)
+   * [COA development](#coa-development)
+      * [Status and roadmap](#status-and-roadmap)
+      * [Running the Test Suite](#running-the-test-suite)
+      * [Generating pipelines locally and uploading a test version](#generating-pipelines-locally-and-uploading-a-test-version)
+      * [Local terraform development](#local-terraform-development)
+      * [Submitting Pull Requests](#submitting-pull-requests)
+      * [Releasing COA](#releasing-coa)
+         * [Standard release](#standard-release)
+         * [Hotfix release](#hotfix-release)
    * [FAQ](#faq)
       * [How to initialize a new bosh deployment template ?](#how-to-initialize-a-new-bosh-deployment-template-)
       * [How to enable a bosh deployment template ?](#how-to-enable-a-bosh-deployment-template-)
@@ -41,15 +48,7 @@
          * [pre requisite](#pre-requisite)
       * [How to create a new root deployment](#how-to-create-a-new-root-deployment)
          * [pre requisite](#pre-requisite-1)
-   * [COA development](#coa-development)
-      * [Running the Test Suite](#running-the-test-suite)
-      * [Generating pipelines locally and uploading a test version](#generating-pipelines-locally-and-uploading-a-test-version)
-      * [Local terraform development](#local-terraform-development)
-      * [Contributing Code](#contributing-code)
-         * [Submitting Pull Requests](#submitting-pull-requests)
-      * [Releasing COA](#releasing-coa)
-         * [Standard release](#standard-release)
-         * [Hotfix release](#hotfix-release)
+   * [Credits](#credits)
 
 Note: TOC Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
 
@@ -386,16 +385,87 @@ but it is possible to override these values with a `shared-config.yml` file loca
 also possible to override again with a `private-config.yml` file located in secrets root directory.
 
 
-       
-# Status and roadmap
+# COA development
 
-See ~~~[status](docs/work-in-progress.md)~~~ as well as [github issues](https://github.com/orange-cloudfoundry/cf-ops-automation/issues).
+## Status and roadmap
 
-# Credits
+See [github issues](https://github.com/orange-cloudfoundry/cf-ops-automation/issues).
 
-This repo was inspired by great work shared in
- * https://github.com/alphagov/paas-cf
- * https://github.com/cloudfoundry/buildpacks-ci/ 
+## Running the Test Suite
+
+Prereqs:
+- install ruby, gems and bundler (version >= 1.15.1):
+   - `gem install bundler` 
+- install dependent gems: `bundle install --path vendor/bundle`
+
+If you are running the full test suite, some of the integration tests are dependent on the fly CLI.
+
+
+To login to the Fly CLI and target the cf-ops-automation CI:
+
+```sh
+fly -t cf-ops-automation login
+```
+
+You will be prompted to select either the Github, UAA or Basic Auth authentication methods.
+
+After these are set up, you will be able to run the test suite via:
+
+```sh
+bundler exec rspec
+```
+
+## Generating pipelines locally and uploading a test version 
+
+While developing new pipelines, it might be easier to generate them locally and upload them manually to a concourse instance 
+
+```bash
+fly -t preprod login -u login -p password -c concourse-url
+./scripts/generate-depls.rb --depls cloudflare-depls -t ../paas-template/ -p ../bosh-cloudwatt-preprod-secrets/ --no-dump -i ./concourse/pipelines/template/tf-pipeline.yml.erb 
+SECRETS=../bosh-cloudwatt-preprod-secrets/ TARGET_NAME=preprod ./scripts/concourse-manual-pipelines-update.rb -dcloudflare-depls
+```
+
+Once pipelines are correct, commit, pipelines would perform automated deployment, see [scripts/concourse-generate-all-pipelines.sh](scripts/concourse-generate-all-pipelines.sh)  
+
+
+## Local terraform development
+
+In order to leverage IDE capabilities for terraform when editing TF config files (completion, syntax highlighting, etc.)
+, a consistent local environment is required, with spruce templates interpolated, 
+and tf config files merged from template and secrets repo.
+
+This also enables local execution for `terraform plan` and `tf apply` providing shorter feedback cycles.
+
+The `scripts/setUpTfDevEnv.sh` script partially automates the set up of such local environment:
+
+```bash
+source scripts/setUpTfDevEnv.sh
+```
+
+## Submitting Pull Requests
+
+ * All pull requests should be made against the `develop` branch. Only Pull Requests based on this branch trigger automated builds.
+
+## Releasing COA
+
+### Standard release
+Use cf-ops-automation pipeline to perform a release. You may need to bump the version using one of the following jobs: `major`, `minor` or `patch`.
+Once the version is ok, simply launch `ship-it` job
+ 
+### Hotfix release
+This type of release requires manual work.
+
+  1. checkouts the hotfix branch, and sets it to the expected tag
+  1. fixes the issue 
+  1. adds release description files :
+     1. `hotfix.version`: add the expected release version. Format is <major>.<minor>.<patch>, e.g. 1.1.0 or 1.7.2
+     1. `hotfix_release_notes.md`: the release note to publish on github   
+  1. commits and push
+  1. ensures `run-tests-for-hotfix-branch` is successful
+  1. triggers `ship-hotfix` to publish the release on github
+
+
+
 
 # FAQ
 
@@ -465,85 +535,8 @@ To setup a new paas-template repo, a new secrets repo or to add a new root deplo
 The following tools are required to run [create-root-depls](scripts/create-root-depls.rb)
  - ruby
 
-# COA development
+# Credits
 
-Active development happens on `develop` 
-
-## Running the Test Suite
-
-Prereqs:
-- install ruby, gems and bundler (version >= 1.15.1):
-   - `gem install bundler` 
-- install dependent gems: `bundle install --path vendor/bundle`
-
-If you are running the full test suite, some of the integration tests are dependent on the fly CLI.
-
-
-To login to the Fly CLI and target the cf-ops-automation CI:
-
-```sh
-fly -t cf-ops-automation login
-```
-
-You will be prompted to select either the Github, UAA or Basic Auth authentication methods.
-
-After these are set up, you will be able to run the test suite via:
-
-```sh
-bundler exec rspec
-```
-
-## Generating pipelines locally and uploading a test version 
-
-While developing new pipelines, it might be easier to generate them locally and upload them manually to a concourse instance 
-
-```bash
-fly -t preprod login -u login -p password -c concourse-url
-./scripts/generate-depls.rb --depls cloudflare-depls -t ../paas-template/ -p ../bosh-cloudwatt-preprod-secrets/ --no-dump -i ./concourse/pipelines/template/tf-pipeline.yml.erb 
-SECRETS=../bosh-cloudwatt-preprod-secrets/ TARGET_NAME=preprod ./scripts/concourse-manual-pipelines-update.rb -dcloudflare-depls
-```
-
-Once pipelines are correct, commit, pipelines would perform automated deployment, see [scripts/concourse-generate-all-pipelines.sh](scripts/concourse-generate-all-pipelines.sh)  
-
-
-## Local terraform development
-
-In order to leverage IDE capabilities for terraform when editing TF config files (completion, syntax highlighting, etc.)
-, a consistent local environment is required, with spruce templates interpolated, 
-and tf config files merged from template and secrets repo.
-
-This also enables local execution for `terraform plan` and `tf apply` providing shorter feedback cycles.
-
-The `scripts/setUpTfDevEnv.sh` script partially automates the set up of such local environment:
-
-```bash
-source scripts/setUpTfDevEnv.sh
-```
-
-
-
-## Contributing Code
-
-If you've got a feature you want to see or a bug you'd like to fix, pull requests are the way to go.
-
-### Submitting Pull Requests
-
- * All pull requests should be made to `develop`. Only Pull Request based on this branch trigger automated build.
-
-## Releasing COA
-
-### Standard release
-Use cf-ops-automation pipeline to perform a release. You may need to bump the version using one of the following jobs: `major`, `minor` or `patch`.
-Once the version is ok, simply launch `ship-it` job
- 
-### Hotfix release
-This type of release requires manual work.
-
-  1. checkouts the hotfix branch, and sets it to the expected tag
-  1. fixes the issue 
-  1. adds release description files :
-     1. `hotfix.version`: add the expected release version. Format is <major>.<minor>.<patch>, e.g. 1.1.0 or 1.7.2
-     1. `hotfix_release_notes.md`: the release note to publish on github   
-  1. commits and push
-  1. ensures `run-tests-for-hotfix-branch` is successful
-  1. triggers `ship-hotfix` to publish the release on github
+This repo was inspired by great work shared in
+ * https://github.com/alphagov/paas-cf
+ * https://github.com/cloudfoundry/buildpacks-ci/ 
