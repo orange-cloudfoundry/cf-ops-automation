@@ -7,6 +7,9 @@
      * [Model overview](#model-overview)
      * [Skills prereqs](#skills-prereqs)     
      * [Sample deployment topology](#sample-deployment-topology)
+     * [Generated pipelines](#generated-pipelines)
+       * [singletons](#singletons)
+       * [per-root-deployment](#per-root-deployment)
   * [Template engine reference documentation](#template-engine-reference-documentation)
      * [Resource lifecycle overview](#resource-lifecycle-overview)
      * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
@@ -28,10 +31,6 @@
         * [bosh deployment](#bosh-deployment)
         * [cf-app deployment](#cf-app-deployment)
      * [shared and private configuration](#shared-and-private-configuration)
-   * [Pipelines](#pipelines)
-      * [standalone](#standalone)
-      * [template](#template)
-   * [anonimyzation](#anonimyzation)
    * [Status and roadmap](#status-and-roadmap)
    * [Credits](#credits)
    * [FAQ](#faq)
@@ -141,6 +140,33 @@ The `inception`, `micro-depls`, `master-depls`, `ops-depls`, `expe-depls` are `r
 The nested deployment model enables a split of responsibility as the operations team scales.
 
 The plan is to open source the Orange's CF skill center team template git repo in the near future (once the remaining secrets get cleaned up), watch [paas-templates](https://github.com/orange-cloudfoundry/paas-templates) repo for incoming commits.
+
+
+## Generated pipelines
+
+This sections describes the pipelines that COA generates and loads into concourse. Some are singletons while others are templated and instanciated for each root deployment. 
+
+### singletons
+
+* [bootstraps-all-init-pipelines](concourse/pipelines/bootstraps-all-init-pipelines.yml): bootstraps all init pipelines 
+* [micro-bosh-init-pipeline](concourse/pipelines/micro-bosh-init-pipeline.yml): !!! WIP !!! manages bosh-micro
+* [sync-feature-branches](concourse/pipelines/sync-feature-branches.yml): manages a WIP branch based on develop and any feature branches  
+* [sync-hotfix-branches](concourse/pipelines/sync-hotfix-branches.yml): manages a WIP branch based on master and any hotfix branches
+
+### per-root-deployment 
+
+* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml.erb): manages cf-app associated to a root-deployment
+* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml.erb): manages deployments associated to a root-deployment
+* [init-pipeline](concourse/pipelines/templates/init-pipeline.yml.erb): initializes all pipelines related to a root-deployment
+* [news-pipeline](concourse/pipelines/templates/news-pipeline.yml.erb): notifies of new bosh release versions for a root-deployment  
+* [s3-br-upload-pipeline](concourse/pipelines/template/s3-br-upload-pipeline.yml.erb): to upload boshrelease used by this root deployment to S3
+* [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcell used by this root deployment to S3
+* [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml.erb): to ease secret repo management
+
+The following diagram illustrates the sequence of pipeline generation  
+
+![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/bootstrap.puml?lastRefreshOn=29092017).
+
 
 ## Template engine reference documentation
 
@@ -361,30 +387,6 @@ we provide a new config mechanism shared across all root deployments. A [default
 but it is possible to override these values with a `shared-config.yml` file located in paas-template root directory. It 
 also possible to override again with a `private-config.yml` file located in secrets root directory.
 
-
-# Pipelines
-## standalone
-
-* [bootstraps-all-init-pipelines](concourse/pipelines/bootstraps-all-init-pipelines.yml): bootstrap all init pipelines 
-* [micro-bosh-init-pipeline](concourse/pipelines/micro-bosh-init-pipeline.yml): !!! WIP !!! to manage bosh-micro
-* [sync-feature-branches](concourse/pipelines/sync-feature-branches.yml): manage a WIP branch based on develop and any feature branches  
-* [sync-hotfix-branches](concourse/pipelines/sync-hotfix-branches.yml): manage a WIP branch based on master and any hotfix branches
-
-## template
-
-* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml.erb): to manage cf-app associated to a root-deployment
-* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml.erb): to manage deployments associated to a root-deployment
-* [init-pipeline](concourse/pipelines/templates/init-pipeline.yml.erb): to initialize all pipelines related to a root-deployment
-* [news-pipeline](concourse/pipelines/templates/news-pipeline.yml.erb): to be notified on new bosh release version for a root-deployment  
-* [s3-br-upload-pipeline](concourse/pipelines/template/s3-br-upload-pipeline.yml.erb): to upload boshrelease used by this root deployment to S3
-* [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcell used by this root deployment to S3
-* [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml.erb): to ease secret repo management
-
-The following diagram illustrates the sequence of pipeline generation  
-
-![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/bootstrap.puml?lastRefreshOn=29092017).
-
-# anonimyzation
 
        
 # Status and roadmap
