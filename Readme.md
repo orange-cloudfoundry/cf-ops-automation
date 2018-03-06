@@ -108,7 +108,7 @@ COA framework strives to limit skills prereqs for each persona, which the follow
 
 ### Model Overview
 
-COA takes templates and configurations as inputs, and generates concourse pipelines that automatically reload and execute. As a result, resources (Iaas, Bosh, CF) gets provisionned and operated through pipelines:
+COA takes templates and configurations as inputs, and generates concourse pipelines as outputs. Generated template  automatically reload and execute. As a result, resources (Iaas, Bosh, CF) gets provisionned and operated through pipelines.
 
 <!-- edit image source at https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=coab#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1qaLM6Ca-3RerlEsQ-BEJHHfIYVWZdeVF%26export%3Ddownload -->
 
