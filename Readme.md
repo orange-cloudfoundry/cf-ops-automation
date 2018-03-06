@@ -130,6 +130,8 @@ A `root deployment` contains infrastructure to operate `nested deployment`s.
 ### Sample deployment topology
 
 This section provides an overview of the deployment topology and bootstrapping process used by the Orange CloudFoundy skill center team. 
+
+
 ![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/overview.puml?lastRefreshOn=17082017).
 
 Nb: source is in the [plantuml](http://plantuml.com/) file: [bosh overview](docs/overview.puml), see [caching tips](https://stackoverflow.com/questions/32203610/how-to-integrate-uml-diagrams-into-gitlab-or-github)
