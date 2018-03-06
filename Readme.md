@@ -3,7 +3,7 @@
 ### Table of Contents
 
 <!-- TOC initiated with [gh-md-toc](https://github.com/ekalinin/github-markdown-toc) -->
-
+<!--ts-->
   * [Introduction](#introduction)
      * [Core principles](#core-principles)
      * [Model overview](#model-overview)
@@ -51,7 +51,7 @@
       * [How to create a new root deployment](#how-to-create-a-new-root-deployment)
          * [pre requisite](#pre-requisite-1)
    * [Credits](#credits)
-
+<!--te-->
 
 
 ## Introduction
