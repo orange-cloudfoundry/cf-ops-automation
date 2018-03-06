@@ -76,12 +76,6 @@ resources:
   type: slack-notification
   source:
     url: {{slack-webhook}}
-    ca_certs:
-    - domain: {{slack-custom-domain}}
-      cert: {{slack-custom-cert}}
-    - domain: {{slack-custom-root-domain}}
-      cert: {{slack-custom-root-cert}}
-
 
 #- name: auto-init-pipeline
 #  type: git
