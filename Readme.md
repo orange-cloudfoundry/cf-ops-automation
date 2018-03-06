@@ -120,7 +120,7 @@ COA takes templates and configurations as inputs, and generates concourse pipeli
 
 * Templates are specified in a git repo (referred to as "paas-templates"). It contains a hierarchical structure with root deployment and nested deployment templates.
 * Configurations are specified in a git repo (referred to as "secrets"). Their structure mimics the template structure, indicating which deployment template should instanciated. See  
-* Generated pipeline triggers provisioning of resources whose credentials and secrets are pushed into a git repo (referred to as "secrets"). Plan is to move credentials to credhub.
+* Generated pipeline triggers provisioning of resources whose credentials and secrets are currently pushed into a git repo (referred to as "secrets"). The plan is to move all credentials to credhub.
  
 A `root deployment` contains infrastructure to operate `nested deployment`s. 
 * A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc... 
