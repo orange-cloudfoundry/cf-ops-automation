@@ -113,7 +113,7 @@ COA takes templates and configurations as inputs, and generates concourse pipeli
 <!-- edit image source at https://www.draw.io/?lightbox=1&highlight=0000ff&edit=_blank&layers=1&nav=1&title=coab#Uhttps%3A%2F%2Fdrive.google.com%2Fuc%3Fid%3D1qaLM6Ca-3RerlEsQ-BEJHHfIYVWZdeVF%26export%3Ddownload -->
 
 <p align="center">
-<img src="coab.png" width="300">
+<img src="docs/coa.png" width="300">
  <em>Diagram inspired from <a title="Dreftymac [GFDL (http://www.gnu.org/copyleft/fdl.html), CC-BY-SA-3.0 (http://creativecommons.org/licenses/by-sa/3.0/) or CC BY 2.5 (http://creativecommons.org/licenses/by/2.5)], via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File%3ATempEngGen015.svg">Dreftymac</a>
 </em>
 </p>
