@@ -162,7 +162,7 @@ This sections describes the pipelines that COA generates and loads into concours
 * [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcell used by this root deployment to S3
 * [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml.erb): to ease secret repo management
 
-The following diagram illustrates the sequence of pipeline generation  
+The following diagram illustrates the sequence of pipeline generation and loading 
 
 ![Overview of pipeline generation for bosh deployments](http://www.plantuml.com/plantuml/proxy?src=https://raw.githubusercontent.com/orange-cloudfoundry/cf-ops-automation/master/docs/bootstrap.puml?lastRefreshOn=29092017).
 
