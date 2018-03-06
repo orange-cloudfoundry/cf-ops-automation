@@ -48,11 +48,6 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
-    ca_certs:
-    - domain: ((slack-custom-domain))
-      cert: ((slack-custom-cert))
-    - domain: ((slack-custom-root-domain))
-      cert: ((slack-custom-root-cert))
 
 <% terraform_config_path = nil %>
 <% unless all_ci_deployments&.empty? || all_ci_deployments[depls]['terraform_config'].nil? %>

@@ -28,9 +28,6 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
-    ca_certs:
-    - domain: ((slack-custom-domain))
-      cert: ((slack-custom-cert))
 
 - name: secrets-full
   type: git
