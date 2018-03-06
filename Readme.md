@@ -56,7 +56,7 @@
 
 ## Introduction
 
-This repo provides a collaboration framework for operating cloudfoundry and services.
+This repo provides a collaboration framework for operating cloudfoundry and services at scale.
 
 The goal is to automate most (if not all) interactive operations of Bosh/CF API/Iaas APIs through concourse pipelines, while keeping volume of boilerplate code low, and limit skills prereqs required to contribute services automation.
 
