@@ -156,12 +156,12 @@ This sections describes the pipelines that COA generates and loads into concours
 
 ### per-root-deployment 
 
-* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml.erb): manages cf-app associated to a root-deployment
-* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml.erb): manages deployments associated to a root-deployment
+* [cf-apps-pipeline](concourse/pipelines/templates/cf-apps-pipeline.yml.erb): manages cf-apps associated to a root-deployment
+* [depls-pipeline](concourse/pipelines/templates/depls-pipeline.yml.erb): manages bosh deployments associated to a root-deployment
 * [init-pipeline](concourse/pipelines/templates/init-pipeline.yml.erb): initializes all pipelines related to a root-deployment
 * [news-pipeline](concourse/pipelines/templates/news-pipeline.yml.erb): notifies of new bosh release versions for a root-deployment  
-* [s3-br-upload-pipeline](concourse/pipelines/template/s3-br-upload-pipeline.yml.erb): to upload boshrelease used by this root deployment to S3
-* [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcell used by this root deployment to S3
+* [s3-br-upload-pipeline](concourse/pipelines/template/s3-br-upload-pipeline.yml.erb): to upload bosh releases used by this root deployment to S3
+* [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcells used by this root deployment to S3
 * [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml.erb): to ease secret repo management
 
 The following diagram illustrates the sequence of pipeline generation and loading 
