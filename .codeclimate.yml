@@ -1,0 +1,18 @@
+---
+version: "2"
+plugins:
+  rubocop:
+    enabled: true
+  reek:
+    enabled: true
+  fixme:
+    enabled: true
+  markdownlint:
+    enabled: true
+  shellcheck:
+    enabled: true
+  git-legal:
+    enabled: true
+exclude_patterns:
+  - .bundle/
+  - spec/**/*
