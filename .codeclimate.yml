@@ -16,3 +16,4 @@ plugins:
 exclude_patterns:
   - .bundle/
   - spec/**/*
+  - CHANGELOG.md
