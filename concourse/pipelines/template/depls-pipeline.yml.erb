@@ -166,7 +166,7 @@ resources:
     - name: main
       username: ((concourse-<%= depls %>-username))
       password: ((concourse-<%= depls %>-password))
-    <% CiDeploymentOverview.getTeams(all_ci_deployments)&.each do |team| %>
+    <% CiDeploymentOverview.teams(all_ci_deployments)&.each do |team| %>
     - name: <%= team %>
       username: ((concourse-<%= depls %>-username))
       password: ((concourse-<%= depls %>-password))
