@@ -1,4 +1,7 @@
 # cf-ops-automation (COA)
+[![Maintainability](https://api.codeclimate.com/v1/badges/98afd0def1915fd16f71/maintainability)](https://codeclimate.com/github/orange-cloudfoundry/cf-ops-automation/maintainability)
+[![Test Coverage](https://api.codeclimate.com/v1/badges/98afd0def1915fd16f71/test_coverage)](https://codeclimate.com/github/orange-cloudfoundry/cf-ops-automation/test_coverage)
+
 
 ### Table of Contents
 

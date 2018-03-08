@@ -15,3 +15,6 @@ RUN cd /usr/local && bundle install
 RUN curl "https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly_linux_amd64" -sfL -o /usr/local/bin/fly \
   && [ ${CONCOURSE_SHA} = $(shasum -a 256 /usr/local/bin/fly | cut -d' ' -f1) ] \
   && chmod +x /usr/local/bin/fly
+
+RUN curl -L "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64" > /usr/local/bin/cc-test-reporter \
+  && chmod +x /usr/local/bin/cc-test-reporter
