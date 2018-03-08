@@ -518,6 +518,7 @@ There is no yet public template sample. Orange employees can have a look to the 
 simply run [concourse-bootstrap.sh](scripts/concourse-bootstrap.sh) with the appropriate environment variable set. It loads the
 ```bootstrap-all-init-pipelines``` pipeline and triggers it.  
 
+This script must also be run when git is updated (branch or url)
 
 ```
 SECRETS=<path_to_your_secret_dir> FLY_TARGET=<your_target> ./concourse-bootstrap.sh
