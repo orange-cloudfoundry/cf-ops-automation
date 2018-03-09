@@ -138,7 +138,12 @@ jobs:
           - -ce
           - |
             fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+            cc-test-reporter before-build
             bundle exec rspec
+            cc-test-reporter after-build -d
+        params:
+          CC_TEST_REPORTER_ID: ((code-climate-test-reporter-id))
+          COVERAGE: true
 
   - name: integration-tests
     serial: true
