@@ -18,3 +18,8 @@ RUN curl "https://github.com/concourse/concourse/releases/download/v${CONCOURSE_
 
 RUN curl -L "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64" > /usr/local/bin/cc-test-reporter \
   && chmod +x /usr/local/bin/cc-test-reporter
+
+# remove old version of bundler to avoid confusion between bundler and bundle cmd
+#   bundler => old binary
+#   bundle => latest binary
+RUN rm -f /usr/local/bundle/bin/bundler
