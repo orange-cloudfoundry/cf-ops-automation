@@ -14,25 +14,41 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: hotfixes-merged
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-merged-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-merged-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-reference
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-reference-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-hotfixes
   type: git-branch-heads
   source:
-    uri: {{paas-templates-uri}}
-    branches: [master, hotfix-*,hf-*,HF-*]
+    uri: ((paas-templates-uri))
+    branches: [((paas-templates-reference-branch)), hotfix-*,hf-*,HF-*]
+    skip_ssl_verification: true
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 jobs:
 
 - name: update-merged-wip-features
+  serial_groups: [git]
   plan:
     - aggregate:
       - get: hotfixes-merged
@@ -45,11 +61,43 @@ jobs:
       get_params: {submodules: none}
       params:
         repository: paas-templates-hotfixes
-        merge: true
+        rebase: true
       on_failure:
         put: failure-alert
         params:
-          channel: {{slack-channel}}
+          channel: ((slack-channel))
           text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
+
+- name: reset-merged-hotfixes
+  serial_groups: [git]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: hotfixes-merged
+        params: { submodules: none}
+      - get: paas-templates-reference
+        params: { submodules: none}
+      - get: cf-ops-automation
+        params: { submodules: none}
+    - task: reset-wip
+      file: cf-ops-automation/concourse/tasks/git_reset_wip.yml
+      input_mapping: {reference-resource: paas-templates-reference}
+      output_mapping: {updated-git-resource: paas-templates-hotfixes-reseted}
+      params:
+        GIT_BRANCH_FILTER: hotfix-* hf-* HF-*
+        SKIP_SSL_VERIFICATION: true
+        GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
+
+    - put: hotfixes-merged
+      get_params: {submodules: none}
+      params:
+        repository: paas-templates-hotfixes-reseted
+        force: true

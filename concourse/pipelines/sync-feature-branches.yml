@@ -14,35 +14,35 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: features-or-wip-merged
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-merged-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-merged-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-reference
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-reference-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-reference-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-features
   type: git-branch-heads
   source:
-    uri: {{paas-templates-uri}}
-    branches: [develop, WIP-*,wip-*,feature-*, Feature-*]
+    uri: ((paas-templates-uri))
+    branches: [((paas-templates-reference-branch)), WIP-*,wip-*,feature-*, Feature-*]
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 jobs:
@@ -65,7 +65,7 @@ jobs:
       on_failure:
         put: failure-alert
         params:
-          channel: {{slack-channel}}
+          channel: ((slack-channel))
           text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
@@ -75,7 +75,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -94,6 +94,7 @@ jobs:
       params:
         GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
         SKIP_SSL_VERIFICATION: true
+        GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
 
     - put: features-or-wip-merged
       get_params: {submodules: none}
