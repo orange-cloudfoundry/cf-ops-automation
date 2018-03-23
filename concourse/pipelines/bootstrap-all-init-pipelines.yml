@@ -14,7 +14,7 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: weekday-morning
   type: cron-resource
@@ -26,23 +26,23 @@ resources:
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 jobs:
@@ -50,7 +50,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -72,9 +72,9 @@ jobs:
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
     params:
-      ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
-      FLY_USERNAME: {{concourse-micro-depls-username}}
-      FLY_PASSWORD:  {{concourse-micro-depls-password}}
+      ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
+      FLY_USERNAME: ((concourse-micro-depls-username))
+      FLY_PASSWORD:  ((concourse-micro-depls-password))
   - task: get-pipeline-teams
     input_mapping: {secrets: secrets-full}
     output_mapping: {ci-deployment-overview: concourse-teams}
@@ -112,16 +112,16 @@ jobs:
           echo "set-team -n $team_name --basic-auth-username=\"$FLY_USERNAME\" --basic-auth-password=\"$FLY_PASSWORD\" --non-interactive"  >> ${DEST_DIR}/flight-plan
           done
       params:
-        FLY_USERNAME: {{concourse-micro-depls-username}}
-        FLY_PASSWORD:  {{concourse-micro-depls-password}}
+        FLY_USERNAME: ((concourse-micro-depls-username))
+        FLY_PASSWORD:  ((concourse-micro-depls-password))
   - task: fly-into-concourse
     input_mapping: {fly-cmd: initialized-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: {{concourse-micro-depls-target}}
-      FLY_USERNAME: {{concourse-micro-depls-username}}
-      FLY_PASSWORD:  {{concourse-micro-depls-password}}
+      ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
+      FLY_USERNAME: ((concourse-micro-depls-username))
+      FLY_PASSWORD:  ((concourse-micro-depls-password))
 
 
 
@@ -129,7 +129,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
