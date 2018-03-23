@@ -5,7 +5,8 @@ class Deployment
 
   def initialize(deployment_name, details = {})
     @name = deployment_name
-    @details = details
+    @details = {}
+    @details = details unless details.nil?
   end
 
   def enabled?

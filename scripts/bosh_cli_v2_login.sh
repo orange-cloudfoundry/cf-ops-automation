@@ -9,7 +9,7 @@ echo "checking nslookup is available"
 which nslookup
 echo "nslookup found"
 
-function my_realpath { echo $(cd $(dirname $1); pwd)/$(basename $1); }
+my_realpath() { echo $(cd $(dirname $1); pwd)/$(basename $1); }
 
 if [ -n "$BOSH_CERT_FILE" ]
 then

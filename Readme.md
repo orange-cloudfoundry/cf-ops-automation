@@ -18,6 +18,7 @@
      * [Sample deployment topology](#sample-deployment-topology)
      * [Generated pipelines](#generated-pipelines)
   * [Template engine reference documentation](#template-engine-reference-documentation)
+     * [Multi deployer support](#multi-deployer-support)
      * [Resource lifecycle overview](#resource-lifecycle-overview)
      * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
      * [Iaas specifics support](#iaas-specifics-support)
@@ -179,6 +180,23 @@ The following diagram illustrates the sequence of pipeline generation and loadin
 ## Template engine reference documentation
 
 This section details the format supported by the templating engine in both the template repo and the secrets repo. 
+
+### Multi deployer support
+
+Using this feature for a deployment to aggregate several operation to multiple "deployer". Currently we support:
+ - bosh
+ - concourse pipeline
+
+There is no dependencies between deployer, it is processed independently.  
+ 
+#### Bosh deployer
+
+Files included in `template` dir, in a deployment, are used by `bosh-deployer` 
+
+#### Concourse pipeline deployer
+
+Files included in `concourse-pipeline-config` dir, in a deployment, are used by `concourse-deployer` 
+
 
 ### Resource lifecycle overview
 

@@ -22,7 +22,12 @@ class TemplateProcessor
     Dir[dir]&.each do |filename|
 
       puts "processing #{filename}"
-      output = ERB.new(File.read(filename), 0, '<>').result(load_context_into_a_binding)
+      begin
+        output = ERB.new(File.read(filename), 0, '<>').result(load_context_into_a_binding)
+      rescue NameError => name_error
+        raise NameError, "#{filename}: #{name_error}"
+      end
+
       # output = erb(filename, @context)
       puts output if config[:dump_output]
 
