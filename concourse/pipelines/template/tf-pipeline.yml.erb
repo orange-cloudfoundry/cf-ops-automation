@@ -7,7 +7,7 @@ resource_types:
 
 
 resources:
-
+<% unless all_ci_deployments.empty? %>
 - name: failure-alert
   type: slack-notification
   source:
@@ -39,7 +39,6 @@ resources:
     skip_ssl_verification: true
 
 
-<% unless all_ci_deployments.empty? %>
 # Used to get other deployments secrets (e.g. micro/master for mattermost/git) as well as shared secrets updates
 # This does not trigger automatically a new build, operators have to trigger it manually.
 #- name: secrets-full
@@ -129,8 +128,9 @@ jobs:
           params:
             repository: updated-terraform-state-secrets
             rebase: true
+<% else %>
+- name: this-is-an-empty-pipeline
 <% end %>
-
 
 groups:
 - name: <%= depls.capitalize %>

@@ -165,6 +165,9 @@ describe 'generate-depls' do
         it_behaves_like 'pipeline checker', 'dummy-depls-s3-br-upload-generated.yml', 'empty-s3-br-upload.yml'
       end
 
+      context 'when concourse pipeline is checked' do
+        it_behaves_like 'pipeline checker', 'dummy-depls-concourse-generated.yml', 'empty-concourse.yml'
+      end
     end
   end
 end
