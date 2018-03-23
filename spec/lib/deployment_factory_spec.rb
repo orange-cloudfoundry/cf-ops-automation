@@ -2,6 +2,8 @@ require 'rspec'
 require_relative '../../lib/deployment_factory'
 
 describe DeploymentFactory do
+  let(:root_deployment_name) { 'main_depls' }
+  let(:deployment_name) { 'my_deployment' }
 
   describe '#initialize' do
     it 'validates param'
@@ -28,17 +30,22 @@ describe DeploymentFactory do
   end
 
   describe '#load' do
-
     context 'when data is nil ' do
       it 'raise an error'
     end
 
-    context 'when data is empty ' do
-      it 'an empty hash is return'
+    context 'when a deployment does not have any details' do
+      let(:deployment_factory) do
+        described_class.new(
+          root_deployment_name,
+          nil
+        )
+      end
+      let(:loaded_deployments) { deployment_factory.load('deployment' => { deployment_name => nil }) }
+
+      it 'creates a deployment object with an empty details field' do
+        expect(loaded_deployments.first).to have_attributes(name: deployment_name, details: {})
+      end
     end
-
   end
-
-
-
 end

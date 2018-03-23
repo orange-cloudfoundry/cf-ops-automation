@@ -2,6 +2,7 @@ require 'fileutils'
 require 'yaml'
 require_relative '../lib/root_deployment_version'
 require_relative '../lib/root_deployment'
+require_relative '../lib/deployment_deployers_config'
 
 class DirectoryInitializer
   attr_reader :root_deployment_name, :secrets_dir, :template_dir
@@ -42,7 +43,7 @@ class DirectoryInitializer
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/cloud-config-tpl.yml"
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/runtime-config-tpl.yml"
 
-    RootDeploymentVersion.init_file( @root_deployment_name, {}, File.join(@template_dir, @root_deployment_name))
+    RootDeploymentVersion.init_file(@root_deployment_name, {}, File.join(@template_dir, @root_deployment_name))
     create_non_existing_files files_to_create
   end
 
@@ -52,7 +53,7 @@ class DirectoryInitializer
     dirs_to_create << "#{@template_dir}/#{@root_deployment_name}/#{deployment_name}"
     dirs_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}"
     create_non_existing_dirs dirs_to_create
-    generate_default_deployment_dependencies(deployment_name)
+    generate_default_bosh_deployment_dependencies(deployment_name)
   end
 
   def enable_deployment(deployment_name)
@@ -69,13 +70,11 @@ class DirectoryInitializer
 
   private
 
-  def generate_default_deployment_dependencies(deployment_name)
+  def generate_default_bosh_deployment_dependencies(deployment_name)
     deployment = Deployment.default(deployment_name)
     filename = File.join(@template_dir, @root_deployment_name, deployment_name, 'deployment-dependencies.yml')
-    file_content = {'deployment' => { deployment_name => deployment.details}}
-    File.open(filename, 'w') {
-        |file| file << YAML.dump(file_content)
-    }
+    file_content = { 'deployment' => { deployment_name => deployment.details} }
+    File.open(filename, 'w') { |file| file << YAML.dump(file_content) }
   end
 
   def generate_empty_map_yaml(filename)

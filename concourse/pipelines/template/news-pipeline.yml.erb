@@ -16,7 +16,8 @@ resource_types:
       repository: cftoolsmiths/cron-resource
 
 resources:
-
+<% enabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='enabled'} %>
+<% unless enabled_deployments.empty? %>
 - name: failure-alert
   type: slack-notification
   source:
@@ -54,6 +55,15 @@ resources:
     tag_filter: {{cf-ops-automation-tag-filter}}
     skip_ssl_verification: true
 
+- name: monday-morning
+  type: cron-resource
+  source:
+    expression: 30 8 * * 1
+    location: "Europe/Paris"
+    fire_immediately: true
+<% end %>
+
+
 <% uniq_releases= {} %>
 <% all_dependencies.sort.each do |name,boshrelease| %>
 <% boshrelease["releases"]&.each do |release, info|  %>
@@ -75,20 +85,16 @@ resources:
   <% end %>
 <% end %>
 
-- name: monday-morning
-  type: cron-resource
-  source:
-    expression: 30 8 * * 1
-    location: "Europe/Paris"
-    fire_immediately: true
-
-
 jobs:
 
 #      - get: bosh-stemcell
 #        version: { version: {{stemcell-version}} }
 #        trigger: true
 #        attempts: 3
+<% if enabled_deployments.empty? %>
+- name: this-is-an-empty-pipeline
+
+<% else %>
 
 <% uniq_releases.sort.each do |release, info|  %>
 
@@ -148,4 +154,5 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
+<% end %>
 <% end %>

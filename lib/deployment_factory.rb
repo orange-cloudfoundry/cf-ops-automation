@@ -3,15 +3,19 @@ require_relative 'deployment'
 class DeploymentFactory
   attr_reader :version_reference, :root_deployment_name
 
+
   def initialize(root_deployment_name, version_reference = {})
-    @version_reference = version_reference
+    @version_reference = {}
+    @version_reference = version_reference unless version_reference.nil?
     @root_deployment_name = root_deployment_name
     validate
   end
 
   def load_file(filename)
     raise "file not found: #{filename}" unless File.exist?(filename)
-    load(YAML.load_file(filename))
+    puts "processing #{filename}"
+    yaml_file = YAML.load_file(filename) || {}
+    load(yaml_file)
   end
 
   def load(data = {})
@@ -20,7 +24,7 @@ class DeploymentFactory
       update_deployment_version!(deployment_details)
       deployments << Deployment.new(deployment_name, deployment_details)
     end
-    raise "Invalid data. Missing root: 'deployment'" if deployments.empty?
+    raise "Invalid data. Missing root: 'deployment' or '<deployment_name>'" if deployments.empty?
     deployments
   end
 
@@ -33,13 +37,15 @@ class DeploymentFactory
   private
 
   def update_stemcell_version!(deployment_details)
-    deployment_details['stemcells'].each do |a_stemcell, _|
+    return if deployment_details.nil?
+    deployment_details['stemcells']&.each do |a_stemcell, _|
       raise "Invalid stemcell: expected <#{@version_reference['stemcells-name'] || 'version reference not empty'}> - Found <#{a_stemcell}>" if a_stemcell != @version_reference['stemcell-name']
       version = @version_reference['stemcell-version']
     end
   end
 
   def update_boshrelease_version!(deployment_details)
+    return if deployment_details.nil?
     boshrelease_list = deployment_details['releases']
     boshrelease_list&.each do |a_release, _|
       version = version_reference[a_release + '-version']

@@ -15,7 +15,7 @@ class RootDeploymentVersion
 
   def self.load_file(filename)
     raise "file not found: #{filename}" unless File.exist?(filename)
-    loaded_versions = YAML.load_file(filename)
+    loaded_versions = YAML.load_file(filename) || {}
     if loaded_versions
       name = loaded_versions[DEPLOYMENT_NAME]
     else

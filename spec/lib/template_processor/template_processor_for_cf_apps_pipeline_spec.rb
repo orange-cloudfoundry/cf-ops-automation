@@ -2,8 +2,8 @@ require 'rspec'
 require 'fileutils'
 require 'tmpdir'
 
-require_relative '../../lib/template_processor'
-require_relative '../../lib/ci_deployment_overview'
+require_relative '../../../lib/template_processor'
+require_relative '../../../lib/ci_deployment_overview'
 
 describe 'CfAppsPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }

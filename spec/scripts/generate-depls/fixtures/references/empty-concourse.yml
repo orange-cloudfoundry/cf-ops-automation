@@ -1,23 +1,18 @@
 ---
 resource_types:
-  - name: slack-notification
-    type: docker-image
-    source:
-      repository: cfcommunity/slack-notification-resource
-
   - name: concourse-pipeline
     type: docker-image
     source:
       repository: concourse/concourse-pipeline-resource
 
-  - name: cron-resource
+  - name: slack-notification
     type: docker-image
     source:
-      repository: cftoolsmiths/cron-resource
+      repository: cfcommunity/slack-notification-resource
 
 resources:
-
 
 jobs:
 
 - name: this-is-an-empty-pipeline
+

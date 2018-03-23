@@ -27,19 +27,6 @@ resources:
   source:
     url: {{slack-webhook}}
 
-
-#- name: bosh-stemcell
-#  type: bosh-io-stemcell
-#  source:
-#    name: {{stemcell-name}}
-
-#- name: secrets-complete
-#  type: git
-#  source:
-#    uri: {{secrets-uri}}
-#    branch: master
-#    skip_ssl_verification: true
-
 - name: paas-templates-full
   type: git
   source:
@@ -55,14 +42,6 @@ resources:
     tag_filter: {{cf-ops-automation-tag-filter}}
     skip_ssl_verification: true
 
-
-- name: ntp_boshrelease
-  
-  type: bosh-io-release
-  source:
-    repository: cloudfoundry-community/ntp-release
-  
-
 - name: monday-morning
   type: cron-resource
   source:
@@ -70,14 +49,13 @@ resources:
     location: "Europe/Paris"
     fire_immediately: true
 
+- name: ntp_boshrelease
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/ntp-release
+
 
 jobs:
-
-#      - get: bosh-stemcell
-#        version: { version: {{stemcell-version}} }
-#        trigger: true
-#        attempts: 3
-
 
 - name: check-ntp_boshrelease
   on_failure:
