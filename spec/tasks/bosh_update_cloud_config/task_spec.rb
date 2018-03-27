@@ -17,14 +17,18 @@ describe 'bosh_update_cloud_config task' do
       FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-vars.yml'))
       FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operators.yml'))
 
+      fly_cli_environment = {
+        'BOSH_TARGET' => 'https://dummy-bosh',
+        'BOSH_CLIENT' => 'aUser',
+        'BOSH_CLIENT_SECRET' => 'aPassword',
+        'BOSH_CA_CERT' => 'secrets/shared/certs/internal_paas-ca/server-ca.crt'
+      }
+
       @output = execute('-c concourse/tasks/bosh_update_cloud_config.yml ' \
         '-i script-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@config_manifest} ", \
-                        'BOSH_TARGET' => 'https://dummy-bosh',
-                        'BOSH_CLIENT' => 'aUser',
-                        'BOSH_CLIENT_SECRET' => 'aPassword',
-                        'BOSH_CA_CERT' => 'secrets/shared/certs/internal_paas-ca/server-ca.crt' )
+        fly_cli_environment )
 
     end
 
