@@ -1,6 +1,7 @@
 
 # require 'spec_helper.rb'
 require 'yaml'
+require 'tmpdir'
 
 describe 'generate_manifest task' do
   context 'when no template are detected' do

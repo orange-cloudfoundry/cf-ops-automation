@@ -1,6 +1,7 @@
 # encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
+require 'tmpdir'
 
 describe 'spiff_pre_deploy task' do
 

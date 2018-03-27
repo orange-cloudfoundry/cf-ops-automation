@@ -1,4 +1,5 @@
 require 'rspec'
+require 'tmpdir'
 require_relative '../../lib/root_deployment'
 require_relative '../../lib/directory_initializer'
 
