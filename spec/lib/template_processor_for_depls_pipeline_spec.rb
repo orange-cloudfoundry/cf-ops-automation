@@ -1,5 +1,6 @@
 require 'rspec'
 require 'fileutils'
+require 'tmpdir'
 
 require_relative '../../lib/template_processor'
 require_relative '../../lib/ci_deployment_overview'

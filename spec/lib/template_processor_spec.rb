@@ -1,5 +1,6 @@
 require 'rspec'
 require 'fileutils'
+require 'tmpdir'
 
 require_relative '../../lib/template_processor'
 

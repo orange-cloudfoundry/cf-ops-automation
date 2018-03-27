@@ -4,6 +4,7 @@ require 'digest'
 require 'yaml'
 require 'open3'
 require 'rspec'
+require 'tmpdir'
 require_relative 'test_helper'
 
 # require 'spec_helper.rb'

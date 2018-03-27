@@ -1,6 +1,7 @@
 # encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
+require 'tmpdir'
 
 describe 'list_used_ci_team task' do
   let(:teams_file) { File.join(@ci_deployment_overview, 'teams.yml') }
