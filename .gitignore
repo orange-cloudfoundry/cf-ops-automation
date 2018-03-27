@@ -18,3 +18,5 @@ bin/
 .bundle/
 out/
 /coverage/
+
+spec/tasks/git_reset_wip/**
