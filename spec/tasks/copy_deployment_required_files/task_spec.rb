@@ -1,6 +1,7 @@
 # encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
+require 'tmpdir'
 
 describe 'copy_deployment_required_files task' do
 

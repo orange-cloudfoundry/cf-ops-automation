@@ -1,6 +1,7 @@
 require 'rspec'
 require 'yaml'
 require 'fileutils'
+require 'tmpdir'
 require_relative '../../lib/directory_initializer'
 require_relative '../../lib/root_deployment_version'
 

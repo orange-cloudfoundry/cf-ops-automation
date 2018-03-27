@@ -1,6 +1,7 @@
 # encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
+require 'tmpdir'
 
 describe 'bosh_update_runtime_config task' do
 

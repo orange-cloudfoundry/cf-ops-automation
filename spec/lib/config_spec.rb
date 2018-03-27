@@ -1,6 +1,7 @@
 require 'rspec'
 require 'yaml'
 require 'fileutils'
+require 'tmpdir'
 require_relative '../../lib/config'
 
 describe Config do
