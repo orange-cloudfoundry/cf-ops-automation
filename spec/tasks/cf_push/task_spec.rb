@@ -9,7 +9,7 @@ describe 'cf push task' do
     it 'is not possible yet (credentials leak)'
   end
 
-  context 'when no script is detected' do
+  context 'when no custom pre-push script is detected' do
 
     generated_files = nil
     before(:context) do
@@ -34,7 +34,7 @@ describe 'cf push task' do
 
   end
 
-  context 'when a script is detected' do
+  context 'when a custom pre-push script script is detected' do
     generated_files = nil
     before(:context) do
       generated_files = Dir.mktmpdir
@@ -48,14 +48,10 @@ describe 'cf push task' do
       #                   'CUSTOM_SCRIPT_DIR' => 'template-resource/a-root-depls',
       #                   'SECRETS_DIR' => 'credentials-resource/a-root-depls')
     end
+
     after(:context) do
       FileUtils.rm_rf generated_files
     end
-
-    it 'displays an execution message'
-    # do
-    #    expect(@output).to include('pre CF push script detected')
-    # end
 
     %w[GENERATE_DIR BASE_TEMPLATE_DIR SECRETS_DIR CF_API_URL CF_USERNAME CF_PASSWORD CF_ORG CF_SPACE CF_MANIFEST].each do |env_var|
       it "adds #{env_var} to available environment variables"
@@ -63,6 +59,13 @@ describe 'cf push task' do
       #   expect(@output).to include("variable #{env_var} is available")
       # end
     end
+
+    it 'displays an execution message'
+    # do
+    #    expect(@output).to include('pre CF push script detected')
+    # end
+
+    it 'executes the detected custom pre-push script before executing the cf push command'
 
     it 'adds additional resource to generated'
   end
