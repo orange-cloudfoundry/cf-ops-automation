@@ -109,8 +109,8 @@ jobs:
       params:
         build: cf-ops-automation-dependencies
         build_args: &docker_build_args
-          CONCOURSE_VERSION: 3.9.1
-          CONCOURSE_SHA: dd6408aa53c11da2fd0a5feff6c34e924906e8faf75f9e06e6629b08997660b2
+          CONCOURSE_VERSION: 3.9.2
+          CONCOURSE_SHA: 12eb8f2b49ec7fe18582b58177f65c5c1c95bc6bb2c942bd44956b1715d33427
 
 
   - name: test
@@ -131,6 +131,8 @@ jobs:
         platform: linux
         inputs:
         - name: cf-ops-automation
+        outputs:
+        - name: test-reports
         run:
           dir: cf-ops-automation
           path: /bin/bash
@@ -139,7 +141,7 @@ jobs:
           - |
             fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
             cc-test-reporter before-build
-            bundle exec rspec
+            bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
             cc-test-reporter after-build -d
         params:
           CC_TEST_REPORTER_ID: ((code-climate-test-reporter-id))
