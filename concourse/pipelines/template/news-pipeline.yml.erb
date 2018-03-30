@@ -63,7 +63,6 @@ resources:
     fire_immediately: true
 <% end %>
 
-
 <% uniq_releases= {} %>
 <% all_dependencies.sort.each do |name,boshrelease| %>
 <% boshrelease["releases"]&.each do |release, info|  %>
@@ -90,7 +89,7 @@ jobs:
 #      - get: bosh-stemcell
 #        version: { version: {{stemcell-version}} }
 #        trigger: true
-#        attempts: 3
+#        attempts: 2
 <% if enabled_deployments.empty? %>
 - name: this-is-an-empty-pipeline
 
@@ -111,7 +110,7 @@ jobs:
       - get: monday-morning
         trigger: true
       - get: <%= release %>
-        attempts: 3
+        attempts: 2
         params: {tarball: false}
       - get: paas-templates-full
         params: { submodules: none}

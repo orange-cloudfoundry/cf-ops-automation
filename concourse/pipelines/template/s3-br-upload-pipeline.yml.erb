@@ -76,7 +76,7 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
     - get: weekday-morning
       trigger: true
   - task: generate-<%= depls %>-flight-plan
@@ -124,13 +124,13 @@ jobs:
   plan:
     - aggregate:
       - get: <%= release %>
-        attempts: 3
+        attempts: 2
         version: {version: ((<%= release %>-version))}
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
         params: { submodules: none}
-        attempts: 3
+        attempts: 2
         passed: [ init-concourse-boshrelease-for-<%= depls %> ]
     - task: generate-<%= release %>-name
       input_mapping: {release: <%= release %>}
@@ -170,13 +170,13 @@ jobs:
   plan:
     - aggregate:
       - get: <%= release %>
-        attempts: 3
+        attempts: 2
         version: every
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
         params: { submodules: none}
-        attempts: 3
+        attempts: 2
         passed: [ upload-current-<%= release %> ]
     - task: generate-<%= release %>-name
       input_mapping: {release: <%= release %>}

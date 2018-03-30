@@ -181,7 +181,7 @@ jobs:
 
     - aggregate:
       - task: update-cloud-config-for-dummy-depls
-        attempts: 3
+        attempts: 2
         input_mapping:
           script-resource: cf-ops-automation
           secrets: secrets-dummy-depls
@@ -215,7 +215,7 @@ jobs:
               rebase: true
 
       - task: update-runtime-config-for-dummy-depls
-        attempts: 3
+        attempts: 2
         input_mapping:
           script-resource: cf-ops-automation
           secrets: secrets-dummy-depls
