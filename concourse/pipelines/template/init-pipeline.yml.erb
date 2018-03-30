@@ -73,15 +73,15 @@ jobs:
   - aggregate:
     - get: paas-templates-full
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: false
     - get: secrets-full
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: false
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: false
 
   - task: generate-<%= depls %>-pipelines

@@ -40,7 +40,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
     - get: weekday-morning
       trigger: true
   - task: generate-dummy-depls-flight-plan

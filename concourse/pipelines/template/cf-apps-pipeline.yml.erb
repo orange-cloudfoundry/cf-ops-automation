@@ -154,7 +154,7 @@ jobs:
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= cf_app_info["base-dir"] %>/template
     - task: push-<%= app_name %>
-      attempts: 3
+      attempts: 2
       input_mapping: {scripts-resource: cf-ops-automation, templates-resource: paas-template-<%= app_name %>, credentials-resource: secrets-<%= app_name %>, additional-resource: release-manifest}
       output_mapping: {generated-files: final-release-manifest}
       file: cf-ops-automation/concourse/tasks/cf_push.yml

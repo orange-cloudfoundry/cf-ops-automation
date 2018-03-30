@@ -54,7 +54,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
     - get: weekday-morning
       trigger: true
   - task: generate-simple-depls-flight-plan
@@ -102,7 +102,7 @@ jobs:
   plan:
   - aggregate:
     - get: ntp_boshrelease
-      attempts: 3
+      attempts: 2
       version:
         version: "((ntp_boshrelease-version))"
       trigger: true
@@ -111,7 +111,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
       passed:
       - init-concourse-boshrelease-for-simple-depls
   - task: generate-ntp_boshrelease-name
@@ -156,7 +156,7 @@ jobs:
   plan:
   - aggregate:
     - get: ntp_boshrelease
-      attempts: 3
+      attempts: 2
       version: every
       trigger: true
       params:
@@ -164,7 +164,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
       passed:
       - upload-current-ntp_boshrelease
   - task: generate-ntp_boshrelease-name
