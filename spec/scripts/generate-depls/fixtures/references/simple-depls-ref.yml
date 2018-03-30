@@ -248,7 +248,7 @@ jobs:
 
     - aggregate:
       - task: update-cloud-config-for-simple-depls
-        attempts: 3
+        attempts: 2
         input_mapping:
           script-resource: cf-ops-automation
           secrets: secrets-simple-depls
@@ -282,7 +282,7 @@ jobs:
               rebase: true
 
       - task: update-runtime-config-for-simple-depls
-        attempts: 3
+        attempts: 2
         input_mapping:
           script-resource: cf-ops-automation
           secrets: secrets-simple-depls
@@ -333,7 +333,7 @@ jobs:
       - get: bosh-stemcell
         version: { path: "((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" }
         trigger: true
-        attempts: 3
+        attempts: 2
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-simple-depls-generated]
@@ -344,7 +344,7 @@ jobs:
         version: { version: ((ntp_boshrelease-version)) }
         
         trigger: true
-        attempts: 3
+        attempts: 2
       
       - get: secrets-ntp
         params: { submodules: none}
@@ -433,7 +433,7 @@ jobs:
             echo '---' > result-dir/vars/0-empty-vars.yml
 
     - put: ntp-deployment
-      attempts: 3
+      attempts: 2
       params:
         manifest: final-release-manifest/ntp.yml
 #        source_file: bosh-generated-config/bosh_config.json
@@ -600,11 +600,11 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
 #      trigger: true
     - get: secrets-full
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
 #      trigger: true
   - task: generate-simple-depls-flight-plan
     output_mapping: {result-dir: init-simple-depls-plan}
@@ -652,26 +652,26 @@ jobs:
       params: { submodules: none}
     - get: paas-template-simple-depls
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
     - get: paas-templates-wip
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
       trigger: true
     - get: secrets-simple-depls
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: true
     - get: paas-templates-full
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
     - get: secrets-full
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
   - task: generate-simple-depls-pipeline
     input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}

@@ -269,7 +269,7 @@ jobs:
 
     - aggregate:
       - task: update-cloud-config-for-delete-depls
-        attempts: 3
+        attempts: 2
         input_mapping:
           script-resource: cf-ops-automation
           secrets: secrets-delete-depls
@@ -306,7 +306,7 @@ jobs:
               repository: updated-cloud-config
               rebase: true
       - task: update-runtime-config-for-delete-depls
-        attempts: 3
+        attempts: 2
         input_mapping:
           script-resource: cf-ops-automation
           secrets: secrets-delete-depls

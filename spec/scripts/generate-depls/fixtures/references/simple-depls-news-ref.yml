@@ -70,7 +70,7 @@ jobs:
       - get: monday-morning
         trigger: true
       - get: ntp_boshrelease
-        attempts: 3
+        attempts: 2
         params: {tarball: false}
       - get: paas-templates-full
         params: { submodules: none}

@@ -75,12 +75,12 @@ jobs:
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
     - get: secrets-full
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
     - get: anonymized-secrets
-      attempts: 3
+      attempts: 2
 
   - task: anonymized-secrets
     input_mapping: {script-resource: cf-ops-automation,secrets: secrets-full}

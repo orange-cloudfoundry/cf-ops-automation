@@ -54,7 +54,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
     - get: weekday-morning
       trigger: true
   - task: generate-simple-depls-flight-plan
@@ -101,7 +101,7 @@ jobs:
   plan:
   - aggregate:
     - get: bosh-openstack-kvm-ubuntu-trusty-go_agent
-      attempts: 3
+      attempts: 2
       version:
         version: "((stemcell-version))"
       trigger: true
@@ -111,7 +111,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
       passed:
       - init-concourse-stemcells-for-simple-depls
   - put: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
@@ -129,7 +129,7 @@ jobs:
   plan:
   - aggregate:
     - get: bosh-openstack-kvm-ubuntu-trusty-go_agent
-      attempts: 3
+      attempts: 2
       version: every
       trigger: true
       params:
@@ -138,7 +138,7 @@ jobs:
     - get: cf-ops-automation
       params:
         submodules: none
-      attempts: 3
+      attempts: 2
       passed:
       - upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent
   - put: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3

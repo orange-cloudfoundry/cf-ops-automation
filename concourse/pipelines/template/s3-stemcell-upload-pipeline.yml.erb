@@ -69,7 +69,7 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
     - get: weekday-morning
       trigger: true
   - task: generate-<%= depls %>-flight-plan
@@ -116,13 +116,13 @@ jobs:
   plan:
     - aggregate:
       - get: <%= stemcell %>
-        attempts: 3
+        attempts: 2
         version: {version: ((stemcell-version))}
         trigger: true
         params: {tarball: true, preserve_filename: true}
       - get: cf-ops-automation
         params: { submodules: none}
-        attempts: 3
+        attempts: 2
         passed: [ init-concourse-stemcells-for-<%= depls %> ]
     - put: <%= stemcell %>-s3
       params:
@@ -141,13 +141,13 @@ jobs:
   plan:
     - aggregate:
       - get: <%= stemcell %>
-        attempts: 3
+        attempts: 2
         version: every
         trigger: true
         params: {tarball: true, preserve_filename: true}
       - get: cf-ops-automation
         params: { submodules: none}
-        attempts: 3
+        attempts: 2
         passed: [ upload-current-<%= stemcell %> ]
     - put: <%= stemcell %>-s3
       params:
