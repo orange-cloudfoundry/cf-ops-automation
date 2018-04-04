@@ -85,16 +85,17 @@ jobs:
   plan:
   - aggregate:
     - get: paas-templates-<%= name %>
-      params: { submodules: none}
-      attempts: 3
+      <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
+      params: { submodules: <%= current_git_submodule || 'none' %>}
+      attempts: 2
       trigger: true
     - get: secrets-<%= name %>
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
-      attempts: 3
+      attempts: 2
       trigger: false
 
   - task: spruce-processing-<%= name %>
