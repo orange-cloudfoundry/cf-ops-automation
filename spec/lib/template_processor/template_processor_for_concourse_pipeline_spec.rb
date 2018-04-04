@@ -298,7 +298,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 SPRUCE_FILE_BASE_PATH: credentials-resource/#{root_deployment_name}/#{name}
                 YML_TEMPLATE_DIR: additional-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}
                 YML_FILES: |
-                    ./credentials-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}/secrets.yml
+                    ./credentials-resource/#{root_deployment_name}/#{name}/secrets/secrets.yml
                     ./credentials-resource/shared/secrets.yml
                 CUSTOM_SCRIPT_DIR: additional-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}
                 IAAS_TYPE: ((iaas-type))
@@ -396,7 +396,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                  pipelines:
                  - name: #{root_deployment_name}-#{name}
                    team: main
-                   config_file: final-#{name}-pipeline/interpolated-#{root_deployment_name}-#{name}.yml
+                   config_file: final-#{name}-pipeline/interpolated-#{name}.yml
           YAML
         end
         YAML.safe_load my_yaml
