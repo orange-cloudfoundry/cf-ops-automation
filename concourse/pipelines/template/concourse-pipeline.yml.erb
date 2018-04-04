@@ -103,11 +103,9 @@ jobs:
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
       SPRUCE_FILE_BASE_PATH: credentials-resource/<%= "#{depls}/#{name}" %>
-#TODO: discuss if we share the same secrets dir (ie secrets/secrets.yml) or a secrets per deployer
-#for now, we choose a secrets per deployer
       YML_TEMPLATE_DIR: additional-resource/<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
       YML_FILES: |
-          ./credentials-resource/<%= depls %>/<%= name %>/<%= DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME %>/secrets.yml
+          ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
           ./credentials-resource/shared/secrets.yml
       CUSTOM_SCRIPT_DIR: additional-resource/<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
       IAAS_TYPE: ((iaas-type))
@@ -127,55 +125,19 @@ jobs:
       SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
       MANIFEST_NAME: <%= name %>.yml
   - task: bosh-interpolate-pipeline-with-ops-and-vars-files
-# TODO: replace with bosh task
-    # this task is required as long as all deployments still don't use ops/vars files
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= name %>}
     output_mapping: {result-dir: final-<%= name %>-pipeline}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: governmentpaas/bosh-cli-v2
-      inputs:
-        - name: bosh-inputs
-        - name: secrets
-        - name: scripts-resource
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          ls -lrt bosh-inputs
-          VARS_FILES=""
-          OPS_FILES=""
-          if [ -z "BOSH_YAML_FILE" ]
-          then
-          echo "ERROR: missing environment variable: BOSH_YAML_FILE"
-          exit 1
-          fi
-          for a_vars_file in $(ls ./bosh-inputs/*${VARS_FILES_SUFFIX}); do
-          VARS_FILES="-l ${a_vars_file} ${VARS_FILES}"
-          done
-          for an_ops_file in $(ls ./bosh-inputs/*${OPS_FILES_SUFFIX}); do
-          OPS_FILES="-o ${an_ops_file} ${OPS_FILES}"
-          done
-          echo "Operators detected: <${OPS_FILES}>"
-          echo "Vars files detected: <${VARS_FILES}>"
-          INTERPOLATED_FILE="interpolated-${BOSH_YAML_FILE}"
-          bosh -n int ${VARS_FILES} ${OPS_FILES} bosh-inputs/${BOSH_YAML_FILE} > result-dir/${INTERPOLATED_FILE}
-      params:
-         VARS_FILES_SUFFIX: vars.yml
-         OPS_FILES_SUFFIX:  operators.yml
-         BOSH_YAML_FILE: <%= pipeline_name %>.yml
+    file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
+    params:
+       VARS_FILES_SUFFIX: vars.yml
+       OPS_FILES_SUFFIX:  operators.yml
+       BOSH_YAML_FILE: <%= name %>.yml
   - put: concourse-for-<%= depls %>
     params:
       pipelines:
       - name: <%= pipeline_name %>
         team: <%= 'main' %>
-        config_file: final-<%= name %>-pipeline/interpolated-<%= pipeline_name %>.yml
+        config_file: final-<%= name %>-pipeline/interpolated-<%= name %>.yml
   - task: execute-<%= name %>-post-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-<%= name %>-pipeline}
     output_mapping: {generated-files: post-deploy-result}

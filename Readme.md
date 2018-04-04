@@ -197,6 +197,9 @@ Files included in `template` dir, in a deployment, are used by `bosh-deployer`
 
 Files included in `concourse-pipeline-config` dir, in a deployment, are used by `concourse-deployer` 
 
+The base concourse file name should named like the directory and end with `.yml`
+
+By default, this pipeline is not enabled, you need to activate it. 
 
 ### Resource lifecycle overview
 
