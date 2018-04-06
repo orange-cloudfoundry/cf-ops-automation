@@ -1,0 +1,22 @@
+- type: replace
+  path: /instance_groups/-
+  value:
+    name: ntpd
+      azs: [z1]
+      instances: 1
+      jobs:
+      - name: ntpd
+        release: ntp
+        properties:
+          ntp_conf: |
+            server 0.us.pool.ntp.org
+            server 1.us.pool.ntp.org
+            server 2.us.pool.ntp.org
+            restrict default kod nomodify notrap nopeer noquery
+            restrict -6 default kod nomodify notrap nopeer noquery
+            restrict 127.0.0.0 mask 255.0.0.0
+            restrict -6 ::1
+      vm_type: default
+      stemcell: default
+      networks:
+      - name: default

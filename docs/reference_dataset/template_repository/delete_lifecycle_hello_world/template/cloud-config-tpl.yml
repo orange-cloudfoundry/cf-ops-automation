@@ -1,0 +1,88 @@
+
+azs:
+- name: z1
+  cloud_properties:
+    availability_zone: nova
+- name: z2
+  cloud_properties:
+    availability_zone: nova
+
+# openstack flavors for bosh 2 =================================================
+vm_types:
+
+- name: small
+
+- name: default
+
+- name: large
+
+- name: xlarge
+
+- name: xxlarge
+
+- name: worker
+
+# openstack disk sizes for bosh 2 =================================================
+disk_types:
+- name: default
+  disk_size: 3000
+
+- name: small_disk
+  disk_size: 3000
+
+- name: large
+  disk_size: 70_000
+
+- name: xlarge
+  disk_size: 110_000
+
+- name: xlarge-performant
+  disk_size: 200_000
+
+- name: xxlarge-performant
+  disk_size: 400_000
+
+- name: database
+  disk_size: 20_000
+
+#  bosh 2 networks =================================================
+networks:
+
+- name: net-floating
+  type: vip
+  cloud_properties:
+    security_groups:
+    - tf-public-https-sec
+
+- name: floating-boshcli
+  type: vip
+  cloud_properties:
+    security_groups:
+    - tf-public-boshcli-secgroup
+
+- name: net-bosh-2
+  type: manual
+  subnets:
+  - range: 192.168.116.0/24
+    gateway: 192.168.116.1
+    dns: [192.168.116.155,192.168.116.165]
+    az: z1
+    reserved:
+    - 192.168.116.1 - 192.168.116.20  # <-- exclude dhcp address (see terraform tf_bosh_2 config)
+    static:
+    - 192.168.116.21 - 192.168.116.200  # <-- all static ip
+
+#shared compilation network
+- name: compilation-network
+  type: dynamic
+  subnets:
+  - azs:
+    - z1
+    - z2
+
+compilation:
+  workers: 2
+  reuse_compilation_vms: true
+  az: z1
+  vm_type: large
+  network: compilation-network
