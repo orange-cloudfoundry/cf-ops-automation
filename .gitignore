@@ -22,3 +22,5 @@ out/
 spec/tasks/git_reset_wip/**
 /Readme.md.toc.*
 /Readme.md.orig.*
+
+reference_dataset_output_dir

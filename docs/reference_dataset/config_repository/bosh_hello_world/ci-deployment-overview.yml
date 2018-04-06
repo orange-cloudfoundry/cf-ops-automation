@@ -1,0 +1,11 @@
+---
+ci-deployment:
+  bosh_hello_world:
+    target_name: TO_BE_DEFINED
+    pipelines:
+      bosh_hello_world-generated:
+        vars_files:
+        - bosh_hello_world/bosh_hello_world-versions.yml
+      bosh_hello_world-cf-apps-generated:
+        vars_files:
+        - bosh_hello_world/bosh_hello_world-versions.yml
