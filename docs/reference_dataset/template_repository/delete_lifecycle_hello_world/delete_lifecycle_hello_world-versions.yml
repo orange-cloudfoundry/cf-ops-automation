@@ -1,0 +1,8 @@
+---
+deployment-name: bosh_hello_world
+
+stemcell-version: "3468.25"
+stemcell-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
+
+nginx-boshrelease-version: "1.12.2"
+ntp-boshrelease-version: "4"

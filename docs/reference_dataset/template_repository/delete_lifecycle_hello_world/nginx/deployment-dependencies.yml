@@ -1,0 +1,12 @@
+---
+deployment:
+  nginx:
+    stemcells:
+      bosh-openstack-kvm-ubuntu-trusty-go_agent: ''
+    releases:
+      nginx:
+        base_location: https://bosh.io/d/github.com/
+        repository: cloudfoundry-community/nginx-release
+      ntp:
+        base_location: https://bosh.io/d/github.com/
+        repository: cloudfoundry-community/ntp-release
