@@ -57,12 +57,6 @@ describe DirectoryInitializer do
       it 'create a ci-deployment-overview.yml in new root deployment' do
         expect(File).to exist("#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml")
       end
-
-      it 'create meta and secrets files in new root deployment' do
-        expect(Dir.exist?("#{secrets_dir}/#{root_deployment_name}/secrets")).to be_truthy
-        expect(File.exist?("#{secrets_dir}/#{root_deployment_name}/secrets/secrets.yml")).to be_truthy
-        expect(File.exist?("#{secrets_dir}/#{root_deployment_name}/secrets/meta.yml")).to be_truthy
-      end
     end
 
     context 'when files are generated with default value' do
@@ -102,6 +96,50 @@ describe DirectoryInitializer do
         versions = RootDeploymentVersion.load_file("#{template_dir}/#{root_deployment_name}/#{root_deployment_name}-versions.yml")
         expect(versions).not_to be_nil
       end
+    end
+  end
+
+  describe 'add_deployment' do
+    let(:root_deployment_name) { 'dummy-depls' }
+    let(:my_deployment_name) { 'autosleep' }
+    let(:init){
+      subject.setup_templates!
+      subject.setup_secrets!
+    }
+
+    before do
+      init
+      subject.add_deployment(my_deployment_name)
+    end
+
+    it 'creates a deployment specific template dir' do
+      expect(Dir).to exist("#{template_dir}/#{root_deployment_name}/#{my_deployment_name}")
+    end
+
+    it 'creates a deployment specific secrets dir' do
+      expect(Dir).to exist("#{secrets_dir}/#{root_deployment_name}/#{my_deployment_name}")
+    end
+
+    it 'creates a deployment specific secrets/secrets dir' do
+      expect(Dir).to exist("#{secrets_dir}/#{root_deployment_name}/#{my_deployment_name}/secrets")
+    end
+
+    it 'creates a deployment specific secrets/meta.yml file' do
+      expect(File).to exist("#{secrets_dir}/#{root_deployment_name}/#{my_deployment_name}/secrets/meta.yml")
+    end
+
+    it 'creates a deployment specific secrets/secrets.yml file' do
+      expect(File).to exist("#{secrets_dir}/#{root_deployment_name}/#{my_deployment_name}/secrets/secrets.yml")
+    end
+
+    it 'creates a deployment specific secrets/meta.yml that is valid' do
+      secrets_meta = YAML.load_file("#{secrets_dir}/#{root_deployment_name}/#{my_deployment_name}/secrets/meta.yml")
+      expect(secrets_meta).to be_falsey
+    end
+
+    it 'creates a deployment specific secrets/secrets.yml that is valid' do
+      secrets_secrets = YAML.load_file("#{secrets_dir}/#{root_deployment_name}/#{my_deployment_name}/secrets/secrets.yml")
+      expect(secrets_secrets).to be_falsey
     end
   end
 
@@ -154,6 +192,7 @@ describe DirectoryInitializer do
     end
 
   end
+
   describe '#disable_deployment' do
     let(:root_deployment_name) { 'dummy-depls' }
     let(:my_deployment_name) { 'autosleep' }

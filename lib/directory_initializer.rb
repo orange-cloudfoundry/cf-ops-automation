@@ -12,9 +12,9 @@ class DirectoryInitializer
     @secrets_dir = secrets_dir
     @template_dir = template_dir
     @terraform_dir = terraform_dir
-    raise 'invalid root_deployment_name for directory initialiazer' unless validate_string @root_deployment_name
-    raise 'invalid secrets_dir for directory initialiazer' unless validate_string @secrets_dir
-    raise 'invalid template_dir for directory initialiazer' unless validate_string @template_dir
+    raise 'invalid root_deployment_name for directory initializer' unless validate_string @root_deployment_name
+    raise 'invalid secrets_dir for directory initializer' unless validate_string @secrets_dir
+    raise 'invalid template_dir for directory initializer' unless validate_string @template_dir
   end
 
   def setup_secrets!
@@ -23,10 +23,6 @@ class DirectoryInitializer
     dirs_to_create << "#{@secrets_dir}/#{@root_deployment_name}/secrets"
     create_non_existing_dirs dirs_to_create
 
-    files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/secrets/meta.yml"
-    files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/secrets/secrets.yml"
-
-    create_non_existing_files files_to_create
     generate_empty_map_yaml "#{@secrets_dir}/shared/secrets.yml"
     generate_empty_map_yaml "#{@secrets_dir}/shared/meta.yml"
     generate_default_ci_deployment_overview
@@ -48,11 +44,17 @@ class DirectoryInitializer
   end
 
   def add_deployment(deployment_name)
-    dirs_to_create = []
+    dirs_to_create = files_to_create = []
 
     dirs_to_create << "#{@template_dir}/#{@root_deployment_name}/#{deployment_name}"
     dirs_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}"
+    dirs_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}/secrets"
     create_non_existing_dirs dirs_to_create
+
+    files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}/secrets/meta.yml"
+    files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}/secrets/secrets.yml"
+    create_non_existing_files files_to_create
+
     generate_default_bosh_deployment_dependencies(deployment_name)
   end
 
