@@ -34,7 +34,6 @@ run:
   - |
     terraform version
     CURRENT_DIR=$(pwd)
-
     ###
     ### don't use cp to copy file, or you'll get an error on empty dir
     ### cp: can't stat 'terraform-tfvars/*': No such file or directory
@@ -55,6 +54,18 @@ run:
     find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
 
+    if [ -d "spec-resource/${IAAS_SPEC_PATH}" ]
+    then
+    # copy iaas-spec in spec, preserving the nested modules if any
+    find spec-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    fi
+    
+    # copy iaas-spec in secrets, preserving the nested modules if any
+    if [ -d "secret-state-resource/${IAAS_SPEC_PATH}" ]
+    then
+    find secret-state-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    fi
+
     cd generated-files/
     terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/
     terraform apply -input=false -auto-approve ../spec-applied/
@@ -62,3 +73,4 @@ run:
 params:
   SPEC_PATH:
   SECRET_STATE_FILE_PATH:
+  IAAS_SPEC_PATH:
