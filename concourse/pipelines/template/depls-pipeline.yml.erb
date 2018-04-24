@@ -1023,6 +1023,7 @@ jobs:
       params:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
+        IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
 
 - name: cf-manual-approval
   <% jobs['terraform'] << 'cf-manual-approval' %>
@@ -1083,6 +1084,7 @@ jobs:
       params:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
+        IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
       ensure:
         task: update-terraform-state-file
         input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}
