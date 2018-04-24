@@ -34,7 +34,6 @@ run:
   - |
     terraform version
     CURRENT_DIR=$(pwd)
-
     ###
     ### don't use cp to copy file, or you'll get an error on empty dir
     ### cp: can't stat 'terraform-tfvars/*': No such file or directory
@@ -46,13 +45,27 @@ run:
     # copy generated tfvars
     find terraform-tfvars -type f -exec cp {} generated-files/ \;
 
-    # copy spec in spec, preserving the nested modules if any
+    echo "copy spec in spec, preserving the nested modules if any"
     find spec-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
 
     # copy spec in secrets, preserving the nested modules if any
     if [ -d "secret-state-resource/${SPEC_PATH}" ]
     then
+    echo "TF secret-dir detected, copying files."
     find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    fi
+
+    if [ -d "spec-resource/${IAAS_SPEC_PATH}" ]
+    then
+    echo "copy iaas-spec in spec, preserving the nested modules if any"
+    find spec-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    fi
+
+    # copy iaas-spec in secrets, preserving the nested modules if any
+    if [ -d "secret-state-resource/${IAAS_SPEC_PATH}" ]
+    then
+    echo "TF iaas-secret-dir detected, copying files."
+    find secret-state-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
 
     cd generated-files/
@@ -65,3 +78,4 @@ run:
 params:
   SPEC_PATH:
   SECRET_STATE_FILE_PATH:
+  IAAS_SPEC_PATH:

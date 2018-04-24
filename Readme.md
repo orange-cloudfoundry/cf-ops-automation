@@ -241,19 +241,30 @@ If a template directory contains hook scripts with specific name, then these scr
 * to generate an additional errand step, in a `deployment-dependencies.yml` file, insert a key ```errands``` with a subkey named like the errand job to execute 
 
 ### Iaas specifics support
+
 Manifest generation supports dedicated part to
 Add directories (like openstack, cloudstack, etc...) for each specific iaas, in the template directory.
-Set a `iaas-type` credential in secrets repo to match the directory name. 
+Set a `iaas-type` credential in secrets repo to match the directory name.
+
+#### Terraform specific
+
+As all spec subdirectories are processed by terraform, it is not possible to use the same convention. So to support 
+`iaas-type` with terraform, a directory called `spec-<iaas-type>` is required.
+Other [terraform](#terraform) mechanisms applies.
 
   
 ### Bosh cli v2 specific features support
+
 The newest bosh feature are not implemented in bosh cli v1. So some feature are only available to deployments using bosh cli v2.
 This can be combined with iaas specifics support 
+
 #### ops-files
+
 By convention, all files in template dir matching `*-operators.yml` are used by `bosh-deployment` 
 as ```ops-files``` inputs. Theses files **are not processed by spruce**. 
  
 #### vars-files
+
 By convention, all files in template dir matching `*-vars-tpl.yml` are processed by spruce and generate `*-vars.yml` files.
 As spruce is no longer required, it is also possible to include vars files directly, files matching `*-vars.yml` are used by `bosh-deployment`  but ignored by spruce.
 Theses files are used by ```bosh-deployment``` as ```vars-files``` inputs.
@@ -261,6 +272,7 @@ Theses files are used by ```bosh-deployment``` as ```vars-files``` inputs.
 **Warning**: if there is a naming conflict between `*-vars-tpl.yml` and `*-vars.yml`, the `tpl` wins !
 
 #### Cloud and runtime config
+
 Rules for ops-files and vars-files here. 
 To support operators and vars files for cloud and runtime config, we have to define addition convention, as there are in the same directory.
  - ```*cloud-operators.yml```: operators for cloud-config 
@@ -481,10 +493,12 @@ source scripts/setUpTfDevEnv.sh
 ## Releasing COA
 
 ### Standard release
+
 Use cf-ops-automation pipeline to perform a release. You may need to bump the version using one of the following jobs: `major`, `minor` or `patch`.
 Once the version is ok, simply launch `ship-it` job
  
 ### Hotfix release
+
 This type of release requires manual work.
 
   1. checkouts the hotfix branch, and sets it to the expected tag
@@ -502,6 +516,7 @@ This type of release requires manual work.
 # FAQ
 
 ## How to initialize a new bosh deployment template ?
+
 run `./init-template.sh`, and it creates empty placeholder.
 
 ## How to enable a bosh deployment template ?

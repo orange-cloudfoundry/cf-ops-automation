@@ -33,6 +33,7 @@ describe 'terraform_apply_cloudfoundry task' do
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
                         'SPEC_PATH' => '',
+                        'IAAS_SPEC_PATH' => '',
                         'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
     end
 
@@ -68,8 +69,9 @@ describe 'terraform_apply_cloudfoundry task' do
         "-i terraform-tfvars=#{@terraform_tfvars} " \
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
-        'SPEC_PATH' =>'spec-only',
-        'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir' )
+        'SPEC_PATH' => 'spec-only',
+        'IAAS_SPEC_PATH' => 'spec-dummy-iaas',
+        'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
     end
 
     after(:context) do
@@ -122,7 +124,8 @@ describe 'terraform_apply_cloudfoundry task' do
         "-i terraform-tfvars=#{@terraform_tfvars} " \
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
-                        'SPEC_PATH' =>'spec',
+                        'SPEC_PATH' => 'spec',
+                        'IAAS_SPEC_PATH' => 'spec-my-iaas',
                         'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
     end
 
@@ -134,8 +137,8 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'applies to add resources' do
-      expect(@output).to include('Apply complete!')
-      include('Resources: 2 to add, 0 to change, 0 to destroy.')
+      expect(@output).to include('Apply complete!').and \
+        include('Resources: 5 added, 0 changed, 0 destroyed.')
     end
 
     it 'processes all spec files' do
@@ -143,10 +146,18 @@ describe 'terraform_apply_cloudfoundry task' do
       exist(File.join(@generated_files,'secrets.txt'))
     end
 
+    it 'processes all iaas spec files' do
+      expect(File).to exist(File.join(@generated_files,'my-iaas-spec.txt')).and \
+      exist(File.join(@generated_files,'my-iaas-secret-spec.txt'))
+    end
+
     it 'copies all found spec files into spec-applied output' do
       spec_files_in_spec_resource = Dir.entries(File.join(@spec_resource, 'spec'))
+      spec_files_in_iaas_spec_resource = Dir.entries(File.join(@spec_resource, 'spec-my-iaas'))
       spec_files_in_secret_resource = Dir.entries(File.join(@secret_resource, 'spec'))
-      all_spec_files = (spec_files_in_spec_resource + spec_files_in_secret_resource).uniq.sort
+      spec_files_in_iaas_secret_resource = Dir.entries(File.join(@secret_resource, 'spec-my-iaas'))
+
+      all_spec_files = (spec_files_in_spec_resource + spec_files_in_iaas_spec_resource + spec_files_in_secret_resource + spec_files_in_iaas_secret_resource).uniq.sort
       expect(Dir.entries(@spec_applied).sort).to eq(all_spec_files.sort)
     end
 
@@ -155,7 +166,7 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'copies terraform-tfvars files in generated-files output' do
-      expect(File).to exist(File.join(@generated_files,'terraform.tfvars'))
+      expect(File).to exist(File.join(@generated_files, 'terraform.tfvars'))
     end
 
   end
@@ -177,6 +188,7 @@ describe 'terraform_apply_cloudfoundry task' do
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
                         'SPEC_PATH' => @spec_path,
+                        'IAAS_SPEC_PATH' => 'dummy',
                         'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
     end
 
@@ -195,7 +207,6 @@ describe 'terraform_apply_cloudfoundry task' do
 
     it 'process secrets spec files' do
       expect(File).to exist(File.join(@generated_files,'secrets.txt'))
-
     end
 
     it 'ignores specs from spec-resource' do
