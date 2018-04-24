@@ -86,7 +86,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: script-resource
         - name: secrets
@@ -135,7 +135,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -154,7 +154,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.3.1-slim}
+          source: {repository: ruby, tag: 2.3.1}
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -190,7 +190,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -209,7 +209,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.3.1-slim}
+          source: {repository: ruby, tag: 2.3.1}
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -244,7 +244,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -263,7 +263,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.3.1-slim}
+          source: {repository: ruby, tag: 2.3.1}
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -298,7 +298,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -317,7 +317,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.3.1-slim}
+          source: {repository: ruby, tag: 2.3.1}
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -352,7 +352,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -371,7 +371,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.3.1-slim}
+          source: {repository: ruby, tag: 2.3.1}
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -406,7 +406,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
+        source: {repository: ruby, tag: 2.3.1}
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -425,7 +425,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.3.1-slim}
+          source: {repository: ruby, tag: 2.3.1}
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
