@@ -115,6 +115,7 @@ jobs:
 
 
 - name: cf-push-test-app
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -212,5 +213,3 @@ groups:
   jobs:
 
     - retrigger-all-jobs
-
-

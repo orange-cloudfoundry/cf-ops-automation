@@ -120,6 +120,7 @@ jobs:
 
 - name: cf-push-<%= app_name %>
 <% jobs["app-#{app_name[0]}*"] << "cf-push-#{app_name}" %>
+  serial: true
   on_failure:
     put: failure-alert
     params:
