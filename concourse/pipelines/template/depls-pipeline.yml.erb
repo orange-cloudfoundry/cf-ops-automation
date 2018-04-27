@@ -324,7 +324,7 @@ jobs:
          BOSH_TARGET: ((bosh-target))
          BOSH_CLIENT: ((bosh-username))
          BOSH_CLIENT_SECRET: ((bosh-password))
-         BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+         BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
          BOSH_DEPLOYMENT: <%= deployment_name %>
     <% end %>
 
@@ -365,7 +365,7 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
         BOSH_CLIENT_SECRET: ((bosh-password))
-        BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+        BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
   <% jobs['utils'] << "cloud-config-and-runtime-config-for-#{depls}" %>
@@ -415,7 +415,7 @@ jobs:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
            BOSH_CLIENT_SECRET: ((bosh-password))
-           BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+           BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
         ensure:
           task: update-cloud-config
@@ -448,7 +448,7 @@ jobs:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
            BOSH_CLIENT_SECRET: ((bosh-password))
-           BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+           BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
         ensure:
           task: update-runtime-config
@@ -813,7 +813,7 @@ jobs:
          BOSH_TARGET: ((bosh-target))
          BOSH_CLIENT: ((bosh-username))
          BOSH_CLIENT_SECRET: ((bosh-password))
-         BOSH_CA_CERT: secrets/<%= BOSH_CERT_LOCATIONS[depls] %>
+         BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
          BOSH_DEPLOYMENT: <%= name %>
 <% end %>
 <% unless enabled_deployments.empty? %>
