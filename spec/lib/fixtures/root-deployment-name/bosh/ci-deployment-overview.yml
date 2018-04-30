@@ -1,0 +1,12 @@
+---
+ci-deployment:
+  bosh:
+    target_name: rspec-fixture-target
+    pipelines:
+      bosh-generated:
+        vars_files:
+        - bosh/bosh-versions.yml
+      bosh-cf-apps-generated:
+        vars_files:
+        - bosh/bosh-versions.yml
+

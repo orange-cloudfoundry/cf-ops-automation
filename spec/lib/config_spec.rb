@@ -32,11 +32,11 @@ describe Config do
   describe 'private-config.yml format validation' do
   end
 
-  describe '#load' do
+  describe '#load_config' do
     subject { described_class.new('not-existing-public-config.yml', 'not-existing-private-config.yml') }
 
     it 'generates a default config when no yaml detected' do
-      expect(subject.load).to eq(default_config)
+      expect(subject.load_config.loaded_config).to eq(default_config)
     end
 
     context 'when shared config exists' do
@@ -52,7 +52,7 @@ describe Config do
       end
 
       it 'overrides default value with shared-config' do
-        expect(subject.load).to eq(default_config.merge shared_config_file_content)
+        expect(subject.load_config.loaded_config).to eq(default_config.merge shared_config_file_content)
       end
 
       context 'when private config also exists' do
@@ -68,7 +68,7 @@ describe Config do
         end
 
         it 'overrides value from shared-config with private-config' do
-          expect(subject.load).to eq(default_config.merge private_config_file_content.merge('public-override' => true))
+          expect(subject.load_config.loaded_config).to eq(default_config.merge private_config_file_content.merge('public-override' => true))
         end
       end
     end
@@ -87,7 +87,7 @@ describe Config do
       let(:shared_config_file_content) { { 'default' => {} } }
 
       it 'returns the default stemcell name' do
-        subject.load
+        subject.load_config
         expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
@@ -96,7 +96,7 @@ describe Config do
       let(:shared_config_file_content) { { 'default' => { 'stemcell' => "x" } } }
 
       it 'returns the default stemcell name' do
-        subject.load
+        subject.load_config
         expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
@@ -105,7 +105,7 @@ describe Config do
       let(:shared_config_file_content) { { 'default' => { 'stemcell' => {} } } }
 
       it 'returns the default stemcell name' do
-        subject.load
+        subject.load_config
         expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
@@ -115,7 +115,7 @@ describe Config do
       let(:shared_config_file_content) { { 'default' => { 'stemcell' => { 'name' => my_stemcell_name } } } }
 
       it 'returns the default stemcell name' do
-        subject.load
+        subject.load_config
         expect(subject.stemcell_name).to eq(my_stemcell_name)
       end
     end

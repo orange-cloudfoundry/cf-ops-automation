@@ -3,7 +3,7 @@ require 'fileutils'
 require 'tmpdir'
 
 require_relative '../../../lib/template_processor'
-require_relative '../../../lib/ci_deployment_overview'
+require_relative '../../../lib/ci_deployment'
 require_relative '../../../lib/deployment_deployers_config'
 
 describe TemplateProcessor do
@@ -29,14 +29,6 @@ describe TemplateProcessor do
 
     context 'the root_deployment_name is empty' do
       subject { described_class.new '' }
-
-      it 'raises an exception' do
-        expect { subject }.to raise_error(RuntimeError)
-      end
-    end
-
-    context 'the root_deployment_name is not a string' do
-      subject { described_class.new 98_654 }
 
       it 'raises an exception' do
         expect { subject }.to raise_error(RuntimeError)

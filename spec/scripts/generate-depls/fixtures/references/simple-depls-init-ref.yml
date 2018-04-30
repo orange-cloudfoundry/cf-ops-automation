@@ -15,40 +15,40 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: TO_BE_DEFINED
   type: concourse-pipeline
   source:
-    target: {{concourse-simple-depls-target}}
-    insecure: {{concourse-simple-depls-insecure}}
+    target: ((concourse-simple-depls-target))
+    insecure: ((concourse-simple-depls-insecure))
     teams:
     - name: main
-      username: {{concourse-simple-depls-username}}
-      password: {{concourse-simple-depls-password}}
+      username: ((concourse-simple-depls-username))
+      password: ((concourse-simple-depls-password))
     - name: custom-team-name
       username: "((concourse-simple-depls-username))"
       password: "((concourse-simple-depls-password))"
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 jobs:
@@ -58,7 +58,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
       text: |
         ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].

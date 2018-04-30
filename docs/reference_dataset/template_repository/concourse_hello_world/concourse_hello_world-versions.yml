@@ -1,4 +1,0 @@
----
-deployment-name: concourse_hello_world
-stemcell-name: aStemCell
-stemcell-version: 1

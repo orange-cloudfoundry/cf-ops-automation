@@ -85,7 +85,6 @@ describe RootDeployment do
       end
 
       it 'contains an inactive secret deployment' do
-        # deployment = DeploymentBuilder.new.name('secrets').add_details(overview['secrets']).build
         deployment = root_deployment.extract_deployment('secrets', overview)
         expect(deployment.disabled?).to be_truthy
       end

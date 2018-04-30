@@ -12,22 +12,22 @@ resource_types:
 
 resources:
 
+<% if all_ci_deployments.any? %>
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
-<% if ! all_ci_deployments.empty? %>
 - name: <%= all_ci_deployments[depls]["target_name"] %>
   type: concourse-pipeline
   source:
-    target: {{concourse-<%= depls %>-target}}
-    insecure: {{concourse-<%= depls %>-insecure}}
+    target: ((concourse-<%= depls %>-target))
+    insecure: ((concourse-<%= depls %>-insecure))
     teams:
     - name: main
-      username: {{concourse-<%= depls %>-username}}
-      password: {{concourse-<%= depls %>-password}}
-    <% CiDeploymentOverview.teams(all_ci_deployments)&.each do |team| %>
+      username: ((concourse-<%= depls %>-username))
+      password: ((concourse-<%= depls %>-password))
+    <% CiDeployment.teams(all_ci_deployments)&.each do |team| %>
     - name: <%= team %>
       username: ((concourse-<%= depls %>-username))
       password: ((concourse-<%= depls %>-password))
@@ -35,36 +35,35 @@ resources:
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 <% end %>
 
 jobs:
-
-<% if ! all_ci_deployments.empty? %>
+<% if all_ci_deployments.any? %>
 <% pipeline_name="#{depls}-init-generated" %>
 
 - name: update-pipeline-<%= depls %>
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
       text: |
         ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -117,10 +116,10 @@ jobs:
         team: <%= pipeline_details['team'] || 'main' %>
         config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
         vars_files:
-          <% pipeline_details["vars_files"].each do |a_vars_file| %>
-          # trick to manage <depls>-versions.yml (not included in secrets)
-         <%= "- secrets-full/#{a_vars_file}" if ! a_vars_file.end_with?("-versions.yml") %>
-         <%= "- paas-templates-full/#{a_vars_file}" if a_vars_file.end_with?("-versions.yml") %>
-          <% end %>
+        <% pipeline_details["vars_files"].each do |vars_file| %>
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        <%= "- secrets-full/#{vars_file}" unless vars_file.end_with?("-versions.yml") %>
+        <%= "- paas-templates-full/#{vars_file}" if vars_file.end_with?("-versions.yml") %>
+        <% end %>
      <% end %>
 <% end %>
