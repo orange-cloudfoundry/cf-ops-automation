@@ -3,41 +3,33 @@ require_relative '../../lib/pipeline_generator'
 
 describe PipelineGenerator do
   describe "#initialize" do
-    context "when no options is given" do
-      let(:pipeline_generator) { PipelineGenerator.new }
-      it "sets options to an empty Hash and warnings to an empty Array" do
-        expect(pipeline_generator.options).to eq(Hash.new)
-        expect(pipeline_generator.warnings).to eq(Array.new)
-      end
-    end
-
     context "when options are passed" do
       let(:options) { { options: "are present" } }
       let(:pipeline_generator) { PipelineGenerator.new(options) }
 
       it "sets the received options" do
-        expect(pipeline_generator.options).to eq(options)
+        expect(pipeline_generator.options).to eq(OpenStruct.new(options))
       end
     end
   end
 
   describe "#execute" do
     let(:depls) { "rspec_test_root_depl" }
-    let(:paas_template_root) { "paas_template_root" }
-    let(:secret_path) { "secret/path" }
+    let(:paas_templates_path) { "paas_templates_path" }
+    let(:secrets_path) { "secret/path" }
     let(:input_pipeline) { "ppln" }
     let(:git_submodule_path) { "git_submodule_path" }
     let(:options) do
       {
-        paas_template_root: paas_template_root,
+        paas_templates_path: paas_templates_path,
         depls: depls,
-        secret_path: secret_path,
+        secrets_path: secrets_path,
         input_pipelines: [input_pipeline],
         git_submodule_path: git_submodule_path
       }
     end
 
-    let(:bosh_cert) { "cert" }
+    let(:bosh_cert) { { "simple-depls" => "cert" } }
     let(:secrets_dirs_overview) { { "root" => "leaf" } }
     let(:root_deployment_versions) do
       versions = {
@@ -47,14 +39,19 @@ describe PipelineGenerator do
       }
       RootDeploymentVersion.new("rspec_hello_world", versions)
     end
+    let(:shared_config) { File.join(paas_templates_path, 'shared-config.yml') }
+    let(:private_config) { File.join(secrets_path, 'private-config.yml') }
+    let(:config) { Config.new(shared_config, private_config) }
     let(:deployment_factory) do
-      DeploymentFactory.new(depls, root_deployment_versions.versions)
+      DeploymentFactory.new(depls, root_deployment_versions.versions, config)
     end
     let(:all_dependencies) { {} }
     let(:all_ci_deployments) { [] }
     let(:all_cf_apps) { [] }
     let(:git_submodules) { {} }
     let(:loaded_config) { { "key" => "value" } }
+    let(:bosh_certificates) { BoshCertificates.new(secrets_path, PipelineGenerator::BOSH_CERT_LOCATIONS)  }
+    let(:git_modules) { GitModules.new(git_submodule_path)  }
 
     let(:erb_context) do
       {
@@ -73,56 +70,64 @@ describe PipelineGenerator do
     let(:pipeline_generator) { PipelineGenerator.new(options) }
 
     it "collects properties, pass them onto a template processor and return the result" do
-      File.open("test.log", 'w+') { |f| f.write("LEZGETIT\n") }
       expect(File).to receive(:exist?).
-        with("#{paas_template_root}/#{depls}/#{depls}-versions.yml").
+        with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
         and_return(true)
 
-        expect_any_instance_of(BoshCertificates).to receive(:load_from_location).
-          with(secret_path, PipelineGenerator::BOSH_CERT_LOCATIONS).
+        expect(BoshCertificates).to receive(:new).
+          with(secrets_path, PipelineGenerator::BOSH_CERT_LOCATIONS).
+          and_return(bosh_certificates)
+        expect(bosh_certificates).to receive(:load_from_location).
+          and_return(bosh_certificates)
+        expect(bosh_certificates).to receive(:certs).
           and_return(bosh_cert)
 
         expect_any_instance_of(Secrets).to receive(:overview).
           and_return(secrets_dirs_overview)
 
         expect(RootDeploymentVersion).to receive(:load_file).
-          with("#{paas_template_root}/#{depls}/#{depls}-versions.yml").
+          with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
           and_return(root_deployment_versions)
 
-          expect(DeploymentFactory).to receive(:new).
-            with(depls, root_deployment_versions.versions).
-            and_return(deployment_factory)
+        expect(Config).to receive(:new).with(shared_config, private_config).
+          and_return(config)
+        expect(config).to receive(:load_config).
+          and_return(config)
+        expect(config).to receive(:loaded_config).
+          and_return(loaded_config)
 
-          expect_any_instance_of(RootDeployment).to receive(:overview_from_hash).
-            with(deployment_factory).
-            and_return(all_dependencies)
+        expect(DeploymentFactory).to receive(:new).
+          with(depls, root_deployment_versions.versions, config).
+          and_return(deployment_factory)
 
-          expect_any_instance_of(CiDeploymentOverview).to receive(:overview).
-            and_return(all_ci_deployments)
+        expect_any_instance_of(RootDeployment).to receive(:overview_from_hash).
+          with(deployment_factory).
+          and_return(all_dependencies)
 
-          expect_any_instance_of(CfAppOverview).to receive(:overview).
-            and_return(all_cf_apps)
+        expect_any_instance_of(CiDeployment).to receive(:overview).
+          and_return(all_ci_deployments)
 
-          expect(GitModules).to receive(:list).with(git_submodule_path).
-            and_return(git_submodules)
+        expect_any_instance_of(CfApps).to receive(:overview).
+          and_return(all_cf_apps)
 
-          expect_any_instance_of(Config).to receive(:load).
-            and_return(loaded_config)
+        expect(GitModules).to receive(:new).with(git_submodule_path).
+          and_return(git_modules)
+        expect(git_modules).to receive(:list).
+          and_return(git_submodules)
+        expect(TemplateProcessor).to receive(:new).
+          with(depls, options, erb_context).
+          and_return(template_processor)
 
-          expect(TemplateProcessor).to receive(:new).
-            with(depls, options, erb_context).
-            and_return(template_processor)
+        expect(template_processor).to receive(:process).
+          with(input_pipeline).
+          and_return({ "key" => "value" })
 
-          expect(template_processor).to receive(:process).
-            with(input_pipeline).
-            and_return({ "key" => "value" })
-
-          expect(pipeline_generator.execute).to be_truthy
+        expect(pipeline_generator.execute).to be_truthy
     end
   end
 
   describe "#display_warnings" do
-    let(:pipeline_generator) { PipelineGenerator.new }
+    let(:pipeline_generator) { PipelineGenerator.new({}) }
     let(:warning1) { "warning1" }
     let(:warning2) { "warning2" }
 
@@ -185,11 +190,11 @@ describe PipelineGenerator::Parser do
         PipelineGenerator::DEFAULT_OPTIONS.merge({
           depls: deployment_name,
           git_submodule_path: git_submodule_path,
-          secret_path: secrets_path,
+          secrets_path: secrets_path,
           output_path: output_path,
           ops_automation: automation_path,
           dump_output: false,
-          paas_template_root: templates_path
+          paas_templates_path: templates_path
         })
       }
 

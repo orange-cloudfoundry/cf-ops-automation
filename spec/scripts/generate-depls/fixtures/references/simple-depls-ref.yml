@@ -116,7 +116,27 @@ resources:
     client: ((bosh-username))
     client_secret: ((bosh-password))
     deployment: ntp
-    ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE3MDkwODE0NTI1OVoXDTE5MDkwODE0NTI1OVowPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALQTi5oWSpKAY5n9KtyZ\nZlo3TQBL1DWgbTgkDeSortVOL/F2niP9DI81acbIjLo2o572Z41jnz3K6GaSwviJ\nvY/K5XAgE0A66KV3ZJm6eNI7LmLXyxV59q+rtp75NuYQqqdS8FEiKUVDPUD5nJca\nQk/b+b6V/wHXz7KV6A/j/NQb9qaQu4X7WWfCXk2v2JzRd5PdBO2XNuF8WArm3zXG\nVeg3j7rB782iAKjUX93U+VYu3m7DyPQkA/owIHpw7nEaJS7KdDFFDubLwD6d0FG3\nAr9b4ttL83UlJOvvgNBo+zuIuUuOFCBtpYMI9N84fUhkh62jZa4vtfeI0tI9UBIk\nBbECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFJ+LRoMZCoJoPXETODONOO29xTkAMB8GA1UdIwQYMBaAFJ+LRoMZCoJo\nPXETODONOO29xTkAMA0GCSqGSIb3DQEBCwUAA4IBAQCz0iumGgPuIGttcuFCaHc8\nmBVH7D/yj8otzZAMyz91aiArooUlnzCO9xHtnwIv6qe5V4D4D8YuaIiv/tXD86tL\nVwE2TyfLeTpvHcclRAB+thhbYkVC2GgAbEOeA/JtSLGOhPbgrf/BKdjLTOEqsFJi\nqmpMrzEb08TG9CRiWo68LPu6GE84P3WFXVhC/s0ymlb5cITwTHKOwcVyu+8dIw1I\nwZ5atyWiFB040HeKe+kwxWHEG9L6NT3+R9cCTMpfYCdv4DcUlEt8WNtDcNJa5Cv1\nzVke99FdeG0PzuWmaymHrTRaAAIbjaARrp98mwxtJF1e2ANl9Qli9qiHqI4mX0Qw\n-----END CERTIFICATE-----\n"
+    ca_cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
+      GRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB
+      MB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk
+      ARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD
+      QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU
+      RjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2
+      rbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0
+      47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB
+      8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre
+      1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb
+      EQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD
+      VR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL
+      7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq
+      G3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9
+      7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z
+      i1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7
+      X0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM
+      tdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2
+      -----END CERTIFICATE-----
 
 - name: TO_BE_DEFINED
   type: concourse-pipeline
@@ -131,6 +151,13 @@ resources:
       username: ((concourse-simple-depls-username))
       password: ((concourse-simple-depls-password))
 
+- name: paas-templates-wip
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+
 - name: secrets-full
   type: git
   source:
@@ -143,13 +170,6 @@ resources:
   source:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
-    skip_ssl_verification: true
-
-- name: paas-templates-wip
-  type: git
-  source:
-    uri: ((paas-templates-uri))
-    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: ntp_boshrelease
@@ -192,7 +212,27 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
         BOSH_CLIENT_SECRET: ((bosh-password))
-        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        BOSH_CA_CERT: |
+          -----BEGIN CERTIFICATE-----
+          MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
+          GRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB
+          MB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk
+          ARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD
+          QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU
+          RjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2
+          rbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0
+          47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB
+          8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre
+          1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb
+          EQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD
+          VR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL
+          7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq
+          G3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9
+          7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z
+          i1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7
+          X0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM
+          tdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2
+          -----END CERTIFICATE-----
 
 - name: cloud-config-and-runtime-config-for-simple-depls
   serial: true
@@ -257,7 +297,27 @@ jobs:
           BOSH_TARGET: ((bosh-target))
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: ((bosh-password))
-          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          BOSH_CA_CERT: |
+            -----BEGIN CERTIFICATE-----
+            MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
+            GRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB
+            MB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk
+            ARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD
+            QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU
+            RjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2
+            rbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0
+            47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB
+            8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre
+            1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb
+            EQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD
+            VR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL
+            7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq
+            G3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9
+            7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z
+            i1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7
+            X0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM
+            tdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2
+            -----END CERTIFICATE-----
         ensure:
           task: update-cloud-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
@@ -291,7 +351,27 @@ jobs:
           BOSH_TARGET: ((bosh-target))
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: ((bosh-password))
-          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          BOSH_CA_CERT: |
+            -----BEGIN CERTIFICATE-----
+            MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
+            GRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB
+            MB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk
+            ARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD
+            QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU
+            RjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2
+            rbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0
+            47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB
+            8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre
+            1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb
+            EQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD
+            VR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL
+            7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq
+            G3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9
+            7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z
+            i1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7
+            X0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM
+            tdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2
+            -----END CERTIFICATE-----
         ensure:
           task: update-runtime-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
@@ -498,9 +578,7 @@ jobs:
           args:
           - -exc
           - |
-
             echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-ntp" >> result-dir/flight-plan
-
         params:
           BUILD_PIPELINE_NAME: simple-depls-generated
     - task: fly-into-concourse
@@ -580,11 +658,31 @@ jobs:
                 source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 bosh -n recreate
       params:
-         BOSH_TARGET: ((bosh-target))
-         BOSH_CLIENT: ((bosh-username))
-         BOSH_CLIENT_SECRET: ((bosh-password))
-         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-         BOSH_DEPLOYMENT: ntp
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_CA_CERT: |
+          -----BEGIN CERTIFICATE-----
+          MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
+          GRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB
+          MB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk
+          ARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD
+          QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU
+          RjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2
+          rbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0
+          47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB
+          8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre
+          1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb
+          EQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD
+          VR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL
+          7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq
+          G3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9
+          7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z
+          i1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7
+          X0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM
+          tdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2
+          -----END CERTIFICATE-----
+        BOSH_DEPLOYMENT: ntp
 
 
 - name: init-concourse-boshrelease-and-stemcell-for-simple-depls
@@ -620,11 +718,7 @@ jobs:
         args:
         - -exc
         - |
-
-
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
-
-
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-generated

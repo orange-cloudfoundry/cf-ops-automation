@@ -99,7 +99,6 @@ jobs:
           args:
           - -exc
           - |
-
             echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-test-app" >> result-dir/flight-plan
         params:
           BUILD_PIPELINE_NAME: apps-depls-cf-apps-generated

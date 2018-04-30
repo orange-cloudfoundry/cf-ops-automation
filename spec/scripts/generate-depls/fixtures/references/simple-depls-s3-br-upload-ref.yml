@@ -74,7 +74,6 @@ jobs:
         args:
         - "-exc"
         - |2
-
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-s3-br-upload-generated

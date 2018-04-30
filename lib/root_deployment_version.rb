@@ -15,12 +15,9 @@ class RootDeploymentVersion
 
   def self.load_file(filename)
     raise "file not found: #{filename}" unless File.exist?(filename)
+
     loaded_versions = YAML.load_file(filename) || {}
-    if loaded_versions
-      name = loaded_versions[DEPLOYMENT_NAME]
-    else
-      name = loaded_versions
-    end
+    name = loaded_versions ? loaded_versions[DEPLOYMENT_NAME] : loaded_versions
 
     RootDeploymentVersion.new(name, loaded_versions)
   end
@@ -34,17 +31,8 @@ class RootDeploymentVersion
     File.open(filename, 'w') { |file| file.write(versions.to_yaml) }
   end
 
-
-  private
-
-  def validate
-    raise "empty versions" unless @versions
-    raise "invalid #{DEPLOYMENT_NAME}" unless validate_string(@versions[DEPLOYMENT_NAME])
-    raise "invalid/missing #{DEPLOYMENT_NAME}: found #{@versions[DEPLOYMENT_NAME]} expected #{@root_deployment_name}" unless @versions[DEPLOYMENT_NAME] == @root_deployment_name
-    raise "invalid/missing #{STEMCELL_VERSION}" if @versions[STEMCELL_VERSION].nil? || (@versions[STEMCELL_VERSION].is_a?(String) && @versions[STEMCELL_VERSION].empty?)
-  end
-
   def self.add_required_keys_and_value(versions)
+    versions[STEMCELL_NAME] = 'aStemCell' unless versions[STEMCELL_NAME]
     versions[STEMCELL_VERSION] = 1 unless versions[STEMCELL_VERSION]
   end
 
@@ -52,7 +40,25 @@ class RootDeploymentVersion
     "#{root_deployment_name}-versions.yml"
   end
 
-  def validate_string(a_string)
-    !(a_string.nil? || !a_string.is_a?(String) || a_string.empty?)
+  private
+
+  def validate
+    validate_versions
+    validate_deployment_name
+    validate_stemcell_version
+  end
+
+  def validate_versions
+    raise "empty versions" unless versions
+  end
+
+  def validate_deployment_name
+    deployment_name = versions[DEPLOYMENT_NAME]
+    raise "invalid #{DEPLOYMENT_NAME}" if deployment_name.to_s.empty?
+    raise "invalid/missing #{DEPLOYMENT_NAME}: found #{deployment_name} expected #{root_deployment_name}" if deployment_name != root_deployment_name
+  end
+
+  def validate_stemcell_version
+    raise "invalid/missing #{STEMCELL_VERSION}" if versions[STEMCELL_VERSION].to_s.empty?
   end
 end

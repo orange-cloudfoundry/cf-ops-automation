@@ -1,0 +1,2 @@
+name: generic-app
+instances: (( grab secrets.generic-app.instances ))

@@ -4,7 +4,7 @@ require 'tmpdir'
 
 
 require_relative '../../../lib/template_processor'
-require_relative '../../../lib/ci_deployment_overview'
+require_relative '../../../lib/ci_deployment'
 require_relative '../../../lib/deployment_deployers_config'
 
 describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' do

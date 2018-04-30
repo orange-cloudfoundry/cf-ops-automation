@@ -74,7 +74,6 @@ jobs:
         args:
         - "-exc"
         - |2
-
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-dummy-stemcell --from version:((stemcell-version))" >> result-dir/flight-plan
 
       params:

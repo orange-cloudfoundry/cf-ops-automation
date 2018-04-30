@@ -1,4 +1,5 @@
 # This is the configuration used to check the rubocop source code.
+require: rubocop-rspec
 
 AllCops:
   Exclude:
@@ -6,23 +7,25 @@ AllCops:
     - 'spec/fixtures/**/*'
     - 'spec/lib/fixtures/**/*'
     - 'bin/**/*'
+  TargetRubyVersion: 2.3
 
 Style/Encoding:
   Enabled: true
+Style/Documentation:
+  Enabled: false
+Style/StringLiterals:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
 
 Metrics/LineLength:
   Enabled: false
 
-require: rubocop-rspec
-
 RSpec/FilePath:
   Enabled: false
 
-Performance/RedundantMatch:
-  Enabled: false
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
 
-Style/FrozenStringLiteralComment:
-  Enabled: false
-
-AllCops:
-  TargetRubyVersion: 2.3
+Layout/DotPosition:
+  Enable: false

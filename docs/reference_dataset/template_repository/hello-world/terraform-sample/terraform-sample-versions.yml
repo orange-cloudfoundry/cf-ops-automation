@@ -1,0 +1,6 @@
+---
+deployment-name: terraform-sample
+
+stemcell-name: aStemCell
+stemcell-version: 1
+

@@ -99,7 +99,7 @@ jobs:
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-s3-br-upload-generated
 
-  <% current_team = CiDeploymentOverview.team(all_ci_deployments, depls, "#{depls}-s3-br-upload-generated") %>
+  <% current_team = CiDeployment.team(all_ci_deployments, depls, "#{depls}-s3-br-upload-generated") %>
   - task: fly-into-concourse
     input_mapping: {fly-cmd: init-<%= depls %>-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}

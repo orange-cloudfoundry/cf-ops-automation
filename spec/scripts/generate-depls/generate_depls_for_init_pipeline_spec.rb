@@ -1,20 +1,10 @@
-# encoding: utf-8
-
-require 'digest'
-require 'yaml'
-require 'open3'
-require 'rspec'
-require 'tmpdir'
+require 'spec_helper'
 require_relative 'test_helper'
 
-# require 'spec_helper.rb'
-
 describe 'generate-depls for init pipeline' do
-
   ci_path = Dir.pwd
   test_path = File.join(ci_path, '/spec/scripts/generate-depls')
   fixture_path = File.join(test_path, '/fixtures')
-
 
   context 'when a simple deployment is used' do
     let(:depls_name) { 'simple-depls' }
@@ -27,11 +17,14 @@ describe 'generate-depls for init pipeline' do
     end
 
     context 'when valid' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/init-pipeline.yml.erb" }
+      let(:options) do
+        "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/init-pipeline.yml.erb"
+      end
 
       stdout_str = stderr_str = ''
       before do
-        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+        stdout_str, stderr_str, = Open3.
+          capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
       end
 
       it 'no error message are displayed' do
@@ -46,13 +39,6 @@ describe 'generate-depls for init pipeline' do
       context 'when init pipeline is generated' do
         it_behaves_like 'pipeline checker', 'simple-depls-init-generated.yml', 'simple-depls-init-ref.yml'
       end
-
     end
-
   end
-
 end
-
-
-
-
