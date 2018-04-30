@@ -51,7 +51,6 @@ class DeploymentFactory
   def add_stemcell_info(deployment_details)
     return if deployment_details.nil?
     deployment_details['stemcells'] = { stemcell_name => {} }
-    # deployment_details['stemcells']
   end
 
   def update_boshrelease_version(deployment_details)

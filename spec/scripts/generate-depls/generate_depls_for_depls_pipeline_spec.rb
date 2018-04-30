@@ -1,16 +1,7 @@
-# encoding: utf-8
-
-require 'digest'
-require 'yaml'
-require 'open3'
-require 'rspec'
-require 'tmpdir'
+require 'spec_helper'
 require_relative 'test_helper'
 
-# require 'spec_helper.rb'
-
 describe 'generate-depls for depls pipeline' do
-
   ci_path = Dir.pwd
   test_path = File.join(ci_path, '/spec/scripts/generate-depls')
   fixture_path = File.join(test_path, '/fixtures')
@@ -22,8 +13,6 @@ describe 'generate-depls for depls pipeline' do
   let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/depls-pipeline.yml.erb" }
   let(:pipeline) { TestHelper.load_generated_pipeline(output_path, "#{depls_name}-generated.yml") }
 
-
-  let(:setup_certificates) { TestHelper.create_test_root_ca "#{secrets_path}/shared/certs/internal_paas-ca/server-ca.crt" unless File.exist?("#{secrets_path}/shared/certs/internal_paas-ca/server-ca.crt") }
   let(:cleanup) { FileUtils.rm_rf(output_path) unless output_path.nil? }
 
   context 'when a simple deployment is used' do
@@ -32,11 +21,10 @@ describe 'generate-depls for depls pipeline' do
     end
 
     context 'when generate-depls is executed' do
-
       let(:pipeline) { TestHelper.load_generated_pipeline(output_path, 'simple-depls-generated.yml') }
 
       before do
-        setup_certificates
+        TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
         @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
       end
 
@@ -60,7 +48,6 @@ describe 'generate-depls for depls pipeline' do
       context 'when a generated reference depls pipeline file is used' do
         it_behaves_like 'pipeline checker', 'simple-depls-generated.yml', 'simple-depls-ref.yml'
       end
-
     end
 
     context 'when scripting lifecycle feature is valid' do
@@ -91,7 +78,7 @@ describe 'generate-depls for depls pipeline' do
 
 
       before do
-        setup_certificates
+        TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
         @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
       end
 
@@ -122,15 +109,13 @@ describe 'generate-depls for depls pipeline' do
         expect(lifecycle_order['post-bosh-deploy']).to be > lifecycle_order['pre-bosh-deploy']
       end
     end
-
   end
-
 
   context 'when deployment deletion is detected' do
     let(:depls_name) { 'delete-depls' }
 
     before do
-      setup_certificates
+      TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
       @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
     end
 
@@ -174,12 +159,11 @@ describe 'generate-depls for depls pipeline' do
     end
   end
 
-
   context 'when a deployment without explicit dependency is used' do
     let(:depls_name) { 'no-dependency-depls' }
 
     before do
-      setup_certificates
+      TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
       @stdout_str, @stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
     end
 
@@ -196,45 +180,19 @@ describe 'generate-depls for depls pipeline' do
 
       expect(current_resources).to match(nil)
     end
-
   end
 
   describe 'depls-pipeline template pre-requisite' do
-    context 'when template is processed' do
-
-      before do
-      end
-    end
+    context 'when template is processed'
   end
 
   describe 'dual deployment mode' do
     it 'handle bosh deployment using bosh cli v1'
-
     it 'handle bosh deployment using bosh cli v2'
-
   end
 
-  describe 'file generation from template feature' do
-
-  end
-
-
-  describe 'git extented_scan_path feature' do
-
-  end
-
-
-  describe 'tfvars support feature' do
-
-  end
-
-
-  describe 'errand support feature' do
-
-  end
-
+  describe 'file generation from template feature'
+  describe 'git extented_scan_path feature'
+  describe 'tfvars support feature'
+  describe 'errand support feature'
 end
-
-
-
-

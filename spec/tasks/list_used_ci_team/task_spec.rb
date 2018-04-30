@@ -6,7 +6,6 @@ require 'tmpdir'
 describe 'list_used_ci_team task' do
   let(:teams_file) { File.join(@ci_deployment_overview, 'teams.yml') }
 
-
   def setup_secrets
     ops_depls_ci_deployment_yaml= <<~YAML
       ---
@@ -82,11 +81,9 @@ describe 'list_used_ci_team task' do
 
     File.write(@ops_depls_ci_deployment_file, ops_depls_ci_deployment_yaml)
     File.write(@master_depls_ci_deployment_file, master_depls_ci_deployment_yaml)
-
   end
 
   context 'when teams are found' do
-
     before(:context) do
       setup_secrets
       @secrets_dir = @temp_dir
@@ -108,16 +105,12 @@ describe 'list_used_ci_team task' do
       expect(YAML.load_file(teams_file)).to match_array(['my-custom-team-1','my-custom-team-2'])
     end
 
-
     it 'contains a teams.yml file' do
       expect(File).to exist(teams_file)
     end
-
-
   end
 
   context 'when no teams are found' do
-
     before(:context) do
       @secrets_dir = Dir.mktmpdir
       @ci_deployment_overview = Dir.mktmpdir
@@ -137,8 +130,5 @@ describe 'list_used_ci_team task' do
     it 'does not contain teams name' do
       expect(YAML.load_file(teams_file)).to match_array([])
     end
-
   end
-
-
 end

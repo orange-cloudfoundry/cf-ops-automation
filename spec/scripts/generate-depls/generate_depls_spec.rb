@@ -1,19 +1,11 @@
-# encoding: utf-8
-
-require 'digest'
-require 'yaml'
+require 'spec_helper'
 require 'open3'
-require 'rspec'
-require 'tmpdir'
 require_relative '../../../lib/directory_initializer'
 require_relative 'test_helper'
 
-# require 'spec_helper.rb'
-
 describe 'generate-depls' do
-
   ci_path = Dir.pwd
-  test_path = File.join(ci_path, '/spec/scripts/generate-depls')
+  # test_path = File.join(ci_path, '/spec/scripts/generate-depls')
   # old_path = ENV.fetch('PATH', nil)
   # test_reference = File.join(test_path, 'cflinuxfs2-release/blobs')
 
@@ -24,7 +16,6 @@ describe 'generate-depls' do
   # after(:context) do
   #   ENV.store('PATH', old_path)
   # end
-
 
   describe 'parameter validation' do
     let(:output_path) { Dir.mktmpdir }
@@ -43,10 +34,10 @@ describe 'generate-depls' do
         expect(status.exitstatus).to eq(1)
         expect(stderr_str).to \
           include('generate-depls: Incomplete/wrong parameter(s): [].').and \
-          include("Usage: ./generate-depls <options>\n    -d, --depls DEPLOYMENT").and \
+          include("Usage: ./generate-depls <options>\n    -d, --depls ROOT_DEPLOYMENT").and \
           include('-t, --templates-path PATH        Base location for paas-templates (implies -s)').and \
           include('-s, --git-submodule-path PATH    .gitsubmodule path').and \
-          include('-p, --secrets-path PATH          Base secrets dir (ie: enable-deployment.yml,enable-cf-app.yml, etc...).').and \
+          include('-p, --secrets-path PATH          Base secrets dir (i.e. enable-deployment.yml, enable-cf-app.yml, etc.)').and \
           include('-o, --output-path PATH           Output dir for generated pipelines.').and \
           include('-a, --automation-path PATH       Base location for cf-ops-automation').and \
           include('-i, --input PIPELINE1,PIPELINE2, List of pipelines to process').and \
@@ -59,7 +50,7 @@ describe 'generate-depls' do
       let(:options) { "-o #{output_path} -t #{templates_path} -p #{secrets_path}" }
 
       it 'an error occurs' do
-        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+        _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
         expect(stderr_str).to include('generate-depls: Incomplete/wrong parameter(s):')
       end
 
@@ -107,7 +98,7 @@ describe 'generate-depls' do
       let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path}" }
 
       it 'failed because versions.yml is missing' do
-        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+        _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
         expect(stderr_str).to include('dummy-depls-versions.yml: file not found')
       end
     end
@@ -117,10 +108,11 @@ describe 'generate-depls' do
 
       stdout_str = stderr_str = ''
       before do
+        TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
+
         initializer = DirectoryInitializer.new depls_name, secrets_path, templates_path
         initializer.setup_templates!
         stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-
       end
 
       it 'no error message expected' do

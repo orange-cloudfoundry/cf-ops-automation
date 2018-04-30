@@ -22,19 +22,19 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: anonymized-secrets
   type: git
   source:
-    uri: {{anonymized-secrets-repo-uri}}
+    uri: ((anonymized-secrets-repo-uri))
     branch: master
     skip_ssl_verification: true
 
 - name: anonymized-secrets-compare
   type: git
   source:
-    uri: {{anonymized-secrets-compare-repo-uri}}
+    uri: ((anonymized-secrets-compare-repo-uri))
     branch: master
     skip_ssl_verification: true
 
@@ -43,16 +43,16 @@ resources:
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 jobs:
@@ -62,7 +62,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -118,7 +118,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -172,7 +172,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -227,7 +227,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -281,7 +281,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -335,7 +335,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -389,7 +389,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse

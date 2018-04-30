@@ -1,0 +1,11 @@
+---
+ci-deployment:
+  delete-lifecycle-sample:
+    target_name: TO_BE_DEFINED
+    pipelines:
+      delete-lifecycle-sample-generated:
+        vars_files:
+        - hello-world/delete-lifecycle-sample/delete-lifecycle-sample-versions.yml
+      delete-lifecycle-sample-cf-apps-generated:
+        vars_files:
+        - hello-world/delete-lifecycle-sample/delete-lifecycle-sample-versions.yml

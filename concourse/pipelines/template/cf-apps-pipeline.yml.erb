@@ -64,13 +64,10 @@ resources:
 <% end %>
 
 jobs:
-
 <% if all_cf_apps.empty? %>
 - name: this-is-an-empty-pipeline
-
 <% else %>
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
-
 - name: retrigger-all-jobs
   <% jobs['utils'] << "retrigger-all-jobs" %>
   on_failure:
@@ -117,7 +114,6 @@ jobs:
 <% end %>
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
-
 - name: cf-push-<%= app_name %>
 <% jobs["app-#{app_name[0]}*"] << "cf-push-#{app_name}" %>
   serial: true
@@ -197,23 +193,21 @@ jobs:
 
 <% end %>
 
-
 <% unless all_cf_apps.empty? %>
 groups:
 - name: <%= depls.capitalize %>
   jobs:
-  <% jobs.each_value do |jobs_list| %>
-   <% jobs_list.each do |a_job| %>
-    - <%= a_job %>
-   <% end %>
-  <% end %>
+    <% jobs.each_value do |job_names| %>
+     <% job_names.each do |job_name| %>
+      - <%= job_name %>
+     <% end %>
+    <% end %>
 
-<% jobs.sort.each do |group_name, jobs_list| %>
+  <% jobs.sort.each do |group_name, job_names| %>
 - name: <%= group_name.capitalize %>
   jobs:
-   <% jobs_list.each do |a_job| %>
-    - <%= a_job %>
-   <% end %>
-<% end %>
-
+    <% job_names.each do |job_name| %>
+    - <%= job_name %>
+    <% end %>
+  <% end %>
 <% end %>

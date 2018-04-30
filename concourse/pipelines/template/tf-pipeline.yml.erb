@@ -1,76 +1,70 @@
 ---
 resource_types:
-  - name: slack-notification
-    type: docker-image
-    source:
-      repository: cfcommunity/slack-notification-resource
-
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
 
 resources:
-<% unless all_ci_deployments.empty? %>
+<% if all_ci_deployments.any? && all_ci_deployments[depls]['terraform_config'] %>
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 # Scan the whole subdeployment from its root, not only the secret part
 - name: secrets-<%=depls %>
   type: git
   source:
-    uri: {{secrets-uri}}
+    uri: ((secrets-uri))
     paths: ["<%= depls %>/"]
-    branch: {{secrets-branch}}
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-template-<%=depls %>
   type: git
   source:
-    uri: {{paas-templates-uri}}
+    uri: ((paas-templates-uri))
     paths: ["<%= depls %>/template"]
-    branch: {{paas-templates-branch}}
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
-
 
 # Used to get other deployments secrets (e.g. micro/master for mattermost/git) as well as shared secrets updates
 # This does not trigger automatically a new build, operators have to trigger it manually.
 #- name: secrets-full
 #  type: git
 #  source:
-#    uri: {{secrets-uri}}
-#    branch: {{secrets-branch}}
+#    uri: ((secrets-uri))
+#    branch: ((secrets-branch))
 #    skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
-
 <% end %>
-
 
 jobs:
 <% jobs = Hash.new {|h,k| h[k]=[]} %>
-
-<% if ! all_ci_deployments[depls].nil? && ! all_ci_deployments[depls]['terraform_config'].nil? %>
-<% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
-<% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key "  if terraform_config_path.nil? %>
-
+<% if all_ci_deployments[depls] && all_ci_deployments[depls]['terraform_config'] %>
+  <% terraform_config_path= all_ci_deployments[depls]['terraform_config']['state_file_path'] %>
+  <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][terraform-config][state_file_path] or delete terraform-config key" if terraform_config_path.nil? %>
 - name: terraform-apply
   <% jobs['terraform'] << 'terraform-apply' %>
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -118,7 +112,7 @@ jobs:
         on_failure:
           put: failure-alert
           params:
-            channel: {{slack-channel}}
+            channel: ((slack-channel))
             text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse
@@ -128,23 +122,24 @@ jobs:
           params:
             repository: updated-terraform-state-secrets
             rebase: true
-<% else %>
-- name: this-is-an-empty-pipeline
-<% end %>
 
 groups:
 - name: <%= depls.capitalize %>
   jobs:
   <% jobs.each_value do |jobs_list| %>
-   <% jobs_list.each do |a_job| %>
-    - <%= a_job %>
-   <% end %>
+    <% jobs_list.each do |job| %>
+    - <%= job %>
+    <% end %>
   <% end %>
 
-<% jobs&.sort&.each do |group_name, jobs_list| %>
+  <% jobs.sort.each do |group_name, jobs_list| %>
 - name: <%= group_name.capitalize %>
   jobs:
-   <% jobs_list&.each do |a_job| %>
-    - <%= a_job %>
-   <% end %>
+    <% jobs_list&.each do |job| %>
+    - <%= job %>
+    <% end %>
+  <% end %>
+
+<% else %>
+- name: this-is-an-empty-pipeline
 <% end %>

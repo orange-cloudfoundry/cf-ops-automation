@@ -1,0 +1,5 @@
+cf-app:
+  rspec-fixture-app:
+    foo: bar
+  rspec-fixture-app2:
+    foa: baa

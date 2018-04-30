@@ -1,0 +1,11 @@
+---
+ci-deployment:
+  cf-apps-sample:
+    target_name: TO_BE_DEFINED
+    pipelines:
+      cf-apps-sample-generated:
+        vars_files:
+        - hello-world/cf-app-sample/cf-apps-sample-world-versions.yml
+      cf-apps-sample-cf-apps-generated:
+        vars_files:
+        - hello-world/cf-app-sample/cf-apps-sample-world-versions.yml

@@ -1,3 +1,5 @@
+#!/usr/bin/env ruby
+
 require_relative '../lib/pipeline_generator.rb'
 
 options = PipelineGenerator::Parser.parse(ARGV)

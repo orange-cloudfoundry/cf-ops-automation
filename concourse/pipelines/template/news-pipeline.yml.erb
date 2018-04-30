@@ -1,3 +1,15 @@
+<%
+  enabled_deployments = all_dependencies.select do |_,deployment_infos|
+    deployment_infos['status'] == 'enabled'
+  end
+
+  uniq_releases= {}
+  all_dependencies.sort.each do |name,boshrelease|
+    boshrelease["releases"]&.each do |release, info|
+      uniq_releases[release] = info
+    end
+  end
+%>
 ---
 resource_types:
   - name: slack-notification
@@ -16,43 +28,42 @@ resource_types:
       repository: cftoolsmiths/cron-resource
 
 resources:
-<% enabled_deployments = all_dependencies.select{|_,deployment_infos| deployment_infos['status']=='enabled'} %>
-<% unless enabled_deployments.empty? %>
+<% if enabled_deployments.any? %>
+#- name: bosh-stemcell
+#  type: bosh-io-stemcell
+#  source:
+#    name: ((stemcell-name))
+  <% if uniq_releases.any? %>
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: new-version-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
-
-#- name: bosh-stemcell
-#  type: bosh-io-stemcell
-#  source:
-#    name: {{stemcell-name}}
+    url: ((slack-webhook))
 
 #- name: secrets-complete
 #  type: git
 #  source:
-#    uri: {{secrets-uri}}
+#    uri: ((secrets-uri))
 #    branch: master
 #    skip_ssl_verification: true
 
 - name: paas-templates-full
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
 - name: monday-morning
@@ -61,16 +72,10 @@ resources:
     expression: 30 8 * * 1
     location: "Europe/Paris"
     fire_immediately: true
+  <% end %>
 <% end %>
 
-<% uniq_releases= {} %>
-<% all_dependencies.sort.each do |name,boshrelease| %>
-<% boshrelease["releases"]&.each do |release, info|  %>
-<% uniq_releases[release]= info %>
-<% end %>
-<% end %>
-
-<% uniq_releases.sort.each do |release, info|  %>
+<% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
   <% if info["base_location"].include?("bosh.io") %>
   type: bosh-io-release
@@ -85,23 +90,19 @@ resources:
 <% end %>
 
 jobs:
-
 #      - get: bosh-stemcell
-#        version: { version: {{stemcell-version}} }
+#        version: { version: ((stemcell-version)) }
 #        trigger: true
 #        attempts: 2
-<% if enabled_deployments.empty? %>
+<% if enabled_deployments.empty? || uniq_releases.empty? %>
 - name: this-is-an-empty-pipeline
-
 <% else %>
-
-<% uniq_releases.sort.each do |release, info|  %>
-
+  <% uniq_releases.sort.each do |release, info| %>
 - name: check-<%= release %>
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -145,13 +146,12 @@ jobs:
               echo "<%= depls %> is  running the latest <%= release %> (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
             fi
       params:
-        CURRENT_VERSION: {{<%= release %>-version}}
+        CURRENT_VERSION: ((<%= release %>-version))
     - put: new-version-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text_file: <%= release %>-message/update_notif
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
-
-<% end %>
+  <% end %>
 <% end %>

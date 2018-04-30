@@ -1,0 +1,12 @@
+---
+ci-deployment:
+  cf_apps:
+    target_name: rspec-fixture-target
+    pipelines:
+      cf_apps-generated:
+        vars_files:
+        - cf_apps/cf_apps-versions.yml
+      cf_apps-cf-apps-generated:
+        vars_files:
+        - cf_apps/cf_apps-versions.yml
+

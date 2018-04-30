@@ -1,0 +1,11 @@
+---
+ci-deployment:
+  terraform-sample:
+    target_name: TO_BE_DEFINED
+    pipelines:
+      terraform-sample-generated:
+        vars_files:
+        - hello-world/terraform-sample/terraform-sample-versions.yml
+      terraform-sample-cf-apps-generated:
+        vars_files:
+        - hello-world/terraform-sample/terraform-sample-versions.yml

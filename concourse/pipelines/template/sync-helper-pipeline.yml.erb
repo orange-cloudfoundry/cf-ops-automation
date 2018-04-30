@@ -11,7 +11,7 @@ resource_types:
       repository: cftoolsmiths/cron-resource
 
 resources:
-
+<% if all_ci_deployments.any? %>
 - name: at-nine
   type: cron-resource
   source:
@@ -22,50 +22,45 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 - name: anonymized-secrets
   type: git
   source:
-    uri: {{anonymized-secrets-repo-uri}}
+    uri: ((anonymized-secrets-repo-uri))
     branch: master
     skip_ssl_verification: true
 
 - name: anonymized-secrets-compare
   type: git
   source:
-    uri: {{anonymized-secrets-compare-repo-uri}}
+    uri: ((anonymized-secrets-compare-repo-uri))
     branch: master
     skip_ssl_verification: true
-
-
-<% if ! all_ci_deployments.empty? %>
 
 - name: secrets-full
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
   type: git
   source:
-    uri: {{cf-ops-automation-uri}}
-    branch: {{cf-ops-automation-branch}}
-    tag_filter: {{cf-ops-automation-tag-filter}}
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 <% end %>
 
 jobs:
-
-<% if ! all_ci_deployments.empty? %>
-
+<% if all_ci_deployments.any? %>
 - name: anonymize-secrets-value
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -117,12 +112,11 @@ jobs:
       rebase: true
 
 <% %w(inception micro-depls master-depls ops-depls expe-depls shared).each do |depls| %>
-
 - name: compare-anonymized-<%= depls %>-secrets
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -180,7 +174,7 @@ jobs:
   on_failure:
     put: failure-alert
     params:
-      channel: {{slack-channel}}
+      channel: ((slack-channel))
       text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
@@ -216,9 +210,11 @@ jobs:
           fi
   <% end %>
 <% end %>
-
+<% else %>
+- name: this-is-an-empty-pipeline
 <% end %>
 
+<% if all_ci_deployments.any? %>
 groups:
 - name: diff-overview
   jobs:
@@ -234,4 +230,5 @@ groups:
   <% subdir_list&.sort&.each do |subdir| %>
   - <%= depls %>-<%= subdir %>-comparison
   <% end %>
+<% end %>
 <% end %>

@@ -12,13 +12,14 @@ class DirectoryInitializer
     @secrets_dir = secrets_dir
     @template_dir = template_dir
     @terraform_dir = terraform_dir
-    raise 'invalid root_deployment_name for directory initializer' unless validate_string @root_deployment_name
-    raise 'invalid secrets_dir for directory initializer' unless validate_string @secrets_dir
-    raise 'invalid template_dir for directory initializer' unless validate_string @template_dir
+
+    raise 'invalid root_deployment_name for directory initializer' if @root_deployment_name.to_s.empty?
+    raise 'invalid secrets_dir for directory initializer' if @secrets_dir.to_s.empty?
+    raise 'invalid template_dir for directory initializer' if @template_dir.to_s.empty?
   end
 
   def setup_secrets!
-    dirs_to_create = files_to_create = []
+    dirs_to_create = []
     dirs_to_create << "#{@secrets_dir}/shared"
     dirs_to_create << "#{@secrets_dir}/#{@root_deployment_name}/secrets"
     create_non_existing_dirs dirs_to_create
@@ -75,7 +76,7 @@ class DirectoryInitializer
   def generate_default_bosh_deployment_dependencies(deployment_name)
     deployment = Deployment.default(deployment_name)
     filename = File.join(@template_dir, @root_deployment_name, deployment_name, 'deployment-dependencies.yml')
-    file_content = { 'deployment' => { deployment_name => deployment.details} }
+    file_content = { 'deployment' => { deployment_name => deployment.details } }
     File.open(filename, 'w') { |file| file << YAML.dump(file_content) }
   end
 
@@ -84,7 +85,6 @@ class DirectoryInitializer
 
     puts "Skipping #{filename} generation: file already exists" if File.exist? filename
     File.new(filename, 'w') { |file| file << YAML.dump(empty_map) } unless File.exist? filename
-
   end
 
   def generate_default_ci_deployment_overview
@@ -131,5 +131,4 @@ class DirectoryInitializer
   def validate_string(cred)
     !(cred.nil? || !cred.is_a?(String) || cred.empty?)
   end
-
 end

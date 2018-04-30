@@ -1,20 +1,10 @@
-# encoding: utf-8
-
-require 'digest'
-require 'yaml'
-require 'open3'
-require 'rspec'
-require 'tmpdir'
+require 'spec_helper'
 require_relative 'test_helper'
 
-# require 'spec_helper.rb'
-
 describe 'generate-depls for news pipeline' do
-
-  ci_path = Dir.pwd
-  test_path = File.join(ci_path, '/spec/scripts/generate-depls')
-  fixture_path = File.join(test_path, '/fixtures')
-
+  let(:ci_path) { Dir.pwd }
+  let(:test_path) { File.join(ci_path, '/spec/scripts/generate-depls') }
+  let(:fixture_path) { File.join(test_path, '/fixtures') }
 
   context 'when a simple deployment is used' do
     let(:depls_name) { 'simple-depls' }
@@ -46,23 +36,11 @@ describe 'generate-depls for news pipeline' do
       context 'when news pipeline is generated' do
         it_behaves_like 'pipeline checker', 'simple-depls-news-generated.yml', 'simple-depls-news-ref.yml'
       end
-
     end
-
-
   end
 
   describe 'news-pipeline template pre-requisite' do
-    context 'when template is processed' do
-
-      before do
-      end
-    end
+    context 'when template is processed'
   end
-
-
 end
-
-
-
 
