@@ -9,10 +9,21 @@
 # Pbs with pure local execution approach
 # - may slightly differ from concourse execution (potential mismatch in number & version of providers)
 
+
 function setUpDevEnv {
     DEV_ENV=$1
     SECRET_REPO=$2
     DEPLOYMENT_PATH=$3
+
+    #Avoid intellij warnings about undefined variable that users should set
+    WORKDIR=${WORKDIR}
+
+    if ! [ -d "${WORKDIR}" ]
+    then
+        echo "Missing WORKDIR env file pointing to the dir where your git clones are"
+        return
+    fi
+
 
     cd "${WORKDIR}"
 
@@ -60,7 +71,8 @@ function setUpDevEnv {
     for f in $SECRET_FILES;   do createLink "$f" "${WORKDIR}/${SECRET_REPO}/${DEPLOYMENT_PATH}/spec"; done
     #set +x
 
-    printf "\n Local dev env set up in ${WORKDIR}/${DEV_ENV}, ready to edit tf files there using your favorite IDE with TF HCL syntax support:\n"
+    echo
+    echo "Local dev env set up in ${WORKDIR}/${DEV_ENV}, ready to edit tf files there using your favorite IDE with TF HCL syntax support:"
     tree --noreport "${WORKDIR}/${DEV_ENV}"
 
     # You may still have to manually fetch generated terraform.tfvars.json using fly hijack
@@ -83,14 +95,14 @@ function createLink() {
 
     relative_path=$(realpath "--relative-to=${relative_to_dir}" "${absolute_path}")
 
-    mkdir -p $(dirname "${relative_path}")
+    mkdir -p "$(dirname "${relative_path}")"
     ln -nfv "$f" "${relative_path}";
 }
 
 
 
 function display_local_tf_commands() {
-    printf "\nYou may now then use TF locally with:"
+    echo "You may now then use TF locally with:"
     echo "DEV_ENV=${DEV_ENV}"
 
 
@@ -102,7 +114,8 @@ function display_local_tf_commands() {
 
 function display_docker_tf_commands() {
 
-    printf "\nYou may use the docker image with providers configured:\n"
+    echo
+    echo "You may use the docker image with providers configured:"
 
     #echo "# Check current version of image into cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml"
     #echo "TF_DOCKER_TAG=ad445d6b34dffeadb3c2b26a40dd71de73ec0686"
@@ -124,7 +137,8 @@ function display_docker_tf_commands() {
 
 function setup_fly_and_printout_cmds() {
 
-    printf "\nYou may still have to fetch generated terraform.tfvars.json. Below are steps to ask concourse to do so with local copies of your paas-template and paas-secret repos.\n\n"
+    echo "You may still have to fetch generated terraform.tfvars.json. Below are steps to ask concourse to do so with local copies of your paas-template and paas-secret repos."
+    echo
     echo "The following fly commands can be run within the current shell into which the proper env vars have been defined"
     # This is how to ask concourse to run the generate-manifest.yml tasks through fly execute (see below)
     # using local version of these tasks (from cf-ops-automation) and local copies of paas-template and paas-secret
@@ -167,7 +181,8 @@ function setup_fly_and_printout_cmds() {
             -i "additional-resource=${WORKDIR}/paas-template" \
             -o "generated-files=${WORKDIR}/${DEV_ENV}/generated-files"
 
-    printf "\nYou may also ask concourse to execute the tf plan/apply using your local spec files:\n"
+    echo
+    echo "You may also ask concourse to execute the tf plan/apply using your local spec files:"
     echo "--- Fly cmd for the TF plan ---"
 
     #    - task: terraform-plan
