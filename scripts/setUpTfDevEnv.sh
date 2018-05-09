@@ -103,11 +103,8 @@ function createLink() {
 
 function display_local_tf_commands() {
     echo "You may now then use TF locally with:"
-    echo "DEV_ENV=${DEV_ENV}"
-
-
     echo "cd ${WORKDIR}/${DEV_ENV}/generated-files"
-    echo 'bash -c "\$(curl -fsSL https://raw.github.com/orange-cloudfoundry/terraform-provider-cloudfoundry/master/bin/install.sh)"'
+    echo '#install providers locally, then'
     echo "terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/"
     echo "terraform plan -input=false ../spec-applied/"
 }
@@ -198,8 +195,8 @@ function setup_fly_and_printout_cmds() {
     export SECRET_STATE_FILE_PATH=${DEPLOYMENT_PATH}
     export IAAS_SPEC_PATH=${DEPLOYMENT_PATH}/spec-${IAAS_TYPE}
 
-    mkdir -p ${WORKDIR}/${DEV_ENV}/tf-plan-generated-files
-    mkdir -p ${WORKDIR}/${DEV_ENV}/tf-plan-spec-applied
+    mkdir -p "${WORKDIR}/${DEV_ENV}/tf-plan-generated-files"
+    mkdir -p "${WORKDIR}/${DEV_ENV}/tf-plan-spec-applied"
 
     echo fly -t int.micro execute \
             -c "${WORKDIR}/cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml" \
