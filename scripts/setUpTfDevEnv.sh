@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# tune shell check rules: SC2164 https://github.com/koalaman/shellcheck/wiki/SC2164
+# shellcheck disable=SC2164
+
 # Goals:
 # - Easy local execution allowing direct edition of files in git repos, and their terraform execution in IDE and local.
 #   As currently merging of paas-template and paas-secret specs is done by concourse scripts
@@ -11,10 +14,11 @@ function setUpDevEnv {
     SECRET_REPO=$2
     DEPLOYMENT_PATH=$3
 
-    cd ${WORKDIR}
+    cd "${WORKDIR}"
 
-    mkdir -p $DEV_ENV
-    cd $DEV_ENV
+    mkdir -p "${DEV_ENV}"
+    cd "${DEV_ENV}"
+
     echo "Prerequisite: have a local copy of paas-template, paas-secret and cf-ops-automation (only for fly interactions)"
     echo "Preparing dev env into $(pwd)"
 
@@ -157,11 +161,11 @@ function setup_fly_and_printout_cmds() {
 
     echo "---- Fly cmd for the tf vars generation (should take close to 3 mins)---"
     echo fly -t int.micro execute \
-            -c ${WORKDIR}/cf-ops-automation/concourse/tasks/generate-manifest.yml  \
-            -i scripts-resource=${WORKDIR}/cf-ops-automation  \
-            -i credentials-resource=${WORKDIR}/${SECRET_REPO}  \
-            -i additional-resource=${WORKDIR}/paas-template \
-            -o generated-files=${WORKDIR}/${DEV_ENV}/generated-files
+            -c "${WORKDIR}/cf-ops-automation/concourse/tasks/generate-manifest.yml"  \
+            -i "scripts-resource=${WORKDIR}/cf-ops-automation"  \
+            -i "credentials-resource=${WORKDIR}/${SECRET_REPO}"  \
+            -i "additional-resource=${WORKDIR}/paas-template" \
+            -o "generated-files=${WORKDIR}/${DEV_ENV}/generated-files"
 
     printf "\nYou may also ask concourse to execute the tf plan/apply using your local spec files:\n"
     echo "--- Fly cmd for the TF plan ---"
@@ -183,12 +187,12 @@ function setup_fly_and_printout_cmds() {
     mkdir -p ${WORKDIR}/${DEV_ENV}/tf-plan-spec-applied
 
     echo fly -t int.micro execute \
-            -c ${WORKDIR}/cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml  \
-            -i secret-state-resource=${WORKDIR}/${SECRET_REPO} \
-            -i spec-resource=${WORKDIR}/paas-template \
-            -i terraform-tfvars=${WORKDIR}/${DEV_ENV}/generated-files \
-            -o generated-files=${WORKDIR}/${DEV_ENV}/generated-files \
-            -o spec-applied=${WORKDIR}/${DEV_ENV}/spec-applied
+            -c "${WORKDIR}/cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml" \
+            -i "secret-state-resource=${WORKDIR}/${SECRET_REPO}" \
+            -i "spec-resource=${WORKDIR}/paas-template" \
+            -i "terraform-tfvars=${WORKDIR}/${DEV_ENV}/generated-files" \
+            -o "generated-files=${WORKDIR}/${DEV_ENV}/generated-files" \
+            -o "spec-applied=${WORKDIR}/${DEV_ENV}/spec-applied"
 
     echo
     echo "Note: this may override your paas-template and paas-secret files. To avoid this, don't use the hardlinks set up"
@@ -206,12 +210,12 @@ function setup_fly_and_printout_cmds() {
     #        IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
 
     echo fly -t int.micro execute \
-        -c ${WORKDIR}/cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml  \
-        -i secret-state-resource=${WORKDIR}/${SECRET_REPO} \
-        -i spec-resource=${WORKDIR}/paas-template \
-        -i terraform-tfvars=${WORKDIR}/${DEV_ENV}/generated-files \
-        -o generated-files=${WORKDIR}/${DEV_ENV}/generated-files \
-        -o spec-applied=${WORKDIR}/${DEV_ENV}/spec-applied
+        -c "${WORKDIR}/cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml" \
+        -i "secret-state-resource=${WORKDIR}/${SECRET_REPO}" \
+        -i "spec-resource=${WORKDIR}/paas-template" \
+        -i "terraform-tfvars=${WORKDIR}/${DEV_ENV}/generated-files" \
+        -o "generated-files=${WORKDIR}/${DEV_ENV}/generated-files" \
+        -o "spec-applied=${WORKDIR}/${DEV_ENV}/spec-applied"
 }
 
 #Intellij fails to recognize heredoc within functions
