@@ -14,6 +14,7 @@ function setUpDevEnv {
     DEV_ENV=$1
     SECRET_REPO=$2
     DEPLOYMENT_PATH=$3
+    LN_OPTION="-nsfv"
 
     #Avoid intellij warnings about undefined variable that users should set
     WORKDIR=${WORKDIR}
@@ -54,17 +55,17 @@ function setUpDevEnv {
     mkdir -p generated-files
     mkdir -p spec-applied
     # Skipping secret resource not used by terraform
-    #ln -nf "${WORKDIR}/${SECRET_REPO}" secret-state-resource
+    #ln ${LN_OPTION} "${WORKDIR}/${SECRET_REPO}" secret-state-resource
 
     cd generated-files/
-    echo "setting up $(pwd) with hardlinks"
+    echo "setting up $(pwd)"
 
-    ln -nfv  "${WORKDIR}/${SECRET_REPO}/${DEPLOYMENT_PATH}/terraform.tfstate" terraform.tfstate
+    ln ${LN_OPTION}  "${WORKDIR}/${SECRET_REPO}/${DEPLOYMENT_PATH}/terraform.tfstate" terraform.tfstate
     TEMPLATE_FILES=$(find "${WORKDIR}/paas-template/${DEPLOYMENT_PATH}/spec" -type f )
     SECRET_FILES=$(find "${WORKDIR}/${SECRET_REPO}/${DEPLOYMENT_PATH}/spec"  -type f )
 
     cd ../spec-applied/
-    echo "setting up $(pwd) with hardlinks"
+    echo "setting up $(pwd)"
 
     #set -x
     for f in $TEMPLATE_FILES; do createLink "$f" "${WORKDIR}/paas-template/${DEPLOYMENT_PATH}/spec"; done
@@ -81,14 +82,20 @@ function setUpDevEnv {
 
     setup_fly_and_printout_cmds
 
-    display_docker_tf_commands
-    display_local_tf_commands
+
+    #display_docker_tf_commands
+    #display_local_tf_commands
 }
 
 
 
 
-# Creates hard link. Since hardlinks don't support directories, we create an emty directory tree first
+# Creates a soft link.
+# We used to create hardlinks instead for supporting docker volumes.
+# However, intellij creates temp files when editing files, which breaks hard links.
+# See https://intellij-support.jetbrains.com/hc/en-us/community/posts/207062475-Editing-files-and-hard-links
+#
+# Since, hardlinks don't support directories, we create an emty directory tree first
 function createLink() {
     absolute_path=$1
     relative_to_dir=$2
@@ -96,7 +103,7 @@ function createLink() {
     relative_path=$(realpath "--relative-to=${relative_to_dir}" "${absolute_path}")
 
     mkdir -p "$(dirname "${relative_path}")"
-    ln -nfv "$f" "${relative_path}";
+    ln ${LN_OPTION} "$f" "${relative_path}";
 }
 
 
@@ -159,18 +166,19 @@ function setup_fly_and_printout_cmds() {
 
     # Corresponding fly execute command (still missing some args)
 
-    DEPLOYMENT_PATH=ops-depls/cloudfoundry/terraform-config
-    SECRET_REPO=int-secrets
+    #DEPLOYMENT_PATH=ops-depls/cloudfoundry/terraform-config
+    #SECRET_REPO=int-secrets
 
-
-    export IAAS_TYPE='openstack'
+    set -x
+    export IAAS_TYPE='openstack-hws'
     export CUSTOM_SCRIPT_DIR=additional-resource/${DEPLOYMENT_PATH}/template
     export  YML_TEMPLATE_DIR=additional-resource/${DEPLOYMENT_PATH}/template
     #export SPRUCE_FILE_BASE_PATH=
-    export YML_FILES="./credentials-resource/shared/secrets.yml"
+    export YML_FILES="./credentials-resource/shared/secrets.yml ./credentials-resource/${DEPLOYMENT_PATH}/secrets/secrets.yml"
     export SUFFIX="-tpl.tfvars.yml"
+    set +x
 
-    echo "---- Fly cmd for the tf vars generation (should take close to 3 mins)---"
+    echo "---- Fly cmd for the tf vars generation (should take less than 3 mins with slow ADSL uploads)---"
     echo fly -t int.micro execute \
             -c "${WORKDIR}/cf-ops-automation/concourse/tasks/generate-manifest.yml"  \
             -i "scripts-resource=${WORKDIR}/cf-ops-automation"  \
@@ -203,14 +211,17 @@ function setup_fly_and_printout_cmds() {
             -i "secret-state-resource=${WORKDIR}/${SECRET_REPO}" \
             -i "spec-resource=${WORKDIR}/paas-template" \
             -i "terraform-tfvars=${WORKDIR}/${DEV_ENV}/generated-files" \
-            -o "generated-files=${WORKDIR}/${DEV_ENV}/generated-files" \
-            -o "spec-applied=${WORKDIR}/${DEV_ENV}/spec-applied"
+            -o "generated-files=${WORKDIR}/${DEV_ENV}/tf-plan-generated-files" \
+            -o "spec-applied=${WORKDIR}/${DEV_ENV}/tf-plan-spec-applied"
 
     echo
     echo "Note: this may override your paas-template and paas-secret files. To avoid this, don't use the hardlinks set up"
     echo "rm -rfi ${WORKDIR}/${DEV_ENV}/generated-files ${WORKDIR}/${DEV_ENV}/spec-applied"
 
     echo "--- Fly cmd for the TF apply ---"
+
+    mkdir -p "${WORKDIR}/${DEV_ENV}/tf-apply-generated-files"
+    mkdir -p "${WORKDIR}/${DEV_ENV}/tf-apply-spec-applied"
 
     #    - task: terraform-apply
     #      input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-template-<%=depls %>}
@@ -226,8 +237,8 @@ function setup_fly_and_printout_cmds() {
         -i "secret-state-resource=${WORKDIR}/${SECRET_REPO}" \
         -i "spec-resource=${WORKDIR}/paas-template" \
         -i "terraform-tfvars=${WORKDIR}/${DEV_ENV}/generated-files" \
-        -o "generated-files=${WORKDIR}/${DEV_ENV}/generated-files" \
-        -o "spec-applied=${WORKDIR}/${DEV_ENV}/spec-applied"
+        -o "generated-files=${WORKDIR}/${DEV_ENV}/tf-apply-generated-files" \
+        -o "spec-applied=${WORKDIR}/${DEV_ENV}/tf-apply-spec-applied"
 }
 
 #Intellij fails to recognize heredoc within functions
@@ -245,6 +256,7 @@ setUpDevEnv terraform-preprod-env            bosh-cloudwatt-preprod-secrets  ops
 setUpDevEnv terraform-preprod-ops-deps-env   bosh-cloudwatt-preprod-secrets  ops-depls/cloudfoundry/terraform-config
 setUpDevEnv terraform-prod-ops-deps-env      bosh-cloudwatt-secrets          ops-depls/cloudfoundry/terraform-config
 setUpDevEnv terraform-int-ops-deps-env       int-secrets                     ops-depls/cloudfoundry/terraform-config
+setUpDevEnv terraform-int-coab-deps-env      int-secrets                     coab-depls/terraform-config
 EOF1
 )
 
