@@ -16,7 +16,7 @@ platform: linux
 
 image_resource:
   type: docker-image
-  source: {repository: orangecloudfoundry/terraform, tag: ad445d6b34dffeadb3c2b26a40dd71de73ec0686}
+  source: {repository: orangecloudfoundry/terraform, tag: 74907a778ebecbd9e5d3ff27e210522bffad7047}
 
 inputs:
   - name: secret-state-resource
