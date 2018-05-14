@@ -109,8 +109,8 @@ jobs:
       params:
         build: cf-ops-automation-dependencies
         build_args: &docker_build_args
-          CONCOURSE_VERSION: 3.9.2
-          CONCOURSE_SHA: 12eb8f2b49ec7fe18582b58177f65c5c1c95bc6bb2c942bd44956b1715d33427
+          CONCOURSE_VERSION: 3.13.0
+          CONCOURSE_SHA: b94f3bad52a80d41e636c85c0f62d33365d385632cef07f33651108da63cfed3
 
 
   - name: test
