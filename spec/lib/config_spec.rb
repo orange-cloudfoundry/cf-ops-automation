@@ -12,6 +12,11 @@ describe Config do
         'boshreleases' => false,
         'stemcells' => true,
         'docker-images' => false
+      },
+      'default' => {
+        'stemcell' => {
+          'name' => 'bosh-openstack-kvm-ubuntu-trusty-go_agent'
+        }
       }
     }
   end
@@ -40,7 +45,6 @@ describe Config do
       let(:shared_config_file) { File.join(config_dir, 'my-public-config.yml') }
       let(:shared_config_file_content) { { 'public-override' => true, 'offline-mode' => false } }
 
-
       before do
         File.open(shared_config_file, 'w') do |file|
           file.write shared_config_file_content.to_yaml
@@ -48,7 +52,7 @@ describe Config do
       end
 
       it 'overrides default value with shared-config' do
-        expect(subject.load).to eq(shared_config_file_content)
+        expect(subject.load).to eq(default_config.merge shared_config_file_content)
       end
 
       context 'when private config also exists' do
@@ -64,9 +68,59 @@ describe Config do
         end
 
         it 'overrides value from shared-config with private-config' do
-        expect(subject.load).to eq(private_config_file_content.merge({ 'public-override' => true}))
+          expect(subject.load).to eq(default_config.merge private_config_file_content.merge('public-override' => true))
         end
       end
     end
   end
+
+  describe '#stemcell_name' do
+    subject { described_class.new(shared_config_file, 'not-existing-private-config.yml') }
+
+    let(:shared_config_file) { File.join(config_dir, 'my-public-config.yml') }
+
+    before do
+      File.open(shared_config_file, 'w') { |file| file.write shared_config_file_content.to_yaml }
+    end
+
+    context 'when default is empty' do
+      let(:shared_config_file_content) { { 'default' => {} } }
+
+      it 'returns the default stemcell name' do
+        subject.load
+        expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
+      end
+    end
+
+    context 'when stemcell does not contain name key' do
+      let(:shared_config_file_content) { { 'default' => { 'stemcell' => "x" } } }
+
+      it 'returns the default stemcell name' do
+        subject.load
+        expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
+      end
+    end
+
+    context 'when stemcell is empty' do
+      let(:shared_config_file_content) { { 'default' => { 'stemcell' => {} } } }
+
+      it 'returns the default stemcell name' do
+        subject.load
+        expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
+      end
+    end
+
+    context 'when stemcell is redefined' do
+      let(:my_stemcell_name) { 'my_stemcell' }
+      let(:shared_config_file_content) { { 'default' => { 'stemcell' => { 'name' => my_stemcell_name } } } }
+
+      it 'returns the default stemcell name' do
+        subject.load
+        expect(subject.stemcell_name).to eq(my_stemcell_name)
+      end
+    end
+
+  end
+
+
 end
