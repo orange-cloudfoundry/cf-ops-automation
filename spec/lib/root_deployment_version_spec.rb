@@ -4,30 +4,35 @@ require_relative '../../lib/root_deployment_version'
 describe RootDeploymentVersion do
 
   let(:root_deployment_name) { 'main_depls' }
-  let(:versions) { { RootDeploymentVersion::DEPLOYMENT_NAME => root_deployment_name,
-                     RootDeploymentVersion::STEMCELL_NAME => 'openstack',
-                     RootDeploymentVersion::STEMCELL_VERSION => 33.12 } }
+  let(:versions) do
+    { RootDeploymentVersion::DEPLOYMENT_NAME => root_deployment_name, RootDeploymentVersion::STEMCELL_VERSION => 33.12 }
+  end
 
   describe '#initialize' do
-    context 'when root_deployment_name is invalid' do
+    subject { described_class.new(root_deployment_name, versions) }
 
-      it 'raises an error'
+    context 'when root_deployment_name is missing' do
+      let(:versions) { { RootDeploymentVersion::STEMCELL_VERSION => 33.12 } }
+
+      it 'raises an error' do
+        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match("invalid #{RootDeploymentVersion::DEPLOYMENT_NAME}") }
+      end
     end
 
-    context 'when stemcell name is missing' do
-
-      it 'raises an error'
-    end
 
     context 'when stemcell version is missing' do
+      let(:versions) { { RootDeploymentVersion::DEPLOYMENT_NAME => root_deployment_name } }
 
-      it 'raises an error'
+      it 'raises an error' do
+        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match("invalid/missing #{RootDeploymentVersion::STEMCELL_VERSION}") }
+
+      end
     end
 
     context 'when parameters are valid' do
-      let(:sub) {RootDeploymentVersion.new(root_deployment_name, versions)}
+
       it 'creates a RootDeploymentVersion object' do
-        expect(sub.root_deployment_name).to eq(root_deployment_name)
+        expect(subject.root_deployment_name).to eq(root_deployment_name)
       end
     end
   end

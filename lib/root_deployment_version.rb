@@ -41,13 +41,11 @@ class RootDeploymentVersion
     raise "empty versions" unless @versions
     raise "invalid #{DEPLOYMENT_NAME}" unless validate_string(@versions[DEPLOYMENT_NAME])
     raise "invalid/missing #{DEPLOYMENT_NAME}: found #{@versions[DEPLOYMENT_NAME]} expected #{@root_deployment_name}" unless @versions[DEPLOYMENT_NAME] == @root_deployment_name
-    raise "invalid/missing #{STEMCELL_NAME}" unless validate_string(@versions[STEMCELL_NAME])
     raise "invalid/missing #{STEMCELL_VERSION}" if @versions[STEMCELL_VERSION].nil? || (@versions[STEMCELL_VERSION].is_a?(String) && @versions[STEMCELL_VERSION].empty?)
   end
 
   def self.add_required_keys_and_value(versions)
-    versions[STEMCELL_NAME]='aStemCell' unless versions[STEMCELL_NAME]
-    versions[STEMCELL_VERSION]=1 unless versions[STEMCELL_VERSION]
+    versions[STEMCELL_VERSION] = 1 unless versions[STEMCELL_VERSION]
   end
 
   def self.get_filename(root_deployment_name)
