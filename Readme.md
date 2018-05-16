@@ -12,36 +12,42 @@
 
 <!-- TOC initiated with [gh-md-toc](https://github.com/ekalinin/github-markdown-toc) -->
 <!--ts-->
-
-  * [Introduction](#introduction)
-     * [Core principles](#core-principles)
-     * [Model overview](#model-overview)
-     * [Skills prereqs](#skills-prereqs)
-     * [Sample deployment topology](#sample-deployment-topology)
-     * [Generated pipelines](#generated-pipelines)
-  * [Template engine reference documentation](#template-engine-reference-documentation)
-     * [Multi deployer support](#multi-deployer-support)
-     * [Resource lifecycle overview](#resource-lifecycle-overview)
-     * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
-     * [Iaas specifics support](#iaas-specifics-support)
-     * [Bosh cli v2 specific features support](#bosh-cli-v2-specific-features-support)
-        * [ops-files](#ops-files)
-        * [vars-files](#vars-files)
-        * [cloud and runtime config](#cloud-and-runtime-config)
-     * [git submodules](#git-submodules)
-        * [enable deployment format (enable-deployment.yml)](#enable-deployment-format-enable-deploymentyml)
-        * [deployment dependencies format (deployment-dependencies.yml)](#deployment-dependencies-format-deployment-dependenciesyml)
-     * [Cloudfoundry application resources template format](#cloudfoundry-application-resources-template-format)
-        * [enable-cf-app.yml file format](#enable-cf-appyml-file-format)
-     * [pipeline auto-update](#pipeline-auto-update)
-     * [Concourse team](#concourse-team)
-     * [terraform](#terraform)
-        * [file format](#file-format)
-     * [delete lifecycle support](#delete-lifecycle-support)
-        * [bosh deployment](#bosh-deployment)
-        * [cf-app deployment](#cf-app-deployment)
-     * [shared and private configuration](#shared-and-private-configuration)
-  * [COA development](#coa-development)
+   * [cf-ops-automation (COA)](#cf-ops-automation-coa)
+      * [Table of Contents](#table-of-contents)
+      * [Introduction](#introduction)
+         * [Core principles](#core-principles)
+         * [Skills prereqs](#skills-prereqs)
+         * [Model Overview](#model-overview)
+         * [Sample deployment topology](#sample-deployment-topology)
+      * [Generated pipelines](#generated-pipelines)
+         * [singletons](#singletons)
+         * [per-root-deployment](#per-root-deployment)
+      * [Template engine reference documentation](#template-engine-reference-documentation)
+         * [Multi deployer support](#multi-deployer-support)
+            * [Bosh deployer](#bosh-deployer)
+            * [Concourse pipeline deployer](#concourse-pipeline-deployer)
+         * [Resource lifecycle overview](#resource-lifecycle-overview)
+         * [Bosh deployment resources template format](#bosh-deployment-resources-template-format)
+         * [Iaas specifics support](#iaas-specifics-support)
+            * [Terraform specific](#terraform-specific)
+         * [Bosh cli v2 specific features support](#bosh-cli-v2-specific-features-support)
+            * [ops-files](#ops-files)
+            * [vars-files](#vars-files)
+            * [Cloud and runtime config](#cloud-and-runtime-config)
+         * [git submodules](#git-submodules)
+            * [enable deployment format (enable-deployment.yml)](#enable-deployment-format-enable-deploymentyml)
+            * [deployment dependencies format (deployment-dependencies.yml)](#deployment-dependencies-format-deployment-dependenciesyml)
+         * [Cloudfoundry application resources template format](#cloudfoundry-application-resources-template-format)
+            * [enable-cf-app.yml file format](#enable-cf-appyml-file-format)
+         * [pipeline auto-update](#pipeline-auto-update)
+         * [Concourse team](#concourse-team)
+         * [terraform](#terraform)
+            * [file format](#file-format)
+         * [delete lifecycle support](#delete-lifecycle-support)
+            * [bosh deployment](#bosh-deployment)
+            * [cf-app deployment](#cf-app-deployment)
+         * [shared and private configuration](#shared-and-private-configuration)
+   * [COA development](#coa-development)
       * [Status and roadmap](#status-and-roadmap)
       * [Running the Test Suite](#running-the-test-suite)
       * [Generating pipelines locally and uploading a test version](#generating-pipelines-locally-and-uploading-a-test-version)
@@ -50,7 +56,7 @@
       * [Releasing COA](#releasing-coa)
          * [Standard release](#standard-release)
          * [Hotfix release](#hotfix-release)
-  * [FAQ](#faq)
+   * [FAQ](#faq)
       * [How to initialize a new bosh deployment template ?](#how-to-initialize-a-new-bosh-deployment-template-)
       * [How to enable a bosh deployment template ?](#how-to-enable-a-bosh-deployment-template-)
       * [How to upload a bosh release not available on bosh.io?](#how-to-upload-a-bosh-release-not-available-on-boshio)
@@ -60,7 +66,10 @@
          * [pre requisite](#pre-requisite)
       * [How to create a new root deployment](#how-to-create-a-new-root-deployment)
          * [pre requisite](#pre-requisite-1)
-  * [Credits](#credits)
+   * [Credits](#credits)
+   * [Changelog](#changelog)
+   * [Upgrade](#upgrade)
+         * [pre requisite](#pre-requisite-2)
 
 <!--te-->
 
@@ -601,3 +610,22 @@ This repo was inspired by great work shared in:
 
 * [alphagov/paas-cf](https://github.com/alphagov/paas-cf)
 * [cloudfoundry/buildpacks-ci](https://github.com/cloudfoundry/buildpacks-ci/)
+
+# Changelog
+
+See [CHANGELOG.md](CHANGELOG.md)
+
+# Upgrade
+
+Look into [upgrade](upgrade) directory, and run required scripts from Cf-Ops-Automation root directory to benefit
+from default values
+
+## pre requisite
+
+The following tools are required to run upgrade scripts:
+
+* ruby
+* git
+
+It is also required to have a paas-templates repository clone and/or a config repository clone to be able to perform
+upgrade operations.

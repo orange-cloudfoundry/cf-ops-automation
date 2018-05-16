@@ -13,20 +13,18 @@ require_relative '../lib/cf_app_overview'
 require_relative '../lib/root_deployment'
 require_relative '../lib/root_deployment_version'
 
-
 def header(msg)
   print '*' * 10
   puts " #{msg}"
 end
 
-
 # TODO add rspec file to avoid regression
-BOSH_CERT_LOCATIONS={
-'on-demand-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
-'micro-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
-'master-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
-'expe-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
-'ops-depls' => 'shared/certs/internal_paas-ca/server-ca.crt'
+BOSH_CERT_LOCATIONS = {
+  'on-demand-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+  'micro-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+  'master-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+  'expe-depls' => 'shared/certs/internal_paas-ca/server-ca.crt',
+  'ops-depls' => 'shared/certs/internal_paas-ca/server-ca.crt'
 }
 BOSH_CERT_LOCATIONS.default = 'shared/certs/internal_paas-ca/server-ca.crt'
 
@@ -93,7 +91,13 @@ raise "#{depls}-versions.yml: file not found. #{OPTIONS[:paas_template_root]}/#{
 # version_reference = YAML.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 root_deployment_versions = RootDeploymentVersion.load_file("#{OPTIONS[:paas_template_root]}/#{depls}/#{depls}-versions.yml")
 
-deployment_factory = DeploymentFactory.new(depls.to_s, root_deployment_versions.versions)
+shared_config = File.join(OPTIONS[:paas_template_root], 'shared-config.yml')
+private_shared_config = File.join(OPTIONS[:secret_path], 'private-config.yml')
+config = Config.new(shared_config, private_shared_config)
+loaded_config = config.load
+puts "loaded config: #{loaded_config}"
+
+deployment_factory = DeploymentFactory.new(depls.to_s, root_deployment_versions.versions, config)
 puts root_deployment_versions.versions
 all_dependencies = RootDeployment.new(depls.to_s, OPTIONS[:paas_template_root].to_s, OPTIONS[:secret_path].to_s).overview_from_hash(deployment_factory)
 
@@ -102,11 +106,6 @@ all_ci_deployments = CiDeploymentOverview.new("#{OPTIONS[:secret_path]}/" + depl
 all_cf_apps = CfAppOverview.new(File.join(OPTIONS[:secret_path], depls, '/*'), depls).overview
 
 git_submodules = GitModules.list(OPTIONS[:git_submodule_path])
-
-shared_config = File.join(OPTIONS[:paas_template_root], 'shared-config.yml')
-private_shared_config = File.join(OPTIONS[:secret_path], 'private-config.yml')
-loaded_config = Config.new(shared_config, private_shared_config).load
-puts "loaded config: #{loaded_config}"
 
 erb_context = {
   depls: depls,
@@ -121,7 +120,6 @@ erb_context = {
 }
 
 processor = TemplateProcessor.new depls, OPTIONS, erb_context
-
 
 processed_template_count = 0
 OPTIONS[:input_pipelines].each do |dir|
@@ -141,7 +139,7 @@ puts
 puts
 puts "### WARNING ### no deployment detected. Please check
  template_dir: #{OPTIONS[:paas_template_root]}
- secrets_dir: #{OPTIONS[:secret_path]}" if  all_dependencies.empty?
+ secrets_dir: #{OPTIONS[:secret_path]}" if all_dependencies.empty?
 puts '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if all_ci_deployments.empty?
 puts '### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists' if all_cf_apps.empty?
 puts '### WARNING ### no gitsubmodule detected' if git_submodules.empty?
