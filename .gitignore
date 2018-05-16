@@ -20,3 +20,5 @@ out/
 /coverage/
 
 spec/tasks/git_reset_wip/**
+/Readme.md.toc.*
+/Readme.md.orig.*

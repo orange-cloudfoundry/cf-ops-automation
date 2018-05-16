@@ -3,4 +3,3 @@ deployment-name: simple-depls
 ntp_boshrelease-version: "4"
 
 stemcell-version: "3468.1"
-stemcell-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
