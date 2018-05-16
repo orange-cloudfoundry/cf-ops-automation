@@ -680,6 +680,10 @@ jobs:
         params: { submodules: none}
         trigger: true
         passed: [deploy-<%= name %>]
+      - get: paas-template-<%= name %>
+        params: { submodules: none}
+        trigger: true
+        passed: [deploy-<%= name %>]
     <% boshrelease['errands'].each do |errand_name, errand_info| %>
     - put: errand-<%= name %>
       params:

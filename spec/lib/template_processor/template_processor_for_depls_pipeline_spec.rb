@@ -33,8 +33,8 @@ describe 'DeplsPipelineTemplateProcessing' do
               base_location: https://bosh.io/d/github.com/
               repository: cloudfoundry-incubator/cf-routing-release
               version: 0.169.0
-              errands:
-                  import:
+          errands:
+              import:
           bosh-deployment:
             active: true
           status: enabled
@@ -115,9 +115,10 @@ describe 'DeplsPipelineTemplateProcessing' do
           'recreate-all',
           'recreate-bui',
           'recreate-shield-expe',
-          'retrigger-all-jobs'] },
+          'retrigger-all-jobs',
+          'run-errand-shield-expe'] },
       { 'name' => 'Deploy-b*', 'jobs' => ['deploy-bui'] },
-      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe'] },
+      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe'] },
       { 'name' => 'Recreate',
         'jobs' => ['recreate-all', 'recreate-bui', 'recreate-shield-expe'] },
       { 'name' => 'Utils',
@@ -158,6 +159,49 @@ describe 'DeplsPipelineTemplateProcessing' do
 
     before { @processed_template = subject.process(@pipelines_dir + '/*') }
 
+    context 'when an errand job is defined' do
+      let(:expected_shield_errand) do
+        my_shield_errand_yaml = <<~YAML
+          - aggregate:
+            - get: secrets-shield-expe
+              params: { submodules: none}
+              trigger: true
+              passed: [deploy-shield-expe]
+            - get: paas-template-shield-expe
+              params: { submodules: none}
+              trigger: true
+              passed: [deploy-shield-expe]
+          - put: errand-shield-expe
+            params:
+              name: import
+        YAML
+        YAML.safe_load(my_shield_errand_yaml)
+      end
+      let(:expected_shield_errand_resource) do
+        my_shield_errand_yaml = <<~YAML
+          - name: errand-shield-expe
+            type: bosh-errand
+            source:
+              target: ((bosh-target))
+              client: ((bosh-username))
+              client_secret: ((bosh-password))
+              deployment: shield-expe
+              ca_cert: shared/certificate.pem
+        YAML
+        YAML.safe_load(my_shield_errand_yaml)
+      end
+
+      it 'generates an errand resource for shield boshrelease' do
+        generated_errand_resource = generated_pipeline['resources'].select { |job| job['name'] == 'errand-shield-expe' } # .flat_map { |job| job['plan'] }
+        expect(generated_errand_resource).to match(expected_shield_errand_resource)
+      end
+
+      it 'generates an errand job for shield boshrelease' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe' }.flat_map { |job| job['plan'] }
+        expect(generated_errand_job).to match(expected_shield_errand)
+      end
+    end
+
     context 'without ci deployment overview' do
       it 'processes only one template' do
         expect(@processed_template.length).to eq(1)
@@ -180,8 +224,8 @@ describe 'DeplsPipelineTemplateProcessing' do
       end
 
       it 'generates a group using root deployment name ' do
-        expected_group = generated_pipeline['groups'].select { |concourse_group| concourse_group['name'] == root_deployment_name.capitalize }
-        expect(expected_group).not_to be_empty
+        generated_group = generated_pipeline['groups'].select { |concourse_group| concourse_group['name'] == root_deployment_name.capitalize }
+        expect(generated_group).not_to be_empty
       end
     end
 
@@ -212,7 +256,7 @@ describe 'DeplsPipelineTemplateProcessing' do
         expected_boshreleases.flat_map { |name, repo| { name => "#{repo}/#{name}-((#{name}-version)).tgz" } }
       end
       let(:expected_boshrelease_put_version) do
-        expected_boshreleases.flat_map { |name, repo| { name => "#{name}/#{name}-((#{name}-version)).tgz" } }
+        expected_boshreleases.flat_map { |name, _repo| { name => "#{name}/#{name}-((#{name}-version)).tgz" } }
       end
       let(:expected_s3_deployment_put) do
         expected_yaml = <<~YAML
@@ -248,15 +292,14 @@ describe 'DeplsPipelineTemplateProcessing' do
       end
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
-        expected_init_version = expected_boshrelease_get_version.flat_map(&:values).flatten.flat_map{|get_version| "path:#{get_version}"}
+        expected_init_version = expected_boshrelease_get_version.flat_map(&:values).flatten.flat_map { |get_version| "path:#{get_version}" }
         init_args = generated_pipeline['jobs']
-                                      .select {|job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}"}
-                                      .flat_map { |job| job['plan'] }
-                                      .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
-                                      .flat_map {|task| task['config']['run']['args']}
-          expect(init_args[1]).to include(*expected_init_version)
+                    .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
+                    .flat_map { |job| job['plan'] }
+                    .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
+                    .flat_map { |task| task['config']['run']['args'] }
+        expect(init_args[1]).to include(*expected_init_version)
       end
-
     end
     context 'with ci deployment overview without terraform' do
       let(:all_ci_deployments) do
@@ -283,7 +326,7 @@ describe 'DeplsPipelineTemplateProcessing' do
       end
 
       it 'generates all groups' do
-        groups.select { |item| %w(Utils My-root-depls).include?(item['name']) }.each do |item|
+        groups.select { |item| %w[Utils My-root-depls].include?(item['name']) }.each do |item|
           item['jobs'] << 'update-pipeline-my-root-depls-generated'
           item['jobs'].sort!
         end
