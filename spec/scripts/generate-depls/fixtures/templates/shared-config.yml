@@ -1,0 +1,4 @@
+---
+default:
+  stemcell:
+    name: bosh-dummy-stemcell
