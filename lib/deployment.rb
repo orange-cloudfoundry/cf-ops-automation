@@ -33,16 +33,14 @@ class Deployment
 
   def self.default(deployment_name)
     details = {
-           'stemcells' => {'bosh-openstack-kvm-ubuntu-trusty-go_agent' => ''},
-           'releases' => {}
-           }
+      'stemcells' => {},
+      'releases' => {}
+    }
     Deployment.new(deployment_name, details)
   end
 end
 
-
 class DeploymentBuilder
-
   def initialize
     @name = ''
     @details = {}
@@ -71,6 +69,4 @@ class DeploymentBuilder
   def build
     Deployment.new(@name, @details)
   end
-
 end
-

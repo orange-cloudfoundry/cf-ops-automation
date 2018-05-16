@@ -64,12 +64,10 @@ describe Deployment do
         expect(my_default.details).to include('releases' => {})
       end
 
-      it 'has a stemcell tag' do
-        expect(my_default.details).to include('stemcells' => {'bosh-openstack-kvm-ubuntu-trusty-go_agent' => ''})
+      it 'has a empty stemcell tag' do
+        expect(my_default.details).to include('stemcells' => {})
       end
 
     end
-
   end
-
 end
