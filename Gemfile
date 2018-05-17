@@ -15,6 +15,7 @@ group :development do
   gem 'rubocop-rspec', '>= 1.15.1'
   gem 'rake', '12.2.1'
   gem 'github_changelog_generator', '>= 1.14.3'
+  gem 'mdl', '0.4.0'
 end
 
 group :test do
