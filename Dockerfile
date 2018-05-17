@@ -17,7 +17,10 @@ RUN curl "https://github.com/concourse/concourse/releases/download/v${CONCOURSE_
   && chmod +x /usr/local/bin/fly
 
 RUN curl -L "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64" > /usr/local/bin/cc-test-reporter \
-  && chmod +x /usr/local/bin/cc-test-reporter
+  && chmod a+x /usr/local/bin/cc-test-reporter
+
+RUN curl -L "https://raw.githubusercontent.com/ekalinin/github-markdown-toc/master/gh-md-toc" > /usr/local/bin/gh-md-toc \
+  && chmod a+x /usr/local/bin/gh-md-toc
 
 # remove old version of bundler to avoid confusion between bundler and bundle cmd
 #   bundler => old binary
