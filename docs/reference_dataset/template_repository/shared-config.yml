@@ -1,0 +1,7 @@
+---
+offline-mode:
+   boshreleases: false # Default: false
+
+default:
+  stemcell:
+    name: bosh-openstack-kvm-ubuntu-trusty-go_agent  # Default: bosh-openstack-kvm-ubuntu-trusty-go_agent

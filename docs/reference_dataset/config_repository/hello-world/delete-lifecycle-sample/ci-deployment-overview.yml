@@ -6,6 +6,8 @@ ci-deployment:
       delete-lifecycle-sample-generated:
         vars_files:
         - hello-world/delete-lifecycle-sample/delete-lifecycle-sample-versions.yml
+        - shared/concourse-credentials.yml
       delete-lifecycle-sample-cf-apps-generated:
         vars_files:
         - hello-world/delete-lifecycle-sample/delete-lifecycle-sample-versions.yml
+        - shared/concourse-credentials.yml

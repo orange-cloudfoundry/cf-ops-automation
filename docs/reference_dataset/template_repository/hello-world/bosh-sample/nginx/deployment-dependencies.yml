@@ -1,8 +1,6 @@
 ---
 deployment:
   nginx:
-    stemcells:
-      bosh-openstack-kvm-ubuntu-trusty-go_agent: ''
     releases:
       nginx:
         base_location: https://bosh.io/d/github.com/

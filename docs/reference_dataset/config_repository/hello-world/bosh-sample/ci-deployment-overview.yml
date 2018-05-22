@@ -6,6 +6,8 @@ ci-deployment:
       bosh-sample-generated:
         vars_files:
         - hello-world/bosh-sample/bosh-sample-versions.yml
+        - shared/concourse-credentials.yml
       bosh-sample-cf-apps-generated:
         vars_files:
         - hello-world/bosh-sample/bosh-sample-versions.yml
+        - shared/concourse-credentials.yml
