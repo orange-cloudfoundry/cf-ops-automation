@@ -16,6 +16,7 @@ group :development do
   gem 'rake', '12.2.1'
   gem 'github_changelog_generator', '>= 1.14.3'
   gem 'mdl', '0.4.0'
+  gem 'reek', '4.8.0'
 end
 
 group :test do
