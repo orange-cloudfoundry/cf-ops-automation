@@ -6,6 +6,8 @@ ci-deployment:
       terraform-sample-generated:
         vars_files:
         - hello-world/terraform-sample/terraform-sample-versions.yml
+        - shared/concourse-credentials.yml
       terraform-sample-cf-apps-generated:
         vars_files:
         - hello-world/terraform-sample/terraform-sample-versions.yml
+        - shared/concourse-credentials.yml

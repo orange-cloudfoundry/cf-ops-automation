@@ -6,6 +6,8 @@ ci-deployment:
       concourse-sample-generated:
         vars_files:
         - hello-world/consourse-sample/concourse-sample-versions.yml
+        - shared/concourse-credentials.yml
       concourse-sample-cf-apps-generated:
         vars_files:
         - hello-world/consourse-sample/concourse-sample-versions.yml
+        - shared/concourse-credentials.yml

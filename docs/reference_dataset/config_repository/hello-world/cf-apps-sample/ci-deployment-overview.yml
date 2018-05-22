@@ -6,6 +6,8 @@ ci-deployment:
       cf-apps-sample-generated:
         vars_files:
         - hello-world/cf-app-sample/cf-apps-sample-world-versions.yml
+        - shared/concourse-credentials.yml
       cf-apps-sample-cf-apps-generated:
         vars_files:
         - hello-world/cf-app-sample/cf-apps-sample-world-versions.yml
+        - shared/concourse-credentials.yml
