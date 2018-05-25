@@ -43,13 +43,12 @@ class GitModules
 
       current_depls = parsed_path[0]
       git_submodules[current_depls] = {} unless git_submodules[current_depls]
-
       current_deployment = parsed_path[1]
-      item = { current_deployment => [path] }
 
       if git_submodules[current_depls][current_deployment]
         git_submodules[current_depls][current_deployment] << path
       else
+        item = { current_deployment => [path] }
         git_submodules[current_depls].merge! item
       end
     end
