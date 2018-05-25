@@ -21,8 +21,6 @@ class GitModules
     paths = select_paths(git_modules_file)
     cleaned_paths = clean_paths(paths)
     select_submodules(cleaned_paths)
-
-    git_submodules
   end
 
   def select_paths(git_modules_file)
