@@ -37,10 +37,9 @@ class GitModules
 
   def select_submodules(clean_paths)
     git_submodules = {}
-
     clean_paths.each do |path|
       parsed_path = path.split('/')
-      next if parsed_path.length > 2
+      next if parsed_path.length < 2
 
       current_depls = parsed_path[0]
       git_submodules[current_depls] = {} unless git_submodules[current_depls]
