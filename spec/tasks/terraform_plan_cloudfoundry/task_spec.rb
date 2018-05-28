@@ -34,8 +34,8 @@ describe 'terraform_plan_cloudfoundry task' do
         "-i terraform-tfvars=#{@terraform_tfvars} " \
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
-                        'SPEC_PATH' => '',
-                        'IAAS_SPEC_PATH' => '',
+                        'SPEC_PATH' => 'non-empty-spec-path',
+                        'IAAS_SPEC_PATH' => 'non-empty-iaas-spec-path',
                         'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
     end
 

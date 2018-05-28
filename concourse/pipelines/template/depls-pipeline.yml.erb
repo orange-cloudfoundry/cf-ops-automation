@@ -15,7 +15,7 @@
   end
 
   uniq_releases= {}
-  enabled_deployments.sort.each do |name, boshrelease|
+  enabled_deployments&.sort&.each do |name, boshrelease|
     boshrelease['releases']&.each do |release, info|
       uniq_releases[release]= info
     end
@@ -496,7 +496,7 @@ jobs:
       params: { submodules: none}
       <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
       trigger: true
-  <% boshrelease['releases']&.sort.each do |release, info| %>
+  <% boshrelease['releases']&.sort&.each do |release, info| %>
     - get: <%= release %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
       version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
@@ -626,7 +626,7 @@ jobs:
       stemcells:
       - bosh-stemcell/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
       releases:<%= ' []' if boshrelease['releases']&.empty? %>
-  <% boshrelease['releases']&.sort.each do |release, info| %>
+  <% boshrelease['releases']&.sort&.each do |release, info| %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
       - <%= release %>/<%= release %>-((<%= release %>-version)).tgz
     <% else %>
@@ -1084,6 +1084,7 @@ jobs:
     params:
       SPEC_PATH: "<%= terraform_config_path %>/spec"
       SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
+      IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
     ensure:
       task: update-terraform-state-file
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}

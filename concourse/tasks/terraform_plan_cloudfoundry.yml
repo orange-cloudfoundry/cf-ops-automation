@@ -39,6 +39,21 @@ run:
     ### cp: can't stat 'terraform-tfvars/*': No such file or directory
     ###
 
+    if [ -z "${SPEC_PATH}" ]; then
+    echo "FATAL: SPEC_PATH is missing"
+    exit 1
+    fi
+
+    if [ -z "${IAAS_SPEC_PATH}" ]; then
+    echo "FATAL: IAAS_SPEC_PATH is missing"
+    exit 1
+    fi
+
+    if [ -z "${SECRET_STATE_FILE_PATH}" ]; then
+    echo "FATAL: SECRET_STATE_FILE_PATH is missing"
+    exit 1
+    fi
+
     # copy tfstate and secrets
     find secret-state-resource/${SECRET_STATE_FILE_PATH} -type f -exec cp {} generated-files/ \;
 
