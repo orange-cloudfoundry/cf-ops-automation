@@ -276,28 +276,28 @@ describe 'DeplsPipelineTemplateProcessing' do
 
       it 'generates s3 version using path on get' do
         boshrelease_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-                                                            .flat_map { |plan| plan['aggregate'] }
-                                                            .compact
-                                                            .select { |resource| expected_boshreleases.keys.include?(resource['get']) }
-                                                            .flat_map { |resource| { resource['get'] => resource['version']['path'] } }
+          .flat_map { |plan| plan['aggregate'] }
+          .compact
+          .select { |resource| expected_boshreleases.keys.include?(resource['get']) }
+          .flat_map { |resource| { resource['get'] => resource['version']['path'] } }
         expect(boshrelease_get_version).to include(*expected_boshrelease_get_version)
       end
 
       it 'generates s3 version using path on deployment put' do
         s3_deployments = expected_s3_deployment_put.flat_map(&:keys)
         deployment_put_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-                                                           .select { |resource| s3_deployments.include?(resource['put']) }
-                                                           .flat_map { |resource| { resource['put'] => resource['params']['releases'] } }
+          .select { |resource| s3_deployments.include?(resource['put']) }
+          .flat_map { |resource| { resource['put'] => resource['params']['releases'] } }
         expect(deployment_put_version).to include(*expected_s3_deployment_put)
       end
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
         expected_init_version = expected_boshrelease_get_version.flat_map(&:values).flatten.flat_map { |get_version| "path:#{get_version}" }
         init_args = generated_pipeline['jobs']
-                    .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
-                    .flat_map { |job| job['plan'] }
-                    .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
-                    .flat_map { |task| task['config']['run']['args'] }
+          .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
+          .flat_map { |task| task['config']['run']['args'] }
         expect(init_args[1]).to include(*expected_init_version)
       end
     end
@@ -369,6 +369,40 @@ describe 'DeplsPipelineTemplateProcessing' do
                                       'enforce-terraform-cf-consistency'] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'Terraform' }.pop
         expect(generated).to match(expected_tf_group)
+      end
+
+      it 'generates a valid check-terraform-cf-consistency job' do
+        expected_tf_job =
+          [
+            { "task" => 'generate-terraform-tfvars',
+              "input_mapping" =>
+                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls", "additional-resource" => "paas-template-my-root-depls" },
+              "output_mapping" => { "generated-files" => "terraform-tfvars" },
+              "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
+              "params" =>
+             { "YML_FILES" =>
+                         "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n",
+               "YML_TEMPLATE_DIR" => "additional-resource/my-tfstate-location/template",
+               "CUSTOM_SCRIPT_DIR" => "additional-resource/my-tfstate-location/template",
+               "SUFFIX" => "-tpl.tfvars.yml",
+               "IAAS_TYPE" => "((iaas-type))" } },
+            { "task" => "terraform-plan",
+              "input_mapping" =>
+                   { "secret-state-resource" => "secrets-my-root-depls",
+                     "spec-resource" => "paas-template-my-root-depls" },
+              "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
+              "params" =>
+                   { "SPEC_PATH" => "my-tfstate-location/spec",
+                     "SECRET_STATE_FILE_PATH" => "my-tfstate-location",
+                     "IAAS_SPEC_PATH" => "my-tfstate-location/spec-((iaas-type))" } }
+          ]
+
+        generated = generated_pipeline['jobs']
+          .select { |job| job['name'] == "check-terraform-cf-consistency" }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] }
+
+        expect(generated).to match(expected_tf_job)
       end
     end
   end
