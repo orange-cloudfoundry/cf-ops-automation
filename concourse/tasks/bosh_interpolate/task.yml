@@ -20,6 +20,7 @@ image_resource:
     tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
 inputs:
   - name: bosh-inputs
+  - name: manifest-dir
   - name: secrets
   - name: scripts-resource
 outputs:
