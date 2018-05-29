@@ -28,4 +28,4 @@ Layout/MultilineMethodCallIndentation:
   EnforcedStyle: indented
 
 Layout/DotPosition:
-  Enable: false
+  Enabled: false

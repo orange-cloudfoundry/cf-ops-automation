@@ -126,7 +126,11 @@ jobs:
       SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
       MANIFEST_NAME: <%= name %>.yml
   - task: bosh-interpolate-pipeline-with-ops-and-vars-files
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= name %>}
+    input_mapping:
+      bosh-inputs: bosh-inputs
+      manifest-dir: bosh-inputs
+      scripts-resource: cf-ops-automation
+      secrets: secrets-<%= name %>
     output_mapping: {result-dir: final-<%= name %>-pipeline}
     file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
     params:
