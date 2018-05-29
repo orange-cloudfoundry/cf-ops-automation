@@ -35,4 +35,7 @@ echo "Operators detected: <${OPS_FILES}>"
 echo "Vars files detected: <${VARS_FILES}>"
 
 INTERPOLATED_FILE="interpolated-${BOSH_YAML_FILE}"
-bosh -n int ${VARS_FILES} ${OPS_FILES} bosh-inputs/${BOSH_YAML_FILE} > result-dir/${INTERPOLATED_FILE}
+bosh -n int ${VARS_FILES} ${OPS_FILES} "manifest-dir/${BOSH_YAML_FILE}" > "result-dir/${INTERPOLATED_FILE}"
+
+echo "Generated manifest:"
+cat "result-dir/${INTERPOLATED_FILE}"

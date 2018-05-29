@@ -15,7 +15,7 @@ describe 'reference_dataset' do
 
     # Since the generation happening in the first part of the test is needed
     # to do the validation, we merge this two specs in one
-    it "generate a valid pipeline for each pipeline template with no error message" do
+    it "generates a valid pipeline for each pipeline template with no error message" do
       # 1. generation
       templates_count = Dir["#{ci_path}/concourse/pipelines/template/*.erb"].count
       stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")

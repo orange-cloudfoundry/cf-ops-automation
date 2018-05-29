@@ -1,5 +1,5 @@
-
-# require 'spec_helper.rb'
+require 'spec_helper'
+require 'tmpdir'
 require 'yaml'
 require_relative '../task_spec_helper'
 
@@ -7,6 +7,7 @@ describe 'bosh_interpolate task' do
   context 'when missing required BOSH_YAML_FILE env var' do
     before(:context) do
       @bosh_inputs = Dir.mktmpdir
+      @manifest_dir = Dir.mktmpdir
       @secrets = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
 
@@ -14,6 +15,7 @@ describe 'bosh_interpolate task' do
         '-i scripts-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i bosh-inputs=#{@bosh_inputs} " \
+        "-i manifest-dir=#{@manifest_dir} " \
         "-o result-dir=#{@result_dir} ")
     end
 
@@ -21,6 +23,7 @@ describe 'bosh_interpolate task' do
       FileUtils.rm_rf @bosh_inputs if File.exist?(@bosh_inputs)
       FileUtils.rm_rf @secrets if File.exist?(@secrets)
       FileUtils.rm_rf @result_dir if File.exist?(@result_dir)
+      FileUtils.rm_rf @manifest_dir if File.exist?(@manifest_dir)
     end
 
     it 'displays an error message' do
@@ -35,6 +38,7 @@ describe 'bosh_interpolate task' do
 
     before(:context) do
       @bosh_inputs = Dir.mktmpdir
+      @manifest_dir = Dir.mktmpdir
       @secrets = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
 
@@ -67,12 +71,13 @@ describe 'bosh_interpolate task' do
 
       File.open(File.join(@bosh_inputs, 'my-custom-vars.yml'), 'w') { |file| file.write(YAML.safe_load(@vars_yaml).to_yaml) }
       File.open(File.join(@bosh_inputs, 'my-custom-operators.yml'), 'w') { |file| file.write(YAML.safe_load(@operator_yaml).to_yaml) }
-      File.open(File.join(@bosh_inputs, 'my_base_yaml_file.yml'), 'w') { |file| file.write(YAML.safe_load(@bosh_yaml).to_yaml) }
+      File.open(File.join(@manifest_dir, 'my_base_yaml_file.yml'), 'w') { |file| file.write(YAML.safe_load(@bosh_yaml).to_yaml) }
 
       @output = execute('-c concourse/tasks/bosh_interpolate/task.yml ' \
             '-i scripts-resource=. ' \
             "-i secrets=#{@secrets} " \
             "-i bosh-inputs=#{@bosh_inputs} " \
+            "-i manifest-dir=#{@manifest_dir} " \
             "-o result-dir=#{@result_dir} ", \
                         'BOSH_YAML_FILE' => 'my_base_yaml_file.yml')
     end
@@ -81,6 +86,7 @@ describe 'bosh_interpolate task' do
       FileUtils.rm_rf @bosh_inputs if File.exist?(@bosh_inputs)
       FileUtils.rm_rf @secrets if File.exist?(@secrets)
       FileUtils.rm_rf @result_dir if File.exist?(@result_dir)
+      FileUtils.rm_rf @manifest_dir if File.exist?(@manifest_dir)
     end
 
     it 'generates a file as result' do

@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'tmpdir'
 require_relative 'test_helper'
 
 describe 'generate-depls for depls pipeline' do
