@@ -456,6 +456,9 @@ Markdown files describing structure examples for the repos, links to example
 files as well as the lists of credentials needed by the generated pipelines to
 be deployed.
 
+Those files are generated automatically following the specs given in
+[features/](features).
+
 # COA development
 
 ## Status and roadmap
