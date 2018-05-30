@@ -18,7 +18,6 @@ resources:
     username: ((dockerhub-username))
     password: ((dockerhub-password))
 
-
 - name: version
   type: semver
   source:
@@ -112,7 +111,6 @@ jobs:
           CONCOURSE_VERSION: 3.14.1
           CONCOURSE_SHA: aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
 
-
   - name: test
     serial: true
     plan:
@@ -144,7 +142,7 @@ jobs:
             echo "fly $(fly --version)"
             ruby --version
             bundle --version
-            fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+            fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
             cc-test-reporter before-build
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
             cc-test-reporter after-build -d
@@ -240,7 +238,7 @@ jobs:
             args:
             - -cex
             - |
-              fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
+              fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
               export SECRETS=../secrets-resource
               export TARGET_NAME=cf-ops-automation
               export PIPELINES_DIR=../all-pipelines/pipelines
@@ -278,7 +276,7 @@ jobs:
         params:
           ATC_EXTERNAL_URL: ((concourse-url))
           FLY_USERNAME: ((concourse-username))
-          FLY_PASSWORD:  ((concourse-password))
+          FLY_PASSWORD:  '((concourse-password))'
 
 
   - name: merge-to-master
@@ -309,6 +307,45 @@ jobs:
           passed: [merge-to-master]
 #        - get: cf-ops-automation-docker-image
 #          passed: [merge-to-master]
+      - task: generate-living-documentation
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: orangecloudfoundry/cf-ops-automation
+          inputs:
+          - name: cf-ops-automation
+          - name: version
+          outputs:
+          - name: cf-ops-automation-living-documentation
+          run:
+            path: /bin/bash
+            args:
+            - -ce
+            - |
+              git config --global user.email "$GIT_USER_EMAIL"
+              git config --global user.name "$GIT_USER_NAME"
+
+              RELEASE_VERSION=$(cat version/version)
+              git clone cf-ops-automation cf-ops-automation-living-documentation
+              cd cf-ops-automation-living-documentation/
+              bundle exec cucumber
+              git add -A
+              CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
+              if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
+              then
+                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION} - Living documentation update"
+              else
+                 echo "No change detected, skip commit"
+              fi
+          params:
+            GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+            GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+      - put: ci-master
+        params:
+          repository: cf-ops-automation-living-documentation
+          rebase: true
       - task: generate-changelog
         config:
           platform: linux
@@ -337,7 +374,7 @@ jobs:
               CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
               if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
               then
-                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION}"
+                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION} - Changelog update"
               else
                  echo "No change detected, skip commit"
               fi
