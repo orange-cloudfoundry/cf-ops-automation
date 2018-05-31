@@ -1,5 +1,38 @@
 # Change Log
 
+## [v1.9.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.9.1) (2018-05-29)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.0...v1.9.1)
+
+**Fixed bugs:**
+
+- Errands are not always trigger after deployment [\#137](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/137)
+- Move out stemcell declararation from deployment-dependencies.yml [\#129](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/129)
+- cf app pipeline triggers concurrent updates instead of serializing them [\#123](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/123)
+
+**Closed issues:**
+
+- Test ticket from Code Climate [\#132](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/132)
+- Remove custom slack certificates - requires concourse 3.9.1 [\#105](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/105)
+- Support Iaas specific TF configs loading [\#38](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/38)
+
+**Merged pull requests:**
+
+- task\(terraform\_\*\):fix helm terraform provider [\#140](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/140)
+- pipeline\(depls\): fixes errand job triggering [\#138](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/138)
+- Move out stemcell declararation from deployment-dependencies.yml [\#136](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/136)
+- task\(terraform\_\*\): bump providers \(openstack, grafana, credhub and helm\) [\#134](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/134)
+- Update terraform dev env to enable use of docker images used by COA [\#133](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/133)
+- Reference Dataset [\#131](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/131)
+- add value 'serial: true' to cf-push-app job in cf-apps-pipeline [\#127](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/127)
+- tasks\(terraform\_\*\): add iaas\_type support [\#126](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/126)
+- pipeline\(\*\): reduce retry number [\#118](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/118)
+- Suggestions for slight Changes [\#116](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/116)
+- feature: multi deployer support [\#115](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/115)
+- pipeline\(sync-\*-branches, bootstrap-all-init\): updates [\#114](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/114)
+
+## [v1.9.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.9.0) (2018-02-27)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.7.3...v1.9.0)
+
 ## [v1.7.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.7.3) (2018-02-22)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.8.4...v1.7.3)
 
