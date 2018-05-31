@@ -39,13 +39,25 @@ module ReferenceDatasetDocumentation
     end
 
     def pretty_filepath(path, repo_name)
-      striped_path = path.strip
-      path_items = striped_path.split('/')
-      filename = path_items.last
+      stripped_path = path.strip
+      filename = extract_filename(stripped_path)
       return "" if filename[0] == "."
-      prefix = "  " * (path_items.size - 2)
-      clean_path = striped_path.gsub(%r{^.\/}, "")
-      "#{prefix}* [#{filename}](/docs/reference_dataset/#{repo_name}/#{@generator.example_type}/#{@generator.root_deployment_name}/#{clean_path})"
+      prefix = extract_prefix(stripped_path)
+      cleaned_path = clean_path(stripped_path)
+      "#{prefix}* [#{filename}](/docs/reference_dataset/#{repo_name}/#{@generator.example_type}/#{@generator.root_deployment_name}/#{cleaned_path})"
+    end
+
+    def extract_filename(path)
+      path.strip.split('/').last
+    end
+
+    def extract_prefix(path)
+      path_items = path.strip.split('/')
+      "  " * (path_items.size - 2)
+    end
+
+    def clean_path(path)
+      path.strip.gsub(%r{^.\/}, "")
     end
   end
 end
