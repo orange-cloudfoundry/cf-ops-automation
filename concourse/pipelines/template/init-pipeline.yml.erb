@@ -122,4 +122,6 @@ jobs:
         <%= "- paas-templates-full/#{vars_file}" if vars_file.end_with?("-versions.yml") %>
         <% end %>
      <% end %>
+<% else %>
+- name: this-is-an-empty-pipeline
 <% end %>

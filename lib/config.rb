@@ -28,8 +28,8 @@ class Config
   def load_config
     public_config = YAML.load_file(@public_yaml) if File.exist?(@public_yaml)
     private_config = YAML.load_file(@private_yaml) if File.exist?(@private_yaml)
-    @loaded_config = @loaded_config.merge(public_config) unless public_config.nil?
-    @loaded_config = @loaded_config.merge(private_config) unless private_config.nil?
+    @loaded_config = @loaded_config.merge(public_config) if public_config
+    @loaded_config = @loaded_config.merge(private_config) if private_config
     self
   end
 

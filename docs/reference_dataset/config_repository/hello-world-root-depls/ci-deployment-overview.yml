@@ -14,4 +14,3 @@ ci-deployment:
         vars_files:
         - hello-world-root-depls/hello-world-root-depls-versions.yml
         - shared/concourse-credentials.yml
-
