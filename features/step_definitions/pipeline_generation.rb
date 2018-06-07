@@ -1,5 +1,5 @@
 require 'find'
-require_relative '../support/reference_dataset_documentation'
+require_relative '../../lib/reference_dataset_documentation'
 
 Given("a config repository called {string}") do |string|
   @config_repo_name = string
@@ -32,6 +32,7 @@ Then("the COA should create a set of deployment pipelines") do
   pipelines = @ref.pipelines
   pipelines.generate
   expect(pipelines.are_ok?).to eq(true)
-  pipelines.write_required_credentials
-  pipelines.delete
+  pipelines.write_pipelines_credential_list
+  pipelines.write_credentials_pipeline_list
+  pipelines.clean
 end

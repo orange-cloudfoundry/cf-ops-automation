@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative '../../../features/support/reference_dataset_documentation'
+require_relative '../../../lib/reference_dataset_documentation'
 
 describe ReferenceDatasetDocumentation::Generator do
   let(:root_deployment_name) { "root_deployment_name" }

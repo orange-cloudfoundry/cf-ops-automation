@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative '../../../features/support/reference_dataset_documentation'
+require_relative '../../../lib/reference_dataset_documentation'
 
 describe ReferenceDatasetDocumentation::Pipelines do
   let(:root_deployment_name) { "root_deployment_name" }
@@ -68,19 +68,19 @@ describe ReferenceDatasetDocumentation::Pipelines do
       end
     end
 
-    describe "#write_required_credentials" do
+    describe "#write_pipelines_credential_list" do
       let(:pipelines) { described_class.new(generator) }
       let(:generated_pipelines_dir) { File.join(File.dirname(__FILE__), 'fixtures') }
 
-      it "write the list of required credentials in the docs" do
+      it "write the list of required credentials for each pipeline in the docs" do
         expect(generator).to receive(:add).
           with("## Required pipeline credentials for #{generator.root_deployment_name}", "")
 
-        expect(pipelines).to receive(:generated_pipelines_dir).twice.
+        allow(pipelines).to receive(:generated_pipelines_dir).
           and_return(generated_pipelines_dir)
 
-        expect(pipelines.class).to receive(:generated_pipeline_names).
-          and_return(['with-creds-', 'without-creds-'])
+        allow(pipelines.class).to receive(:generated_pipeline_names).
+          and_return(['with-creds-', 'with-creds2-', 'without-creds-'])
 
         expect(generator).to receive(:add).
           with("### #{generator.root_deployment_name}-with-creds-generated.yml", "")
@@ -89,21 +89,55 @@ describe ReferenceDatasetDocumentation::Pipelines do
         expect(generator).to receive(:add).with("")
 
         expect(generator).to receive(:add).
+          with("### #{generator.root_deployment_name}-with-creds2-generated.yml", "")
+        expect(generator).to receive(:add).with("* mains")
+        expect(generator).to receive(:add).with("")
+
+        expect(generator).to receive(:add).
           with("### #{generator.root_deployment_name}-without-creds-generated.yml", "")
         expect(generator).to receive(:add).with("No credentials required", "")
 
-        pipelines.write_required_credentials
+        pipelines.write_pipelines_credential_list
       end
     end
 
-    describe "#delete" do
+    describe "#write_credentials_pipeline_list" do
+      let(:pipelines) { described_class.new(generator) }
+      let(:generated_pipelines_dir) { File.join(File.dirname(__FILE__), 'fixtures') }
+
+      it "write the list of pipelines for each credential in the docs" do
+        expect(generator).to receive(:add).
+          with("## List of pipelines in which credentials appear for #{generator.root_deployment_name}", "")
+
+        allow(pipelines).to receive(:generated_pipelines_dir).
+          and_return(generated_pipelines_dir)
+
+        allow(pipelines.class).to receive(:generated_pipeline_names).
+          and_return(['with-creds-', 'with-creds2-', 'without-creds-'])
+
+        expect(generator).to receive(:add).
+          with("### face-a-face", "")
+        expect(generator).to receive(:add).with("* root_deployment_name-with-creds-generated.yml")
+        expect(generator).to receive(:add).with("")
+
+        expect(generator).to receive(:add).
+          with("### mains", "")
+        expect(generator).to receive(:add).with("* root_deployment_name-with-creds-generated.yml")
+        expect(generator).to receive(:add).with("* root_deployment_name-with-creds2-generated.yml")
+        expect(generator).to receive(:add).with("")
+
+        pipelines.write_credentials_pipeline_list
+      end
+    end
+
+    describe "#clean" do
       let(:pipelines) { described_class.new(generator) }
 
       it "uses rm_rf to delete the created directory" do
-        expect(FileUtils).to receive(:rm_rf).
+        expect(FileUtils).to receive(:remove_entry).
           with(pipelines.generated_pipelines_dir)
 
-        pipelines.delete
+        pipelines.clean
       end
     end
   end

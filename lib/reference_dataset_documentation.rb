@@ -4,5 +4,5 @@ require_relative 'reference_dataset_documentation/pipelines'
 require_relative 'reference_dataset_documentation/generator'
 
 module ReferenceDatasetDocumentation
-  PROJECT_ROOT_DIR = Pathname.new(__FILE__).join("../../..")
+  PROJECT_ROOT_DIR = File.join(File.dirname(__FILE__), "..")
 end

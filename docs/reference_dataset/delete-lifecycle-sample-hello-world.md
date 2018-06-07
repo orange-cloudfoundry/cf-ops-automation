@@ -9,7 +9,6 @@
     └── secrets
         ├── meta.yml
         └── secrets.yml
-
 ```
 
 ## The template repo
@@ -33,7 +32,6 @@
     ├── openstack
     │   └── disk-types-cloud-operators.yml
     └── runtime-config-tpl.yml
-
 ```
 
 ## The config files
@@ -151,4 +149,122 @@ No credentials required
 ### delete-lifecycle-sample-tf-generated.yml
 
 No credentials required
+
+## List of pipelines in which credentials appear for delete-lifecycle-sample
+
+### slack-webhook
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### secrets-uri
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### secrets-branch
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### paas-templates-uri
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+
+### paas-templates-branch
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+
+### cf-ops-automation-uri
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### cf-ops-automation-branch
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### cf-ops-automation-tag-filter
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### concourse-delete-lifecycle-sample-target
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+
+### concourse-delete-lifecycle-sample-insecure
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+
+### concourse-delete-lifecycle-sample-username
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+
+### concourse-delete-lifecycle-sample-password
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+
+### slack-channel
+
+* delete-lifecycle-sample-generated.yml
+* delete-lifecycle-sample-init-generated.yml
+* delete-lifecycle-sample-s3-br-upload-generated.yml
+* delete-lifecycle-sample-s3-stemcell-upload-generated.yml
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### bosh-target
+
+* delete-lifecycle-sample-generated.yml
+
+### bosh-username
+
+* delete-lifecycle-sample-generated.yml
+
+### bosh-password
+
+* delete-lifecycle-sample-generated.yml
+
+### iaas-type
+
+* delete-lifecycle-sample-generated.yml
+
+### stemcell-version
+
+* delete-lifecycle-sample-news-generated.yml
+
+### anonymized-secrets-repo-uri
+
+* delete-lifecycle-sample-sync-helper-generated.yml
+
+### anonymized-secrets-compare-repo-uri
+
+* delete-lifecycle-sample-sync-helper-generated.yml
 

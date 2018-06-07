@@ -10,7 +10,6 @@
     └── secrets
         ├── meta.yml
         └── secrets.yml
-
 ```
 
 ## The template repo
@@ -34,7 +33,6 @@
     ├── openstack
     │   └── disk-types-cloud-operators.yml
     └── runtime-config.yml
-
 ```
 
 ## The config files
@@ -191,4 +189,211 @@ No credentials required
 ### bosh-sample-tf-generated.yml
 
 No credentials required
+
+## List of pipelines in which credentials appear for bosh-sample
+
+### slack-webhook
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### secrets-uri
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### secrets-branch
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### paas-templates-uri
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+
+### paas-templates-branch
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+
+### cf-ops-automation-uri
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### cf-ops-automation-branch
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### cf-ops-automation-tag-filter
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### stemcell-name
+
+* bosh-sample-generated.yml
+* bosh-sample-news-generated.yml
+
+### s3-stemcell-bucket
+
+* bosh-sample-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-region-name
+
+* bosh-sample-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### stemcell-name-prefix
+
+* bosh-sample-generated.yml
+
+### stemcell-main-name
+
+* bosh-sample-generated.yml
+
+### s3-stemcell-access-key-id
+
+* bosh-sample-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-secret-key
+
+* bosh-sample-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-endpoint
+
+* bosh-sample-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-skip-ssl-verification
+
+* bosh-sample-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### bosh-target
+
+* bosh-sample-generated.yml
+
+### bosh-username
+
+* bosh-sample-generated.yml
+
+### bosh-password
+
+* bosh-sample-generated.yml
+
+### concourse-bosh-sample-target
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### concourse-bosh-sample-insecure
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+
+### concourse-bosh-sample-username
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### concourse-bosh-sample-password
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### slack-channel
+
+* bosh-sample-generated.yml
+* bosh-sample-init-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+* bosh-sample-sync-helper-generated.yml
+
+### iaas-type
+
+* bosh-sample-generated.yml
+
+### stemcell-version
+
+* bosh-sample-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-stemcell-upload-generated.yml
+
+### nginx-version
+
+* bosh-sample-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+
+### ntp-version
+
+* bosh-sample-generated.yml
+* bosh-sample-news-generated.yml
+* bosh-sample-s3-br-upload-generated.yml
+
+### s3-br-bucket
+
+* bosh-sample-s3-br-upload-generated.yml
+
+### s3-br-region-name
+
+* bosh-sample-s3-br-upload-generated.yml
+
+### s3-br-access-key-id
+
+* bosh-sample-s3-br-upload-generated.yml
+
+### s3-br-secret-key
+
+* bosh-sample-s3-br-upload-generated.yml
+
+### s3-br-endpoint
+
+* bosh-sample-s3-br-upload-generated.yml
+
+### s3-br-skip-ssl-verification
+
+* bosh-sample-s3-br-upload-generated.yml
+
+### anonymized-secrets-repo-uri
+
+* bosh-sample-sync-helper-generated.yml
+
+### anonymized-secrets-compare-repo-uri
+
+* bosh-sample-sync-helper-generated.yml
 

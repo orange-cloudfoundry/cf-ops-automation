@@ -10,7 +10,6 @@
     └── secrets
         ├── meta.yml
         └── secrets.yml
-
 ```
 
 ## The template repo
@@ -25,7 +24,6 @@
         └── template
             ├── post-generate.sh
             └── terraform-tpl.tfvars.yml
-
 ```
 
 ## The config files
@@ -136,4 +134,126 @@ No credentials required
 ### terraform-sample-tf-generated.yml
 
 No credentials required
+
+## List of pipelines in which credentials appear for terraform-sample
+
+### slack-webhook
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### secrets-uri
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### secrets-branch
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### paas-templates-uri
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+
+### paas-templates-branch
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+
+### cf-ops-automation-uri
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### cf-ops-automation-branch
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### cf-ops-automation-tag-filter
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### concourse-terraform-sample-target
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+
+### concourse-terraform-sample-insecure
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+
+### concourse-terraform-sample-username
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+
+### concourse-terraform-sample-password
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+
+### slack-channel
+
+* terraform-sample-generated.yml
+* terraform-sample-init-generated.yml
+* terraform-sample-s3-br-upload-generated.yml
+* terraform-sample-s3-stemcell-upload-generated.yml
+* terraform-sample-sync-helper-generated.yml
+
+### bosh-target
+
+* terraform-sample-generated.yml
+
+### bosh-username
+
+* terraform-sample-generated.yml
+
+### bosh-password
+
+* terraform-sample-generated.yml
+
+### iaas-type
+
+* terraform-sample-generated.yml
+
+### stemcell-name
+
+* terraform-sample-news-generated.yml
+
+### stemcell-version
+
+* terraform-sample-news-generated.yml
+
+### anonymized-secrets-repo-uri
+
+* terraform-sample-sync-helper-generated.yml
+
+### anonymized-secrets-compare-repo-uri
+
+* terraform-sample-sync-helper-generated.yml
 

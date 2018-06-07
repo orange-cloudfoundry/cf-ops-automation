@@ -1,5 +1,5 @@
 require 'spec_helper'
-require_relative '../../../features/support/reference_dataset_documentation'
+require_relative '../../../lib/reference_dataset_documentation'
 
 describe ReferenceDatasetDocumentation::FileListWriter do
   let(:find_answer) { File.read(File.join(File.dirname(__FILE__), 'fixtures/find_answer.txt')) }

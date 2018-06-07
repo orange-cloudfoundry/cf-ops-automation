@@ -10,7 +10,6 @@
     └── secrets
         ├── meta.yml
         └── secrets.yml
-
 ```
 
 ## The template repo
@@ -26,7 +25,6 @@
     ├── cloud-config-tpl.yml
     ├── deploy.sh
     └── runtime-config-tpl.yml
-
 ```
 
 ## The config files
@@ -158,4 +156,165 @@ No credentials required
 ### concourse-sample-tf-generated.yml
 
 No credentials required
+
+## List of pipelines in which credentials appear for concourse-sample
+
+### slack-webhook
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### concourse-concourse-sample-target
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### concourse-concourse-sample-insecure
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+
+### concourse-concourse-sample-username
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### concourse-concourse-sample-password
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### cf-ops-automation-uri
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### cf-ops-automation-branch
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### cf-ops-automation-tag-filter
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### secrets-uri
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### secrets-branch
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### paas-templates-uri
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+
+### paas-templates-branch
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+
+### slack-channel
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+* concourse-sample-init-generated.yml
+* concourse-sample-s3-br-upload-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+* concourse-sample-sync-helper-generated.yml
+
+### iaas-type
+
+* concourse-sample-concourse-generated.yml
+* concourse-sample-generated.yml
+
+### bosh-target
+
+* concourse-sample-generated.yml
+
+### bosh-username
+
+* concourse-sample-generated.yml
+
+### bosh-password
+
+* concourse-sample-generated.yml
+
+### stemcell-name
+
+* concourse-sample-news-generated.yml
+
+### stemcell-version
+
+* concourse-sample-news-generated.yml
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-bucket
+
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-region-name
+
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-access-key-id
+
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-secret-key
+
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-endpoint
+
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### s3-stemcell-skip-ssl-verification
+
+* concourse-sample-s3-stemcell-upload-generated.yml
+
+### anonymized-secrets-repo-uri
+
+* concourse-sample-sync-helper-generated.yml
+
+### anonymized-secrets-compare-repo-uri
+
+* concourse-sample-sync-helper-generated.yml
 

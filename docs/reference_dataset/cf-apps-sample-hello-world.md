@@ -10,7 +10,6 @@
     └── secrets
         ├── meta.yml
         └── secrets.yml
-
 ```
 
 ## The template repo
@@ -26,7 +25,6 @@
 │       └── manifest-tpl.yml
 └── template
     └── deploy.sh
-
 ```
 
 ## The config files
@@ -148,4 +146,134 @@ No credentials required
 ### cf-apps-sample-tf-generated.yml
 
 No credentials required
+
+## List of pipelines in which credentials appear for cf-apps-sample
+
+### slack-webhook
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### secrets-uri
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### secrets-branch
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### cf-ops-automation-uri
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### cf-ops-automation-branch
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### cf-ops-automation-tag-filter
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### paas-templates-uri
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+
+### paas-templates-branch
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+
+### slack-channel
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+* cf-apps-sample-sync-helper-generated.yml
+
+### concourse-cf-apps-sample-target
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+
+### concourse-cf-apps-sample-username
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+
+### concourse-cf-apps-sample-password
+
+* cf-apps-sample-cf-apps-generated.yml
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+* cf-apps-sample-s3-br-upload-generated.yml
+* cf-apps-sample-s3-stemcell-upload-generated.yml
+
+### concourse-cf-apps-sample-insecure
+
+* cf-apps-sample-generated.yml
+* cf-apps-sample-init-generated.yml
+
+### bosh-target
+
+* cf-apps-sample-generated.yml
+
+### bosh-username
+
+* cf-apps-sample-generated.yml
+
+### bosh-password
+
+* cf-apps-sample-generated.yml
+
+### iaas-type
+
+* cf-apps-sample-generated.yml
+
+### stemcell-version
+
+* cf-apps-sample-news-generated.yml
+
+### anonymized-secrets-repo-uri
+
+* cf-apps-sample-sync-helper-generated.yml
+
+### anonymized-secrets-compare-repo-uri
+
+* cf-apps-sample-sync-helper-generated.yml
 
