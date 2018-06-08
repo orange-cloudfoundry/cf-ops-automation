@@ -620,7 +620,7 @@ jobs:
     input_mapping:
       bosh-inputs: ops-and-vars-files
       manifest-dir: final-release-manifest
-      secrets: secrets<%= name %>
+      secrets: secrets-<%= name %>
       scripts-resource: cf-ops-automation
     file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
     params:
