@@ -456,7 +456,7 @@ jobs:
         bosh-inputs: ops-and-vars-files
         manifest-dir: final-release-manifest
         secrets: secretsntp
-        scripts-resource: cf-ops-automation}
+        scripts-resource: cf-ops-automation
       file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
       params:
         VARS_FILES_SUFFIX: "*/*vars.yml"
