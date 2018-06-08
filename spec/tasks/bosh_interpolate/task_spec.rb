@@ -59,6 +59,18 @@ describe 'bosh_interpolate task' do
           path: /operator-test
           value:
             operator-applied: true
+        - type: replace
+          path: /ordered-operator-test?
+          value:
+            order: 1
+
+      YAML
+
+      @last_operator_yaml = <<~YAML
+        - type: replace
+          path: /ordered-operator-test
+          value:
+            order: 2
       YAML
 
       @expected_yaml_content = <<~YAML
@@ -67,10 +79,14 @@ describe 'bosh_interpolate task' do
               var: a-value
         operator-test:
           operator-applied: true
+        ordered-operator-test:
+            order: 2
+
       YAML
 
       File.open(File.join(@bosh_inputs, 'my-custom-vars.yml'), 'w') { |file| file.write(YAML.safe_load(@vars_yaml).to_yaml) }
-      File.open(File.join(@bosh_inputs, 'my-custom-operators.yml'), 'w') { |file| file.write(YAML.safe_load(@operator_yaml).to_yaml) }
+      File.open(File.join(@bosh_inputs, '01-my-custom-operators.yml'), 'w') { |file| file.write(YAML.safe_load(@operator_yaml).to_yaml) }
+      File.open(File.join(@bosh_inputs, '02-my-custom-operators.yml'), 'w') { |file| file.write(YAML.safe_load(@last_operator_yaml).to_yaml) }
       File.open(File.join(@manifest_dir, 'my_base_yaml_file.yml'), 'w') { |file| file.write(YAML.safe_load(@bosh_yaml).to_yaml) }
 
       @output = execute('-c concourse/tasks/bosh_interpolate/task.yml ' \
