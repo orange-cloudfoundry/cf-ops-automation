@@ -40,7 +40,10 @@ run:
 
     current_heads=$(git ls-remote -h "$URI" $GIT_BRANCH_FILTER | sed 's/refs\/heads\///' | awk '{print $2, $1}' | sort)
     cd ..
-
+    echo "selected branches list with associated commit id:"
+    echo "=================="
+    echo "${current_heads}"
+    echo "=================="
     git clone $URI ${FINAL_RELEASE_REPO}
     cd ${FINAL_RELEASE_REPO}
     git checkout -B ${GIT_CHECKOUT_BRANCH} -t origin/${GIT_CHECKOUT_BRANCH}
