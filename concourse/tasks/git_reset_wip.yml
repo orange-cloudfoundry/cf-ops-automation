@@ -41,16 +41,17 @@ run:
     current_heads=$(git ls-remote -h "$URI" $GIT_BRANCH_FILTER | sed 's/refs\/heads\///' | awk '{print $2, $1}' | sort)
     cd ..
     echo "selected branches list with associated commit id:"
-    echo "=================="
+    DISPLAY_SEPARATOR="=================="
+    echo ${DISPLAY_SEPARATOR}
     echo "${current_heads}"
-    echo "=================="
+    echo ${DISPLAY_SEPARATOR}
     git clone $URI ${FINAL_RELEASE_REPO}
     cd ${FINAL_RELEASE_REPO}
     git checkout -B ${GIT_CHECKOUT_BRANCH} -t origin/${GIT_CHECKOUT_BRANCH}
 
     git_br=$(echo $current_heads |awk '{ for (i=2;i<=NF;i+=2) $i=""; print}' )
 
-    for i in $git_br; do echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i ;done
+    for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i ;done
 
 
 params:
