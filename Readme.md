@@ -449,6 +449,16 @@ we provide a new config mechanism shared across all root deployments. A [default
 but it is possible to override these values with a `shared-config.yml` file located in paas-template root directory. It
 also possible to override again with a `private-config.yml` file located in secrets root directory.
 
+### "paas-templates" and "secrets" repo structure examples
+
+In [/docs/reference_dataset](/docs/reference_dataset), you find a set of
+Markdown files describing structure examples for the repos, links to example
+files as well as the lists of credentials needed by the generated pipelines to
+be deployed.
+
+Those files are generated automatically following the specs given in
+[features/](features).
+
 # COA development
 
 ## Status and roadmap
