@@ -1,7 +1,26 @@
 # Change Log
 
+## [v2.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.1.0) (2018-06-20)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.1...v2.1.0)
+
+**Implemented enhancements:**
+
+- offer a preview in logs of interpolated \(manifest + operators + vars\) [\#52](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/52)
+- Add delete lifecycle [\#4](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/4)
+
+**Closed issues:**
+
+- Regression: IAAS\_SPEC\_PATH is missing in Concourse pipelines  [\#151](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/151)
+
+**Merged pull requests:**
+
+- pipeline\(tf\): fixes missing `IAAS\_SPEC\_PATH` [\#152](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/152)
+
 ## [v1.9.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.9.1) (2018-05-29)
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.0...v1.9.1)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.0.0...v1.9.1)
+
+## [v2.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.0.0) (2018-05-29)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.0...v2.0.0)
 
 **Fixed bugs:**
 
@@ -17,6 +36,7 @@
 
 **Merged pull requests:**
 
+- Add task displaying manifest before it gets deployed [\#142](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/142)
 - task\(terraform\_\*\):fix helm terraform provider [\#140](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/140)
 - pipeline\(depls\): fixes errand job triggering [\#138](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/138)
 - Move out stemcell declararation from deployment-dependencies.yml [\#136](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/136)
