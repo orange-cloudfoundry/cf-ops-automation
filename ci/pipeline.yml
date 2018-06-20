@@ -109,11 +109,12 @@ jobs:
       params:
         build: cf-ops-automation-dependencies
         build_args: &docker_build_args
-          CONCOURSE_VERSION: 3.13.0
-          CONCOURSE_SHA: b94f3bad52a80d41e636c85c0f62d33365d385632cef07f33651108da63cfed3
+          CONCOURSE_VERSION: 3.14.1
+          CONCOURSE_SHA: aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
 
 
   - name: test
+    serial: true
     plan:
     - aggregate:
       - get: cf-ops-automation-docker-image
@@ -127,6 +128,7 @@ jobs:
     - task: run-tests
       attempts: 3
       image: cf-ops-automation-docker-image
+      timeout: 30m
       config: &test_config
         platform: linux
         inputs:
@@ -139,6 +141,9 @@ jobs:
           args:
           - -ce
           - |
+            echo "fly $(fly --version)"
+            ruby --version
+            bundle --version
             fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
             cc-test-reporter before-build
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
@@ -420,6 +425,7 @@ jobs:
             status: failure
 
   - name: test-PR-develop
+    serial: true
     plan:
       - aggregate:
         - get: cf-ops-automation-docker-image
@@ -438,6 +444,7 @@ jobs:
       - task: test-pr
         attempts: 3
         image: cf-ops-automation-docker-image
+        timeout: 30m
         config: *test_config
         on_success:
           put: PR-develop
