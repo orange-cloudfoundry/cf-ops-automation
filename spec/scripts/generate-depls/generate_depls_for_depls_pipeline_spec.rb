@@ -132,31 +132,19 @@ describe 'generate-depls for depls pipeline' do
       expect(pipeline['jobs'].reject { |jobs| jobs['on_failure'] }).to be_empty
     end
 
-    it 'generates delete-deployments-review job' do
+    it 'generates delete-deployments-review job with valid task' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
-      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'ntp_to_be_deleted' }&.first
-      expect(current_task).to include('config')
+      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'prepare_deployment_to_be_deleted' }&.first
+      expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml').and \
+       include('params' => {'DEPLOYMENTS_TO_DELETE' => 'ntp'})
+
     end
 
-    it 'ignores root-deployment template dir in delete-deployments-review' do
-      current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
-      tasks = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] }
-      number_of_expected_delete_deployments_review_tasks = 1
-      expect(tasks.count).to eq(number_of_expected_delete_deployments_review_tasks)
-    end
-
-    it 'generates approve-and-delete-disabled-deployments job' do
+    it 'generates approve-and-delete-disabled-deployments job with valid task' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
-      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete_ntp' }&.first
-      expect(current_task).to include('config')
-    end
-
-    it 'ignores root-deployment template dir in approve-and-delete-disabled-deployments' do
-      current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
-      tasks = current_job.select { |item| item['plan'] }['plan'].select{ |item| item['task'] }
-      number_of_expected_approve_and_delete_disabled_deployments_tasks = 1
-
-      expect(tasks.count).to eq(number_of_expected_approve_and_delete_disabled_deployments_tasks)
+      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete_deployments' }&.first
+      expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml' ).and \
+       include('params' => {"BOSH_TARGET"=>"((bosh-target))", "BOSH_CLIENT"=>"((bosh-username))", "BOSH_CLIENT_SECRET"=>"((bosh-password))", "BOSH_CA_CERT"=>"secrets/shared/certs/internal_paas-ca/server-ca.crt", "DEPLOYMENTS_TO_DELETE"=>"ntp"})
     end
   end
 
