@@ -112,26 +112,11 @@ jobs:
         trigger: true
         params:
           submodules: none
-    - task: ntp_to_be_deleted
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: alpine
-        run:
-          path: sh
-          args:
-            - -ce
-            - |
-              echo "${BOSH_DEPLOYMENT} deployment has been detected as 'inactive', ie :"
-              echo "  - paas-template contains deployment descriptiors"
-              echo "  - secrets does not enable this deployment"
-              echo "This bosh deployment is going to be deleted when exists."
-              echo "Otherwise deletion is run on an unknown deployment."
-              echo "! Waiting for manual approval !"
+    - task: prepare_deployment_to_be_deleted
+      input_mapping: {script-resource: cf-ops-automation}
+      file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
-       BOSH_DEPLOYMENT: ntp
+       DEPLOYMENTS_TO_DELETE: ntp
 
   - name: approve-and-delete-disabled-deployments
     on_failure:
@@ -153,35 +138,17 @@ jobs:
           submodules: none
         passed:
         - delete-deployments-review
-    - task: delete_ntp
+    - task: delete_deployments
       input_mapping:
         script-resource: cf-ops-automation
         secrets: secrets-full
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: governmentpaas/bosh-cli-v2
-            tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
-        inputs:
-        - name: script-resource
-        - name: secrets
-        outputs:
-        - name: run-resource
-        run:
-          path: sh
-          args:
-          - "-cex"
-          - |
-            source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-            bosh -n delete-deployment
+      file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-        BOSH_DEPLOYMENT: ntp
+        DEPLOYMENTS_TO_DELETE: ntp
   - name: execute-deploy-script
     serial: true
     on_failure:
