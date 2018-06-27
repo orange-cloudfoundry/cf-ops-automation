@@ -21,9 +21,9 @@ image_resource:
 inputs:
   - name: config-manifest
   - name: secrets
-  - name: script-resource
+  - name: scripts-resource
 run:
-  path: script-resource/concourse/tasks/bosh_update_cloud_config/run.sh
+  path: scripts-resource/concourse/tasks/bosh_update_cloud_config/run.sh
 params:
    BOSH_TARGET:
    BOSH_CLIENT:

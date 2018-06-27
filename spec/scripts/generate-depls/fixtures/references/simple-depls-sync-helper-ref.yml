@@ -80,7 +80,7 @@ jobs:
       attempts: 2
 
   - task: anonymized-secrets
-    input_mapping: {script-resource: cf-ops-automation,secrets: secrets-full}
+    input_mapping: {scripts-resource: cf-ops-automation,secrets: secrets-full}
     output_mapping: {result-dir: anonymized-secrets-dir}
     config:
       platform: linux
@@ -88,7 +88,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
       outputs:
         - name: result-dir
@@ -97,7 +97,7 @@ jobs:
         args:
         - -exc
         - |
-          cd script-resource
+          cd scripts-resource
           gem update bundler
           bundle install
           bundle exec scripts/anonymize_secrets.rb -s ../secrets -o ../result-dir

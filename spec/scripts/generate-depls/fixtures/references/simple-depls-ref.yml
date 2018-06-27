@@ -203,11 +203,11 @@ jobs:
         passed: [update-pipeline-simple-depls-generated]
 
     - task: run-deploy.sh
-      input_mapping: {script-resource: cf-ops-automation, templates: paas-template-simple-depls, secrets: secrets-simple-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-simple-depls, secrets: secrets-simple-depls}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: simple-depls/template
-        COMMON_SCRIPT_DIR: script-resource/scripts
+        COMMON_SCRIPT_DIR: scripts-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
@@ -270,7 +270,7 @@ jobs:
       - task: update-cloud-config-for-simple-depls
         attempts: 2
         input_mapping:
-          script-resource: cf-ops-automation
+          scripts-resource: cf-ops-automation
           secrets: secrets-simple-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
@@ -305,7 +305,7 @@ jobs:
       - task: update-runtime-config-for-simple-depls
         attempts: 2
         input_mapping:
-          script-resource: cf-ops-automation
+          scripts-resource: cf-ops-automation
           secrets: secrets-simple-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
@@ -586,7 +586,7 @@ jobs:
          passed: [recreate-all]
 
     - task: bosh-recreate-ntp
-      input_mapping: {script-resource: cf-ops-automation, secrets: secrets-simple-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls}
       config:
           platform: linux
           image_resource:
@@ -595,7 +595,7 @@ jobs:
               repository: governmentpaas/bosh-cli-v2
               tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
           inputs:
-            - name: script-resource
+            - name: scripts-resource
             - name: secrets
           outputs:
             - name: run-resource
@@ -605,7 +605,7 @@ jobs:
               - -e
               - -c
               - |
-                source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+                source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
                 bosh -n recreate
       params:
         BOSH_TARGET: ((bosh-target))
@@ -697,7 +697,7 @@ jobs:
       params: { submodules: none}
       attempts: 2
   - task: generate-simple-depls-pipeline
-    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}
     config:
       platform: linux
@@ -705,7 +705,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: templates
         - name: secrets
       outputs:
@@ -716,7 +716,7 @@ jobs:
         - -exc
         - |
           cp -r templates/. result-dir
-          cp -r script-resource/. result-dir
+          cp -r scripts-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/
           ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse

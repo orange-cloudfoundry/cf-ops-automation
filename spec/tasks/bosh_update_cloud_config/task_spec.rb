@@ -25,7 +25,7 @@ describe 'bosh_update_cloud_config task' do
       }
 
       @output = execute('-c concourse/tasks/bosh_update_cloud_config.yml ' \
-        '-i script-resource=. ' \
+        '-i scripts-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@config_manifest} ", \
         fly_cli_environment )

@@ -29,7 +29,7 @@ done
 echo "Operators detected: <${OPS_FILES}>"
 echo "Vars files detected: <${VARS_FILES}>"
 
-source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
 cat config-manifest/runtime-config.yml
 OLD_CONFIG=$(mktemp runtime-config-XXXXXX)
 bosh runtime-config >$OLD_CONFIG || true

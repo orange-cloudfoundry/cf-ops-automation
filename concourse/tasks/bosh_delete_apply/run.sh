@@ -48,7 +48,7 @@ fi
 
 # shellcheck disable=SC1091
 # we disable this check as the path below is only available in concourse task
-source ./script-resource/scripts/bosh_cli_v2_login.sh "${BOSH_TARGET}"
+source ./scripts-resource/scripts/bosh_cli_v2_login.sh "${BOSH_TARGET}"
 for DEPLOYMENT_NAME in $(printf "%s" "${DEPLOYMENTS_TO_DELETE}"); do
   echo "Deleting deployment ${DEPLOYMENT_NAME} if exists"
   bosh -n --deployment="${DEPLOYMENT_NAME}" delete-deployment

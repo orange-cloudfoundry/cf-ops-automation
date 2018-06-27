@@ -113,7 +113,7 @@ jobs:
         params:
           submodules: none
     - task: prepare_deployment_to_be_deleted
-      input_mapping: {script-resource: cf-ops-automation}
+      input_mapping: {scripts-resource: cf-ops-automation}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
        DEPLOYMENTS_TO_DELETE: ntp
@@ -140,7 +140,7 @@ jobs:
         - delete-deployments-review
     - task: delete_deployments
       input_mapping:
-        script-resource: cf-ops-automation
+        scripts-resource: cf-ops-automation
         secrets: secrets-full
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
@@ -173,13 +173,13 @@ jobs:
           submodules: none
     - task: run-deploy.sh
       input_mapping:
-        script-resource: cf-ops-automation
+        scripts-resource: cf-ops-automation
         templates: paas-template-delete-depls
         secrets: secrets-delete-depls
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: delete-depls/template
-        COMMON_SCRIPT_DIR: script-resource/scripts
+        COMMON_SCRIPT_DIR: scripts-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET:
         BOSH_TARGET: ((bosh-target))
@@ -232,7 +232,7 @@ jobs:
       - task: update-cloud-config-for-delete-depls
         attempts: 2
         input_mapping:
-          script-resource: cf-ops-automation
+          scripts-resource: cf-ops-automation
           secrets: secrets-delete-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
@@ -269,7 +269,7 @@ jobs:
       - task: update-runtime-config-for-delete-depls
         attempts: 2
         input_mapping:
-          script-resource: cf-ops-automation
+          scripts-resource: cf-ops-automation
           secrets: secrets-delete-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:

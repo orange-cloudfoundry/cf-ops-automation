@@ -135,7 +135,7 @@ jobs:
       trigger: true
       attempts: 3
   - task: generate-master-depls-pipeline
-    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    input_mapping: {scripts-resource: depls,secrets: pipeline-credentials}
     output_mapping: {result-dir: concourse-master-depls-pipeline}
     config:
       platform: linux
@@ -143,7 +143,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
       outputs:
         - name: result-dir
@@ -152,10 +152,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/. result-dir
+          cp -r scripts-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls master-depls -s ../../script-resource
+          ./generate-depls.rb --depls master-depls -s ../../scripts-resource
     on_failure:
       put: failure-alert
       params:
@@ -225,7 +225,7 @@ jobs:
       trigger: true
       attempts: 3
   - task: generate-ops-depls-pipeline
-    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    input_mapping: {scripts-resource: depls,secrets: pipeline-credentials}
     output_mapping: {result-dir: concourse-ops-depls-pipeline}
     config:
       platform: linux
@@ -233,7 +233,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
       outputs:
         - name: result-dir
@@ -242,10 +242,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/. result-dir
+          cp -r scripts-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls ops-depls -s ../../script-resource
+          ./generate-depls.rb --depls ops-depls -s ../../scripts-resource
     on_failure:
       put: failure-alert
       params:
@@ -331,7 +331,7 @@ jobs:
       trigger: true
       attempts: 3
   - task: generate-expe-depls-pipeline
-    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    input_mapping: {scripts-resource: depls,secrets: pipeline-credentials}
     output_mapping: {result-dir: concourse-expe-depls-pipeline}
     config:
       platform: linux
@@ -339,7 +339,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
       outputs:
         - name: result-dir
@@ -348,10 +348,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/. result-dir
+          cp -r scripts-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls expe-depls -s ../../script-resource
+          ./generate-depls.rb --depls expe-depls -s ../../scripts-resource
     on_failure:
       put: failure-alert
       params:
@@ -417,7 +417,7 @@ jobs:
       trigger: true
       attempts: 3
   - task: generate-micro-depls-pipeline
-    input_mapping: {script-resource: depls,secrets: pipeline-credentials}
+    input_mapping: {scripts-resource: depls,secrets: pipeline-credentials}
     output_mapping: {result-dir: concourse-micro-depls-pipeline}
     config:
       platform: linux
@@ -425,7 +425,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
       outputs:
         - name: result-dir
@@ -434,10 +434,10 @@ jobs:
         args:
         - -exc
         - |
-          cp -r script-resource/. result-dir
+          cp -r scripts-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/concourse
-          ./generate-depls.rb --depls micro-depls -s ../../script-resource
+          ./generate-depls.rb --depls micro-depls -s ../../scripts-resource
     on_failure:
       put: failure-alert
       params:
