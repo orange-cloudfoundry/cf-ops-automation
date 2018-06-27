@@ -112,11 +112,11 @@ jobs:
         
 
     - task: run-deploy.sh
-      input_mapping: {script-resource: cf-ops-automation, templates: paas-template-dummy-depls, secrets: secrets-dummy-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-dummy-depls, secrets: secrets-dummy-depls}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: dummy-depls/template
-        COMMON_SCRIPT_DIR: script-resource/scripts
+        COMMON_SCRIPT_DIR: scripts-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
@@ -182,7 +182,7 @@ jobs:
       - task: update-cloud-config-for-dummy-depls
         attempts: 2
         input_mapping:
-          script-resource: cf-ops-automation
+          scripts-resource: cf-ops-automation
           secrets: secrets-dummy-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
@@ -216,7 +216,7 @@ jobs:
       - task: update-runtime-config-for-dummy-depls
         attempts: 2
         input_mapping:
-          script-resource: cf-ops-automation
+          scripts-resource: cf-ops-automation
           secrets: secrets-dummy-depls
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:

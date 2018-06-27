@@ -19,7 +19,7 @@ image_resource:
     repository: governmentpaas/bosh-cli-v2
     tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
 inputs:
-  - name: script-resource
+  - name: scripts-resource
   - name: templates
   - name: secrets
 outputs:
@@ -30,9 +30,9 @@ run:
   args:
   - -exc
   - |
-    cp -r script-resource/. run-resource
+    cp -r scripts-resource/. run-resource
     cp -r templates/. run-resource
-    source ./script-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+    source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
     DEPLOY_SCRIPT=run-resource/${CURRENT_DEPLS}/deploy.sh
     if [ -f "${DEPLOY_SCRIPT}" ]
     then

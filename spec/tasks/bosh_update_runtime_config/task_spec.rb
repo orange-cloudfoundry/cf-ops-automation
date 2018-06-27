@@ -18,7 +18,7 @@ describe 'bosh_update_runtime_config task' do
       FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operators.yml'))
 
       @output = execute('-c concourse/tasks/bosh_update_runtime_config.yml ' \
-        '-i script-resource=. ' \
+        '-i scripts-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@config_manifest} ", \
         'BOSH_TARGET' => 'https://dummy-bosh',

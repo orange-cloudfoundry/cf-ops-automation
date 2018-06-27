@@ -79,7 +79,7 @@ jobs:
       trigger: false
 
   - task: generate-simple-depls-pipelines
-    input_mapping: {script-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}
     config:
       platform: linux
@@ -87,7 +87,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.1-slim}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
         - name: templates
       outputs:
@@ -98,7 +98,7 @@ jobs:
         - -exc
         - |
           cp -r templates/. result-dir
-          cp -r script-resource/. result-dir
+          cp -r scripts-resource/. result-dir
           cp -rf secrets/. result-dir
           cd result-dir/
           ./scripts/generate-depls.rb --depls simple-depls -t ../templates -p . -o concourse

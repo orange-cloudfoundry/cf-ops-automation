@@ -141,14 +141,14 @@ jobs:
       params: { submodules: none}
 
   - task: update-bootstrap-pipeline
-    input_mapping: {script-resource: cf-ops-automation,secrets: secrets-full}
+    input_mapping: {scripts-resource: cf-ops-automation,secrets: secrets-full}
     config:
       platform: linux
       image_resource:
         type: docker-image
         source: {repository: governmentpaas/curl-ssl}
       inputs:
-        - name: script-resource
+        - name: scripts-resource
         - name: secrets
       run:
         path: sh
@@ -171,7 +171,7 @@ jobs:
 
           export FLY_TARGET=main
           export FLY_SET_PIPELINE_OPTION="--non-interactive"
-          cd script-resource/
+          cd scripts-resource/
           ./concourse-bootstrap.sh
       params:
         CREDENTIALS_FILENAME: micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
