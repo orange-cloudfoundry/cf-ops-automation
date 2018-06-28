@@ -23,7 +23,6 @@ describe 'bosh_delete_plan task' do
 
       @output = execute('-c concourse/tasks/bosh_delete_apply/task.yml ' \
       '-i scripts-resource=. ' \
-      "-i deployments-to-delete=#{@deployments_to_delete} " \
       "-i secrets=#{@secrets} " \
       "-o delete-result-dir=#{@delete_result_dir} ")
     end
