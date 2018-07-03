@@ -1,7 +1,19 @@
-class CoaEnvBootstrapper
-  module ConcourseHelper
+module CoaEnvBootstrapper
+  class Concourse
+    attr_reader :ceb
+
+    def initialize(coa_env_bootstrapper)
+      @ceb = coa_env_bootstrapper
+    end
+
+    def run_pipeline_jobs
+      upload_pipelines
+      unpause_pipelines
+      trigger_jobs
+    end
+
     def upload_pipelines
-      concourse_credentials_yml = File.join(@tmpdir, "concourse-credentials.yml")
+      concourse_credentials_yml = File.join(ceb.tmpdir, "concourse-credentials.yml")
       create_file_from_prereqs(concourse_credentials_yml, "concourse_credentials", generated_concourse_credentials)
 
       login_into_fly
@@ -27,6 +39,8 @@ class CoaEnvBootstrapper
       run_cmd "fly --target #{concourse_creds["target"]} trigger-job --job bootstrap-all-init-pipelines/bootstrap-init-pipelines"
     end
 
+    private
+
     # insecure by default, not an option yet
     def login_into_fly
       run_cmd "fly login --target #{concourse_creds["target"]} \
@@ -34,7 +48,7 @@ class CoaEnvBootstrapper
 --username=#{concourse_creds["username"]} \
 --password=#{concourse_creds["password"]} -k && \
 fly --target #{concourse_creds["target"]} sync",
-        source: true
+source: true
     end
   end
 end

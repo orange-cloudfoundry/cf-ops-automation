@@ -18,7 +18,7 @@ if ENV["OWN_CONCOURSE"] == "true"
       "concourse_username" => ENV["CONCOURSE_USERNAME"],
       "concourse_password" => ENV["CONCOURSE_PASSWORD"],
       "concourse_insecure" => ENV["CONCOURSE_INSECURE"],
-      "concourse_ca_cert"  => ENV["CONCOURSE_CA_CERT"],
+      "concourse_ca_cert"  => ENV["CONCOURSE_CA_CERT"]
     }
   }
 
@@ -35,7 +35,7 @@ if ENV["OWN_BOSH"] == "true"
       "bosh_target"        => ENV["BOSH_TARGET"],
       "bosh_client"        => ENV["BOSH_CLIENT"],
       "bosh_client_secret" => ENV["BOSH_CLIENT_SECRET"],
-      "bosh_ca_cert"       => ENV["BOSH_CA_CERT"],
+      "bosh_ca_cert"       => ENV["BOSH_CA_CERT"]
     }
   }
 

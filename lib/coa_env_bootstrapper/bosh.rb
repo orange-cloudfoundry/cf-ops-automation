@@ -1,7 +1,19 @@
-class CoaEnvBootstrapper
-  module BoshHelper
+module CoaEnvBootstrapper
+  class Bosh
+    attr_reader :ceb
+
+    def initialize(coa_env_bootstrapper)
+      @ceb = coa_env_bootstrapper
+    end
+
+    def prepare_environment
+      upload_stemcell     if ceb.step_active?("upload_stemcell")
+      upload_cloud_config if ceb.step_active?("upload_cloud_config")
+      deploy_git_server   if ceb.step_active?("install_git_server")
+    end
+
     def upload_stemcell
-      info = @prereqs["stemcell"]
+      info = ceb.prereqs["stemcell"]
       name = info["name"]
       version = info["version"]
       uri = info["uri"]
@@ -15,12 +27,12 @@ class CoaEnvBootstrapper
     end
 
     def upload_cloud_config
-      cloud_config_yml = File.join(@tmpdir, "cloud-config.yml")
+      cloud_config_yml = File.join(ceb.tmpdir, "cloud-config.yml")
       create_file_from_prereqs(cloud_config_yml, "cloud_config")
       run_cmd "bosh -n update-cloud-config #{cloud_config_yml}", sourced: true
     end
 
-    def install_git_server
+    def deploy_git_server
       if bosh_release_is_uploaded?("git-server", "3")
         puts "BOSH release git-server/3 already uploaded."
       else
@@ -28,12 +40,13 @@ class CoaEnvBootstrapper
 https://bosh.io/d/github.com/cloudfoundry-community/git-server-release?v=3", sourced: true
       end
 
-      git_server_manifest = File.join(@tmpdir, "git_server_manifest.yml")
+      git_server_manifest = File.join(ceb.tmpdir, "git_server_manifest.yml")
       create_file_from_prereqs(git_server_manifest, "git_server_manifest")
 
       run_cmd "bosh -n deploy -d git-server #{git_server_manifest} -v repos=[paas-templates,secrets]", sourced: true
     end
 
+    private
 
     def stemcell_is_uploaded?(name, version)
       run_cmd("bosh stemcells --column name --column version | cut -f1,2", sourced: true).
