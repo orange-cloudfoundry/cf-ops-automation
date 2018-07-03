@@ -1,0 +1,51 @@
+---
+name: bosh-deployment-sample
+
+releases:
+- {name: nginx, version: latest}
+
+update:
+  canaries: 1
+  max_in_flight: 50
+  canary_watch_time: 1000-30000
+  update_watch_time: 1000-30000
+  serial: false
+
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+
+instance_groups:
+- name: nginx
+  instances: (( grab secrets.nginx.instances ))
+  azs: [z1]
+  vm_type: default
+  persistent_disk_type: 0
+  stemcell: trusty
+  networks:
+  - name: default
+  jobs:
+  - name: nginx
+    release: nginx
+    properties:
+      nginx_conf: |
+        worker_processes  1;
+        error_log /var/vcap/sys/log/nginx/error.log   info;
+        events {
+          worker_connections  1024;
+        }
+        http {
+          include /var/vcap/packages/nginx/conf/mime.types;
+          default_type  application/octet-stream;
+          sendfile        on;
+          keepalive_timeout  65;
+          server_names_hash_bucket_size 64;
+          server {
+            server_name _; # invalid value which will never trigger on a real hostname.
+            listen *:80;
+            # FIXME: replace all occurrences of 'example.com' with your server's FQDN
+            access_log /var/vcap/sys/log/nginx/example.com-access.log;
+            error_log /var/vcap/sys/log/nginx/example.com-error.log;
+          }
+        }
