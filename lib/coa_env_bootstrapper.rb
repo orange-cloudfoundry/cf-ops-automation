@@ -14,24 +14,28 @@ class CoaEnvBootstrapper
 
   PROJECT_ROOT_DIR = Pathname.new(File.dirname(__FILE__) + '/..').realdirpath
 
+  attr_reader :tmpdir, :prereqs
+
   def initialize(prereqs_paths)
-    @tmpdir = Dir.mktmpdir
     prereqs = {}
     prereqs_paths.each do |path|
-      # TODO: check the file's existence and content
-      next unless YAML.load_file(path)
-      prereqs = prereqs.merge(YAML.load_file(path))
+      if File.exist?(path)
+        prereqs = prereqs.merge(YAML.load_file(path))
+      else
+        puts "File #{path} not found. Will be ignored."
+      end
     end
     @prereqs = prereqs
+    @tmpdir = Dir.mktmpdir
   end
 
   def execute
     # TODO: check_prereqs
-    deploy_transiant_infra if step_active?("deploy_transiant_infra")
+    deploy_transiant_infra unless step_inactive?("deploy_transiant_infra")
     write_env_file
-    upload_stemcell if step_active?("upload_stemcell")
-    upload_cloud_config if step_active?("upload_cloud_config")
-    install_git_server if step_active?("install_git_server")
+    upload_stemcell unless step_inactive?("upload_stemcell")
+    upload_cloud_config unless step_inactive?("upload_cloud_config")
+    install_git_server unless step_inactive?("install_git_server")
     push_templates_repo
     push_secrets_repo
     download_git_dependencies
@@ -43,13 +47,13 @@ class CoaEnvBootstrapper
   end
 
   def deploy_transiant_infra
-    bucc_prereqs = @prereqs["bucc"]
+    bucc_prereqs = prereqs["bucc"]
     run_cmd "bucc up --cpi #{bucc_prereqs["cpi"]} \
 #{bucc_prereqs["cpi_specific_options"]} --lite --debug"
   end
 
   def write_env_file
-    @env_file_path = File.join(@tmpdir, 'env')
+    @env_file_path = File.join(tmpdir, 'env')
     File.write(@env_file_path, env_profile)
   end
 
@@ -59,10 +63,6 @@ class CoaEnvBootstrapper
     bosh_creds.
       map { |key, value| "export BOSH_#{key.upcase}='#{value}'" }.
       join("\n")
-  end
-
-  def step_active?(step_key)
-    @prereqs["steps"][step_key]
   end
 
   def generated_concourse_credentials
@@ -112,7 +112,7 @@ class CoaEnvBootstrapper
   def output_dir
     @output_dir ||=
       begin
-        path = File.join(@tmpdir, "output_dir")
+        path = File.join(tmpdir, "output_dir")
         Dir.mkdir_p path
         path
       end
@@ -129,14 +129,14 @@ class CoaEnvBootstrapper
     cmd_to_exectute = opts[:sourced] ? ". #{@env_file_path} && #{cmd}" : cmd
     stdout, stderr, status = Open3.capture3(cmd_to_exectute)
 
-    if status.exitstatus != 0
+    if status.success?
+      puts "Command ran succesfully with output:", stdout
+    else
       if opts[:ignore_error]
         puts "Command errored, but continuing:", "stderr:", stderr, "stdout:", stdout
       else
         fail "Command errored with outputs:\nstderr:\n#{stderr}\nstdout:\n#{stdout}"
       end
-    else
-      puts "Command ran succesfully with output:", stdout
     end
     puts ""
 
@@ -145,17 +145,22 @@ class CoaEnvBootstrapper
 
   def create_file_from_prereqs(filepath, prereqs_key, additional_info = {})
     file = File.new(filepath, 'w+')
-    credentials_content = @prereqs[prereqs_key].merge(additional_info)
+    credentials_content = prereqs[prereqs_key].merge(additional_info)
     file.write(YAML.dump(credentials_content))
     file.close
     filepath
   end
 
   def own_concourse_vars
-    @prereqs["concourse"]
+    prereqs["concourse"]
   end
 
   def own_bosh_vars
-    @prereqs["bosh"]
+    prereqs["bosh"]
+  end
+
+  def step_inactive?(step_key)
+    prereqs["steps"] &&
+      prereqs["steps"][step_key] == false
   end
 end

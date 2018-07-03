@@ -2,8 +2,6 @@ require 'spec_helper'
 require_relative '../../lib/git_modules'
 
 describe GitModules do
-  let(:fixture_path) { File.dirname(__FILE__) + "/fixtures/" }
-
   describe "#list" do
     let(:git_modules) { GitModules.new('base_path') }
 
@@ -19,7 +17,7 @@ describe GitModules do
     end
 
     context "when there is a .gitmodules file" do
-      let(:gitmodules_path) {  File.join(fixture_path + 'gitmodules') }
+      let(:gitmodules_path) {  File.join(fixtures_dir('lib'), 'gitmodules') }
 
       before do
         expect(File).to receive(:exist?).with('base_path/.gitmodules').

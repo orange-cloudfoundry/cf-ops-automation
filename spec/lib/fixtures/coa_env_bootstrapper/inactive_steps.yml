@@ -1,0 +1,4 @@
+steps:
+  deploy_transiant_infra: false
+  upload_stemcell: false
+  install_git_server: false

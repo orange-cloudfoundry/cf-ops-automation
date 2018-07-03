@@ -1,0 +1,4 @@
+bucc:
+  cpi: openstack
+  cpi_specific_options: "--keystone-v2"
+
