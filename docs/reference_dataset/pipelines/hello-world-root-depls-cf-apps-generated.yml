@@ -1,0 +1,178 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-resource
+resources:
+#- name: at-noon
+#  type: cron-resource
+#  source:
+#    expression: "15 12 * * 1-5"
+#    location: "Europe/Paris"
+#    fire_immediately: true
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+- name: secrets-full
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: secrets-full-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    skip_ssl_verification: true
+    tag_filter: ((cf-ops-automation-tag-filter))
+- name: secrets-generic-app
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["hello-world-root-depls/cf-apps-deployments/generic-app", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-template-generic-app
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["hello-world-root-depls/cf-apps-deployments/generic-app"]
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+jobs:
+- name: retrigger-all-jobs
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+      - get: secrets-full
+        params: { submodules: none}
+    - task: generate-hello-world-root-depls-pipeline
+      output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-generic-app" >> result-dir/flight-plan
+        params:
+          BUILD_PIPELINE_NAME: hello-world-root-depls-cf-apps-generated
+    - task: fly-into-concourse
+      input_mapping: {fly-cmd: trigger-hello-world-root-depls-plan}
+      output_mapping: {flight-report: concourse-hello-world-root-depls-trigger-report}
+      file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+      params:
+        ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
+        FLY_USERNAME: ((concourse-hello-world-root-depls-username))
+        FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+- name: cf-push-generic-app
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: secrets-generic-app
+        params: { submodules: none}
+        trigger: true
+      - get: secrets-full-writer
+        params: { submodules: none}
+      - get: paas-template-generic-app
+        trigger: true
+        params: { submodules: none }
+      - get: cf-ops-automation
+        trigger: true
+        params: { submodules: none }
+    - task: generate-generic-app-manifest
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-generic-app, additional-resource: paas-template-generic-app}
+      output_mapping: {generated-files: release-manifest}
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/
+        YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
+        YML_FILES: |
+            ./credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/secrets/meta.yml
+            ./credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/secrets/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
+    - task: push-generic-app
+      attempts: 2
+      input_mapping: {scripts-resource: cf-ops-automation, templates-resource: paas-template-generic-app, credentials-resource: secrets-generic-app, additional-resource: release-manifest}
+      output_mapping: {generated-files: final-release-manifest}
+      file: cf-ops-automation/concourse/tasks/cf_push.yml
+      params:
+        CUSTOM_SCRIPT_DIR: templates-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
+        SECRETS_DIR: credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app
+        CF_MANIFEST: generated-files/generic-app_manifest.yml
+        CF_API_URL: https://my-cloudfroundry.org
+        CF_ORG: my-test-org
+        CF_SPACE: my-test-space
+        CF_USERNAME: a-test-User
+        CF_PASSWORD: a-test-Password
+    - task: update-generic-app-files
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
+      output_mapping: {updated-git-resource: updated-generic-app-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: hello-world-root-depls/cf-apps-deployments/generic-app/generic-app_manifest.yml
+        NEW_FILE: "generic-app_manifest.yml"
+        COMMIT_MESSAGE: "generic-app generated CF manifest auto update - [skip ci]"
+    - put: secrets-full-writer
+      get_params: {submodules: none}
+      params:
+        repository: updated-generic-app-secrets
+        rebase: true
+    - task: execute-generic-app-post-deploy
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-generic-app, credentials-resource: secrets-generic-app, additional-resource: release-manifest}
+      output_mapping: {generated-files: post-deploy-result}
+      file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
+        SECRETS_DIR: credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app
+        CF_API_URL: https://my-cloudfroundry.org
+        CF_ORG: my-test-org
+        CF_SPACE: my-test-space
+        CF_USERNAME: a-test-User
+        CF_PASSWORD: a-test-Password
+groups:
+- name: Hello-world-root-depls
+  jobs:
+      - retrigger-all-jobs
+      - cf-push-generic-app
+- name: App-g*
+  jobs:
+    - cf-push-generic-app
+- name: Utils
+  jobs:
+    - retrigger-all-jobs

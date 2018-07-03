@@ -1,0 +1,5 @@
+example-dir-1
+example-dir-1/.hide-me
+example-dir-1/example-file.yml
+example-dir-1/subdir/subdir-example-file.yml
+

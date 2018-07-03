@@ -1,0 +1,118 @@
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+resources:
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+# Scan the whole subdeployment from its root, not only the secret part
+- name: secrets-hello-world-root-depls
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["hello-world-root-depls/"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-template-hello-world-root-depls
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["hello-world-root-depls/template"]
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+# Used to get other deployments secrets (e.g. micro/master for mattermost/git) as well as shared secrets updates
+# This does not trigger automatically a new build, operators have to trigger it manually.
+#- name: secrets-full
+#  type: git
+#  source:
+#    uri: ((secrets-uri))
+#    branch: ((secrets-branch))
+#    skip_ssl_verification: true
+- name: paas-templates-full
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+jobs:
+- name: terraform-apply
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+        trigger: true
+      - get: paas-template-hello-world-root-depls
+        params: { submodules: none}
+        trigger: true
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: secrets-hello-world-root-depls
+        params: { submodules: none}
+        trigger: true
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-templates-full}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        YML_FILES: |
+          ./credentials-resource/shared/secrets.yml
+          ./credentials-resource/hello-world-root-depls/terraform-config/secrets/meta.yml
+          ./credentials-resource/hello-world-root-depls/terraform-config/secrets/secrets.yml
+        YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/terraform-config/template
+        CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
+        SUFFIX: -tpl.tfvars.yml
+    - task: terraform-apply
+      input_mapping: {secret-state-resource: secrets-hello-world-root-depls,spec-resource: paas-templates-full}
+      output_mapping: {generated-files: terraform-cf}
+      file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
+      params:
+        SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
+        SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
+        IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
+      ensure:
+        task: update-terraform-state-file
+        input_mapping: {reference-resource: secrets-hello-world-root-depls, generated-resource: terraform-cf}
+        output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+        file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+        params:
+          OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
+          NEW_FILE: "terraform.tfstate"
+          COMMIT_MESSAGE: "Terraform Cloudfoundry auto update - [skip ci]"
+        on_failure:
+          put: failure-alert
+          params:
+            channel: ((slack-channel))
+            text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+            icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+            username: Concourse
+        on_success:
+          put: secrets-hello-world-root-depls
+          get_params: {submodules: none}
+          params:
+            repository: updated-terraform-state-secrets
+            rebase: true
+groups:
+- name: Hello-world-root-depls
+  jobs:
+    - terraform-apply
+- name: Terraform
+  jobs:
+    - terraform-apply

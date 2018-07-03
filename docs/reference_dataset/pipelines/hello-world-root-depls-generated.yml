@@ -1,0 +1,897 @@
+
+---
+resource_types:
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: concourse/bosh-deployment-resource
+    tag: latest
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
+- name: cron-resource
+  type: docker-image
+  source:
+    repository: cftoolsmiths/cron-resource
+- name: bosh-config
+  type: docker-image
+  source:
+    repository: dellemcdojo/bosh-config-resource
+- name: concourse-pipeline
+  type: docker-image
+  source:
+    repository: concourse/concourse-pipeline-resource
+- name: bosh-deployment-v2
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
+- name: bosh-errand
+  type: docker-image
+  source:
+    repository: starkandwayne/bosh2-errand-resource
+resources:
+- name: at-noon
+  type: cron-resource
+  source:
+    expression: "15 12 * * 1-5"
+    location: "Europe/Paris"
+    fire_immediately: true
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+- name: secrets-hello-world-root-depls
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml","hello-world-root-depls/ci-deployment-overview.yml","hello-world-root-depls/secrets","shared","hello-world-root-depls/terraform-config"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: secrets-full-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-template-hello-world-root-depls
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["shared-config.yml","hello-world-root-depls/template","hello-world-root-depls/terraform-config"]
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+- name: bosh-stemcell
+# name: ((stemcell-name))
+  type: s3
+  source:
+    bucket: ((s3-stemcell-bucket))
+    region_name: ((s3-stemcell-region-name))
+    # customization is required to remove bosh prefix in stemcell name
+    regexp: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-(.*)-((stemcell-main-name)).tgz
+    access_key_id: ((s3-stemcell-access-key-id))
+    secret_access_key: ((s3-stemcell-secret-key))
+    endpoint: ((s3-stemcell-endpoint))
+    skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+- name: secrets-bosh-deployment-sample
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["hello-world-root-depls/bosh-deployment-sample","shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-template-bosh-deployment-sample
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["hello-world-root-depls/bosh-deployment-sample"]
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+- name: bosh-deployment-sample-deployment
+  type: bosh-deployment-v2
+  source:
+    target: ((bosh-target))
+    client: ((bosh-username))
+    client_secret: ((bosh-password))
+    deployment: bosh-deployment-sample
+    ca_cert: 
+- name: fe-int-micro-for-micro-depls
+  type: concourse-pipeline
+  source:
+    target: ((concourse-hello-world-root-depls-target))
+    insecure: ((concourse-hello-world-root-depls-insecure))
+    teams:
+    - name: main
+      username: ((concourse-hello-world-root-depls-username))
+      password: ((concourse-hello-world-root-depls-password))
+- name: paas-templates-wip
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+- name: secrets-full
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-templates-full
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
+- name: nginx
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/nginx-release
+- name: ntp
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/ntp-release
+jobs:
+- name: delete-deployments-review
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+        passed: [update-pipeline-hello-world-root-depls-generated]
+        trigger: true
+      - get: paas-templates-full
+        params: { submodules: none}
+        passed: [update-pipeline-hello-world-root-depls-generated]
+      - get: secrets-full
+        trigger: true
+        passed: [update-pipeline-hello-world-root-depls-generated]
+        params: { submodules: none}
+    - task: prepare_deployment_to_be_deleted
+      input_mapping: {scripts-resource: cf-ops-automation}
+      file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
+      params:
+        DEPLOYMENTS_TO_DELETE: "to-delete-bosh-deployment-sample terraform-sample"
+- name: approve-and-delete-disabled-deployments
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params: { submodules: none}
+        passed: [delete-deployments-review]
+      - get: secrets-full
+        params: { submodules: none}
+        passed: [delete-deployments-review]
+    - task: delete_deployments
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full}
+      file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
+      params:
+         BOSH_TARGET: ((bosh-target))
+         BOSH_CLIENT: ((bosh-username))
+         BOSH_CLIENT_SECRET: ((bosh-password))
+         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+         DEPLOYMENTS_TO_DELETE: "to-delete-bosh-deployment-sample terraform-sample"
+- name: execute-deploy-script
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - get: at-noon
+      trigger: true
+    - aggregate:
+      - get: secrets-hello-world-root-depls
+        params: { submodules: none}
+#        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+      - get: paas-template-hello-world-root-depls
+        params: { submodules: none}
+#        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+      - get: cf-ops-automation
+        params: { submodules: none}
+        passed: [update-pipeline-hello-world-root-depls-generated]
+    - task: run-deploy.sh
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-hello-world-root-depls, secrets: secrets-hello-world-root-depls}
+      file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
+      params:
+        CURRENT_DEPLS: hello-world-root-depls/template
+        COMMON_SCRIPT_DIR: scripts-resource/scripts
+        SECRETS_DIR: secrets
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+- name: cloud-config-and-runtime-config-for-hello-world-root-depls
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - get: secrets-full-writer
+      params: { submodules: none}
+    - get: secrets-hello-world-root-depls
+      params: { submodules: none}
+      trigger: true
+#      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+    - get: paas-template-hello-world-root-depls
+      params: { submodules: none}
+      trigger: true
+#      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      passed: [update-pipeline-hello-world-root-depls-generated]
+    - task: generate-hello-world-root-depls-all-config
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-template-hello-world-root-depls}
+      output_mapping: {generated-files: config-manifest}
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/hello-world-root-depls/
+        YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/template
+        YML_FILES: |
+            ./credentials-resource/hello-world-root-depls/secrets/meta.yml
+            ./credentials-resource/hello-world-root-depls/secrets/secrets.yml
+            ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/template
+        IAAS_TYPE: ((iaas-type))
+    - aggregate:
+      - task: update-cloud-config-for-hello-world-root-depls
+        attempts: 2
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls}
+        file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
+        params:
+           BOSH_TARGET: ((bosh-target))
+           BOSH_CLIENT: ((bosh-username))
+           BOSH_CLIENT_SECRET: ((bosh-password))
+           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ensure:
+          task: update-cloud-config
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
+          output_mapping: {updated-git-resource: updated-cloud-config}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "hello-world-root-depls/cloud-config.yml"
+            NEW_FILE: "cloud-config.yml"
+            COMMIT_MESSAGE: "hello-world-root-depls cloud-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: ((slack-channel))
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-full-writer
+            get_params: {submodules: none}
+            params:
+              repository: updated-cloud-config
+              rebase: true
+      - task: update-runtime-config-for-hello-world-root-depls
+        attempts: 2
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls}
+        file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
+        params:
+           BOSH_TARGET: ((bosh-target))
+           BOSH_CLIENT: ((bosh-username))
+           BOSH_CLIENT_SECRET: ((bosh-password))
+           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ensure:
+          task: update-runtime-config
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
+          output_mapping: {updated-git-resource: updated-runtime-config}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "hello-world-root-depls/runtime-config.yml"
+            NEW_FILE: "runtime-config.yml"
+            COMMIT_MESSAGE: "hello-world-root-depls runtime-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: ((slack-channel))
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-full-writer
+            get_params: {submodules: none}
+            params:
+              repository: updated-runtime-config
+              rebase: true
+- name: deploy-bosh-deployment-sample
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: secrets-full-writer
+      params: { submodules: none}
+    - get: bosh-stemcell
+      version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
+      trigger: true
+      attempts: 2
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [update-pipeline-hello-world-root-depls-generated]
+      trigger: true
+    - get: nginx
+      version: { version: ((nginx-version)) }
+      trigger: true
+      attempts: 2
+    - get: ntp
+      version: { version: ((ntp-version)) }
+      trigger: true
+      attempts: 2
+    - get: secrets-bosh-deployment-sample
+      params: { submodules: none}
+      trigger: true
+#     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+    - get: paas-template-bosh-deployment-sample
+      trigger: true
+      params: { submodules: none}
+#     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+  - task: generate-bosh-deployment-sample-manifest
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-bosh-deployment-sample, additional-resource: paas-template-bosh-deployment-sample}
+    output_mapping: {generated-files: release-manifest}
+    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    params:
+      SPRUCE_FILE_BASE_PATH: credentials-resource/hello-world-root-depls/bosh-deployment-sample/
+      YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/bosh-deployment-sample/template
+      YML_FILES: |
+          ./credentials-resource/hello-world-root-depls/bosh-deployment-sample/secrets/meta.yml
+          ./credentials-resource/hello-world-root-depls/bosh-deployment-sample/secrets/secrets.yml
+          ./credentials-resource/shared/secrets.yml
+      CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/bosh-deployment-sample/template
+      IAAS_TYPE: ((iaas-type))
+  - task: execute-bosh-deployment-sample-spiff-pre-bosh-deploy
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: release-manifest}
+    output_mapping: {generated-files: pre-bosh-deploy-resource}
+    file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
+      SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
+  - task: copy-bosh-deployment-sample-required-files
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: pre-bosh-deploy-resource}
+    output_mapping: {generated-files: final-release-manifest}
+    file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
+      SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
+      MANIFEST_NAME: bosh-deployment-sample.yml
+  - task: convert-bosh-dns-to-ip
+    output_mapping: {result-dir: bosh-generated-config}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          export DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_TARGET%%:25555}
+          export DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|tail -n2|grep Address|cut -d':' -f2)
+          export DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
+          export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
+          echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
+      params:
+        BOSH_TARGET: ((bosh-target))
+  - task: generate-empty-ops-and-vars-files
+    # this task is required as long as all deployments still don't use ops/vars files
+    output_mapping: {result-dir: ops-and-vars-files}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+        - name: final-release-manifest
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          mkdir -p result-dir/operators
+          mkdir -p result-dir/vars
+          find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
+          find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+          echo '---' > result-dir/operators/0-empty-operators.yml
+          echo '---' > result-dir/vars/0-empty-vars.yml
+  - task: display-bosh-deployment-sample-manifest
+    input_mapping:
+      bosh-inputs: ops-and-vars-files
+      manifest-dir: final-release-manifest
+      secrets: secrets-bosh-deployment-sample
+      scripts-resource: cf-ops-automation
+    file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
+    params:
+       VARS_FILES_SUFFIX: "*/*vars.yml"
+       OPS_FILES_SUFFIX:  "*/*operators.yml"
+       BOSH_YAML_FILE: bosh-deployment-sample.yml
+  - put: bosh-deployment-sample-deployment
+    attempts: 2
+    params:
+      manifest: final-release-manifest/bosh-deployment-sample.yml
+      # source_file: bosh-generated-config/bosh_config.json
+      stemcells:
+      - bosh-stemcell/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+      releases:
+      - nginx/release.tgz
+      - ntp/release.tgz
+      ops_files:
+      - ops-and-vars-files/operators/*
+      vars_files:
+      - ops-and-vars-files/vars/*
+      cleanup: true
+  - task: execute-bosh-deployment-sample-post-bosh-deploy
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: final-release-manifest}
+    output_mapping: {generated-files: post-deploy-result}
+    file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
+      SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
+  - task: update-bosh-deployment-sample-files
+    input_mapping: {reference-resource: secrets-full-writer, generated-resource: bosh-deployment-sample-deployment}
+    output_mapping: {updated-git-resource: updated-bosh-deployment-sample-secrets}
+    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: hello-world-root-depls/bosh-deployment-sample/bosh-deployment-sample.yml
+      NEW_FILE: "manifest.yml"
+      COMMIT_MESSAGE: "bosh-deployment-sample generated manifest auto update - [skip ci]"
+  - put: secrets-full-writer
+    get_params: {submodules: none}
+    params:
+      repository: updated-bosh-deployment-sample-secrets
+      rebase: true
+- name: retrigger-all-jobs
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+    - get: secrets-full
+      params: { submodules: none}
+  - task: generate-hello-world-root-depls-pipeline
+    output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-bosh-deployment-sample" >> result-dir/flight-plan
+      params:
+        BUILD_PIPELINE_NAME: hello-world-root-depls-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: trigger-hello-world-root-depls-plan}
+    output_mapping: {flight-report: concourse-hello-world-root-depls-trigger-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
+      FLY_USERNAME: ((concourse-hello-world-root-depls-username))
+      FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+- name: recreate-all
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  serial_groups: [recreate]
+  plan:
+  - aggregate:
+     - get: secrets-hello-world-root-depls
+       params: { submodules: none}
+       passed: [update-pipeline-hello-world-root-depls-generated]
+     - get: paas-template-hello-world-root-depls
+       params: { submodules: none}
+       passed: [update-pipeline-hello-world-root-depls-generated]
+     - get: cf-ops-automation
+       params: { submodules: none}
+       passed: [update-pipeline-hello-world-root-depls-generated]
+- name: recreate-bosh-deployment-sample
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  serial_groups: [recreate]
+  plan:
+  - aggregate:
+     - get: secrets-hello-world-root-depls
+       params: { submodules: none}
+       passed: [recreate-all]
+       trigger: true
+     - get: paas-template-hello-world-root-depls
+       params: { submodules: none}
+       passed: [recreate-all]
+       trigger: true
+     - get: cf-ops-automation
+       params: { submodules: none}
+       passed: [recreate-all]
+  - task: bosh-recreate-bosh-deployment-sample
+    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls}
+    config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: governmentpaas/bosh-cli-v2
+            tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
+        inputs:
+          - name: scripts-resource
+          - name: secrets
+        outputs:
+          - name: run-resource
+        run:
+          path: sh
+          args:
+            - -e
+            - -c
+            - |
+              source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+              bosh -n recreate
+    params:
+       BOSH_TARGET: ((bosh-target))
+       BOSH_CLIENT: ((bosh-username))
+       BOSH_CLIENT_SECRET: ((bosh-password))
+       BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+       BOSH_DEPLOYMENT: bosh-deployment-sample
+- name: init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 2
+#      trigger: true
+    - get: secrets-full
+      params: { submodules: none}
+      attempts: 2
+#      trigger: true
+  - task: generate-hello-world-root-depls-flight-plan
+    output_mapping: {result-dir: init-hello-world-root-depls-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+      params:
+        BUILD_PIPELINE_NAME: hello-world-root-depls-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: init-hello-world-root-depls-plan}
+    output_mapping: {flight-report: concourse-hello-world-root-depls-init-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
+      FLY_USERNAME: ((concourse-hello-world-root-depls-username))
+      FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+- name: update-pipeline-hello-world-root-depls-generated
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: secrets-full-writer
+      params: { submodules: none}
+    - get: paas-template-hello-world-root-depls
+      params: { submodules: none}
+      attempts: 2
+    - get: paas-templates-wip
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: secrets-hello-world-root-depls
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: paas-templates-full
+      params: { submodules: none}
+      attempts: 2
+    - get: secrets-full
+      params: { submodules: none}
+      attempts: 2
+  - task: generate-hello-world-root-depls-pipeline
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
+    output_mapping: {result-dir: concourse-hello-world-root-depls-pipeline}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1-slim}
+      inputs:
+        - name: scripts-resource
+        - name: templates
+        - name: secrets
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          cp -r templates/. result-dir
+          cp -r scripts-resource/. result-dir
+          cp -rf secrets/. result-dir
+          cd result-dir/
+          ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse
+      params:
+        ROOT_DEPLOYMENT: hello-world-root-depls
+  - put: fe-int-micro-for-micro-depls
+    params:
+      pipelines:
+      - name: bosh-sample-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+      - name: bosh-sample-cf-apps-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-cf-apps-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+  - task: update-concourse-depls-pipeline
+    input_mapping: {reference-resource: secrets-full-writer, generated-resource: concourse-hello-world-root-depls-pipeline}
+    output_mapping: {updated-git-resource: updated-secrets}
+    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: concourse/pipelines/bosh-sample-generated.yml
+      NEW_FILE: "concourse/pipelines/hello-world-root-depls-generated.yml"
+      COMMIT_MESSAGE: "hello-world-root-depls generated pipeline auto update - [skip ci]"
+  - task: update-concourse-cf-apps-pipeline
+    input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-hello-world-root-depls-pipeline}
+    output_mapping: {updated-git-resource: updated-secrets}
+    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+    params:
+      OLD_FILE: concourse/pipelines/bosh-sample-cf-apps-generated.yml
+      NEW_FILE: "concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml"
+      COMMIT_MESSAGE: "hello-world-root-depls cf-apps generated pipeline auto update - [skip ci]"
+  - put: secrets-full-writer
+    get_params: {submodules: none}
+    params:
+      repository: updated-secrets
+      rebase: true
+  - put: paas-templates-full
+    get_params: {submodules: none}
+    params:
+      repository: paas-templates-wip
+      force: true
+- name: check-terraform-cf-consistency
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - get: at-noon
+    trigger: true
+  - get: cf-ops-automation
+    params: { submodules: none}
+    passed: [update-pipeline-hello-world-root-depls-generated]
+    trigger: true
+  - get: paas-template-hello-world-root-depls
+    params: { submodules: none }
+  - get: secrets-hello-world-root-depls
+    passed: [update-pipeline-hello-world-root-depls-generated]
+    params: { submodules: none }
+  - task: generate-terraform-tfvars
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-template-hello-world-root-depls}
+    output_mapping: {generated-files: terraform-tfvars}
+    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    params:
+      YML_FILES: |
+        ./credentials-resource/shared/secrets.yml
+        ./credentials-resource/hello-world-root-depls/terraform-config/secrets/meta.yml
+        ./credentials-resource/hello-world-root-depls/terraform-config/secrets/secrets.yml
+      YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/terraform-config/template
+      CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
+      SUFFIX: -tpl.tfvars.yml
+      IAAS_TYPE: ((iaas-type))
+  - task: terraform-plan
+    input_mapping: {secret-state-resource: secrets-hello-world-root-depls,spec-resource: paas-template-hello-world-root-depls}
+    file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
+    params:
+      SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
+      SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
+      IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
+- name: cf-manual-approval
+  plan:
+  - get: cf-ops-automation
+    params: { submodules: none}
+    passed: [check-terraform-cf-consistency]
+  - get: paas-template-hello-world-root-depls
+    params: { submodules: none}
+    passed: [check-terraform-cf-consistency]
+  - get: secrets-hello-world-root-depls
+    params: { submodules: none}
+    passed: [check-terraform-cf-consistency]
+- name: enforce-terraform-cf-consistency
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: secrets-full-writer
+      params: { submodules: none}
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [cf-manual-approval]
+      trigger: true
+    - get: paas-template-hello-world-root-depls
+      params: { submodules: none}
+      passed: [cf-manual-approval]
+      trigger: true
+    - get: secrets-hello-world-root-depls
+      params: { submodules: none}
+      passed: [cf-manual-approval]
+      trigger: true
+  - task: generate-terraform-tfvars
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-template-hello-world-root-depls}
+    output_mapping: {generated-files: terraform-tfvars}
+    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    params:
+      YML_FILES: |
+        ./credentials-resource/shared/secrets.yml
+        ./credentials-resource/hello-world-root-depls/terraform-config/secrets/meta.yml
+        ./credentials-resource/hello-world-root-depls/terraform-config/secrets/secrets.yml
+      YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/terraform-config/template
+      CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
+      SUFFIX: -tpl.tfvars.yml
+      IAAS_TYPE: ((iaas-type))
+  - task: terraform-apply
+    input_mapping: {secret-state-resource: secrets-hello-world-root-depls,spec-resource: paas-template-hello-world-root-depls}
+    output_mapping: {generated-files: terraform-cf}
+    file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
+    params:
+      SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
+      SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
+      IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
+    ensure:
+      task: update-terraform-state-file
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}
+      output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
+        NEW_FILE: "terraform.tfstate"
+        COMMIT_MESSAGE: "Terraform TFState auto update"
+      on_failure:
+        put: failure-alert
+        params:
+          channel: ((slack-channel))
+          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
+      on_success:
+        put: secrets-full-writer
+        get_params: {submodules: none}
+        params:
+          repository: updated-terraform-state-secrets
+          rebase: true
+groups:
+- name: Hello-world-root-depls
+  jobs:
+    - approve-and-delete-disabled-deployments
+    - cf-manual-approval
+    - check-terraform-cf-consistency
+    - cloud-config-and-runtime-config-for-hello-world-root-depls
+    - delete-deployments-review
+    - deploy-bosh-deployment-sample
+    - enforce-terraform-cf-consistency
+    - execute-deploy-script
+    - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+    - recreate-all
+    - recreate-bosh-deployment-sample
+    - retrigger-all-jobs
+    - update-pipeline-hello-world-root-depls-generated
+- name: Deploy-b*
+  jobs:
+    - deploy-bosh-deployment-sample
+- name: Recreate
+  jobs:
+    - recreate-all
+    - recreate-bosh-deployment-sample
+- name: Terraform
+  jobs:
+    - cf-manual-approval
+    - check-terraform-cf-consistency
+    - enforce-terraform-cf-consistency
+- name: Utils
+  jobs:
+    - approve-and-delete-disabled-deployments
+    - cloud-config-and-runtime-config-for-hello-world-root-depls
+    - delete-deployments-review
+    - execute-deploy-script
+    - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+    - recreate-all
+    - retrigger-all-jobs
+    - update-pipeline-hello-world-root-depls-generated

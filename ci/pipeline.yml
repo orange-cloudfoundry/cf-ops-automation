@@ -164,7 +164,6 @@ jobs:
         - get: cf-ops-automation-test-secrets
           trigger: true
 
-
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image
@@ -278,6 +277,58 @@ jobs:
           FLY_USERNAME: ((concourse-username))
           FLY_PASSWORD:  '((concourse-password))'
 
+  - name: update-documentation
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation
+          resource: ci-develop
+          trigger: true
+          passed: [test]
+        - get: cf-ops-automation-docker-image
+          passed: [test]
+
+      - task: generate-living-documentation
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: orangecloudfoundry/cf-ops-automation
+          inputs:
+          - name: cf-ops-automation
+          outputs:
+          - name: cf-ops-automation-living-documentation
+          run:
+            path: /bin/bash
+            args:
+            - -ce
+            - |
+              git config --global user.email "$GIT_USER_EMAIL"
+              git config --global user.name "$GIT_USER_NAME"
+
+              RELEASE_VERSION=test
+              git clone cf-ops-automation cf-ops-automation-living-documentation
+              cd cf-ops-automation-living-documentation/
+              bundle exec cucumber -f html --out docs/features/features.html -f pretty --out docs/features/features.md -f pretty --no-color --no-source
+              gh-md-toc --insert Readme.md
+              cat Readme.md|grep -v 'Added by:' >tmp.md && mv tmp.md Readme.md
+              git add -A
+              CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
+              if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
+              then
+                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION} - Living documentation update"
+              else
+                 echo "No change detected, skip commit"
+              fi
+          params:
+            GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+            GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+      - put: ci-develop
+        params:
+          repository: cf-ops-automation-living-documentation
+          rebase: true
+
 
   - name: merge-to-master
     serial: true
@@ -287,9 +338,9 @@ jobs:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-          passed: [test]
+          passed: [update-documentation]
         - get: cf-ops-automation-docker-image
-          passed: [test]
+          passed: [update-documentation]
       - put: ci-master
         params:
           repository: cf-ops-automation
@@ -307,45 +358,6 @@ jobs:
           passed: [merge-to-master]
 #        - get: cf-ops-automation-docker-image
 #          passed: [merge-to-master]
-      - task: generate-living-documentation
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: orangecloudfoundry/cf-ops-automation
-          inputs:
-          - name: cf-ops-automation
-          - name: version
-          outputs:
-          - name: cf-ops-automation-living-documentation
-          run:
-            path: /bin/bash
-            args:
-            - -ce
-            - |
-              git config --global user.email "$GIT_USER_EMAIL"
-              git config --global user.name "$GIT_USER_NAME"
-
-              RELEASE_VERSION=$(cat version/version)
-              git clone cf-ops-automation cf-ops-automation-living-documentation
-              cd cf-ops-automation-living-documentation/
-              bundle exec cucumber
-              git add -A
-              CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
-              if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
-              then
-                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION} - Living documentation update"
-              else
-                 echo "No change detected, skip commit"
-              fi
-          params:
-            GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
-            GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
-      - put: ci-master
-        params:
-          repository: cf-ops-automation-living-documentation
-          rebase: true
       - task: generate-changelog
         config:
           platform: linux

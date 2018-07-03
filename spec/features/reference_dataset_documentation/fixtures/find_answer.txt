@@ -1,5 +1,0 @@
-.
-./.hide-me
-./example-file.yml
-./example-dir
-./example-dir/example-file.yml

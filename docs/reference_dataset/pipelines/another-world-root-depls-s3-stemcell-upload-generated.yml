@@ -1,0 +1,69 @@
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-resource
+resources:
+- name: weekday-morning
+  type: cron-resource
+  source:
+    expression: 50 8 * * 1-5
+    location: "Europe/Paris"
+    fire_immediately: true
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+jobs:
+- name: init-concourse-stemcells-for-another-world-root-depls
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 2
+    - get: weekday-morning
+      trigger: true
+  - task: generate-another-world-root-depls-flight-plan
+    output_mapping: {result-dir: init-another-world-root-depls-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+      params:
+        BUILD_PIPELINE_NAME: another-world-root-depls-s3-stemcell-upload-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: init-another-world-root-depls-plan}
+    output_mapping: {flight-report: concourse-another-world-root-depls-init-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-another-world-root-depls-target))
+      FLY_USERNAME: ((concourse-another-world-root-depls-username))
+      FLY_PASSWORD:  ((concourse-another-world-root-depls-password))
+      FLY_TEAM: main

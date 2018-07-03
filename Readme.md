@@ -47,6 +47,7 @@
             * [bosh deployment](#bosh-deployment)
             * [cf-app deployment](#cf-app-deployment)
          * [shared and private configuration](#shared-and-private-configuration)
+         * ["paas-templates" and "secrets" repo structure examples](#paas-templates-and-secrets-repo-structure-examples)
    * [COA development](#coa-development)
       * [Status and roadmap](#status-and-roadmap)
       * [Running the Test Suite](#running-the-test-suite)
@@ -69,7 +70,8 @@
    * [Credits](#credits)
    * [Changelog](#changelog)
    * [Upgrade](#upgrade)
-         * [pre requisite](#pre-requisite-2)
+      * [pre requisite](#pre-requisite-2)
+
 
 <!--te-->
 
@@ -146,8 +148,8 @@ COA takes templates and configurations as inputs, and generates concourse pipeli
 
 A `root deployment` contains infrastructure to operate `nested deployment`s.
 
-  * A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc...
-  * Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ...
+* A root deployment typically contains Iaas prereqs, Bosh director and its cloud-config, DNS infrastrucure, private git server, Concourse, log collection, monitoring/alerting, credhub, etc...
+* Nested deployments are resources created by a root deployment. This typically include cloudfoundry, admin-ui, services, ...
 
 ### Sample deployment topology
 
@@ -322,8 +324,6 @@ In `deployment-dependencies.yml`, it is possible to:
         deployment:
           micro-bosh:
             cli_version: v1
-            stemcells:
-                ...
             releases:
                 ...
 ```
@@ -335,8 +335,6 @@ Following is a `deployment-dependencies.yml` sample (should be placed in the bos
 ---
 deployment:
   micro-bosh:
-    stemcells:
-      bosh-openstack-kvm-ubuntu-trusty-go_agent:
     releases:
       route-registrar-boshrelease:
         base_location: https://bosh.io/d/github.com/
@@ -362,14 +360,14 @@ If a template directory contains a `pre-cf-push.sh` file, then this script is ru
 
 Environment variables available:
 
-  * GENERATE_DIR: directory holding generated files. It's an absolute path.
-  * BASE_TEMPLATE_DIR: directory where `pre-cf-push.sh` is located. It's an relative path.
-  * SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
-  * CF_API_URL: current application Cloud Foundry API url
-  * CF_USERNAME: current Cloud Foundry application user
-  * CF_PASSWORD: current Cloud Foundry application user password
-  * CF_ORG: current Cloud Foundry application organization
-  * CF_SPACE: current Cloud Foundry application space
+* GENERATE_DIR: directory holding generated files. It's an absolute path.
+* BASE_TEMPLATE_DIR: directory where `pre-cf-push.sh` is located. It's an relative path.
+* SECRETS_DIR: directory holding secrets related to current deployment. It's an relative path.
+* CF_API_URL: current application Cloud Foundry API url
+* CF_USERNAME: current Cloud Foundry application user
+* CF_PASSWORD: current Cloud Foundry application user password
+* CF_ORG: current Cloud Foundry application organization
+* CF_SPACE: current Cloud Foundry application space
 
 It is also possible to use a `post-deploy.sh`, it is like a 'post-cf-push' script with an inconsistent name (we reuse the same concourse task)...
  To interact easily with cloudfoundry, previously listed environment variables are available.
@@ -458,6 +456,28 @@ be deployed.
 
 Those files are generated automatically following the specs given in
 [features/](features).
+
+### Stemcell management
+
+In order to be portable across multiple infrastructures, and allow for centralized stemcell upgrades, deployment authors
+ rely on COA to manage stemcells including offline replication, uploading to bosh director and purge, and stemcell
+ version selection at deployment time. Deployment authors therefore use the following syntax in their deployment manifests:
+
+```yml
+stemcells:
+- alias: trusty
+  os: ubuntu-trusty
+  version: latest
+```
+
+At deployment time, the deployment manifest is transformed by COA to load the expected stemcell version (say `3586.25`).
+
+The same stemcell generation (currrently `ubuntu-trusty`) is used for all deployments as defined by authors in
+ [shared-config.yml](docs/reference_dataset/template_repository/shared-config.yml)
+or overloaded by operators in [private-config.yml](docs/reference_dataset/config_repository/private-config.yml).
+
+The exact stemcell version (say `3586.25`) is used within a root-deployment as defined by authors in
+[\<root-deployment\>-versions.yml](docs/reference_dataset/template_repository/hello-world-root-depls/hello-world-root-depls-versions.yml)
 
 # COA development
 
@@ -554,8 +574,6 @@ run `./init-template.sh`, and it creates empty placeholder.
 ---
 deployment:
   micro-bosh:
-    stemcells:
-      bosh-openstack-kvm-ubuntu-trusty-go_agent:
     releases:
       route-registrar-boshrelease:
         base_location: https://bosh.io/d/github.com/
@@ -584,7 +602,7 @@ See [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh) s
 
 There is no yet public template sample. Orange employees can have a look to the [post-generate.sh](micro-depls/terraform-config/template/post-generate.sh) in the private paas-template repo.
 
-## How to bootstrap pipelines to a new concourse
+## How to bootstrap pipelines to a new concourse?
 
 simply run [concourse-bootstrap.sh](scripts/concourse-bootstrap.sh) with the appropriate environment variable set. It loads the
 `bootstrap-all-init-pipelines` pipeline and triggers it.
@@ -603,7 +621,7 @@ The following tools are required to run [concourse-bootstrap.sh](scripts/concour
 * fly, the concourse CLI
   * Login to concourse in main team
 
-## How to create a new root deployment
+## How to create a new root deployment?
 
 To setup a new paas-template repo, a new secrets repo or to add a new root deployment, you can run
 [create-root-depls](scripts/create-root-depls.rb) script to create empty files.
