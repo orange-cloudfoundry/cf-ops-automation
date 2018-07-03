@@ -1,0 +1,7 @@
+---
+deployment-name: bosh-sample
+
+stemcell-version: "3468.25"
+
+nginx-version: "1.12.2"
+ntp-version: "4"

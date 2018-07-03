@@ -1,0 +1,174 @@
+
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-resource
+resources:
+#- name: bosh-stemcell
+#  type: bosh-io-stemcell
+#  source:
+#    name: ((stemcell-name))
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+- name: new-version-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+#- name: secrets-complete
+#  type: git
+#  source:
+#    uri: ((secrets-uri))
+#    branch: master
+#    skip_ssl_verification: true
+- name: paas-templates-full
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+- name: monday-morning
+  type: cron-resource
+  source:
+    expression: 30 8 * * 1
+    location: "Europe/Paris"
+    fire_immediately: true
+- name: nginx
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/nginx-release
+- name: ntp
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/ntp-release
+jobs:
+#      - get: bosh-stemcell
+#        version: { version: ((stemcell-version)) }
+#        trigger: true
+#        attempts: 2
+- name: check-nginx
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: monday-morning
+        trigger: true
+      - get: nginx
+        attempts: 2
+        params: {tarball: false}
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: cf-ops-automation
+        params: { submodules: none}
+    - task: generate-update-message
+      input_mapping: {boshrelease: nginx}
+      output_mapping: {message: nginx-message}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: governmentpaas/curl-ssl}
+        inputs:
+          - name: boshrelease
+        outputs:
+          - name: message
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            MESSAGE_FILE=message/update_notif
+            NEW_VERSION=$(cat boshrelease/version)
+            RELEASE_URL=$(cat boshrelease/url|sed 's|/d/|/releases/|'|sed 's/?v=/?version=/')
+            if [ "${NEW_VERSION}" != "${CURRENT_VERSION}" ]
+            then
+              echo "New version of nginx detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
+              echo "hello-world-root-depls is using ${CURRENT_VERSION} of nginx" >>${MESSAGE_FILE}
+            else
+              echo "hello-world-root-depls is  running the latest nginx (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
+            fi
+      params:
+        CURRENT_VERSION: ((nginx-version))
+    - put: new-version-alert
+      params:
+        channel: ((slack-channel))
+        text_file: nginx-message/update_notif
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+- name: check-ntp
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: monday-morning
+        trigger: true
+      - get: ntp
+        attempts: 2
+        params: {tarball: false}
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: cf-ops-automation
+        params: { submodules: none}
+    - task: generate-update-message
+      input_mapping: {boshrelease: ntp}
+      output_mapping: {message: ntp-message}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: governmentpaas/curl-ssl}
+        inputs:
+          - name: boshrelease
+        outputs:
+          - name: message
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            MESSAGE_FILE=message/update_notif
+            NEW_VERSION=$(cat boshrelease/version)
+            RELEASE_URL=$(cat boshrelease/url|sed 's|/d/|/releases/|'|sed 's/?v=/?version=/')
+            if [ "${NEW_VERSION}" != "${CURRENT_VERSION}" ]
+            then
+              echo "New version of ntp detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
+              echo "hello-world-root-depls is using ${CURRENT_VERSION} of ntp" >>${MESSAGE_FILE}
+            else
+              echo "hello-world-root-depls is  running the latest ntp (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
+            fi
+      params:
+        CURRENT_VERSION: ((ntp-version))
+    - put: new-version-alert
+      params:
+        channel: ((slack-channel))
+        text_file: ntp-message/update_notif
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse

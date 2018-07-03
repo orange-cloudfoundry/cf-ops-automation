@@ -9,3 +9,6 @@ exclude_rule 'MD005'
 
 # MD025 - Multiple top level headers in the same document
 exclude_rule 'MD025'
+
+# MD033 - Inline HTML
+exclude_rule 'MD033'

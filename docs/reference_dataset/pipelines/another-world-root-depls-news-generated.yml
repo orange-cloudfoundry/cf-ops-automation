@@ -1,0 +1,22 @@
+
+---
+resource_types:
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: cftoolsmiths/cron-resource
+resources:
+jobs:
+#      - get: bosh-stemcell
+#        version: { version: ((stemcell-version)) }
+#        trigger: true
+#        attempts: 2
+- name: this-is-an-empty-pipeline

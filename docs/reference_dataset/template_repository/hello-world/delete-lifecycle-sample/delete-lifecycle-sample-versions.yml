@@ -1,8 +1,0 @@
----
-deployment-name: delete-lifecycle-sample
-
-stemcell-version: "3468.25"
-stemcell-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
-
-nginx-boshrelease-version: "1.12.2"
-ntp-boshrelease-version: "4"

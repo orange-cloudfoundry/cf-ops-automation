@@ -1,0 +1,123 @@
+---
+resource_types:
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+resources:
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+- name: concourse-for-hello-world-root-depls
+  type: concourse-pipeline
+  source:
+    target: ((concourse-hello-world-root-depls-target))
+    insecure: ((concourse-hello-world-root-depls-insecure))
+    teams:
+    - name: main
+      username: ((concourse-hello-world-root-depls-username))
+      password: ((concourse-hello-world-root-depls-password))
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+- name: secrets-pipeline-sample
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["hello-world-root-depls/pipeline-sample","shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-templates-pipeline-sample
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths:
+      - "hello-world-root-depls/pipeline-sample/concourse-pipeline-config"
+      - "hello-world-root-depls/hello-world-root-depls-versions.yml"
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+jobs:
+- name: deploy-concourse-pipeline-sample-pipeline
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+      text: |
+        ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: paas-templates-pipeline-sample
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: secrets-pipeline-sample
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 2
+      trigger: false
+  - task: spruce-processing-pipeline-sample
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-pipeline-sample, additional-resource: paas-templates-pipeline-sample}
+    output_mapping: {generated-files: spruced-files}
+    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    params:
+      SPRUCE_FILE_BASE_PATH: credentials-resource/hello-world-root-depls/pipeline-sample
+      YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
+      YML_FILES: |
+          ./credentials-resource/hello-world-root-depls/pipeline-sample/secrets/secrets.yml
+          ./credentials-resource/shared/secrets.yml
+      CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
+      IAAS_TYPE: ((iaas-type))
+  - task: execute-pipeline-sample-spiff-pre-deploy
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-pipeline-sample, credentials-resource: secrets-pipeline-sample, additional-resource: spruced-files}
+    output_mapping: {generated-files: pre-deploy-resource}
+    file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
+      SECRETS_DIR: credentials-resource/hello-world-root-depls/pipeline-sample
+  - task: copy-pipeline-sample-required-files
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-pipeline-sample, credentials-resource: secrets-pipeline-sample, additional-resource: pre-deploy-resource}
+    output_mapping: {generated-files: bosh-inputs}
+    file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
+      SECRETS_DIR: credentials-resource/hello-world-root-depls/pipeline-sample
+      MANIFEST_NAME: pipeline-sample.yml
+  - task: bosh-interpolate-pipeline-with-ops-and-vars-files
+    input_mapping:
+      bosh-inputs: bosh-inputs
+      manifest-dir: bosh-inputs
+      scripts-resource: cf-ops-automation
+      secrets: secrets-pipeline-sample
+    output_mapping: {result-dir: final-pipeline-sample-pipeline}
+    file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
+    params:
+       VARS_FILES_SUFFIX: vars.yml
+       OPS_FILES_SUFFIX:  operators.yml
+       BOSH_YAML_FILE: pipeline-sample.yml
+  - put: concourse-for-hello-world-root-depls
+    params:
+      pipelines:
+      - name: hello-world-root-depls-pipeline-sample
+        team: main
+        config_file: final-pipeline-sample-pipeline/interpolated-pipeline-sample.yml
+  - task: execute-pipeline-sample-post-deploy
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-pipeline-sample, credentials-resource: secrets-pipeline-sample, additional-resource: final-pipeline-sample-pipeline}
+    output_mapping: {generated-files: post-deploy-result}
+    file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
+      SECRETS_DIR: credentials-resource/hello-world-root-depls/pipeline-sample
