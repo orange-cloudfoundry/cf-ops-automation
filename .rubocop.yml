@@ -9,6 +9,20 @@ AllCops:
     - 'bin/**/*'
   TargetRubyVersion: 2.3
 
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+Layout/DotPosition:
+  Enabled: false
+
+Metrics/LineLength:
+  Enabled: false
+Metrics/ModuleLength:
+  Exclude:
+    - "**/*_spec.rb"
+Metrics/BlockLength:
+  Exclude:
+    - "**/*_spec.rb"
+
 Style/Encoding:
   Enabled: true
 Style/Documentation:
@@ -20,14 +34,7 @@ Style/FrozenStringLiteralComment:
 Style/StringLiteralsInInterpolation:
   Enabled: false
 
-Metrics/LineLength:
-  Enabled: false
-
 RSpec/FilePath:
   Enabled: false
-
-Layout/MultilineMethodCallIndentation:
-  EnforcedStyle: indented
-
-Layout/DotPosition:
+RSpec/NamedSubject:
   Enabled: false

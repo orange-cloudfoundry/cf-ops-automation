@@ -1,13 +1,13 @@
 require 'spec_helper'
-require_relative '../../lib/git_modules'
+require 'git_modules'
 
 describe GitModules do
   describe "#list" do
-    let(:git_modules) { GitModules.new('base_path') }
+    let(:git_modules) { described_class.new('base_path') }
 
     context "when there is no .gitmodules file" do
       before do
-        expect(File).to receive(:exist?).with('base_path/.gitmodules').
+        allow(File).to receive(:exist?).with('base_path/.gitmodules').
           and_return(false)
       end
 
@@ -17,24 +17,24 @@ describe GitModules do
     end
 
     context "when there is a .gitmodules file" do
-      let(:gitmodules_path) {  File.join(fixtures_dir('lib'), 'gitmodules') }
+      let(:gitmodules_path) { File.join(fixtures_dir('lib'), 'gitmodules') }
 
       before do
-        expect(File).to receive(:exist?).with('base_path/.gitmodules').
+        allow(File).to receive(:exist?).with('base_path/.gitmodules').
           and_return(true)
-        expect(File).to receive(:open).with('base_path/.gitmodules').
+        allow(File).to receive(:open).with('base_path/.gitmodules').
           and_return(File.open(gitmodules_path))
       end
 
       it "returns a hash" do
         expected_answer = {
           "plugins" => {
-            "first-example" => ["plugins/first-example"],
-            "second-example"=> ["plugins/second-example"],
-            "third-example" => ["plugins/third-example"]
+            "first-example"  => ["plugins/first-example"],
+            "second-example" => ["plugins/second-example"],
+            "third-example"  => ["plugins/third-example"]
           },
           "other-plugins" => {
-            "fourth-example"=>["other-plugins/fourth-example"]
+            "fourth-example" => ["other-plugins/fourth-example"]
           }
         }
         expect(git_modules.list).to eq(expected_answer)

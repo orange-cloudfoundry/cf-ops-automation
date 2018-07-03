@@ -1,11 +1,10 @@
 require 'rspec'
 require 'fileutils'
 require 'tmpdir'
-
-require_relative '../../../lib/template_processor'
-require_relative '../../../lib/ci_deployment'
-require_relative '../../../lib/deployment_deployers_config'
-require_relative '../../../lib/pipeline_generator'
+require 'template_processor'
+require 'ci_deployment'
+require 'deployment_deployers_config'
+require 'pipeline_generator'
 
 describe 'DeplsPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
@@ -106,24 +105,24 @@ describe 'DeplsPipelineTemplateProcessing' do
     groups_yaml = [
       { 'name' => 'My-root-depls',
         'jobs' =>
-         ['approve-and-delete-disabled-deployments',
-          'cloud-config-and-runtime-config-for-my-root-depls',
-          'delete-deployments-review',
-          'deploy-bui',
-          'deploy-shield-expe',
-          'execute-deploy-script',
-          'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
-          'recreate-all',
-          'recreate-bui',
-          'recreate-shield-expe',
-          'retrigger-all-jobs',
-          'run-errand-shield-expe'] },
-      { 'name' => 'Deploy-b*', 'jobs' => ['deploy-bui'] },
-      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe'] },
-      { 'name' => 'Recreate',
-        'jobs' => ['recreate-all', 'recreate-bui', 'recreate-shield-expe'] },
-      { 'name' => 'Utils',
-        'jobs' =>
+        ['approve-and-delete-disabled-deployments',
+         'cloud-config-and-runtime-config-for-my-root-depls',
+         'delete-deployments-review',
+         'deploy-bui',
+         'deploy-shield-expe',
+         'execute-deploy-script',
+         'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
+         'recreate-all',
+         'recreate-bui',
+         'recreate-shield-expe',
+         'retrigger-all-jobs',
+         'run-errand-shield-expe'] },
+         { 'name' => 'Deploy-b*', 'jobs' => ['deploy-bui'] },
+         { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe'] },
+         { 'name' => 'Recreate',
+           'jobs' => ['recreate-all', 'recreate-bui', 'recreate-shield-expe'] },
+        { 'name' => 'Utils',
+          'jobs' =>
         ['approve-and-delete-disabled-deployments',
          'cloud-config-and-runtime-config-for-my-root-depls',
          'delete-deployments-review',
@@ -365,9 +364,9 @@ describe 'DeplsPipelineTemplateProcessing' do
       it 'generates terraform group' do
         expected_tf_group = { 'name' => 'Terraform',
                               'jobs' =>
-                                     ['cf-manual-approval',
-                                      'check-terraform-cf-consistency',
-                                      'enforce-terraform-cf-consistency'] }
+        ['cf-manual-approval',
+         'check-terraform-cf-consistency',
+         'enforce-terraform-cf-consistency'] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'Terraform' }.pop
         expect(generated).to match(expected_tf_group)
       end
@@ -377,26 +376,26 @@ describe 'DeplsPipelineTemplateProcessing' do
           [
             { "task" => 'generate-terraform-tfvars',
               "input_mapping" =>
-                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls", "additional-resource" => "paas-template-my-root-depls" },
-              "output_mapping" => { "generated-files" => "terraform-tfvars" },
-              "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
-              "params" =>
-             { "YML_FILES" =>
-                         "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n",
-               "YML_TEMPLATE_DIR" => "additional-resource/my-tfstate-location/template",
-               "CUSTOM_SCRIPT_DIR" => "additional-resource/my-tfstate-location/template",
-               "SUFFIX" => "-tpl.tfvars.yml",
-               "IAAS_TYPE" => "((iaas-type))" } },
-            { "task" => "terraform-plan",
-              "input_mapping" =>
-                   { "secret-state-resource" => "secrets-my-root-depls",
-                     "spec-resource" => "paas-template-my-root-depls" },
-              "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
-              "params" =>
-                   { "SPEC_PATH" => "my-tfstate-location/spec",
-                     "SECRET_STATE_FILE_PATH" => "my-tfstate-location",
-                     "IAAS_SPEC_PATH" => "my-tfstate-location/spec-((iaas-type))" } }
-          ]
+        { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls", "additional-resource" => "paas-template-my-root-depls" },
+          "output_mapping" => { "generated-files" => "terraform-tfvars" },
+          "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
+          "params" =>
+        { "YML_FILES" =>
+          "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n",
+            "YML_TEMPLATE_DIR" => "additional-resource/my-tfstate-location/template",
+            "CUSTOM_SCRIPT_DIR" => "additional-resource/my-tfstate-location/template",
+            "SUFFIX" => "-tpl.tfvars.yml",
+            "IAAS_TYPE" => "((iaas-type))" } },
+        { "task" => "terraform-plan",
+          "input_mapping" =>
+          { "secret-state-resource" => "secrets-my-root-depls",
+            "spec-resource" => "paas-template-my-root-depls" },
+            "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
+            "params" =>
+          { "SPEC_PATH" => "my-tfstate-location/spec",
+            "SECRET_STATE_FILE_PATH" => "my-tfstate-location",
+            "IAAS_SPEC_PATH" => "my-tfstate-location/spec-((iaas-type))" } }
+        ]
 
         generated = generated_pipeline['jobs']
           .select { |job| job['name'] == "check-terraform-cf-consistency" }

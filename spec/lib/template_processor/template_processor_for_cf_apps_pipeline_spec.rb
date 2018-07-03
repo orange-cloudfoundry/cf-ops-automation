@@ -1,9 +1,8 @@
 require 'rspec'
 require 'fileutils'
 require 'tmpdir'
-
-require_relative '../../../lib/template_processor'
-require_relative '../../../lib/ci_deployment'
+require 'template_processor'
+require 'ci_deployment'
 
 describe 'CfAppsPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
@@ -64,7 +63,7 @@ describe 'CfAppsPipelineTemplateProcessing' do
         type: docker-image
         source:
           repository: cfcommunity/slack-notification-resource
-    
+
       - name: cron-resource
         type: docker-image
         source:
@@ -73,19 +72,19 @@ describe 'CfAppsPipelineTemplateProcessing' do
     YAML.safe_load(resource_types_yaml)
   end
   let(:groups) do
-    groups_yaml = [
+    [
       { 'name' => 'My-root-depls',
         'jobs' =>
-         ["retrigger-all-jobs",
-          "cf-push-elpaaso-sandbox",
-          "cf-push-log-broker",
-          "cf-push-mattermost",
-          "cf-push-ops-dataflow"]},
-      {"name"=>"App-e*", "jobs"=>["cf-push-elpaaso-sandbox"]},
-      {"name"=>"App-l*", "jobs"=>["cf-push-log-broker"]},
-      {"name"=>"App-m*", "jobs"=>["cf-push-mattermost"]},
-      {"name"=>"App-o*", "jobs"=>["cf-push-ops-dataflow"]},
-      {"name"=>"Utils", "jobs"=>["retrigger-all-jobs"]}
+        ["retrigger-all-jobs",
+         "cf-push-elpaaso-sandbox",
+         "cf-push-log-broker",
+         "cf-push-mattermost",
+         "cf-push-ops-dataflow"]},
+         {"name"=>"App-e*", "jobs"=>["cf-push-elpaaso-sandbox"]},
+         {"name"=>"App-l*", "jobs"=>["cf-push-log-broker"]},
+         {"name"=>"App-m*", "jobs"=>["cf-push-mattermost"]},
+         {"name"=>"App-o*", "jobs"=>["cf-push-ops-dataflow"]},
+         {"name"=>"Utils", "jobs"=>["retrigger-all-jobs"]}
     ]
   end
 
@@ -143,15 +142,13 @@ describe 'CfAppsPipelineTemplateProcessing' do
 
       it 'generates CF variables available for post-deploy' do
         cf_push_params = generated_pipeline['jobs']
-            .flat_map { |job| job['plan'] }
-            .select { |step| step['task'] && step['task'].start_with?("push")  }
-            .flat_map { |step| step['params'] }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] && step['task'].start_with?("push")  }
+          .flat_map { |step| step['params'] }
         cf_push_params.each do |task_params|
           expect(task_params).to include('CF_API_URL', 'CF_ORG', 'CF_SPACE', 'CF_USERNAME', 'CF_PASSWORD')
         end
-
       end
     end
-
   end
 end

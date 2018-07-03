@@ -1,5 +1,5 @@
 require 'rspec'
-require_relative '../../lib/deployment_factory'
+require 'deployment_factory'
 
 describe DeploymentFactory do
   let(:root_deployment_name) { 'main_depls' }
@@ -24,7 +24,7 @@ describe DeploymentFactory do
       let(:versions) {}
 
       it 'raise an error about stemcell-version' do
-        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match('invalid version: missing stemcell version') }
+        expect { subject }.to raise_error(RuntimeError, 'invalid version: missing stemcell version')
       end
     end
 
@@ -38,7 +38,7 @@ describe DeploymentFactory do
       let(:config) {}
 
       it 'complains about nil config' do
-        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match('invalid config: cannot be nil') }
+        expect { subject }.to raise_error(RuntimeError, 'invalid config: cannot be nil')
       end
     end
 
@@ -59,7 +59,6 @@ describe DeploymentFactory do
 
       it 'raise an error' do
         expect { subject }.to raise_error(RuntimeError, /file not found: dummy-filename.yml/)
-
       end
     end
 
@@ -68,7 +67,6 @@ describe DeploymentFactory do
 
       it 'raise an error' do
         expect { subject }.to raise_error(RuntimeError, /invalid filename. Cannot be empty/)
-
       end
     end
 
@@ -91,7 +89,8 @@ describe DeploymentFactory do
 
     context 'when data is not set' do
       it 'raise an error' do
-        expect { deployment_factory.load(deployment_name) }.to raise_error(RuntimeError, /invalid data. Cannot load empty data/)
+        expect { deployment_factory.load(deployment_name) }.
+          to raise_error(RuntimeError, /invalid data. Cannot load empty data/)
       end
     end
 
@@ -99,7 +98,8 @@ describe DeploymentFactory do
       let (:invalid_data) { YAML.load('invalid: true').to_s }
 
       it 'raise an error' do
-        expect { deployment_factory.load(deployment_name, invalid_data) }.to raise_error(RuntimeError, /Invalid data. Missing root: 'deployment'/)
+        expect { deployment_factory.load(deployment_name, invalid_data) }.
+          to raise_error(RuntimeError, /Invalid data. Missing root: 'deployment'/)
       end
     end
 
