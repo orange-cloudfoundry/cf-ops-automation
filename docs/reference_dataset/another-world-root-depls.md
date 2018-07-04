@@ -6,9 +6,9 @@
 
 ```bash
 .
-├── hello-world-root-depls
-├── private-config.yml
-└── shared
+|-- hello-world-root-depls
+|-- private-config.yml
+`-- shared
 ```
 
 ### another-world-root-depls overview
@@ -23,32 +23,32 @@ Inactive deployment: config dir for another-world-root-depls does not exist.
 
 ```bash
 .
-├── another-world-root-depls
-├── hello-world-root-depls
-└── shared-config.yml
+|-- another-world-root-depls
+|-- hello-world-root-depls
+`-- shared-config.yml
 ```
 
 ### another-world-root-depls overview
 
 ```bash
 another-world-root-depls
-├── another-bosh-deployment-sample
-│   ├── deployment-dependencies.yml
-│   └── template
-│       ├── adding-ntp-release-operators.yml
-│       ├── another-bosh-deployment-sample-tpl.yml
-│       ├── ntp-release-vars.yml
-│       ├── openstack
-│       │   └── nginx-operators.yml
-│       ├── post-deploy.sh
-│       └── pre-deploy.sh
-├── another-world-root-depls-versions.yml
-└── template
-    ├── cloud-config-tpl.yml
-    ├── deploy.sh
-    ├── openstack
-    │   └── disk-types-cloud-operators.yml
-    └── runtime-config-tpl.yml
+|-- another-bosh-deployment-sample
+|   |-- deployment-dependencies.yml
+|   `-- template
+|       |-- adding-ntp-release-operators.yml
+|       |-- another-bosh-deployment-sample-tpl.yml
+|       |-- ntp-release-vars.yml
+|       |-- openstack
+|       |   `-- nginx-operators.yml
+|       |-- post-deploy.sh
+|       `-- pre-deploy.sh
+|-- another-world-root-depls-versions.yml
+`-- template
+    |-- cloud-config-tpl.yml
+    |-- deploy.sh
+    |-- openstack
+    |   `-- disk-types-cloud-operators.yml
+    `-- runtime-config-tpl.yml
 ```
 
 ## The config files

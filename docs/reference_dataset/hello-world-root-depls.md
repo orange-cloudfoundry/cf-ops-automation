@@ -6,47 +6,47 @@
 
 ```bash
 .
-├── hello-world-root-depls
-├── private-config.yml
-└── shared
+|-- hello-world-root-depls
+|-- private-config.yml
+`-- shared
 ```
 
 ### hello-world-root-depls overview
 
 ```bash
 hello-world-root-depls
-├── bosh-deployment-sample
-│   ├── enable-deployment.yml
-│   └── secrets
-│       ├── meta.yml
-│       └── secrets.yml
-├── cf-apps-deployments
-│   └── generic-app
-│       ├── enable-cf-app.yml
-│       └── secrets
-│           ├── meta.yml
-│           └── secrets.yml
-├── ci-deployment-overview.yml
-├── pipeline-sample
-│   ├── enable-deployment.yml
-│   └── secrets
-│       ├── meta.yml
-│       └── secrets.yml
-├── secrets
-│   ├── meta.yml
-│   ├── private-config-operators.yml
-│   ├── private-runtime-operators.yml
-│   └── secrets.yml
-├── terraform-sample
-│   ├── secrets
-│   │   ├── meta.yml
-│   │   └── secrets.yml
-│   └── spec
-│       └── my-private-terraform-spec.tf
-└── to-delete-bosh-deployment-sample
-    └── secrets
-        ├── meta.yml
-        └── secrets.yml
+|-- bosh-deployment-sample
+|   |-- enable-deployment.yml
+|   `-- secrets
+|       |-- meta.yml
+|       `-- secrets.yml
+|-- cf-apps-deployments
+|   `-- generic-app
+|       |-- enable-cf-app.yml
+|       `-- secrets
+|           |-- meta.yml
+|           `-- secrets.yml
+|-- ci-deployment-overview.yml
+|-- pipeline-sample
+|   |-- enable-deployment.yml
+|   `-- secrets
+|       |-- meta.yml
+|       `-- secrets.yml
+|-- secrets
+|   |-- meta.yml
+|   |-- private-config-operators.yml
+|   |-- private-runtime-operators.yml
+|   `-- secrets.yml
+|-- terraform-sample
+|   |-- secrets
+|   |   |-- meta.yml
+|   |   `-- secrets.yml
+|   `-- spec
+|       `-- my-private-terraform-spec.tf
+`-- to-delete-bosh-deployment-sample
+    `-- secrets
+        |-- meta.yml
+        `-- secrets.yml
 ```
 
 ## The template repo
@@ -55,51 +55,51 @@ hello-world-root-depls
 
 ```bash
 .
-├── another-world-root-depls
-├── hello-world-root-depls
-└── shared-config.yml
+|-- another-world-root-depls
+|-- hello-world-root-depls
+`-- shared-config.yml
 ```
 
 ### hello-world-root-depls overview
 
 ```bash
 hello-world-root-depls
-├── bosh-deployment-sample
-│   ├── deployment-dependencies.yml
-│   └── template
-│       ├── adding-ntp-release-operators.yml
-│       ├── bosh-deployment-sample-tpl.yml
-│       ├── ntp-release-vars.yml
-│       ├── openstack
-│       │   └── nginx-operators.yml
-│       ├── post-deploy.sh
-│       └── pre-deploy.sh
-├── cf-apps-deployments
-│   └── generic-app
-│       ├── deployment-dependencies.yml
-│       └── template
-│           ├── index.html
-│           ├── manifest-tpl.yml
-│           └── Staticfile
-├── hello-world-root-depls-versions.yml
-├── pipeline-sample
-│   ├── concourse-pipeline-config
-│   │   └── pipeline-sample.yml
-│   └── deployment-dependencies.yml
-├── template
-│   ├── cloud-config.yml
-│   ├── deploy.sh
-│   ├── openstack
-│   │   └── disk-types-cloud-operators.yml
-│   ├── public-config-operators.yml
-│   ├── public-runtime-operators.yml
-│   └── runtime-config.yml
-└── terraform-config
-    ├── spec
-    │   └── local-provider-sample.tf
-    └── template
-        ├── post-generate.sh
-        └── terraform-tpl.tfvars.yml
+|-- bosh-deployment-sample
+|   |-- deployment-dependencies.yml
+|   `-- template
+|       |-- adding-ntp-release-operators.yml
+|       |-- bosh-deployment-sample-tpl.yml
+|       |-- ntp-release-vars.yml
+|       |-- openstack
+|       |   `-- nginx-operators.yml
+|       |-- post-deploy.sh
+|       `-- pre-deploy.sh
+|-- cf-apps-deployments
+|   `-- generic-app
+|       |-- deployment-dependencies.yml
+|       `-- template
+|           |-- Staticfile
+|           |-- index.html
+|           `-- manifest-tpl.yml
+|-- hello-world-root-depls-versions.yml
+|-- pipeline-sample
+|   |-- concourse-pipeline-config
+|   |   `-- pipeline-sample.yml
+|   `-- deployment-dependencies.yml
+|-- template
+|   |-- cloud-config.yml
+|   |-- deploy.sh
+|   |-- openstack
+|   |   `-- disk-types-cloud-operators.yml
+|   |-- public-config-operators.yml
+|   |-- public-runtime-operators.yml
+|   `-- runtime-config.yml
+`-- terraform-config
+    |-- spec
+    |   `-- local-provider-sample.tf
+    `-- template
+        |-- post-generate.sh
+        `-- terraform-tpl.tfvars.yml
 ```
 
 ## The config files
@@ -178,9 +178,9 @@ hello-world-root-depls
     * [generic-app](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app)
       * [deployment-dependencies.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/deployment-dependencies.yml)
       * [template](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template)
+        * [Staticfile](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/Staticfile)
         * [index.html](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/index.html)
         * [manifest-tpl.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/manifest-tpl.yml)
-        * [Staticfile](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/Staticfile)
   * [hello-world-root-depls-versions.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/hello-world-root-depls-versions.yml)
   * [pipeline-sample](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample)
     * [concourse-pipeline-config](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config)
