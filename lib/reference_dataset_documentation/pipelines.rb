@@ -8,7 +8,7 @@ module ReferenceDatasetDocumentation
     attr_reader :generator, :generated_pipelines_dir
     REFERENCE_DATASET_OUTPUT_PATH = 'docs/reference_dataset'.freeze
 
-    def initialize(generator, output_dir = REFERENCE_DATASET_OUTPUT_PATH)
+    def initialize(generator, output_dir = File.join(PROJECT_ROOT_DIR, REFERENCE_DATASET_OUTPUT_PATH))
       @generator = generator
       @generated_pipelines_dir = output_dir
     end
@@ -21,7 +21,7 @@ module ReferenceDatasetDocumentation
 
     def validate
       Dir["#{@generated_pipelines_dir}/pipelines/*-generated.yml"].each do |pipeline_filename|
-        command = "fly validate-pipeline -c ./#{pipeline_filename} --strict"
+        command = "fly validate-pipeline -c #{pipeline_filename} --strict"
         stdout_str, stderr_str, = Open3.capture3(command)
         raise "Invalid generated pipeline (#{pipeline_filename}): #{stderr_str}" unless stderr_str.empty?
         raise "Invalid generated pipeline (#{pipeline_filename}): #{stdout_str}" unless stdout_str == "looks good\n"
@@ -50,7 +50,7 @@ module ReferenceDatasetDocumentation
       end
     end
 
-    def self.cleanup_generation_dir(location = REFERENCE_DATASET_OUTPUT_PATH)
+    def self.cleanup_generation_dir(location = File.join(PROJECT_ROOT_DIR, REFERENCE_DATASET_OUTPUT_PATH))
       generated_pipelines_filter = File.join(location, 'pipelines', '*-generated.yml')
       pipelines_to_delete = Dir.glob(generated_pipelines_filter)
       FileUtils.rm_rf(pipelines_to_delete)
