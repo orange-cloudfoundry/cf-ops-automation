@@ -1,0 +1,75 @@
+---
+resources:
+- name: cf-ops-automation-docker-image
+  type: docker-image
+  source:
+    repository: orangecloudfoundry/cf-ops-automation
+    username: ((dockerhub-username))
+    password: ((dockerhub-password))
+
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    branch: ((cf-ops-automation-git-branch))
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+
+- name: cf-ops-automation-dependencies
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    branch: ((cf-ops-automation-git-branch))
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+    paths: [ "Gemfile*", "Dockerfile" ]
+
+jobs:
+  - name: build-cached-image
+    plan:
+    - get: cf-ops-automation-dependencies
+      trigger: true
+    - put: cf-ops-automation-docker-image
+      params:
+        build: cf-ops-automation-dependencies
+        build_args: &docker_build_args
+          CONCOURSE_VERSION: 3.14.1
+          CONCOURSE_SHA: aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
+
+  - name: bootstrap_coa_env
+    plan:
+    - aggregate:
+      - get: cf-ops-automation-docker-image
+        passed: [build-cached-image]
+        trigger: true
+      - get: cf-ops-automation
+        trigger: true
+    - task: generate_private_params_file
+      file: cf-ops-automation/concourse/tasks/generate_coa_env_bootstrap_private_prereqs.yml
+      params:
+          OWN_CONCOURSE: ((own-concourse))
+          CONCOURSE_TARGET: ((concourse_target))
+          CONCOURSE_URL: ((concourse_url))
+          CONCOURSE_USERNAME: ((concourse_username))
+          CONCOURSE_PASSWORD: ((concourse_password))
+          CONCOURSE_INSECURE: ((concourse_insecure))
+          CONCOURSE_CA_CERT: ((concourse_ca_cert))
+          OWN_BOSH: ((own-bosh))
+          BOSH_ENVIRONMENT: ((bosh_environment))
+          BOSH_TARGET: ((bosh_target))
+          BOSH_CLIENT: ((bosh_client))
+          BOSH_CLIENT_SECRET: ((bosh_client_secret))
+          BOSH_CA_CERT: ((bosh_ca_cert))
+    - task: bootstrap_coa_env
+      attempts: 3
+      image: cf-ops-automation-docker-image
+      config:
+        platform: linux
+        inputs:
+        - name: cf-ops-automation
+        - name: private-prereqs
+        run:
+          path: ruby
+          args:
+          - cf-ops-automation/scripts/bootstrap-coa-env.rb
+          - cf-ops-automation/ci/bootstrap_coa_env/prereqs.yml
+          - private-prereqs/bosh-prereqs.yml
+          - private-prereqs/concourse-prereqs.yml

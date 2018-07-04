@@ -7,40 +7,59 @@ describe CoaEnvBootstrapper::Base do
     let(:prereqs_yml_path) { File.join(fixtures_dir('lib'), 'coa_env_bootstrapper', 'prereqs.yml') }
     let(:private_prereqs_yml_path) { File.join(fixtures_dir('lib'), 'coa_env_bootstrapper', 'private_prereqs.yml') }
     let(:not_existing_yml_path) { "not_existing.yml" }
-
-    it "creates a temporary directory" do
-      ceb = described_class.new([])
-      expect(File.exist?(ceb.tmpdir)).to be_truthy
-      expect(File.directory?(ceb.tmpdir)).to be_truthy
+    let(:expected_prereqs) do
+      {
+        "pipeline-crendentials" => {
+          "slack-webhook" => "https://example.slack.com/webhook"
+        },
+        "bosh_client_secret" => "secret"
+      }
     end
 
     it "loads proper arguments files and ignore others" do
-      expect_any_instance_of(described_class).to receive(:puts).with("File #{not_existing_yml_path} not found. Will be ignored.")
+      allow(described_class).to receive(:puts).with("File #{not_existing_yml_path} not found. Will be ignored.")
 
       ceb = described_class.new([prereqs_yml_path, private_prereqs_yml_path, not_existing_yml_path])
 
-      expect(ceb.prereqs).to eq("bosh_environment" => "bucc", "bosh_client_secret" => "secret")
+      expect(ceb.prereqs).to eq(expected_prereqs)
     end
   end
 
   describe '#run' do
+    let(:generated_concourse_credentials) { { "secret-uri" => "generated" } }
+
     context "with a default configuration" do
       let(:ceb) { described_class.new([]) }
 
       it "runs all steps" do
         allow(ceb.env_creator_adapter).to receive(:deploy_transiant_infra)
-        allow(ceb).to receive(:write_source_file)
-        allow(ceb.bosh).to receive(:prepare_environment).once
-        allow(ceb.git).to receive(:prepare_environment).once
-        allow(ceb.concourse).to receive(:run_pipeline_jobs).once
+        allow(ceb).to receive(:write_source_profile)
+        allow(ceb.bosh).to receive(:upload_stemcell)
+        allow(ceb.bosh).to receive(:upload_cloud_config)
+        allow(ceb.bosh).to receive(:deploy_git_server)
+        allow(ceb.git).to receive(:push_templates_repo)
+        allow(ceb.git).to receive(:push_secrets_repo)
+        allow(ceb.git).to receive(:download_git_dependencies)
+        allow(ceb).to receive(:generated_concourse_credentials).
+          and_return(generated_concourse_credentials)
+        allow(ceb.concourse).to receive(:upload_pipelines)
+        allow(ceb.concourse).to receive(:unpause_pipelines)
+        allow(ceb.concourse).to receive(:trigger_jobs)
 
-        expect(ceb.run).to eq ceb
+        ceb.run
 
         expect(ceb.env_creator_adapter).to have_received(:deploy_transiant_infra)
-        expect(ceb).to have_received(:write_source_file)
-        expect(ceb.bosh).to have_received(:prepare_environment).once
-        expect(ceb.git).to have_received(:prepare_environment).once
-        expect(ceb.concourse).to have_received(:run_pipeline_jobs).once
+        expect(ceb).to have_received(:write_source_profile)
+        expect(ceb.bosh).to have_received(:upload_stemcell)
+        expect(ceb.bosh).to have_received(:upload_cloud_config)
+        expect(ceb.bosh).to have_received(:deploy_git_server)
+        expect(ceb.git).to have_received(:push_templates_repo)
+        expect(ceb.git).to have_received(:push_secrets_repo)
+        expect(ceb.git).to have_received(:download_git_dependencies)
+        expect(ceb.concourse).to have_received(:upload_pipelines).
+          with(ceb.config_dir, generated_concourse_credentials)
+        expect(ceb.concourse).to have_received(:unpause_pipelines)
+        expect(ceb.concourse).to have_received(:trigger_jobs)
       end
     end
 
@@ -50,29 +69,34 @@ describe CoaEnvBootstrapper::Base do
 
       it "ignores the deactivated steps" do
         allow(ceb.env_creator_adapter).to receive(:deploy_transiant_infra)
-        allow(ceb).to receive(:write_source_file)
-        allow(ceb.bosh).to receive(:prepare_environment).once
-        allow(ceb.git).to receive(:prepare_environment).once
-        allow(ceb.concourse).to receive(:run_pipeline_jobs).once
+        allow(ceb).to receive(:write_source_profile)
+        allow(ceb.bosh).to receive(:upload_stemcell)
+        allow(ceb.bosh).to receive(:upload_cloud_config)
+        allow(ceb.bosh).to receive(:deploy_git_server)
+        allow(ceb.git).to receive(:push_templates_repo)
+        allow(ceb.git).to receive(:push_secrets_repo)
+        allow(ceb.git).to receive(:download_git_dependencies)
+        allow(ceb).to receive(:generated_concourse_credentials).
+          and_return(generated_concourse_credentials)
+        allow(ceb.concourse).to receive(:upload_pipelines)
+        allow(ceb.concourse).to receive(:unpause_pipelines)
+        allow(ceb.concourse).to receive(:trigger_jobs)
 
-        expect(ceb.run).to eq ceb
+        ceb.run
 
         expect(ceb.env_creator_adapter).not_to have_received(:deploy_transiant_infra)
-        expect(ceb).to have_received(:write_source_file)
-        expect(ceb.bosh).to have_received(:prepare_environment).once
-        expect(ceb.git).to have_received(:prepare_environment).once
-        expect(ceb.concourse).to have_received(:run_pipeline_jobs).once
+        expect(ceb).to have_received(:write_source_profile)
+        expect(ceb.bosh).not_to have_received(:upload_stemcell)
+        expect(ceb.bosh).to have_received(:upload_cloud_config)
+        expect(ceb.bosh).not_to have_received(:deploy_git_server)
+        expect(ceb.git).to have_received(:push_templates_repo)
+        expect(ceb.git).to have_received(:push_secrets_repo)
+        expect(ceb.git).to have_received(:download_git_dependencies)
+        expect(ceb.concourse).to have_received(:upload_pipelines).
+          with(ceb.config_dir, generated_concourse_credentials)
+        expect(ceb.concourse).to have_received(:unpause_pipelines)
+        expect(ceb.concourse).to have_received(:trigger_jobs)
       end
-    end
-  end
-
-  describe '#clean' do
-    let(:ceb) { described_class.new([]) }
-
-    it "deletes the tmp file it created" do
-      expect(File.exist?(ceb.tmpdir)).to be_truthy
-      ceb.clean
-      expect(File.exist?(ceb.tmpdir)).to be_falsy
     end
   end
 
@@ -84,10 +108,11 @@ describe CoaEnvBootstrapper::Base do
       let(:git_server_ip) { "1.1.1.1" }
       let(:expected_answer) do
         {
-          "bosh-target"   => "target",
-          "bosh-username" => "client",
-          "bosh-password" => "client_secret",
-          "bosh-ca-cert"  => "ca_cert",
+          "bosh-target"      => "target",
+          "bosh-username"    => "client",
+          "bosh-password"    => "client_secret",
+          "bosh-ca-cert"     => "ca_cert",
+          "bosh-environment" => "target",
           "secrets-uri"        => "git://#{git_server_ip}/secrets",
           "paas-templates-uri" => "git://#{git_server_ip}/paas-templates",
           "concourse-micro-depls-target"   => "http://example.com",
@@ -111,41 +136,17 @@ describe CoaEnvBootstrapper::Base do
     context 'when the bosh creds and concourse creds come from bucc'
   end
 
-  pending '#deploy_transiant_infra' do
-    let(:bucc_yml_path) { File.join(fixtures_dir('lib'), 'coa_env_bootstrapper', 'bucc.yml') }
-    let(:ceb) { described_class.new([bucc_yml_path]) }
+  describe '#write_source_profile' do
+    let(:tmpdirpath) { new_tmpdir_path }
 
-    context "when the deployment is successful" do
-      let(:exitstatus) { class_double(Process::Status, success?: true) }
+    before { FileUtils.mkdir tmpdirpath }
 
-      it "runs the bucc up commands with the provided options without issue" do
-        allow(Open3).to receive(:capture3).
-          with("bucc up --cpi openstack --keystone-v2 --lite --debug").
-          and_return(["out", "err", exitstatus])
+    after { FileUtils.rmdir tmpdirpath }
 
-        expect(ceb.deploy_transiant_infra).not_to raise_error
-      end
-    end
-
-    context "when the deployment is not successful" do
-      let(:exitstatus) { class_double(Process::Status, success?: false) }
-
-      it "runs the bucc up commands with the provided options but fails" do
-        allow(Open3).to receive(:capture3).
-          with("bucc up --cpi openstack --keystone-v2 --lite --debug").
-          and_return(["out", "err", exitstatus])
-
-        expect { ceb.deploy_transiant_infra }.
-          to raise_error("Command errored with outputs:\nstderr:\nerr\nstdout:\nout")
-      end
-    end
-  end
-
-  describe '#write_source_file' do
     context 'when we pass a set of bosh credentials' do
       let(:bosh_yml_path) { File.join(fixtures_dir('lib'), 'coa_env_bootstrapper', 'bosh_prereqs.yml') }
       let(:ceb) { described_class.new([bosh_yml_path]) }
-      let(:source_file_path) { File.join(ceb.tmpdir, CoaEnvBootstrapper::SOURCE_FILE_NAME) }
+      let(:source_profile_path) { File.join(tmpdirpath, CoaEnvBootstrapper::SOURCE_FILE_NAME) }
       let(:expected_profile) do
         [
           "export BOSH_ENVIRONMENT='own_bosh'",
@@ -157,19 +158,22 @@ describe CoaEnvBootstrapper::Base do
       end
 
       it "writes them in a file" do
-        allow(File).to receive(:write).with(source_file_path, expected_profile)
-        ceb.write_source_file
-        expect(File).to have_received(:write).with(source_file_path, expected_profile)
+        allow(File).to receive(:write)
+        allow(ceb).to receive(:source_profile_path).and_return(source_profile_path)
+
+        ceb.write_source_profile
+
+        expect(File).to have_received(:write).with(source_profile_path, expected_profile)
       end
     end
 
     context 'when we do not pass our own credentials' do
       let(:ceb) { described_class.new([]) }
-      let(:source_file_path) { File.join(ceb.tmpdir, CoaEnvBootstrapper::SOURCE_FILE_NAME) }
+      let(:source_profile_path) { File.join(tmpdirpath, CoaEnvBootstrapper::SOURCE_FILE_NAME) }
       let(:bucc_vars) do
         {
           "bosh_environment" => 'bucc',
-          "bosh_target" => 'target',
+          "bosh_target" => 'bucc',
           "bosh_client" => 'client',
           "bosh_client_secret" => 'client_secret',
           "bosh_ca_cert" => 'ca_cert'
@@ -178,7 +182,7 @@ describe CoaEnvBootstrapper::Base do
       let(:expected_profile) do
         [
           "export BOSH_ENVIRONMENT='bucc'",
-          "export BOSH_TARGET='target'",
+          "export BOSH_TARGET='bucc'",
           "export BOSH_CLIENT='client'",
           "export BOSH_CLIENT_SECRET='client_secret'",
           "export BOSH_CA_CERT='ca_cert'"
@@ -188,11 +192,14 @@ describe CoaEnvBootstrapper::Base do
       it "get the bosh credentials from bucc" do
         allow(ceb.env_creator_adapter).to receive(:vars).and_return(bucc_vars)
         allow(File).to receive(:write)
+        allow(ceb).to receive(:source_profile_path).and_return(source_profile_path)
 
-        ceb.write_source_file
+        ceb.write_source_profile
 
-        expect(File).to have_received(:write).with(source_file_path, expected_profile)
+        expect(File).to have_received(:write).with(source_profile_path, expected_profile)
       end
     end
   end
+
+  describe '.create_file_from_prereqs'
 end

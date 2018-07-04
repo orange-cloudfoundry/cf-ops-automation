@@ -1,129 +1,105 @@
 require 'tmpdir'
 require 'yaml'
+require_relative './bosh'
+require_relative './git'
+require_relative './concourse'
+require_relative './env_creator_adapter'
+require_relative './command_runner'
 
 module CoaEnvBootstrapper
-  require 'coa_env_bootstrapper/bosh'
-  require 'coa_env_bootstrapper/git'
-  require 'coa_env_bootstrapper/concourse'
-  require 'coa_env_bootstrapper/env_creator_adapter'
-
   class Base
-    attr_reader :bosh, :env_creator_adapter, :concourse, :git, :prereqs, :tmpdir
+    attr_accessor :config_dir
+    attr_reader :bosh, :env_creator_adapter, :concourse, :git, :prereqs
 
     def initialize(prereqs_paths)
       @prereqs             = load_prereqs(prereqs_paths)
-      @tmpdir              = Dir.mktmpdir
-      @env_creator_adapter = EnvCreatorAdapter.new(self, "bucc")
+      @env_creator_adapter = EnvCreatorAdapter.new("bucc", @prereqs)
       @bosh                = Bosh.new(self)
-      @concourse           = Concourse.new(self)
       @git                 = Git.new(self)
+      @concourse           = Concourse.new(self)
+    end
+
+    def self.run(prereqs_path)
+      ceb = new(prereqs_path)
+      ceb.run
+    ensure
+      FileUtils.remove_entry_secure ceb.config_dir if ceb.config_dir
     end
 
     def run
-      # TODO: check_prereqs
-      env_creator_adapter.deploy_transiant_infra if step_active?("deploy_transiant_infra")
-      write_source_file
-      bosh.prepare_environment
-      git.prepare_environment
-      concourse.run_pipeline_jobs
-      self
-    end
-
-    def clean
-      FileUtils.remove_entry_secure @tmpdir
-    end
-
-    def write_source_file
-      @source_file_path = File.join(@tmpdir, CoaEnvBootstrapper::SOURCE_FILE_NAME)
-      File.write(@source_file_path, source_profile)
+      @config_dir = Dir.mktmpdir
+      write_source_profile
+      env_creator_adapter.deploy_transiant_infra unless inactive_step?("deploy_transiant_infra")
+      prepare_bosh_environment
+      prepare_git_environment
+      run_pipeline_jobs
+      env_creator_adapter.display_concourse_login_information
     end
 
     def generated_concourse_credentials
       # TODO: make concourse credentials keys dynamic
       {
-        "bosh-target"   => bosh_creds["target"],
-        "bosh-username" => bosh_creds["client"],
-        "bosh-password" => bosh_creds["client_secret"],
-        "bosh-ca-cert"  => bosh_creds["ca_cert"],
+        "bosh-target"      => bosh.creds["target"],
+        "bosh-username"    => bosh.creds["client"],
+        "bosh-password"    => bosh.creds["client-secret"],
+        "bosh-ca-cert"     => bosh.creds["ca-cert"],
+        "bosh-environment" => bosh.creds["target"],
         "secrets-uri"        => "git://#{git.server_ip}/secrets",
         "paas-templates-uri" => "git://#{git.server_ip}/paas-templates",
-        "concourse-micro-depls-target"   => concourse_creds["url"],
-        "concourse-micro-depls-username" => concourse_creds["username"],
-        "concourse-micro-depls-password" => concourse_creds["password"],
-        "concourse-hello-world-root-depls-insecure" => concourse_creds["insecure"],
-        "concourse-hello-world-root-depls-password" => concourse_creds["password"],
-        "concourse-hello-world-root-depls-target"   => concourse_creds["url"],
-        "concourse-hello-world-root-depls-username" => concourse_creds["username"]
+        # "concourse-micro-depls-target"   => concourse.creds["url"],
+        # "concourse-micro-depls-username" => concourse.creds["username"],
+        # "concourse-micro-depls-password" => concourse.creds["password"],
+        "concourse-hello-world-root-depls-insecure" => concourse.creds["insecure"],
+        "concourse-hello-world-root-depls-password" => concourse.creds["password"],
+        "concourse-hello-world-root-depls-target"   => concourse.creds["url"],
+        "concourse-hello-world-root-depls-username" => concourse.creds["username"]
       }
     end
-
-    private
-
-    def source_profile
-      bosh_creds.
-        map { |key, value| "export BOSH_#{key.upcase}='#{value}'" }.
-        join("\n")
-    end
-
-    def concourse_creds
-      creds_source = own_concourse_vars || env_creator_adapter.vars
-      {
-        "target"   => creds_source["concourse_target"] || env_creator_adapter.concourse_target,
-        "url"      => creds_source["concourse_url"],
-        "username" => creds_source["concourse_username"],
-        "password" => creds_source["concourse_password"],
-        "insecure" => creds_source["concourse_insecure"] || "true"
-      }
-    end
-
-    def bosh_creds
-      creds_source = own_bosh_vars || env_creator_adapter.vars
-      {
-        "environment"   => creds_source["bosh_environment"],
-        "target"        => creds_source["bosh_target"],
-        "client"        => creds_source["bosh_client"],
-        "client_secret" => creds_source["bosh_client_secret"],
-        "ca_cert"       => creds_source["bosh_ca_cert"]
-      }
-    end
-
-    # def output_dir
-    #   @output_dir ||=
-    #     begin
-    #       path = File.join(tmpdir, ::OUTPUT_DIR_NAME)
-    #       Dir.mkdir_p path
-    #       path
-    #   end
-    # end
 
     def create_file_from_prereqs(filepath, prereqs_key, additional_info = {})
       file = File.new(filepath, 'w+')
-      credentials_content = prereqs[prereqs_key].merge(additional_info)
+      credentials_content = prereqs[prereqs_key]&.merge(additional_info) || {}
       file.write(YAML.dump(credentials_content))
       file.close
       filepath
     end
 
-    def own_concourse_vars
-      prereqs["concourse"]
+    def source_profile_path
+      File.join(config_dir, CoaEnvBootstrapper::SOURCE_FILE_NAME)
     end
 
-    def own_bosh_vars
-      prereqs["bosh"]
+    def write_source_profile
+      File.write(source_profile_path, source_profile)
     end
 
-    def steps
-      {
-        "deploy_transiant_infra" => true,
-        "upload_stemcell"        => true,
-        "upload_cloud_config"    => true,
-        "install_git_server"     => true
-      }.merge(@prereqs["steps"].to_h)
+    private
+
+    def prepare_bosh_environment
+      bosh.upload_stemcell                 unless inactive_step?("upload_stemcell")
+      bosh.upload_cloud_config(config_dir) unless inactive_step?("upload_cloud_config")
+      bosh.deploy_git_server(config_dir)   unless inactive_step?("deploy_git_server")
     end
 
+    def prepare_git_environment
+      git.push_templates_repo
+      git.push_secrets_repo
+      git.download_git_dependencies
+    end
 
-    def step_active?(step_key)
-      steps[step_key]
+    def run_pipeline_jobs
+      concourse.upload_pipelines(config_dir, generated_concourse_credentials)
+      concourse.unpause_pipelines
+      concourse.trigger_jobs
+    end
+
+    def source_profile
+      bosh.creds.
+        map { |key, value| "export BOSH_#{key.tr("-", "_").upcase}='#{value}'" }.
+        join("\n")
+    end
+
+    def inactive_step?(step)
+      @prereqs["inactive_steps"]&.include?(step)
     end
 
     def load_prereqs(prereqs_paths)

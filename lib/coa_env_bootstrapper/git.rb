@@ -1,16 +1,13 @@
+require_relative './command_runner'
+require_relative './errors'
+
 module CoaEnvBootstrapper
   class Git
+    include CommandRunner
     attr_reader :ceb
 
     def initialize(coa_env_bootstrapper)
       @ceb = coa_env_bootstrapper
-    end
-
-    def prepare_environment
-      # TODO: check if git ip is present
-      push_templates_repo
-      push_secrets_repo
-      download_git_dependencies
     end
 
     def push_templates_repo
@@ -18,45 +15,48 @@ module CoaEnvBootstrapper
 
       init_and_push(paas_templates_path, "paas-templates")
       Dir.chdir paas_templates_path
-      run_cmd "git branch -D pipeline-current-master" if git_branch_exists?("pipeline-current-master")
+      run_cmd "git branch -D pipeline-current-master" if branch_exists?("pipeline-current-master")
       run_cmd "git checkout -b pipeline-current-master"
-      run_cmd "git push origin pipeline-current-master --force", source: true, ignore_error: true
+      run_cmd "git push origin pipeline-current-master --force", ignore_error: true, source_file_path: ceb.source_profile_path
     end
 
     def push_secrets_repo
       repo_path = File.join(PROJECT_ROOT_DIR, "docs/reference_dataset/config_repository")
       concourse_credentials_path = File.join(repo_path, "shared", "concourse-credentials.yml")
 
-      create_file_from_prereqs(concourse_credentials_path, "concourse_credentials", generated_concourse_credentials)
+      ceb.create_file_from_prereqs(concourse_credentials_path, "pipeline_credentials", ceb.generated_concourse_credentials)
       init_and_push(repo_path, "secrets")
       FileUtils.rm(concourse_credentials_path)
     end
 
     def download_git_dependencies
-      Dir.chdir ceb.tmpdir
+      Dir.chdir ceb.config_dir
 
-      run_cmd "git clone git://#{server_ip}/paas-templates", source: true
-      run_cmd "git clone git://#{server_ip}/secrets", source: true
+      run_cmd "git clone git://#{server_ip}/paas-templates", source_file_path: ceb.source_profile_path
+      run_cmd "git clone git://#{server_ip}/secrets", source_file_path: ceb.source_profile_path
+    rescue TypeError
+      raise CoaEnvBootstrapper::ConfigDirNotFound
     end
 
     def server_ip
       @server_ip ||=
-        run_cmd("bosh -d git-server is --column ips|cut -f1", sourced: true).chomp
+        run_cmd("bosh -d git-server is --column ips|cut -f1", source_file_path: ceb.source_profile_path).chomp
     end
 
     private
 
     def branch_exists?(branch_name)
-      run_cmd("git branch", sourced: true).split("\n").
+      run_cmd("git branch", source_file_path: ceb.source_profile_path).
+        split("\n").
         map { |branch| branch.delete("*").strip }.include?(branch_name)
     end
 
     def remote_exists?(remote_name)
-      run_cmd("git remote", sourced: true).split("\n").include?(remote_name)
+      run_cmd("git remote",source_file_path: ceb.source_profile_path).
+        split("\n").include?(remote_name)
     end
 
     def init_and_push(repo_path, repo_name)
-      # TODO: check if repo exists
       Dir.chdir repo_path
       run_cmd "git init ."
       run_cmd "git config --local user.email 'fake@example.com'"
@@ -65,7 +65,7 @@ module CoaEnvBootstrapper
       run_cmd "git remote add origin git://#{server_ip}/#{repo_name}"
       run_cmd "git checkout master" if branch_exists?("master")
       run_cmd "git add -A && git commit -m 'Commit'", ignore_error: true
-      run_cmd "git push origin master --force", source: true # not working with virtualbox? `bucc routes`
+      run_cmd "git push origin master --force", source_file_path: ceb.source_profile_path # not working with virtualbox? `bucc routes`
     end
   end
 end

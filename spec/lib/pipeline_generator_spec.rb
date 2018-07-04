@@ -70,7 +70,7 @@ describe PipelineGenerator do
     let(:pipeline_generator) { described_class.new(options) }
 
     it "collects properties, pass them onto a template processor and return the result" do
-      allow(File).to receive(:exist?).
+      expect(File).to receive(:exist?).
         with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
         and_return(true)
 

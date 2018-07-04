@@ -1,4 +1,4 @@
-steps:
-  deploy_transiant_infra: false
-  upload_stemcell: false
-  install_git_server: false
+inactive_steps:
+- "deploy_transiant_infra"
+- "upload_stemcell"
+- "deploy_git_server"

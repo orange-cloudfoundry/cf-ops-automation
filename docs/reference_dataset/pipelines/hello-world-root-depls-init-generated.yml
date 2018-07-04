@@ -13,7 +13,7 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
-- name: fe-int-micro-for-micro-depls
+- name: concourse-target
   type: concourse-pipeline
   source:
     target: ((concourse-hello-world-root-depls-target))
@@ -89,20 +89,20 @@ jobs:
           cp -rf secrets/. result-dir
           cd result-dir/
           ./scripts/generate-depls.rb --depls hello-world-root-depls -t ../templates -p . -o concourse
-  - put: fe-int-micro-for-micro-depls
+  - put: concourse-target
     params:
       pipelines:
-      - name: bosh-sample-generated
+      - name: hello-world-root-depls-generated
         team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-generated.yml
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml
         # trick to manage <depls>-versions.yml (not included in secrets)
         - secrets-full/shared/concourse-credentials.yml
-      - name: bosh-sample-cf-apps-generated
+      - name: hello-world-root-depls-init-generated
         team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-cf-apps-generated.yml
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-init-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml

@@ -10,8 +10,8 @@ bucc:
 
 stemcell:
   name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-  version: "3586.23"
-  uri: https://s3.amazonaws.com/bosh-core-stemcells/warden/bosh-stemcell-3586.23-warden-boshlite-ubuntu-trusty-go_agent.tgz
+  version: "3586.25"
+  uri: https://s3.amazonaws.com/bosh-core-stemcells/warden/bosh-stemcell-3586.25-warden-boshlite-ubuntu-trusty-go_agent.tgz
   sha: 11e6461b4aca491e28a90686fe9c92dda03d9dc2
 
 git_server_manifest:
@@ -50,7 +50,7 @@ cloud_config:
   stemcells:
   - alias: "default"
     os: "ubuntu-trusty"
-    version: "3586.23"
+    version: "3586.25"
   vm_types:
   - name: default
   cloud_properties: { name: random }

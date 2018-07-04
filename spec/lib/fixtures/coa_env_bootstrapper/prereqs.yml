@@ -1,1 +1,2 @@
-bosh_environment: bucc
+pipeline-crendentials:
+  slack-webhook: https://example.slack.com/webhook

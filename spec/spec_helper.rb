@@ -1,4 +1,6 @@
 require 'open3'
+require 'helpers/utils'
+
 if ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start
@@ -132,9 +134,5 @@ RSpec.configure do |config|
 
   def execute(cmd, env = {})
     fly("execute #{cmd}", env)
-  end
-
-  def fixtures_dir(path = '')
-    File.join(File.join(File.dirname(__FILE__), path, 'fixtures'))
   end
 end

@@ -3,4 +3,3 @@ concourse:
   concourse_username: concourse_username
   concourse_password: concourse_password
   concouse_ca_cert: concouse_ca_cert
-
