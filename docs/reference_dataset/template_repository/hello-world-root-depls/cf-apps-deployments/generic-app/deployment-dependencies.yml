@@ -1,4 +1,4 @@
 ---
 deployment:
-  generic-app:
+  bosh-deployment:
     releases: {}

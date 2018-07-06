@@ -1,4 +1,4 @@
 ---
 deployment:
-  pipeline-sample:
+  bosh-deployment:
     releases: {}

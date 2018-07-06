@@ -28,11 +28,13 @@ class Deployment
   end
 
   def self.default(deployment_name)
-    details = {
+    Deployment.new(deployment_name, default_details)
+  end
+
+  def self.default_details
+    {
       'stemcells' => {},
       'releases' => {}
     }
-
-    Deployment.new(deployment_name, details)
   end
 end

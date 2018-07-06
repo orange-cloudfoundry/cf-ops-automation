@@ -1,4 +1,4 @@
 ---
 deployment:
-  bosh:
+  bosh-deployment:
     releases:

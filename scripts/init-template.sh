@@ -49,16 +49,16 @@ touch ${DEPLOYMENT_TYPE}/${DEPLOYMENT_NAME}/template/${DEPLOYMENT_NAME}-tpl.yml
 
 echo "Creating dummy deployment-dependencies-sample.yml"
 target=${DEPLOYMENT_TYPE}/${DEPLOYMENT_NAME}/deployment-dependencies-sample.yml
-echo "---" >$target
-echo "deployment:" >>$target
-echo "  ${DEPLOYMENT_NAME}:" >>$target
-echo "    stemcells:" >>$target
-echo "      bosh-openstack-kvm-ubuntu-trusty-go_agent:" >>$target
-echo "    releases:" >>$target
-echo "      xxx_boshrelease:" >>$target
-echo "        base_location: https://bosh.io/d/github.com/" >>$target
-echo "        repository:" >>$target
-echo "" >>$target
+echo "---" >"${target}"
+{
+    echo "deployment:"
+    echo "  bosh-deployment:"
+    echo "    releases:"
+    echo "      xxx_boshrelease:"
+    echo "        base_location: https://bosh.io/d/github.com/"
+    echo "        repository:"
+    echo ""
+} >>"${target}"
 
 echo "####### WARNING #########"
 echo "Don't forget to  rename ${DEPLOYMENT_TYPE}/${DEPLOYMENT_TYPE}/deployment-dependencies-sample.yml to ${DEPLOYMENT_TYPE}/${DEPLOYMENT_TYPE}/deployment-dependencies.yml when you're done !"

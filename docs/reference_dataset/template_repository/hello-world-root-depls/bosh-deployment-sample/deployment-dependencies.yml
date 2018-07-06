@@ -1,8 +1,8 @@
 ---
 deployment:
-  bosh-deployment-sample:
-    # DEPRECATED: uncomment next line to use bosh_cli v1 to deploy manifest
-    # cli_version: v1
+  bosh-deployment: # prior to COA 2.2, this tag must be named like the deployment (here bosh-deployment-sample),
+                   # after COA 2.2, it is possible to use 'bosh-deployment' key
+    # cli_version: v1 # DEPRECATED: uncomment to use bosh_cli v1 to deploy manifest
     resources:
       secrets:
         # DEPRECATED: this deployment depends on another secrets deployment, so it also have to scan change onto the other one
