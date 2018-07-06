@@ -1,6 +1,6 @@
 ---
 deployment:
-  ntp:
+  bosh-deployment:
     releases:
       ntp_boshrelease:
         base_location: https://bosh.io/d/github.com/

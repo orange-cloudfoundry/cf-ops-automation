@@ -323,7 +323,7 @@ In `deployment-dependencies.yml`, it is possible to:
 
 ``` yaml
         deployment:
-          micro-bosh:
+          bosh-deployment: # or micro-bosh:
             cli_version: v1
             releases:
                 ...
@@ -335,7 +335,7 @@ Following is a `deployment-dependencies.yml` sample (should be placed in the bos
 
 ---
 deployment:
-  micro-bosh:
+  bosh-deployment: # or micro-bosh:
     releases:
       route-registrar-boshrelease:
         base_location: https://bosh.io/d/github.com/
@@ -349,6 +349,9 @@ deployment:
     errands:
       smoke_tests:
 ```
+
+Staring with COA [2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/releases/tag/v2.2.0), it is possible to use
+a generic key (`bosh-deployment`) or `<deployment-name>` (ie: the directory name) under `deployment`
 
 ### Cloudfoundry application resources template format
 
@@ -574,7 +577,7 @@ run `./init-template.sh`, and it creates empty placeholder.
 
 ---
 deployment:
-  micro-bosh:
+  bosh-deployment: #or micro-bosh:
     releases:
       route-registrar-boshrelease:
         base_location: https://bosh.io/d/github.com/

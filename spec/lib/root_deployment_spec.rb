@@ -173,24 +173,5 @@ describe RootDeployment do
         expect { overview }.to raise_error(RuntimeError, "Inconsistency detected: deployment <ntp> is marked as active, but no deployment-dependencies.yml, nor other deployer config found at #{File.join(templates, root_deployment_name, 'ntp')}")
       end
     end
-
-    context 'when a deployment name does not match definition directory' do
-      let(:overview) { root_deployment.overview_from_hash(deployment_factory) }
-
-      before do
-        init = dir_init
-        init.add_deployment('ntp')
-        init.enable_deployment('ntp')
-        [templates, secrets].each do |a_dir|
-          deployment_dirname = File.join(a_dir, root_deployment_name, 'ntp')
-          new_deployment_dirname = File.join(a_dir, root_deployment_name, 'dummy')
-          FileUtils.mv(deployment_dirname, new_deployment_dirname) if Dir.exist?(deployment_dirname)
-        end
-      end
-
-      it 'raises an error' do
-        expect { overview }.to raise_error(RuntimeError) { |error| expect(error.message).to match(secrets + '/main_depls/dummy - Invalid deployment: expected <dummy> - Found <ntp>') }
-      end
-    end
   end
 end

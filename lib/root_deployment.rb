@@ -29,9 +29,7 @@ class RootDeployment
       deployment = if File.exist?(enable_deployment_file)
                      base_location = File.join(@dependency_root_path, @root_deployment_name, dirname)
                      deployers_config = DeploymentDeployersConfig.new(dirname, base_location, filename, deployment_factory)
-                     deployment = deployers_config.load_configs
-                     raise "#{filename} - Invalid deployment: expected <#{dirname}> - Found <#{deployment.name}>" if deployment.name != dirname
-                     deployment
+                     deployers_config.load_configs
                    else
                      puts "Deployment #{dirname} is inactive"
                      Deployment.new(dirname).disable
