@@ -111,7 +111,7 @@ jobs:
           CONCOURSE_VERSION: 3.14.1
           CONCOURSE_SHA: aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
 
-  - name: test
+  - name: unit-tests
     serial: true
     plan:
     - aggregate:
@@ -121,13 +121,11 @@ jobs:
       - get: cf-ops-automation
         resource: ci-develop
         trigger: true
-  #    passed: [build-cached-image]
-      trigger: true
     - task: run-tests
       attempts: 3
       image: cf-ops-automation-docker-image
       timeout: 30m
-      config: &test_config
+      config: &unit_tests_config
         platform: linux
         inputs:
         - name: cf-ops-automation
@@ -150,6 +148,34 @@ jobs:
           CC_TEST_REPORTER_ID: ((code-climate-test-reporter-id))
           COVERAGE: true
 
+  - name: acceptance-tests
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation-docker-image
+          passed: [unit-tests]
+          trigger: true
+        - get: cf-ops-automation
+          resource: ci-develop
+          trigger: true
+          passed: [unit-tests]
+      - task: run-acceptance-tests
+        attempts: 2
+        image: cf-ops-automation-docker-image
+        timeout: 30m
+        config: &acceptance_tests_config
+          platform: linux
+          inputs:
+          - name: cf-ops-automation
+          run:
+            dir: cf-ops-automation
+            path: /bin/bash
+            args:
+            - -ce
+            - |
+              ruby --version
+              bundle --version
+              bundle exec cucumber
   - name: integration-tests
     serial: true
     plan:
@@ -157,9 +183,9 @@ jobs:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-          passed: [test]
+          passed: [unit-tests]
         - get: cf-ops-automation-docker-image
-          passed: [test]
+          passed: [unit-tests]
         - get: cf-ops-automation-test-templates
         - get: cf-ops-automation-test-secrets
           trigger: true
@@ -284,9 +310,10 @@ jobs:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-          passed: [test]
+          passed: [acceptance-tests]
         - get: cf-ops-automation-docker-image
-          passed: [test]
+          trigger: true
+          passed: [acceptance-tests]
 
       - task: generate-living-documentation
         config:
@@ -307,17 +334,15 @@ jobs:
               git config --global user.email "$GIT_USER_EMAIL"
               git config --global user.name "$GIT_USER_NAME"
 
-              RELEASE_VERSION=test
               git clone cf-ops-automation cf-ops-automation-living-documentation
               cd cf-ops-automation-living-documentation/
-              bundle exec cucumber -f html --out docs/features/features.html -f pretty --out docs/features/features.md -f pretty --no-color --no-source
               gh-md-toc --insert Readme.md
               cat Readme.md|grep -v 'Added by:' >tmp.md && mv tmp.md Readme.md
               git add -A
               CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
               if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
               then
-                 git commit -m "[ci skip] auto-update for release ${RELEASE_VERSION} - Living documentation update"
+                 git commit -m "[ci skip] Living documentation auto-update"
               else
                  echo "No change detected, skip commit"
               fi
@@ -354,7 +379,6 @@ jobs:
           params: {bump: final}
         - get: cf-ops-automation
           resource: ci-master
-  #        trigger: true
           passed: [merge-to-master]
 #        - get: cf-ops-automation-docker-image
 #          passed: [merge-to-master]
@@ -382,6 +406,8 @@ jobs:
               git clone cf-ops-automation cf-ops-automation-changelog
               cd cf-ops-automation-changelog/
               bundle exec github_changelog_generator --no-author --future-release "v${RELEASE_VERSION}"
+              mkdir -p docs/features/
+              bundle exec cucumber -f html --out docs/features/features.html -f pretty --out docs/features/features.md -f pretty --no-color --no-source
               git add -A
               CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
               if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
@@ -450,7 +476,7 @@ jobs:
         params:
           repository: cf-ops-automation
 
-  - name: build-PR-cached-image
+  - name: PullRequests-build-cached-image
     plan:
       - get: PR-develop
         trigger: true
@@ -473,28 +499,50 @@ jobs:
             path: PR-develop
             status: failure
 
-  - name: test-PR-develop
+  - name: PullRequests-UnitTests
     serial: true
     plan:
       - aggregate:
         - get: cf-ops-automation-docker-image
-          passed: [build-PR-cached-image]
+          passed: [PullRequests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
           resource: PR-develop
           trigger: true
           version: every
-          passed: [build-PR-cached-image]
+          passed: [PullRequests-build-cached-image]
       - put: PR-develop
         params:
           path: cf-ops-automation
           status: pending
-
       - task: test-pr
         attempts: 3
         image: cf-ops-automation-docker-image
         timeout: 30m
-        config: *test_config
+        config: *unit_tests_config
+        on_failure:
+          put: PR-develop
+          params:
+            path: cf-ops-automation
+            status: failure
+
+  - name: PullRequests-AcceptanceTests
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation-docker-image
+          passed: [PullRequests-UnitTests]
+          trigger: true
+        - get: cf-ops-automation
+          resource: PR-develop
+          trigger: true
+          version: every
+          passed: [PullRequests-UnitTests]
+      - task: acceptance-test-pr
+        attempts: 2
+        image: cf-ops-automation-docker-image
+        timeout: 30m
+        config: *acceptance_tests_config
         on_success:
           put: PR-develop
           params:
@@ -505,6 +553,7 @@ jobs:
           params:
             path: cf-ops-automation
             status: failure
+
 
   - name: run-tests-for-hotfix-branch
     plan:
@@ -518,7 +567,7 @@ jobs:
     - task: run-tests
       attempts: 3
       image: cf-ops-automation-docker-image
-      config: *test_config
+      config: *unit_tests_config
 
   - name: ship-hotfix
     serial: true
