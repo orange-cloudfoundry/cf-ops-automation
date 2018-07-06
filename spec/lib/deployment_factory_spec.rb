@@ -48,7 +48,7 @@ describe DeploymentFactory do
       it 'raises an error about stemcell-name' do
         allow(config).to receive(:stemcell_name).and_return('')
 
-        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match('invalid config: missing stemcell, expected: a config with a stemcell name defined') }
+        expect { subject }.to raise_error(RuntimeError, /invalid config: missing stemcell, expected: a config with a stemcell name defined/ )
       end
     end
   end
@@ -58,7 +58,7 @@ describe DeploymentFactory do
       subject { described_class.new(root_deployment_name, versions, config).load_file 'dummy-filename.yml' }
 
       it 'raise an error' do
-        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match('file not found: dummy-filename.yml') }
+        expect { subject }.to raise_error(RuntimeError, /file not found: dummy-filename.yml/)
 
       end
     end
@@ -67,7 +67,7 @@ describe DeploymentFactory do
       subject { described_class.new(root_deployment_name, versions, config).load_file nil }
 
       it 'raise an error' do
-        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match('invalid filename. Cannot be nil') }
+        expect { subject }.to raise_error(RuntimeError, /invalid filename. Cannot be empty/)
 
       end
     end
@@ -76,34 +76,61 @@ describe DeploymentFactory do
       subject { described_class.new(root_deployment_name, versions, config).load_file '' }
 
       it 'raise an error' do
-        expect { subject }.to raise_error(RuntimeError) { |error| expect(error.message).to match('file not found: ') }
-
+        expect { subject }.to raise_error(RuntimeError, /invalid filename. Cannot be empty/)
       end
     end
   end
 
   describe '#load' do
-    context 'when data is nil ' do
-      let(:deployment_factory) do
-        described_class.new(
-            root_deployment_name,
-            versions
-        )
-      end
+    let(:deployment_factory) do
+      described_class.new(
+          root_deployment_name,
+          versions
+      )
+    end
 
+    context 'when data is not set' do
       it 'raise an error' do
-        expect { deployment_factory.load(nil) }.to raise_error(RuntimeError) { |error| expect(error.message).to match("invalid data. Cannot load 'nil' data") }
+        expect { deployment_factory.load(deployment_name) }.to raise_error(RuntimeError, /invalid data. Cannot load empty data/)
       end
     end
 
-    context 'when a deployment does not have any details' do
-      let(:deployment_factory) do
-        described_class.new(
-          root_deployment_name,
-          versions
-        )
+    context 'when data is invalid' do
+      let (:invalid_data) { YAML.load('invalid: true').to_s }
+
+      it 'raise an error' do
+        expect { deployment_factory.load(deployment_name, invalid_data) }.to raise_error(RuntimeError, /Invalid data. Missing root: 'deployment'/)
       end
-      let(:loaded_deployments) { deployment_factory.load('deployment' => { deployment_name => nil }) }
+    end
+
+    context 'when deployment_name is not set' do
+      it 'raise an error' do
+        expect { deployment_factory.load }.to raise_error(RuntimeError, /invalid deployment_name. Cannot be empty/)
+      end
+    end
+
+    context 'when deployment_name does not match yaml content' do
+      let(:ntp_deployment_dependencies_content) { { 'deployment' => { 'ntp' => Deployment.default_details } } }
+
+      it 'raise an error' do
+        expect { deployment_factory.load('my-deployment', ntp_deployment_dependencies_content) }.to raise_error(RuntimeError, /Invalid deployment_name: expected <my-deployment> or <bosh-deployment> - Found <ntp>/)
+      end
+    end
+
+    context 'when deployment dependencies yaml follows COA conventions' do
+      let(:generic_deployment_dependencies_content) { {'deployment' => {'bosh-deployment' => Deployment.default_details } } }
+      let(:deployment_name) { 'my-deployment' }
+      let(:loaded_deployment) { deployment_factory.load(deployment_name, generic_deployment_dependencies_content) }
+      let(:my_deployment) { loaded_deployment.first }
+
+      it 'loads my_deployment' do
+        expect(my_deployment.name).to eq(deployment_name)
+      end
+    end
+
+
+    context 'when a deployment does not have any details' do
+      let(:loaded_deployments) { deployment_factory.load(deployment_name,'deployment' => { deployment_name => nil }) }
 
       it 'creates a deployment object with an empty details field' do
         expect(loaded_deployments.first).to have_attributes(name: deployment_name, details: {})
@@ -117,7 +144,7 @@ describe DeploymentFactory do
           'bosh-openstack-cpi-release-version' => '37' }
       end
       let(:deployment_factory) { described_class.new(root_deployment_name, versions, config) }
-      let(:loaded_deployments) { deployment_factory.load('deployment' => bosh_master_deployment) }
+      let(:loaded_deployments) { deployment_factory.load(deployment_name, 'deployment' => bosh_master_deployment) }
       let(:bosh_master_deployment) do
         my_yaml = <<~YAML
           #{deployment_name}:

@@ -7,6 +7,8 @@ require_relative '../lib/deployment_deployers_config'
 class DirectoryInitializer
   attr_reader :root_deployment_name, :secrets_dir, :template_dir
 
+  DEFAULT_DEPLOYMENT_DEPENDENCIES_CONTENT = { 'deployment' => { 'bosh-deployment' => Deployment.default_details } }.freeze
+
   def initialize(root_deployment_name, secrets_dir, template_dir, terraform_dir = '')
     @root_deployment_name = root_deployment_name
     @secrets_dir = secrets_dir
@@ -44,7 +46,7 @@ class DirectoryInitializer
     create_non_existing_files files_to_create
   end
 
-  def add_deployment(deployment_name)
+  def add_deployment(deployment_name, deployment_dependencies_content = DEFAULT_DEPLOYMENT_DEPENDENCIES_CONTENT)
     dirs_to_create = files_to_create = []
 
     dirs_to_create << "#{@template_dir}/#{@root_deployment_name}/#{deployment_name}"
@@ -56,7 +58,7 @@ class DirectoryInitializer
     files_to_create << "#{@secrets_dir}/#{@root_deployment_name}/#{deployment_name}/secrets/secrets.yml"
     create_non_existing_files files_to_create
 
-    generate_default_bosh_deployment_dependencies(deployment_name)
+    generate_default_bosh_deployment_dependencies(deployment_name, deployment_dependencies_content)
   end
 
   def enable_deployment(deployment_name)
@@ -73,11 +75,9 @@ class DirectoryInitializer
 
   private
 
-  def generate_default_bosh_deployment_dependencies(deployment_name)
-    deployment = Deployment.default(deployment_name)
+  def generate_default_bosh_deployment_dependencies(deployment_name, deployment_dependencies_content)
     filename = File.join(@template_dir, @root_deployment_name, deployment_name, 'deployment-dependencies.yml')
-    file_content = { 'deployment' => { deployment_name => deployment.details } }
-    File.open(filename, 'w') { |file| file << YAML.dump(file_content) }
+    File.open(filename, 'w') { |file| file << YAML.dump(deployment_dependencies_content) }
   end
 
   def generate_empty_map_yaml(filename)

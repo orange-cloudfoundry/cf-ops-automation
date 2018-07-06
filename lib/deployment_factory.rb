@@ -14,28 +14,19 @@ class DeploymentFactory
     validate_version_reference
   end
 
-  def load_file(filename)
-    raise 'invalid filename. Cannot be nil' if filename.nil?
-    raise "file not found: #{filename}" unless File.exist?(filename)
-    puts "processing #{filename}"
+  def load_file(filename = '')
+    validate_file(filename)
+    puts "DeploymentFactory - processing #{filename}"
+    deployment_name = File.dirname(filename)&.split(File::SEPARATOR)&.last
     yaml_file = YAML.load_file(filename) || {}
-    load(yaml_file)
+    load(deployment_name, yaml_file)
   end
 
-  def load(data = {})
-    raise "invalid data. Cannot load 'nil' data" if data.nil?
-    deployments = []
-    data['deployment']&.each do |deployment_name, deployment_details|
-      update_deployment_details(deployment_details)
-      deployments << Deployment.new(deployment_name, deployment_details)
-    end
-    raise "Invalid data. Missing root: 'deployment' or '<deployment_name>'" if deployments.empty?
-    deployments
-  end
-
-  def update_deployment_details(deployment_details)
-    update_boshrelease_version(deployment_details)
-    add_stemcell_info(deployment_details)
+  def load(deployment_name = '', data = {})
+    raise "invalid deployment_name. Cannot be empty" if deployment_name.empty?
+    raise "invalid data. Cannot load empty data" if data.empty?
+    deployment_info = load_deployment_info(data)
+    process_deployment_info(deployment_info, deployment_name)
   end
 
   def stemcell_name
@@ -47,6 +38,32 @@ class DeploymentFactory
   end
 
   private
+
+  def validate_file(filename)
+    raise 'invalid filename. Cannot be empty' if filename.to_s.empty?
+    raise "file not found: #{filename}" unless File.exist?(filename)
+  end
+
+  def process_deployment_info(deployment_info, deployment_name)
+    deployments = []
+    deployment_info.each do |current_deployment_name, deployment_details|
+      raise "Invalid deployment_name: expected <#{deployment_name}> or <bosh-deployment> - Found <#{current_deployment_name}> " unless deployment_name == current_deployment_name || current_deployment_name == 'bosh-deployment'
+      update_deployment_details(deployment_details)
+      deployments << Deployment.new(deployment_name, deployment_details)
+    end
+    deployments
+  end
+
+  def load_deployment_info(data)
+    deployment_info = data['deployment'] || {}
+    raise "Invalid data. Missing root: 'deployment'" if deployment_info.empty?
+    deployment_info
+  end
+
+  def update_deployment_details(deployment_details)
+    update_boshrelease_version(deployment_details)
+    add_stemcell_info(deployment_details)
+  end
 
   def add_stemcell_info(deployment_details)
     return if deployment_details.nil?

@@ -1,6 +1,6 @@
 ---
 deployment:
-  nginx:
+  bosh-deployment:
     releases:
       nginx:
         base_location: https://bosh.io/d/github.com/
