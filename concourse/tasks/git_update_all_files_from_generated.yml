@@ -51,6 +51,4 @@ run:
 params:
   GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
   GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
-  OLD_FILE:
-  NEW_FILE:
   COMMIT_MESSAGE:
