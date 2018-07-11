@@ -133,6 +133,26 @@ describe 'DeplsPipelineTemplateProcessing' do
          'retrigger-all-jobs'] }
     ]
   end
+  let(:enable_root_deployment_terraform) do
+    ci_deployments_yaml = <<~YAML
+      #{root_deployment_name}:
+        terraform_config:
+          state_file_path: my-tfstate-location
+        target_name: my-concourse-name
+        pipelines:
+          #{root_deployment_name}-generated:
+            config_file: path/located/in/secrets-repo/pipelines/#{root_deployment_name}-generated.yml
+            vars_files:
+            - another/path/located/in/secrets-repo/pipelines/credentials-iaas-specific.yml
+            - #{root_deployment_name}/#{root_deployment_name}-versions.yml
+          #{root_deployment_name}-cf-apps-generated:
+            config_file: path/located/in/secrets-repo/pipelines/#{root_deployment_name}-generated.yml
+            vars_files:
+            - another/path/located/in/secrets-repo/pipelines/credentials-iaas-specific.yml
+            - #{root_deployment_name}/#{root_deployment_name}-versions.yml
+    YAML
+    YAML.safe_load ci_deployments_yaml
+  end
 
   context 'when processing depls-pipeline.yml.erb' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
@@ -403,6 +423,36 @@ describe 'DeplsPipelineTemplateProcessing' do
           .select { |step| step['task'] }
 
         expect(generated).to match(expected_tf_job)
+      end
+    end
+
+    context 'when validating terraform triggering' do
+      let(:check_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('check-terraform-consistency') } }
+      let(:check_terraform_plans) { check_terraform_jobs.flat_map { |job| job['plan'] } }
+      let(:check_terraform_aggregate) { check_terraform_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
+      let(:check_terraform_secrets_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:check_terraform_paas_templates_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('paas-template-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('approve-and-enforce-terraform-consistency') } }
+      let(:enforce_terraform_plans) { enforce_terraform_jobs.flat_map { |job| job['plan'] } }
+      let(:enforce_terraform_aggregate) { enforce_terraform_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
+      let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('paas-template-') }.flat_map { |task| task['trigger'] } }
+      let(:all_ci_deployments) { enable_root_deployment_terraform }
+
+      it 'triggers check-consistency automatically on each commit on secrets' do
+        expect(check_terraform_secrets_triggering.uniq).to match([true])
+      end
+
+      it 'triggers check-consistency automatically on each commit on paas-templates' do
+        expect(check_terraform_paas_templates_triggering.uniq).to match([true])
+      end
+
+      it 'triggers approve-and-enforce manually on secrets' do
+        expect(enforce_terraform_all_secrets_triggering).to match([nil, nil])
+      end
+
+      it 'triggers approve-and-enforce manually on paas-templates' do
+        expect(enforce_terraform_paas_templates_triggering.uniq).to match([false]).or match([nil])
       end
     end
   end
