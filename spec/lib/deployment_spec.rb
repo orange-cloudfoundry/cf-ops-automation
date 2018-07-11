@@ -1,5 +1,5 @@
 require 'rspec'
-require_relative '../../lib/deployment'
+require 'deployment'
 
 describe Deployment do
   let(:depl_name) { 'a-deployment' }
@@ -10,7 +10,7 @@ describe Deployment do
 
   describe '#enabled?' do
     context 'when details contains a status set to enabled' do
-      subject { described_class.new(depl_name,  {'status' => 'enabled'})  }
+      subject { described_class.new(depl_name, 'status' => 'enabled') }
 
       it 'return true' do
         expect(subject).to be_enabled
@@ -18,24 +18,21 @@ describe Deployment do
     end
 
     context 'when details does not contains any status set' do
-      subject { described_class.new(depl_name)  }
+      subject { described_class.new(depl_name) }
 
       it 'return false' do
         expect(subject).not_to be_enabled
       end
     end
-
   end
 
   describe '#disabled?' do
-
     context 'when details contains a status set to disabled' do
-      subject { described_class.new(depl_name,  {'status' => 'disabled'})  }
+      subject { described_class.new(depl_name, 'status' => 'disabled') }
 
       it 'return true' do
         expect(subject).to be_disabled
       end
-
     end
 
     context 'when details does not contains any status set' do
@@ -46,7 +43,6 @@ describe Deployment do
       end
     end
   end
-
 
   describe '#default' do
     context 'when a name is set' do
@@ -67,7 +63,6 @@ describe Deployment do
       it 'has a empty stemcell tag' do
         expect(my_default.details).to include('stemcells' => {})
       end
-
     end
   end
 end

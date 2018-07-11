@@ -1,7 +1,7 @@
 require 'rspec'
 require 'tmpdir'
-require_relative '../../lib/deployment_deployers_config'
-require_relative '../../lib/directory_initializer'
+require 'deployment_deployers_config'
+require 'directory_initializer'
 
 describe DeploymentDeployersConfig do
   let(:root_deployment_name) { 'main_depls' }
@@ -22,7 +22,8 @@ describe DeploymentDeployersConfig do
   let(:deployment_factory) do
     DeploymentFactory.new(
       root_deployment_name,
-      'stemcell-name' => 'bosh-openstack-kvm-ubuntu-trusty-go_agent', 'stemcell-version' => 12
+      'stemcell-name' => 'bosh-openstack-kvm-ubuntu-trusty-go_agent',
+      'stemcell-version' => 12
     )
   end
   let(:deployment_templates_path) { File.join(templates, root_deployment_name, deployment_name) }
@@ -44,19 +45,17 @@ describe DeploymentDeployersConfig do
       end
 
       it 'activates concourse deployer' do
-        expect(loaded_config.details).to include('concourse' => {'active'=>true})
+        expect(loaded_config.details).to include('concourse' => { 'active' => true })
       end
 
       it 'activates bosh deployer' do
         expect(loaded_config.details).to include('releases', 'stemcells')
       end
 
-
       it 'marks deployement as enabled' do
         expect(loaded_config.details).to include('status' => 'enabled')
       end
     end
-
 
     context 'when terraform deployer only is enabled' do
       let(:loaded_config) { subject.load_configs }
@@ -69,13 +68,12 @@ describe DeploymentDeployersConfig do
       end
 
       it 'activates concourse deployer' do
-        expect(loaded_config.details).to include('terraform' => {'active'=>true})
+        expect(loaded_config.details).to include('terraform' => { 'active' => true })
       end
 
       it 'ensures only terraform is enabled' do
-        expect(loaded_config.details.keys).to match(%w(terraform status))
+        expect(loaded_config.details.keys).to match(%w[terraform status])
       end
-
 
       it 'marks deployement as enabled' do
         expect(loaded_config.details).to include('status' => 'enabled')
@@ -93,13 +91,12 @@ describe DeploymentDeployersConfig do
       end
 
       it 'activates concourse deployer' do
-        expect(loaded_config.details).to include('kubernetes' => {'active'=>true})
+        expect(loaded_config.details).to include('kubernetes' => { 'active' => true })
       end
 
       it 'ensures only terraform is enabled' do
-        expect(loaded_config.details.keys).to match(%w(kubernetes status))
+        expect(loaded_config.details.keys).to match(%w[kubernetes status])
       end
-
 
       it 'marks deployement as enabled' do
         expect(loaded_config.details).to include('status' => 'enabled')
@@ -107,7 +104,6 @@ describe DeploymentDeployersConfig do
     end
 
     context 'when no deployer is detected' do
-
       before do
         root_deployment_init
         Dir.mkdir(deployment_templates_path)
@@ -115,9 +111,11 @@ describe DeploymentDeployersConfig do
       end
 
       it 'raises an error' do
-        expect { subject.load_configs }.to raise_error(RuntimeError, "Inconsistency detected: deployment <#{deployment_name}> is marked as active, but no #{DeploymentDeployersConfig::DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config found at #{deployment_templates_path}")
+        error_message = "Inconsistency detected: deployment <#{deployment_name}> is marked as active, but no #{DeploymentDeployersConfig::DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config found at #{deployment_templates_path}"
+
+        expect { subject.load_configs }.
+          to raise_error(RuntimeError, error_message)
       end
     end
-
   end
 end

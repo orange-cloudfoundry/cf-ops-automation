@@ -2,7 +2,7 @@ require 'rspec'
 require 'yaml'
 require 'fileutils'
 require 'tmpdir'
-require_relative '../../lib/config'
+require 'config'
 
 describe Config do
   let(:config_dir) { Dir.mktmpdir }
@@ -26,11 +26,8 @@ describe Config do
   #   stemcells: true
   #   docker-images: false
 
-  describe 'shared-config.yml format validation' do
-  end
-
-  describe 'private-config.yml format validation' do
-  end
+  describe 'shared-config.yml format validation'
+  describe 'private-config.yml format validation'
 
   describe '#load_config' do
     subject { described_class.new('not-existing-public-config.yml', 'not-existing-private-config.yml') }
@@ -52,7 +49,7 @@ describe Config do
       end
 
       it 'overrides default value with shared-config' do
-        expect(subject.load_config.loaded_config).to eq(default_config.merge shared_config_file_content)
+        expect(subject.load_config.loaded_config).to eq(default_config.merge(shared_config_file_content))
       end
 
       context 'when private config also exists' do
@@ -68,7 +65,8 @@ describe Config do
         end
 
         it 'overrides value from shared-config with private-config' do
-          expect(subject.load_config.loaded_config).to eq(default_config.merge private_config_file_content.merge('public-override' => true))
+          expect(subject.load_config.loaded_config).
+            to eq(default_config.merge(private_config_file_content.merge('public-override' => true)))
         end
       end
     end
@@ -119,8 +117,5 @@ describe Config do
         expect(subject.stemcell_name).to eq(my_stemcell_name)
       end
     end
-
   end
-
-
 end
