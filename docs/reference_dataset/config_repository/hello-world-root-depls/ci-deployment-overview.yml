@@ -1,17 +1,19 @@
 ---
 ci-deployment:
   hello-world-root-depls:
-    target_name: TO_BE_DEFINED
-    target_name: fe-int-micro-for-micro-depls
+    target_name: concourse-target
     terraform_config:
       state_file_path: hello-world-root-depls/terraform-config
     pipelines:
-      bosh-sample-generated:
+      hello-world-root-depls-generated:
         vars_files:
         - hello-world-root-depls/hello-world-root-depls-versions.yml
         - shared/concourse-credentials.yml
-      bosh-sample-cf-apps-generated:
+      hello-world-root-depls-init-generated:
         vars_files:
         - hello-world-root-depls/hello-world-root-depls-versions.yml
         - shared/concourse-credentials.yml
-
+      hello-world-root-depls-cf-apps-generated:
+        vars_files:
+        - hello-world-root-depls/hello-world-root-depls-versions.yml
+        - shared/concourse-credentials.yml

@@ -65,6 +65,9 @@ another-world-root-depls
 ### The shared files
 
 * [shared](/docs/reference_dataset/shared/shared)
+  * [certs](/docs/reference_dataset/shared/shared/certs)
+    * [internal_paas-ca](/docs/reference_dataset/shared/shared/certs/internal_paas-ca)
+      * [server-ca.crt](/docs/reference_dataset/shared/shared/certs/internal_paas-ca/server-ca.crt)
   * [meta.yml](/docs/reference_dataset/shared/shared/meta.yml)
   * [pipeline-credentials.yml](/docs/reference_dataset/shared/shared/pipeline-credentials.yml)
   * [secrets.yml](/docs/reference_dataset/shared/shared/secrets.yml)

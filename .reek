@@ -1,0 +1,7 @@
+---
+# this file should be name .reel.yml in reek 5
+#Detectors: # reek 5
+DuplicateMethodCall:
+  max_calls: 2
+TooManyStatements:
+  max_statements: 8 # to be more consistent with rubocop Metrics/MethodLength: 10

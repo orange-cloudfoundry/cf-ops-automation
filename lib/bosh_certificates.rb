@@ -1,5 +1,6 @@
 require 'openssl'
 
+# Create or load SSL certificates to be able to connect to a Bosh Director
 class BoshCertificates
   attr_reader :base_dir, :bosh_cert_hash, :certs
 

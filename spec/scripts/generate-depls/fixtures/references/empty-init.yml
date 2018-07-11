@@ -14,4 +14,4 @@ resources:
 
 
 jobs:
-
+- name: this-is-an-empty-pipeline

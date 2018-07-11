@@ -93,8 +93,8 @@ resources:
     client: ((bosh-username))
     client_secret: ((bosh-password))
     deployment: bosh-deployment-sample
-    ca_cert: 
-- name: fe-int-micro-for-micro-depls
+    ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDFDCCAfygAwIBAgIRAJhACeUupTq0v90nAyb+vUowDQYJKoZIhvcNAQELBQAw\nMzEMMAoGA1UEBhMDVVNBMRYwFAYDVQQKEw1DbG91ZCBGb3VuZHJ5MQswCQYDVQQD\nEwJjYTAeFw0xODA3MTEwOTE4MjZaFw0xOTA3MTEwOTE4MjZaMDMxDDAKBgNVBAYT\nA1VTQTEWMBQGA1UEChMNQ2xvdWQgRm91bmRyeTELMAkGA1UEAxMCY2EwggEiMA0G\nCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDMlqBlpRz8h1nnqGm1rdOTRZO+yddM\nl4YwvDf9hpPVm0gqFrmIlcGFVTZ6+PbU9x8kklx+BwmB9dA2D1Vo1VMz7VQPsGu4\n1pEmSLpaxz86LshW8JjCDauMblFIm+baB0o5MmukJzZzqdQv4kn2s5+57fVUQz33\nk20T1mahuA0INzbHwO4vX1WGteInTH3GsDLOyVGSMTrpuUAUZgfU8IR019BzgaiA\nYIBRU//VRv68PesQFtOXxOcM9V0BiTrs3yGRWGevvcfqP/6EI6qA+b+AJi/IhxbR\nO+fxo58lUIRw0OrmmoEDuuHO6kCCe590YLU5wAttvp8baahLFrsEBTIJAgMBAAGj\nIzAhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEB\nCwUAA4IBAQDGvUob4v0Mm2MIpE0IAbEa0oDCGiF99PhYHZwrvpdQjr/iVHd/7i+y\nI7q4YFswRGj5oGj5zRjW9bFVKB6DJsyBD0NpcLTy7VEewkT8mwd2GmZkmRWFQYcA\n2RUhIFGpYSI+g7ed6ZuPX2P4+92mxURHElTAuRTrrw5vqUVsebZO49tuvyXqmghP\nAyKvSQanegmNviGdkHTWKPyD3nP2Ms0lBgGZxFfhlN4sPTWHxfEpud4xLX/AhW6X\n8QS3GQ4QwevfKnUekbciU7CASVCymAKupFAxjksyz8xmHvalXe83HK+G7AmsYkEl\nYowS7B+zXRNZHGoagYkRSBeaSKlIpZXF\n-----END CERTIFICATE-----\n"
+- name: concourse-target
   type: concourse-pipeline
   source:
     target: ((concourse-hello-world-root-depls-target))
@@ -697,20 +697,28 @@ jobs:
           ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse
       params:
         ROOT_DEPLOYMENT: hello-world-root-depls
-  - put: fe-int-micro-for-micro-depls
+  - put: concourse-target
     params:
       pipelines:
-      - name: bosh-sample-generated
+      - name: hello-world-root-depls-generated
         team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-generated.yml
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
         # trick to manage <depls>-versions.yml (not included in secrets)
         - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
-      - name: bosh-sample-cf-apps-generated
+      - name: hello-world-root-depls-init-generated
         team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-cf-apps-generated.yml
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-init-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-cf-apps-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
@@ -721,7 +729,7 @@ jobs:
     output_mapping: {updated-git-resource: updated-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
-      OLD_FILE: concourse/pipelines/bosh-sample-generated.yml
+      OLD_FILE: concourse/pipelines/hello-world-root-depls-generated.yml
       NEW_FILE: "concourse/pipelines/hello-world-root-depls-generated.yml"
       COMMIT_MESSAGE: "hello-world-root-depls generated pipeline auto update - [skip ci]"
   - task: update-concourse-cf-apps-pipeline
@@ -729,7 +737,7 @@ jobs:
     output_mapping: {updated-git-resource: updated-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
-      OLD_FILE: concourse/pipelines/bosh-sample-cf-apps-generated.yml
+      OLD_FILE: concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
       NEW_FILE: "concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml"
       COMMIT_MESSAGE: "hello-world-root-depls cf-apps generated pipeline auto update - [skip ci]"
   - put: secrets-full-writer

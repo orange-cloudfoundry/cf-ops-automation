@@ -21,7 +21,7 @@ instance_groups:
   instances: (( grab secrets.nginx.instances ))
   azs: [z1]
   vm_type: default
-  persistent_disk_type: 0
+  persistent_disk: 0
   stemcell: trusty
   networks:
   - name: default
