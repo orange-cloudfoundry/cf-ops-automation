@@ -265,7 +265,7 @@ jobs:
       input_mapping: {scripts-resource: cf-ops-automation}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
-        DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments.keys.join(' ') %>"
+        DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments&.keys&.sort&.join(' ') %>"
 - name: approve-and-delete-disabled-deployments
   <% jobs['utils'] << 'approve-and-delete-disabled-deployments' %>
   on_failure:
@@ -291,7 +291,7 @@ jobs:
          BOSH_CLIENT: ((bosh-username))
          BOSH_CLIENT_SECRET: ((bosh-password))
          BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
-         DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments.keys.join(' ') %>"
+         DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments&.keys&.sort&.join(' ') %>"
 <% end %>
 
 - name: execute-deploy-script
@@ -958,8 +958,8 @@ jobs:
 
   <% if all_ci_deployments[depls][TERRAFORM_CONFIG_DIRNAME_KEY] %>
     <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][#{TERRAFORM_CONFIG_DIRNAME_KEY}][state_file_path] or delete terraform-config key." if terraform_config_path.nil? %>
-- name: check-terraform-cf-consistency
-    <% jobs['terraform'] << 'check-terraform-cf-consistency' %>
+- name: check-terraform-consistency
+    <% jobs['terraform'] << 'check-terraform-consistency' %>
   serial: true
   on_failure:
     put: failure-alert
@@ -1001,21 +1001,8 @@ jobs:
       SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
       IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
 
-- name: cf-manual-approval
-    <% jobs['terraform'] << 'cf-manual-approval' %>
-  plan:
-  - get: cf-ops-automation
-    params: { submodules: none}
-    passed: [check-terraform-cf-consistency]
-  - get: paas-template-<%=depls %>
-    params: { submodules: none}
-    passed: [check-terraform-cf-consistency]
-  - get: secrets-<%= depls %>
-    params: { submodules: none}
-    passed: [check-terraform-cf-consistency]
-
-- name: enforce-terraform-cf-consistency
-    <% jobs['terraform'] << 'enforce-terraform-cf-consistency' %>
+- name: approve-and-enforce-terraform-consistency
+    <% jobs['terraform'] << 'approve-and-enforce-terraform-consistency' %>
   serial: true
   on_failure:
     put: failure-alert
@@ -1030,16 +1017,14 @@ jobs:
       params: { submodules: none}
     - get: cf-ops-automation
       params: { submodules: none}
-      passed: [cf-manual-approval]
+      passed: [check-terraform-consistency]
       trigger: true
     - get: paas-template-<%=depls %>
       params: { submodules: none}
-      passed: [cf-manual-approval]
-      trigger: true
+      passed: [check-terraform-consistency]
     - get: secrets-<%= depls %>
       params: { submodules: none}
-      passed: [cf-manual-approval]
-      trigger: true
+      passed: [check-terraform-consistency]
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
     output_mapping: {generated-files: terraform-tfvars}
