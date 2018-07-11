@@ -969,17 +969,18 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - get: at-noon
-    trigger: true
-  - get: cf-ops-automation
-    params: { submodules: none}
-    passed: [update-pipeline-<%= depls %>-generated]
-    trigger: true
-  - get: paas-template-<%=depls %>
-    params: { submodules: none }
-  - get: secrets-<%= depls %>
-    passed: [update-pipeline-<%= depls %>-generated]
-    params: { submodules: none }
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [update-pipeline-<%= depls %>-generated]
+      trigger: true
+    - get: paas-template-<%=depls %>
+      params: { submodules: none }
+      trigger: true
+    - get: secrets-<%= depls %>
+      passed: [update-pipeline-<%= depls %>-generated]
+      params: { submodules: none }
+      trigger: true
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
     output_mapping: {generated-files: terraform-tfvars}
@@ -1018,10 +1019,10 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [check-terraform-consistency]
-      trigger: true
     - get: paas-template-<%=depls %>
       params: { submodules: none}
       passed: [check-terraform-consistency]
+      trigger: false
     - get: secrets-<%= depls %>
       params: { submodules: none}
       passed: [check-terraform-consistency]
