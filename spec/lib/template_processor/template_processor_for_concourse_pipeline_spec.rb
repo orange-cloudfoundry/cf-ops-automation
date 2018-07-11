@@ -1,11 +1,9 @@
 require 'rspec'
 require 'fileutils'
 require 'tmpdir'
-
-
-require_relative '../../../lib/template_processor'
-require_relative '../../../lib/ci_deployment'
-require_relative '../../../lib/deployment_deployers_config'
+require 'template_processor'
+require 'ci_deployment'
+require 'deployment_deployers_config'
 
 describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' do
   subject { TemplateProcessor.new root_deployment_name, config, processor_context }
@@ -173,7 +171,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                branch: ((cf-ops-automation-branch))
                tag_filter: ((cf-ops-automation-tag-filter))
                skip_ssl_verification: true
-      YAML
+        YAML
         YAML.safe_load my_yaml
       end
       let(:generated_resource_names) { generated_pipeline['resources'].flat_map { |resource| resource['name'] } }
@@ -273,15 +271,15 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
     end
     let(:deploy_concourse_tasks) do
       generated_pipeline['jobs'].select { |job| job['name'].start_with?('deploy-concourse') }
-                                .flat_map { |job| job['plan'] }
+        .flat_map { |job| job['plan'] }
     end
 
     it 'generates required task for deploy-pipeline' do
       generated_tasks = generated_pipeline['jobs'].select { |job| job['name'].start_with?('deploy-concourse') }
-                                                  .flat_map { |job| job['plan'] }
-                                                  .flat_map { |type| type['put'] || type['task'] }
-                                                  .compact
-                                                  .uniq
+        .flat_map { |job| job['plan'] }
+        .flat_map { |type| type['put'] || type['task'] }
+        .compact
+        .uniq
       expect(generated_tasks).to match_array(expected_defined_tasks.uniq)
     end
 
@@ -405,8 +403,8 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       it 'is valid' do
         # generated_concourse_tasks = deploy_concourse_tasks.select { |task| task['put']&.start_with?('concourse-for-') }
         generated_concourse_tasks = deploy_concourse_tasks.flat_map { |task| { task['params']['pipelines'].first['name'] => [task] } if task['put']&.start_with?('concourse-for-') }
-                                                          .compact
-                                                          .inject({}) { |memo, task| memo.merge task }
+          .compact
+          .inject({}) { |memo, task| memo.merge task }
         expect(generated_concourse_tasks).to match(expected_concourse_tasks)
       end
     end

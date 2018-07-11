@@ -1,11 +1,10 @@
 require 'rspec'
 require 'fileutils'
 require 'tmpdir'
-
-require_relative '../../../lib/template_processor'
-require_relative '../../../lib/ci_deployment'
-require_relative '../../../lib/deployment_deployers_config'
-require_relative '../../../lib/pipeline_generator'
+require 'template_processor'
+require 'ci_deployment'
+require 'deployment_deployers_config'
+require 'pipeline_generator'
 
 describe TemplateProcessor do
   let(:root_deployment_name) { 'my_depls' }
