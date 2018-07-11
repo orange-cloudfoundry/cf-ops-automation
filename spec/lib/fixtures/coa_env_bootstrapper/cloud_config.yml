@@ -1,0 +1,27 @@
+cloud_config:
+  azs:
+  - name: z1
+  stemcells:
+  - alias: "default"
+    os: "ubuntu-trusty"
+    version: "3586.23"
+  vm_types:
+  - name: default
+  cloud_properties: { name: random }
+  networks:
+  - name: default
+    type: manual
+    subnets:
+    - range: 10.244.10.0/24
+      gateway: 10.244.10.1
+      dns: ['10.244.5.16', '10.244.6.16']
+      reserved: ['10.244.10.2', '10.244.10.3']
+      static: ['10.244.10.4 - 10.244.10.29']
+      az: z1
+  compilation:
+    network: default
+    reuse_compilation_vms: true
+    workers: 10
+    az: z1
+    cloud_properties:
+      name: random

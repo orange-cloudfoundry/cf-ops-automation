@@ -1,4 +1,6 @@
 require 'open3'
+require 'helpers/utils'
+
 if ENV['COVERAGE']
   require 'simplecov'
   SimpleCov.start
@@ -133,5 +135,4 @@ RSpec.configure do |config|
   def execute(cmd, env = {})
     fly("execute #{cmd}", env)
   end
-
 end

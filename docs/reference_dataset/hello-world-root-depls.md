@@ -137,6 +137,12 @@ hello-world-root-depls
     * [private-config-operators.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/private-config-operators.yml)
     * [private-runtime-operators.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/private-runtime-operators.yml)
     * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/secrets.yml)
+  * [terraform-config](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config)
+    * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/secrets)
+      * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/secrets/meta.yml)
+      * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/secrets/secrets.yml)
+    * [spec](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/spec)
+      * [my-private-terraform-spec.tf](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/spec/my-private-terraform-spec.tf)
   * [terraform-sample](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-sample)
     * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-sample/secrets)
       * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-sample/secrets/meta.yml)
@@ -151,6 +157,9 @@ hello-world-root-depls
 ### The shared files
 
 * [shared](/docs/reference_dataset/shared/shared)
+  * [certs](/docs/reference_dataset/shared/shared/certs)
+    * [internal_paas-ca](/docs/reference_dataset/shared/shared/certs/internal_paas-ca)
+      * [server-ca.crt](/docs/reference_dataset/shared/shared/certs/internal_paas-ca/server-ca.crt)
   * [meta.yml](/docs/reference_dataset/shared/shared/meta.yml)
   * [pipeline-credentials.yml](/docs/reference_dataset/shared/shared/pipeline-credentials.yml)
   * [secrets.yml](/docs/reference_dataset/shared/shared/secrets.yml)

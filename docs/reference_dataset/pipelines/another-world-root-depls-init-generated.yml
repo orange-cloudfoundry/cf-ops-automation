@@ -10,3 +10,4 @@ resource_types:
       repository: cfcommunity/slack-notification-resource
 resources:
 jobs:
+- name: this-is-an-empty-pipeline

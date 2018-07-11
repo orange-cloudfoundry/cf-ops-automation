@@ -1,0 +1,7 @@
+bosh:
+  bosh_environment: own_bosh
+  bosh_target: target
+  bosh_client: client
+  bosh_client_secret: client_secret
+  bosh_ca_cert: ca_cert
+

@@ -1,22 +1,3 @@
 ---
 user_name: "(( grab secrets.openstack.username ))"
 password: "(( grab secrets.openstack.password ))"
-tenant_name: "(( grab secrets.openstack.tenant.name ))"
-auth_url: "(( grab secrets.openstack.auth_url ))"
-region_name: "(( grab secrets.openstack.region.name ))"
-router_id: "(( grab secrets.openstack.router_id ))"
-system_domain: "(( grab secrets.cloudfoundry.system_domain ))"
-apps_domain: "(( grab secrets.cloudfoundry.apps_domain ))"
-apps_http_domain: "(( grab secrets.cloudfoundry.apps_http_domain ))"
-apps_internet_domain: "(( grab secrets.cloudfoundry.apps_internet_domain ))"
-ops_domain: "(( grab secrets.cloudfoundry.ops_domain ))"
-powerdns_server_ip: "(( grab meta.powerdns_server_ip ))"
-powerdns_api_key: "(( grab secrets.powerdns_api_key ))"
-
-powerdns_record: "(( grab meta.powerdns_record ))"
-
-cloudflare_email : "(( grab secrets.cloudflare.email ))"
-cloudflare_token : "(( grab secrets.cloudflare.token ))"
-
-ocb_transit_cidr: (( grab meta.ocb_transit_cidr))
-ocb_admin_cidr: (( grab meta.ocb_admin_cidr))

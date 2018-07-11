@@ -563,6 +563,84 @@ This type of release requires manual work.
   1. ensures `run-tests-for-hotfix-branch` is successful
   1. triggers `ship-hotfix` to publish the release on github
 
+## Bootstrapping a COA env
+
+### How to use it
+
+In order to quickly create an environment in which you can use the COA engine,
+you can use the "bootstrap_coa_env.rb" script. By running
+`ruby scripts/bootstrap_coa_env.rb /path/to/prereqs1.yml /path/to/prereqs2.yml ... /path/to/prereqsn.yml`
+where the prereqs YAML are files containing configuration information for the
+bootstrapping, pipelines will be created from the reference dataset data.
+
+### Prerequisites
+
+The prerequisites YAML files are expected to contain some information that will
+help the script to build the environment. You can write it all in a single file
+or in multiple files. An example file can be found at [/lib/coa_env_bootstrapper/prereqs.example.yml](/lib/coa_env_bootstrapper/prereqs.example.yml).
+
+It can contain up to 8 main keys:
+
+* inactive_steps, _optional_: pass a list of steps that will be deactivated in case you wouldn't need them to run, for instance in case you have some resources already installed. You can deactivate:
+    * deploy_transient_infra: you can deactivate this step if you already have an infrastructure with BOSH and Concourse
+    * upload_stemcell: you can deactivate this step if you don't want a new stemcell to be uploaded to the BOSH Director
+    * upload_cloud_config: you can deactivate this step if you don't want to overwrite the cloud config of the BOSH Director
+    * install_git_server: you can deactivate this step if you have the git-server deployment already deployed on the BOSH Director
+* bucc, _optional_: you have to pass this key unless you deactivate the deploy_transient_infra step:
+    * bin_path: the path to your installation of the bucc project. The project can be found at [https://github.com/starkandwayne/bucc](https://github.com/starkandwayne/bucc)
+    * cpi: the cpi you want to use for the deployment. The list of existing CPIs can be found on the bucc GitHub project
+    * cpi_specific_options: options you want to pass to the bucc CLI for the bucc deployment
+* stemcell, _optional_: the stemcell that will be uploaded to the BOSH director and that will be sued to deploy the git server. You can find the stemcell for your usecase on [https://bosh.io/stemcells/](https://bosh.io/stemcells/)
+    * name
+    * version
+    * uri
+    * sha
+* git_server_manifest, _mandatory_:  a BOSH manifest to deploy the git-server deployment. The example one can be used to be deployed with VirtualBox, in any other case, you will want to adapt it for your IaaS.
+* cloud_config, _optional_: you have to pass this key unless you deactivate the "upload_cloud_config" step. This will be used by the BOSH CLI to upload a cloud-config to the BOSH Director
+* pipeline_credentials, _mandatory_: this passes a list of credentials that will by used by fly to upload the pipelines to Concourse.
+* concourse, _optional_: you have to pass this object if you deactivated the deploy_transient_infra step or if you want to overwrite the BUCC Concourse and want to use another one. The options are self-explanatory.
+    * target
+    * url
+    * username
+    * password
+* bosh, _optional_: you have to pass this key if you deactivate the deploy_transient_infra step or if you want to overwrite BUCC's BOSH and want to use another one. The options are self-explanatory.
+    * bosh_environment
+    * bosh_client
+    * bosh_client_secret
+    * bosh_ca_cert
+
+### Connecting to Concourse
+
+Once the script is done running, it displays information about how to connect to
+the Concourse it has installed. If you wish to display those information, you
+can run `bucc info`.
+
+### Known issues
+
+#### VMs access issues
+
+If you're using VirtualBox as a IaaS on OS X, you may have trouble connectiong
+to the VMs installed by BUCC's BOSH. For instance, when the script is trying to
+push the config repository to the Git server it had installed. In this case, run
+the `bucc routes` command to create the proper routes and enable communication
+to the VMs.
+
+#### Stemcell loading creates a timeout
+
+Some stemcells are very large and here we're downloading it manually which can
+take a lot of time if the script is downloading it from the internet. This can
+lead to some timeouts. To prevent this, you can manually upload the stemcell to
+the BOSH Director and desctivate the *upload_stemcell* step.
+
+#### Some Concourse resource won't load
+
+If you're observing a Concourse error saying
+`pq: insert or update on table "worker_resource_config_check_sessions" violates foreign key constraint "worker_resource_config_check__resource_config_check_sessio_fkey"`,
+it should resolve itself in a matter of seconds.
+
+There is another error where GitHub resources as well as Docker images won't
+load. In this case, it was sufficient to restart the VirtualBox image.
+
 # FAQ
 
 ## How to initialize a new bosh deployment template ?

@@ -1,12 +1,12 @@
 require 'spec_helper'
-require './lib/ci_deployment'
+require 'ci_deployment'
 
 describe CiDeployment do
   describe '#overview' do
     let(:root_deployment_name) { "root-deployment-name" }
     let(:fixture_path) { File.dirname(__FILE__) + "/fixtures/" }
     let(:path) { File.join(fixture_path, root_deployment_name, '/*') }
-    let(:ci_deployments) { CiDeployment.new(path)}
+    let(:ci_deployments) { described_class.new(path) }
 
     let(:ci_deployments_overview) do
       {
@@ -35,7 +35,7 @@ describe CiDeployment do
               "config_file" => "concourse/pipelines/cf_apps-cf-apps-generated.yml"
             }
           }
-        },
+        }
       }
     end
 
