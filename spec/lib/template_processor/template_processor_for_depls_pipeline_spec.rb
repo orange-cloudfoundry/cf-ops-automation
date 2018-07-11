@@ -365,14 +365,13 @@ describe 'DeplsPipelineTemplateProcessing' do
       it 'generates terraform group' do
         expected_tf_group = { 'name' => 'Terraform',
                               'jobs' =>
-                                     ['cf-manual-approval',
-                                      'check-terraform-cf-consistency',
-                                      'enforce-terraform-cf-consistency'] }
+                                     ['approve-and-enforce-terraform-consistency',
+                                      'check-terraform-consistency'] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'Terraform' }.pop
         expect(generated).to match(expected_tf_group)
       end
 
-      it 'generates a valid check-terraform-cf-consistency job' do
+      it 'generates a valid check-terraform-consistency job' do
         expected_tf_job =
           [
             { "task" => 'generate-terraform-tfvars',
@@ -399,7 +398,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           ]
 
         generated = generated_pipeline['jobs']
-          .select { |job| job['name'] == "check-terraform-cf-consistency" }
+          .select { |job| job['name'] == "check-terraform-consistency" }
           .flat_map { |job| job['plan'] }
           .select { |step| step['task'] }
 
