@@ -1,8 +1,4 @@
----
-name: pull request template
-about: Use this template to create a new pull request.
-
----
+WIP: <Title>
 
 Fixes # .
 
