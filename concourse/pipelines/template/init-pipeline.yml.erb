@@ -26,11 +26,11 @@ resources:
     teams:
     - name: main
       username: ((concourse-<%= depls %>-username))
-      password: ((concourse-<%= depls %>-password))
+      password: "((concourse-<%= depls %>-password))"
     <% CiDeployment.teams(all_ci_deployments)&.each do |team| %>
     - name: <%= team %>
       username: ((concourse-<%= depls %>-username))
-      password: ((concourse-<%= depls %>-password))
+      password: "((concourse-<%= depls %>-password))"
     <% end %>
 - name: secrets-full
   type: git

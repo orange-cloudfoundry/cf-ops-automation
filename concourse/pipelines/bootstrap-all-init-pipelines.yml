@@ -74,7 +74,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
       FLY_USERNAME: ((concourse-micro-depls-username))
-      FLY_PASSWORD:  ((concourse-micro-depls-password))
+      FLY_PASSWORD: "((concourse-micro-depls-password))"
   - task: get-pipeline-teams
     input_mapping: {secrets: secrets-full}
     output_mapping: {ci-deployment-overview: concourse-teams}
@@ -113,7 +113,7 @@ jobs:
           done
       params:
         FLY_USERNAME: ((concourse-micro-depls-username))
-        FLY_PASSWORD:  ((concourse-micro-depls-password))
+        FLY_PASSWORD: "((concourse-micro-depls-password))"
   - task: fly-into-concourse
     input_mapping: {fly-cmd: initialized-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
@@ -121,7 +121,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
       FLY_USERNAME: ((concourse-micro-depls-username))
-      FLY_PASSWORD:  ((concourse-micro-depls-password))
+      FLY_PASSWORD: "((concourse-micro-depls-password))"
 
 
 
@@ -177,4 +177,4 @@ jobs:
         CREDENTIALS_FILENAME: micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
         ATC_EXTERNAL_URL_KEY: concourse-micro-depls-target
         FLY_USERNAME_KEY: concourse-micro-depls-username
-        FLY_PASSWORD_KEY:  concourse-micro-depls-password
+        FLY_PASSWORD_KEY: concourse-micro-depls-password

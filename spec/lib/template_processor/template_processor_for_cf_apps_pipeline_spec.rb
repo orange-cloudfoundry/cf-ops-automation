@@ -145,6 +145,7 @@ describe 'CfAppsPipelineTemplateProcessing' do
           .flat_map { |job| job['plan'] }
           .select { |step| step['task'] && step['task'].start_with?("push")  }
           .flat_map { |step| step['params'] }
+
         cf_push_params.each do |task_params|
           expect(task_params).to include('CF_API_URL', 'CF_ORG', 'CF_SPACE', 'CF_USERNAME', 'CF_PASSWORD')
         end

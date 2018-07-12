@@ -22,22 +22,22 @@ resources:
 - name: secrets
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-templates
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 
 #- name: terraform-specs
 #  type: git
 #  source:
-#    uri: {{secrets-uri}}
+#    uri: ((secrets-uri))
 #    branch: master
 #    paths: ["ops-depls/cloudfoundry/terraform-config/"]
 #    skip_ssl_verification: true
@@ -45,7 +45,7 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 jobs:
 
 - name: check-terraform-cf-consistency
@@ -66,7 +66,7 @@ jobs:
       on_failure:
         put: failure-alert
         params:
-          channel: {{slack-channel}}
+          channel: ((slack-channel))
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
@@ -101,7 +101,7 @@ jobs:
 #      on_failure:
 #        put: failure-alert
 #        params:
-#          channel: {{slack-channel}}
+#          channel: ((slack-channel))
 #          text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
 #          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
 #          username: Concourse
@@ -117,7 +117,7 @@ jobs:
         on_failure:
           put: failure-alert
           params:
-            channel: {{slack-channel}}
+            channel: ((slack-channel))
             text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
             icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
             username: Concourse

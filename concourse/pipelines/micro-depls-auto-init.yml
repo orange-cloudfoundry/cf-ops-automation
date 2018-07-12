@@ -15,59 +15,59 @@ resource_types:
 #    repository: orangecloudfoundry/slack-notification-resource
 
 resources:
-- name: {{concourse-micro-depls}}
+- name: ((concourse-micro-depls))
   type: concourse-pipeline
   source:
-    target: {{concourse-micro-depls-target}}
-    insecure: {{concourse-micro-depls-insecure}}
+    target: ((concourse-micro-depls-target))
+    insecure: ((concourse-micro-depls-insecure))
     teams:
     - name: main
-      username: {{concourse-micro-depls-username}}
-      password: {{concourse-micro-depls-password}}
+      username: ((concourse-micro-depls-username))
+      password: "((concourse-micro-depls-password))"
 
-- name: {{concourse-master-depls}}
+- name: ((concourse-master-depls))
   type: concourse-pipeline
   source:
-    target: {{concourse-master-depls-target}}
-    insecure: {{concourse-master-depls-insecure}}
+    target: ((concourse-master-depls-target))
+    insecure: ((concourse-master-depls-insecure))
     teams:
     - name: main
-      username: {{concourse-master-depls-username}}
-      password: {{concourse-master-depls-password}}
+      username: ((concourse-master-depls-username))
+      password: "((concourse-master-depls-password))"
 
-- name: {{concourse-ops-depls}}
+- name: ((concourse-ops-depls))
   type: concourse-pipeline
   source:
-    target: {{concourse-ops-depls-target}}
-    insecure: {{concourse-ops-depls-insecure}}
+    target: ((concourse-ops-depls-target))
+    insecure: ((concourse-ops-depls-insecure))
     teams:
     - name: main
-      username: {{concourse-ops-depls-username}}
-      password: {{concourse-ops-depls-password}}
+      username: ((concourse-ops-depls-username))
+      password: "((concourse-ops-depls-password))"
 
-- name: {{concourse-expe-depls}}
+- name: ((concourse-expe-depls))
   type: concourse-pipeline
   source:
-    target: {{concourse-expe-depls-target}}
-    insecure: {{concourse-expe-depls-insecure}}
+    target: ((concourse-expe-depls-target))
+    insecure: ((concourse-expe-depls-insecure))
     teams:
     - name: main
-      username: {{concourse-expe-depls-username}}
-      password: {{concourse-expe-depls-password}}
+      username: ((concourse-expe-depls-username))
+      password: "((concourse-expe-depls-password))"
 
 
 - name: depls
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: pipeline-credentials
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 #    paths: [ci/deploy/]
 
@@ -75,12 +75,12 @@ resources:
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 #- name: auto-init-pipeline
 #  type: git
 #  source:
-#    uri: {{secrets-uri}}
+#    uri: ((secrets-uri))
 #    branch: master
 #    skip_ssl_verification: true
 #    paths: ["ci/pipeline.yml","ci/credentials.yml"]
@@ -97,7 +97,7 @@ jobs:
       params: { submodules: none}
       trigger: false
       attempts: 3
-  - put: {{concourse-micro-depls}}
+  - put: ((concourse-micro-depls))
     params:
       pipelines:
       - name: auto-init
@@ -108,14 +108,14 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         username: Concourse
 #  - put: failure-alert
 #    params:
-#      channel: {{slack-channel}}
+#      channel: ((slack-channel))
 #      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
 #      text: |
 #        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -159,11 +159,11 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
-  - put: {{concourse-master-depls}}
+  - put: ((concourse-master-depls))
     params:
       pipelines:
       - name: master-depls-generated
@@ -176,7 +176,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -192,7 +192,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -205,7 +205,7 @@ jobs:
 
 #  - put: failure-alert
 #    params:
-#      channel: {{slack-channel}}
+#      channel: ((slack-channel))
 #      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
 #      text: |
 #        ![success](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-green.png) Sucessfully deployed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -249,12 +249,12 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-ops-depls}}
+  - put: ((concourse-ops-depls))
     params:
       pipelines:
       - name: ops-depls-generated
@@ -275,7 +275,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -291,7 +291,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -306,7 +306,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -355,12 +355,12 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-expe-depls}}
+  - put: ((concourse-expe-depls))
     params:
       pipelines:
       - name: expe-depls-generated
@@ -373,7 +373,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -389,7 +389,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -441,12 +441,12 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 
-  - put: {{concourse-micro-depls}}
+  - put: ((concourse-micro-depls))
     params:
       pipelines:
       - name: micro-depls-generated
@@ -460,7 +460,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
         text: |
           ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
@@ -476,7 +476,7 @@ jobs:
     on_failure:
       put: failure-alert
       params:
-        channel: {{slack-channel}}
+        channel: ((slack-channel))
         text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
