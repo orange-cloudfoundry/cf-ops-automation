@@ -1,13 +1,9 @@
-# encoding: utf-8
-# require 'spec_helper.rb'
+require 'spec_helper'
 require 'yaml'
 require 'tmpdir'
 
 describe 'bosh_update_runtime_config task' do
-
-
   context 'when no bosh is available' do
-
     before(:context) do
       @config_manifest = Dir.mktmpdir
       @secrets = Dir.mktmpdir
@@ -37,7 +33,7 @@ describe 'bosh_update_runtime_config task' do
     end
 
     it 'displays an error message' do
-      expect(@output).to include("Expected to extract host from URL 'https://:25555'")
+      expect(@output).to include("no address for dummy-bosh")
     end
 
     it 'selects only runtime operators' do
@@ -47,10 +43,7 @@ describe 'bosh_update_runtime_config task' do
     it 'selects only runtime vars' do
       expect(@output).to include('Vars files detected: <-l ./config-manifest/my-custom-runtime-vars.yml >')
     end
-
-
   end
-
 
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/bosh_update_runtime_config.yml' }
@@ -59,7 +52,5 @@ describe 'bosh_update_runtime_config task' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
       expect(docker_image_used).to match('governmentpaas/bosh-cli-v2')
     end
-
   end
-
 end

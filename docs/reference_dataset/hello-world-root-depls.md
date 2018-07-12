@@ -248,6 +248,9 @@ hello-world-root-depls
 ### hello-world-root-depls-generated.yml
 
 * bosh-openstack-cpi-release-version
+* bosh-client
+* bosh-client-secret
+* bosh-environment
 * bosh-password
 * bosh-target
 * bosh-username
@@ -382,6 +385,18 @@ hello-world-root-depls
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-s3-br-upload-generated.yml
+
+### bosh-client
+
+* hello-world-root-depls-generated.yml
+
+### bosh-client-secret
+
+* hello-world-root-depls-generated.yml
+
+### bosh-environment
+
+* hello-world-root-depls-generated.yml
 
 ### bosh-password
 

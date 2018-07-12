@@ -70,6 +70,28 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 jobs:
+- name: cancel-all-bosh-tasks
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none }
+    - get : secrets-another-world-root-depls-limited
+      params: { submodules: none }
+  - task: cancel-all-bosh-tasks
+    input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited }
+    file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
+    params:
+      BOSH_CLIENT: ((bosh-client))
+      BOSH_CLIENT_SECRET: ((bosh-client-secret))
+      BOSH_ENVIRONMENT: ((bosh-environment))
+      BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 - name: execute-deploy-script
   serial: true
   on_failure:
@@ -221,6 +243,7 @@ jobs:
 groups:
 - name: Another-world-root-depls
   jobs:
+    - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls
     - execute-deploy-script
     - recreate-all
@@ -229,6 +252,7 @@ groups:
     - recreate-all
 - name: Utils
   jobs:
+    - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls
     - execute-deploy-script
     - recreate-all

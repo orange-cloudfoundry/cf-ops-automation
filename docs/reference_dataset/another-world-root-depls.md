@@ -112,6 +112,9 @@ No credentials required
 
 ### another-world-root-depls-generated.yml
 
+* bosh-client
+* bosh-client-secret
+* bosh-environment
 * bosh-password
 * bosh-target
 * bosh-username
@@ -165,6 +168,18 @@ No credentials required
 No credentials required
 
 ## List of pipelines in which credentials appear for another-world-root-depls
+
+### bosh-client
+
+* another-world-root-depls-generated.yml
+
+### bosh-client-secret
+
+* another-world-root-depls-generated.yml
+
+### bosh-environment
+
+* another-world-root-depls-generated.yml
 
 ### bosh-password
 

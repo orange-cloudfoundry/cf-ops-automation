@@ -95,6 +95,30 @@ resources:
       skip_ssl_verification: true
 
 jobs:
+  - name: cancel-all-bosh-tasks
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - aggregate:
+      - get: cf-ops-automation
+        params:
+          submodules: none
+      - get: secrets-delete-depls-limited
+        params:
+          submodules: none
+    - task: cancel-all-bosh-tasks
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-delete-depls-limited}
+      file: cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
+      params:
+        BOSH_CLIENT: "((bosh-client))"
+        BOSH_CLIENT_SECRET: "((bosh-client-secret))"
+        BOSH_ENVIRONMENT: "((bosh-environment))"
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
   - name: delete-deployments-review
     on_failure:
       put: failure-alert
@@ -334,6 +358,7 @@ groups:
   - name: Delete-depls
     jobs:
       - approve-and-delete-disabled-deployments
+      - cancel-all-bosh-tasks
       - cloud-config-and-runtime-config-for-delete-depls
       - delete-deployments-review
       - execute-deploy-script
@@ -344,6 +369,7 @@ groups:
   - name: Utils
     jobs:
       - approve-and-delete-disabled-deployments
+      - cancel-all-bosh-tasks
       - cloud-config-and-runtime-config-for-delete-depls
       - delete-deployments-review
       - execute-deploy-script
