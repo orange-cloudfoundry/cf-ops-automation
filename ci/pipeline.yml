@@ -11,6 +11,11 @@ resource_types:
       repository: jtarchie/pr
 
 resources:
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+
 - name: cf-ops-automation-docker-image
   type: docker-image
   source:
@@ -100,8 +105,19 @@ resources:
 jobs:
 
   - name: build-cached-image
+    on_failure: &on_failure_alert
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: |
+          Failed to run <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
+          https://github.com/orange-cloudfoundry/cf-ops-automation/commit/$TEXT_FILE_CONTENT
+        text_file: cf-ops-automation/.git/ref
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
     plan:
-  #  - get: cf-ops-automation
+    - get: cf-ops-automation
+      resource: ci-develop
     - get: cf-ops-automation-dependencies
       trigger: true
     - put: cf-ops-automation-docker-image
@@ -112,6 +128,7 @@ jobs:
           CONCOURSE_SHA: aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
 
   - name: unit-tests
+    on_failure: *on_failure_alert
     serial: true
     plan:
     - aggregate:
@@ -122,7 +139,7 @@ jobs:
         resource: ci-develop
         trigger: true
     - task: run-tests
-      attempts: 3
+      attempts: 2
       image: cf-ops-automation-docker-image
       timeout: 30m
       config: &unit_tests_config
@@ -149,6 +166,7 @@ jobs:
           COVERAGE: true
 
   - name: acceptance-tests
+    on_failure: *on_failure_alert
     serial: true
     plan:
       - aggregate:
@@ -176,6 +194,7 @@ jobs:
               ruby --version
               bundle --version
               bundle exec cucumber
+
   - name: integration-tests
     serial: true
     plan:
@@ -304,6 +323,7 @@ jobs:
           FLY_PASSWORD:  '((concourse-password))'
 
   - name: update-documentation
+    on_failure: *on_failure_alert
     serial: true
     plan:
       - aggregate:
@@ -356,6 +376,7 @@ jobs:
 
 
   - name: merge-to-master
+    on_failure: *on_failure_alert
     serial: true
     plan:
       - aggregate:
@@ -371,6 +392,7 @@ jobs:
           repository: cf-ops-automation
 
   - name: ship-it
+    on_failure: *on_failure_alert
     serial: true
     serial_groups: [version]
     plan:
@@ -464,6 +486,7 @@ jobs:
         params: {bump: patch, pre: rc}
 
   - name: merge-changelog-to-develop
+    on_failure: *on_failure_alert
     serial: true
     plan:
       - aggregate:
@@ -477,6 +500,16 @@ jobs:
           repository: cf-ops-automation
 
   - name: PullRequests-build-cached-image
+    on_failure: &PR_on_failure_alert
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: |
+          $TEXT_FILE_CONTENT
+          Failed to run <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
+        text_file: cf-ops-automation/.git/url
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
     plan:
       - get: PR-develop
         trigger: true
@@ -493,13 +526,14 @@ jobs:
           tag: PR-develop/.git/id
           tag_prefix: PR-
           build_args: *docker_build_args
-        on_failure:
+        on_failure: &PR_failure
           put: PR-develop
           params:
             path: PR-develop
             status: failure
 
   - name: PullRequests-UnitTests
+    on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - aggregate:
@@ -516,17 +550,14 @@ jobs:
           path: cf-ops-automation
           status: pending
       - task: test-pr
-        attempts: 3
+        attempts: 2
         image: cf-ops-automation-docker-image
         timeout: 30m
         config: *unit_tests_config
-        on_failure:
-          put: PR-develop
-          params:
-            path: cf-ops-automation
-            status: failure
+        on_failure: *PR_failure
 
   - name: PullRequests-AcceptanceTests
+    on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - aggregate:
@@ -548,11 +579,7 @@ jobs:
           params:
             path: cf-ops-automation
             status: success
-        on_failure:
-          put: PR-develop
-          params:
-            path: cf-ops-automation
-            status: failure
+        on_failure: *PR_failure
 
 
   - name: run-tests-for-hotfix-branch
@@ -565,7 +592,7 @@ jobs:
         resource: hotfix-branch
         trigger: true
     - task: run-tests
-      attempts: 3
+      attempts: 2
       image: cf-ops-automation-docker-image
       config: *unit_tests_config
 
@@ -611,6 +638,7 @@ jobs:
            - github-info/cf-ops-automation.tgz
 
   - name: major
+    on_failure: *on_failure_alert
     serial_groups: [version]
     plan:
     - get: version
@@ -619,6 +647,7 @@ jobs:
       params: {file: version/version}
 
   - name: minor
+    on_failure: *on_failure_alert
     serial_groups: [version]
     plan:
     - get: version
@@ -627,6 +656,7 @@ jobs:
       params: {file: version/version}
 
   - name: patch
+    on_failure: *on_failure_alert
     serial_groups: [version]
     plan:
     - get: version
