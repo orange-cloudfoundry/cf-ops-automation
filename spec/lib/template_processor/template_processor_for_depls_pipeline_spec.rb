@@ -107,6 +107,7 @@ describe 'DeplsPipelineTemplateProcessing' do
       { 'name' => 'My-root-depls',
         'jobs' =>
          ['approve-and-delete-disabled-deployments',
+          'cancel-all-bosh-tasks',
           'cloud-config-and-runtime-config-for-my-root-depls',
           'delete-deployments-review',
           'deploy-bui',
@@ -125,6 +126,7 @@ describe 'DeplsPipelineTemplateProcessing' do
       { 'name' => 'Utils',
         'jobs' =>
         ['approve-and-delete-disabled-deployments',
+         'cancel-all-bosh-tasks',
          'cloud-config-and-runtime-config-for-my-root-depls',
          'delete-deployments-review',
          'execute-deploy-script',

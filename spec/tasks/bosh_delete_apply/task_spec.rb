@@ -42,7 +42,7 @@ describe 'bosh_delete_plan task' do
     end
 
     it 'generates a non empty file' do
-      expect(error_log).not_to be_empty
+      expect(File.read(error_log)).not_to be_empty
     end
   end
 

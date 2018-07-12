@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'open3'
-require_relative '../../../lib/directory_initializer'
+require 'tmpdir'
+require 'directory_initializer'
 require_relative 'test_helper'
 
 describe 'generate-depls' do

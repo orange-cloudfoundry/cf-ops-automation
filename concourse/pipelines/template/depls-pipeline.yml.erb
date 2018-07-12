@@ -255,6 +255,30 @@ resources:
 <% end %>
 
 jobs:
+- name: cancel-all-bosh-tasks
+  <% jobs['utils'] << 'cancel-all-bosh-tasks' %>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none }
+    - get : secrets-<%=depls %>-limited
+      params: { submodules: none }
+  - task: cancel-all-bosh-tasks
+    input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-<%=depls %>-limited }
+    file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
+    params:
+      BOSH_CLIENT: ((bosh-client))
+      BOSH_CLIENT_SECRET: ((bosh-client-secret))
+      BOSH_ENVIRONMENT: ((bosh-environment))
+      BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
+
 <% if disabled_deployments.any? %>
 - name: delete-deployments-review
   <% jobs['utils'] << 'delete-deployments-review' %>
@@ -794,7 +818,7 @@ jobs:
           type: docker-image
           source:
             repository: governmentpaas/bosh-cli-v2
-            tag: 4aff7d1fd0fa27ff9910a77b39cbcaedb4455f0c
+            tag: c88f3e0b03558c987693fad3f180d9052b77342c
         inputs:
           - name: scripts-resource
           - name: secrets

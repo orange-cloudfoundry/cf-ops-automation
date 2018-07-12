@@ -4,10 +4,9 @@ set -e
 BOSH_HOST=$1
 BOSH_CERT_FILE=$2
 
+echo "verify BOSH and Ruby's CLIs presence"
 bosh --version
-echo "checking nslookup is available"
-which nslookup
-echo "nslookup found"
+ruby --version
 
 my_realpath() { echo $(cd $(dirname $1); pwd)/$(basename $1); }
 
@@ -50,9 +49,9 @@ fi
 echo "targeting ${BOSH_HOST}"
 
 DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_HOST%%:25555}
-DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|grep Address|cut -d':' -f2)
-
+DIRECTOR_IP=$(./scripts-resource/scripts/resolve_hostname.rb "${DIRECTOR_IP_URL_WITHOUT_PORT##https://}")
 DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
+
 export BOSH_ENVIRONMENT="https://${DIRECTOR_IP_NO_SPACE}:25555"
 
 echo "Using BOSH_ENVIRONMENT=${BOSH_ENVIRONMENT}"
