@@ -28,39 +28,39 @@ resources:
 - name: micro-bosh-runtime-config
   type: bosh-config
   source:
-    target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
+    target: ((bosh-target))
+    username: ((bosh-username))
+    password: "((bosh-password))"
     type: runtime-config
 
 - name: micro-bosh-cloud-config
   type: bosh-config
   source:
-    target: {{bosh-target}}
-    username: {{bosh-username}}
-    password: {{bosh-password}}
+    target: ((bosh-target))
+    username: ((bosh-username))
+    password: "((bosh-password))"
     type: cloud-config
 
 
 - name: secrets
   type: git
   source:
-    uri: {{secrets-uri}}
-    branch: {{secrets-branch}}
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
     skip_ssl_verification: true
 
 - name: paas-bootstrap
   type: git
   source:
-    uri: {{paas-templates-uri}}
-    branch: {{paas-templates-branch}}
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 
 - name: failure-alert
   type: slack-notification
   source:
-    url: {{slack-webhook}}
+    url: ((slack-webhook))
 
 #- name: bosh-stemcell
 #  type: bosh-io-stemcell
@@ -81,7 +81,7 @@ jobs:
     - get: paas-bootstrap
       params: { submodules: none}
     - get: os-conf-release
-      version: { version: {{os-conf-version}} }
+      version: { version: ((os-conf-version)) }
     - put: micro-bosh-cloud-config
       params:
         manifest: paas-bootstrap/micro-depls/cloud-config.yml
@@ -101,7 +101,7 @@ jobs:
     - get: paas-bootstrap
       params: { submodules: none}
     - get: os-conf-release
-      version: { version: {{os-conf-version}} }
+      version: { version: ((os-conf-version)) }
     - put: micro-bosh-runtime-config
       params:
         manifest: paas-bootstrap/micro-depls/runtime-config.yml
@@ -110,7 +110,7 @@ jobs:
       on_failure:
         put: failure-alert
         params:
-          channel: {{slack-channel}}
+          channel: ((slack-channel))
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
@@ -216,7 +216,7 @@ jobs:
       on_failure:
         put: failure-alert
         params:
-          channel: {{slack-channel}}
+          channel: ((slack-channel))
           text: Failed cannot push master [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse

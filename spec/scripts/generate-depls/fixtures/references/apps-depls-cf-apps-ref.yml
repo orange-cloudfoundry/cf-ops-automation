@@ -160,8 +160,8 @@ jobs:
         CF_API_URL: https://my-cloudfroundry.org
         CF_ORG: my-test-org
         CF_SPACE: my-test-space
-        CF_USERNAME: a-test-User
-        CF_PASSWORD: a-test-Password
+        CF_USERNAME: "\"a-test-User"
+        CF_PASSWORD: "'a-test-Password"
 
     - task: update-test-app-files
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
@@ -186,8 +186,8 @@ jobs:
         CF_API_URL: https://my-cloudfroundry.org
         CF_ORG: my-test-org
         CF_SPACE: my-test-space
-        CF_USERNAME: a-test-User
-        CF_PASSWORD: a-test-Password
+        CF_USERNAME: "\"a-test-User"
+        CF_PASSWORD: "'a-test-Password"
 
 
 groups:

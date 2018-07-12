@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 require 'digest'
 require 'yaml'
 require 'open3'
@@ -7,14 +5,10 @@ require 'rspec'
 require 'tmpdir'
 require_relative 'test_helper'
 
-# require 'spec_helper.rb'
-
 describe 'generate-depls for cf-apps pipeline' do
-
-  ci_path = Dir.pwd
-  test_path = File.join(ci_path, '/spec/scripts/generate-depls')
-  fixture_path = File.join(test_path, '/fixtures')
-
+  let(:ci_path) { Dir.pwd }
+  let(:test_path) { File.join(ci_path, '/spec/scripts/generate-depls') }
+  let(:fixture_path) { File.join(test_path, '/fixtures') }
 
   context 'when a simple cf-apps deployment is used' do
     let(:depls_name) { 'apps-depls' }
@@ -43,30 +37,17 @@ describe 'generate-depls for cf-apps pipeline' do
           include('1 concourse pipeline templates were processed')
       end
 
-
       context 'when a generated reference cf-app pipeline file is used' do
         it_behaves_like 'pipeline checker', 'apps-depls-cf-apps-generated.yml', 'apps-depls-cf-apps-ref.yml'
       end
-
     end
-
-
   end
 
   describe 'cf-apps-pipeline template pre-requisite' do
-    context 'when template is processed' do
-
-    end
+    context 'when template is processed'
   end
 
   describe 'multi manifest support' do
     it 'processes all manifests in found in template dir'
-
   end
-
-
 end
-
-
-
-

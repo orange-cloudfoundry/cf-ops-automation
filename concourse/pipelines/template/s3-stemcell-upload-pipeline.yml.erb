@@ -100,7 +100,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
       FLY_USERNAME: ((concourse-<%= depls %>-username))
-      FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+      FLY_PASSWORD: "((concourse-<%= depls %>-password))"
       FLY_TEAM: <%= current_team || 'main' %>
 
 <% uniq_stemcells.sort.each do |stemcell, _|  %>
@@ -128,7 +128,6 @@ jobs:
         file: <%= stemcell %>/*.tgz
         acl: public-read
 
-
 - name: upload-lastest-<%= stemcell %>
   on_failure:
     put: failure-alert
@@ -152,5 +151,4 @@ jobs:
       params:
         file: <%= stemcell %>/*.tgz
         acl: public-read
-
 <% end %>

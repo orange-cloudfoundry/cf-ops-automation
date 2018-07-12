@@ -149,7 +149,7 @@ resources:
   source:
 #    target: https://((bosh-target)):25555
     username: ((bosh-username))
-    password: ((bosh-password))
+    password: "((bosh-password))"
     deployment: <%= name %>
   <% else %>
 - name: <%= name %>-deployment
@@ -157,7 +157,7 @@ resources:
   source:
     target: ((bosh-target))
     client: ((bosh-username))
-    client_secret: ((bosh-password))
+    client_secret: "((bosh-password))"
     deployment: <%= name %>
     ca_cert: <%= bosh_cert[depls]&.dump %>
   <% end %>
@@ -168,7 +168,7 @@ resources:
   source:
     target: ((bosh-target))
     client: ((bosh-username))
-    client_secret: ((bosh-password))
+    client_secret: "((bosh-password))"
     deployment: <%= name %>
     ca_cert: <%= bosh_cert[depls]&.dump %>
   <% end %>
@@ -183,11 +183,11 @@ resources:
     teams:
     - name: main
       username: ((concourse-<%= depls %>-username))
-      password: ((concourse-<%= depls %>-password))
+      password: "((concourse-<%= depls %>-password))"
   <% CiDeployment.teams(all_ci_deployments).each do |team| %>
     - name: <%= team %>
       username: ((concourse-<%= depls %>-username))
-      password: ((concourse-<%= depls %>-password))
+      password: "((concourse-<%= depls %>-password))"
   <% end %>
 
 - name: paas-templates-wip
@@ -306,7 +306,7 @@ jobs:
       params:
          BOSH_TARGET: ((bosh-target))
          BOSH_CLIENT: ((bosh-username))
-         BOSH_CLIENT_SECRET: ((bosh-password))
+         BOSH_CLIENT_SECRET: "((bosh-password))"
          BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
          DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments&.keys&.sort&.join(' ') %>"
 <% end %>
@@ -344,7 +344,7 @@ jobs:
         SECRETS_DIR: secrets
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
-        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_CLIENT_SECRET: "((bosh-password))"
         BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
 - name: cloud-config-and-runtime-config-for-<%= depls %>
@@ -394,7 +394,7 @@ jobs:
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
-           BOSH_CLIENT_SECRET: ((bosh-password))
+           BOSH_CLIENT_SECRET: "((bosh-password))"
            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
         ensure:
@@ -427,7 +427,7 @@ jobs:
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
-           BOSH_CLIENT_SECRET: ((bosh-password))
+           BOSH_CLIENT_SECRET: "((bosh-password))"
            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
         ensure:
@@ -733,7 +733,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
       FLY_USERNAME: ((concourse-<%= depls %>-username))
-      FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+      FLY_PASSWORD: "((concourse-<%= depls %>-password))"
 <% end %>
 
 - name: recreate-all
@@ -810,7 +810,7 @@ jobs:
     params:
        BOSH_TARGET: ((bosh-target))
        BOSH_CLIENT: ((bosh-username))
-       BOSH_CLIENT_SECRET: ((bosh-password))
+       BOSH_CLIENT_SECRET: "((bosh-password))"
        BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
        BOSH_DEPLOYMENT: <%= name %>
 <% end %>
@@ -873,7 +873,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
       FLY_USERNAME: ((concourse-<%= depls %>-username))
-      FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+      FLY_PASSWORD: "((concourse-<%= depls %>-password))"
 <% end %>
 
 <% if all_ci_deployments.any? %>

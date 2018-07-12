@@ -109,7 +109,7 @@ jobs:
       params:
         ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
         FLY_USERNAME: ((concourse-<%= depls %>-username))
-        FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+        FLY_PASSWORD: ((concourse-<%= depls %>-password))
 
 <% end %>
 
@@ -162,8 +162,8 @@ jobs:
         CF_API_URL: <%= cf_app_info["cf_api_url"] %>
         CF_ORG: <%= cf_app_info["cf_organization"] %>
         CF_SPACE: <%= cf_app_info["cf_space"] %>
-        CF_USERNAME: <%= cf_app_info["cf_username"] %>
-        CF_PASSWORD: <%= cf_app_info["cf_password"] %>
+        CF_USERNAME: <%= cf_app_info["cf_username"].inspect %>
+        CF_PASSWORD: <%= cf_app_info["cf_password"].inspect %>
 
     - task: update-<%= app_name %>-files
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
@@ -188,8 +188,8 @@ jobs:
         CF_API_URL: <%= cf_app_info["cf_api_url"] %>
         CF_ORG: <%= cf_app_info["cf_organization"] %>
         CF_SPACE: <%= cf_app_info["cf_space"] %>
-        CF_USERNAME: <%= cf_app_info["cf_username"] %>
-        CF_PASSWORD: <%= cf_app_info["cf_password"] %>
+        CF_USERNAME: <%= cf_app_info["cf_username"].inspect %>
+        CF_PASSWORD: <%= cf_app_info["cf_password"].inspect %>
 
 <% end %>
 

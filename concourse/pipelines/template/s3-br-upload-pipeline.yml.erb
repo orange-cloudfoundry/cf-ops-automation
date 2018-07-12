@@ -107,7 +107,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
       FLY_USERNAME: ((concourse-<%= depls %>-username))
-      FLY_PASSWORD:  ((concourse-<%= depls %>-password))
+      FLY_PASSWORD: "((concourse-<%= depls %>-password))"
       FLY_TEAM: <%= current_team || 'main' %>
 
 <% uniq_releases.sort.each do |release, info|  %>
