@@ -2,6 +2,7 @@
 # you can override values from template_repository/shared-config.yml
 #offline-mode:
 #   boshreleases: false # Default: false
+#   stemcells: false # Default: true
 #
 #default:
 #  stemcell:

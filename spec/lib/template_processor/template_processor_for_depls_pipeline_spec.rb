@@ -299,7 +299,7 @@ describe 'DeplsPipelineTemplateProcessing' do
         boshrelease_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
           .flat_map { |plan| plan['aggregate'] }
           .compact
-          .select { |resource| expected_boshreleases.keys.include?(resource['get']) }
+          .select { |resource| expected_boshreleases.key?(resource['get']) }
           .flat_map { |resource| { resource['get'] => resource['version']['path'] } }
         expect(boshrelease_get_version).to include(*expected_boshrelease_get_version)
       end
@@ -322,6 +322,61 @@ describe 'DeplsPipelineTemplateProcessing' do
         expect(init_args[1]).to include(*expected_init_version)
       end
     end
+
+    context 'when stemcell offline mode is disabled' do
+      let(:loaded_config) do
+        my_config_yaml = <<~YAML
+          offline-mode:
+            boshreleases: false
+            stemcells: false
+            docker-images: false
+        YAML
+        YAML.safe_load(my_config_yaml)
+      end
+      let(:expected_bosh_io_stemcell) do
+        expected_yaml = <<~YAML
+          - name: ((stemcell-main-name))
+            type: bosh-io-stemcell
+            source:
+              name: ((stemcell-name-prefix))((stemcell-main-name))
+        YAML
+        YAML.safe_load expected_yaml
+      end
+      let(:expected_stemcell_deploy_get) { ['((stemcell-version))'] * 2 }
+      let(:expected_stemcell_deploy_put) { ['((stemcell-main-name))/stemcell.tgz'] * 2 }
+      let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" >> result-dir/flight-plan' }
+
+      it 'generates bosh-io stemcell' do
+        bosh_io_stemcell = generated_pipeline['resources'].select { |resource| resource['type'] == 'bosh-io-stemcell' }
+        expect(bosh_io_stemcell).to include(*expected_bosh_io_stemcell)
+      end
+
+      it 'generates bosh_io version using path on get' do
+        stemcell_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
+          .flat_map { |plan| plan['aggregate'] }
+          .compact
+          .select { |resource| resource['get'] == '((stemcell-main-name))' }
+          .flat_map { |resource| resource['version']['version'] }
+        expect(stemcell_get_version).to match(expected_stemcell_deploy_get)
+      end
+
+      it 'generates bosh-io stemcell on deployment put' do
+        deployment_put_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
+          .select { |resource| resource['params']&.has_key?('stemcells') }
+          .flat_map { |resource| resource['params']['stemcells'] }
+        expect(deployment_put_version).to match(expected_stemcell_deploy_put)
+      end
+
+      it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
+        init_args = generated_pipeline['jobs']
+          .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
+          .flat_map { |task| task['config']['run']['args'] }
+        expect(init_args[1]).to include(*expected_stemcell_init)
+      end
+    end
+
     context 'with ci deployment overview without terraform' do
       let(:all_ci_deployments) do
         ci_deployments_yaml = <<~YAML
