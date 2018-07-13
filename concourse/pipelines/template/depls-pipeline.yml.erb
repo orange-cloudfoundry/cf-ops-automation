@@ -14,13 +14,14 @@
     deployment_info['status'] == 'enabled' && deployment_info['bosh-deployment']
   end
 
-  uniq_releases= {}
+  uniq_releases = {}
   enabled_deployments&.sort&.each do |name, boshrelease|
     boshrelease['releases']&.each do |release, info|
-      uniq_releases[release]= info
+      uniq_releases[release] = info
     end
   end
 
+  offline_stemcells_enabled = config['offline-mode'] && config['offline-mode']['stemcells'] && true
   jobs = Hash.new {|h,k| h[k]=[]}
 %>
 ---
@@ -105,8 +106,8 @@ resources:
     skip_ssl_verification: true
 
 <% unless enabled_deployments.empty? %>
-- name: bosh-stemcell
-# name: ((stemcell-name))
+- name: ((stemcell-main-name))
+<% if offline_stemcells_enabled %>
   type: s3
   source:
     bucket: ((s3-stemcell-bucket))
@@ -117,6 +118,11 @@ resources:
     secret_access_key: ((s3-stemcell-secret-key))
     endpoint: ((s3-stemcell-endpoint))
     skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+<% else %>
+  type: bosh-io-stemcell
+  source:
+    name: ((stemcell-name-prefix))((stemcell-main-name))
+<% end %>
 <% end %>
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
@@ -451,8 +457,12 @@ jobs:
   - aggregate:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: bosh-stemcell
+    - get: ((stemcell-main-name))
+      <% if offline_stemcells_enabled %>
       version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
+      <% else %>
+      version: { version: ((stemcell-version)) }
+      <% end %>
       trigger: true
       attempts: 2
     - get: cf-ops-automation
@@ -600,7 +610,11 @@ jobs:
       target_file: bosh-generated-config/bosh_target
   <% end %>
       stemcells:
-      - bosh-stemcell/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+      <% if offline_stemcells_enabled %>
+      - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+      <% else %>
+      - ((stemcell-main-name))/stemcell.tgz
+      <% end %>
       releases:<%= ' []' if boshrelease['releases']&.empty? %>
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
@@ -831,7 +845,11 @@ jobs:
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
     <% end %>
   <% end %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+    <% if offline_stemcells_enabled %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+    <% else %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" >> result-dir/flight-plan
+    <% end %>
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-generated
   - task: fly-into-concourse

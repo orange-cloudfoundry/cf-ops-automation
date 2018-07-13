@@ -80,7 +80,7 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-- name: bosh-stemcell
+- name: ((stemcell-main-name))
   type: s3
   source:
     bucket: ((s3-stemcell-bucket))
@@ -350,7 +350,7 @@ jobs:
     - aggregate:
       - get: secrets-full-writer
         params: { submodules: none}
-      - get: bosh-stemcell
+      - get: ((stemcell-main-name))
         version: { path: "((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" }
         trigger: true
         attempts: 2
@@ -469,7 +469,7 @@ jobs:
 #        source_file: bosh-generated-config/bosh_config.json
         
         stemcells:
-        - bosh-stemcell/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+        - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
         releases: 
         
         - ntp_boshrelease/release.tgz
@@ -649,7 +649,7 @@ jobs:
         - -exc
         - |
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-generated
   - task: fly-into-concourse

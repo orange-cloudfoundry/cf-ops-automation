@@ -1,6 +1,8 @@
 ---
+# When offline-mode is enabled, bytes are retrieved from an S3 compliant location, otherwise download from bosh-io
 offline-mode:
-   boshreleases: false # Default: false
+   boshreleases: false # Choose where boshreleases are downloaded from. Default: false
+   stemcells: false # Choose where stemcells are downloaded from. Default: true
 
 default:
   stemcell:
