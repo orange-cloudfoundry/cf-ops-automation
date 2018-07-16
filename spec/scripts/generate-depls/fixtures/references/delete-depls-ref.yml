@@ -60,7 +60,7 @@ resources:
       branch: ((secrets-branch))
       skip_ssl_verification: true
 
-  - name: paas-template-delete-depls
+  - name: paas-templates-delete-depls
     type: git
     source:
       uri: ((paas-templates-uri))
@@ -109,6 +109,7 @@ jobs:
         params:
           submodules: none
       - get: secrets-full
+        version: every
         trigger: true
         params:
           submodules: none
@@ -165,7 +166,7 @@ jobs:
       - get: secrets-delete-depls
         params:
           submodules: none
-      - get: paas-template-delete-depls
+      - get: paas-templates-delete-depls
         params:
           submodules: none
       - get: cf-ops-automation
@@ -174,7 +175,7 @@ jobs:
     - task: run-deploy.sh
       input_mapping:
         scripts-resource: cf-ops-automation
-        templates: paas-template-delete-depls
+        templates: paas-templates-delete-depls
         secrets: secrets-delete-depls
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
@@ -202,7 +203,7 @@ jobs:
       params:
         submodules: none
       trigger: true
-    - get: paas-template-delete-depls
+    - get: paas-templates-delete-depls
       params:
         submodules: none
       trigger: true
@@ -214,7 +215,7 @@ jobs:
       input_mapping:
         scripts-resource: cf-ops-automation
         credentials-resource: secrets-delete-depls
-        additional-resource: paas-template-delete-depls
+        additional-resource: paas-templates-delete-depls
       output_mapping:
         generated-files: config-manifest
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
@@ -318,7 +319,7 @@ jobs:
       - get: secrets-delete-depls
         params:
           submodules: none
-      - get: paas-template-delete-depls
+      - get: paas-templates-delete-depls
         params:
           submodules: none
       - get: cf-ops-automation

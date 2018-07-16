@@ -188,7 +188,7 @@ describe 'DeplsPipelineTemplateProcessing' do
               params: { submodules: none}
               trigger: true
               passed: [deploy-shield-expe]
-            - get: paas-template-shield-expe
+            - get: paas-templates-shield-expe
               params: { submodules: none}
               trigger: true
               passed: [deploy-shield-expe]
@@ -344,7 +344,7 @@ describe 'DeplsPipelineTemplateProcessing' do
       end
       let(:expected_stemcell_deploy_get) { ['((stemcell-version))'] * 2 }
       let(:expected_stemcell_deploy_put) { ['((stemcell-main-name))/stemcell.tgz'] * 2 }
-      let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" >> result-dir/flight-plan' }
+      let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan' }
 
       it 'generates bosh-io stemcell' do
         bosh_io_stemcell = generated_pipeline['resources'].select { |resource| resource['type'] == 'bosh-io-stemcell' }
@@ -451,7 +451,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           [
             { "task" => 'generate-terraform-tfvars',
               "input_mapping" =>
-                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls", "additional-resource" => "paas-template-my-root-depls" },
+                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls", "additional-resource" => "paas-templates-my-root-depls" },
               "output_mapping" => { "generated-files" => "terraform-tfvars" },
               "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
               "params" =>
@@ -464,7 +464,7 @@ describe 'DeplsPipelineTemplateProcessing' do
             { "task" => "terraform-plan",
               "input_mapping" =>
                    { "secret-state-resource" => "secrets-my-root-depls",
-                     "spec-resource" => "paas-template-my-root-depls" },
+                     "spec-resource" => "paas-templates-my-root-depls" },
               "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
               "params" =>
                    { "SPEC_PATH" => "my-tfstate-location/spec",
@@ -486,12 +486,12 @@ describe 'DeplsPipelineTemplateProcessing' do
       let(:check_terraform_plans) { check_terraform_jobs.flat_map { |job| job['plan'] } }
       let(:check_terraform_aggregate) { check_terraform_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
       let(:check_terraform_secrets_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:check_terraform_paas_templates_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('paas-template-') }.flat_map { |task| task['trigger'] } }
+      let(:check_terraform_paas_templates_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
       let(:enforce_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('approve-and-enforce-terraform-consistency') } }
       let(:enforce_terraform_plans) { enforce_terraform_jobs.flat_map { |job| job['plan'] } }
       let(:enforce_terraform_aggregate) { enforce_terraform_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
       let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('paas-template-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
       let(:all_ci_deployments) { enable_root_deployment_terraform }
 
       it 'triggers check-consistency automatically on each commit on secrets' do

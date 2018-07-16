@@ -26,7 +26,7 @@ outputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
     mkdir -p /usr/local/bin
     FLY=/usr/local/bin/fly
@@ -34,6 +34,7 @@ run:
     curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
     chmod +x $FLY;
 
+    echo "Login into Concourse@${ATC_EXTERNAL_URL}"
     fly login -t concourse-target --team-name="$FLY_TEAM" -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
     PREFIX="fly -t concourse-target"
 
@@ -41,8 +42,8 @@ run:
     IFS=$'\n'     # nouveau séparateur de champ, le caractère fin de ligne
     for command in $(cat fly-cmd/flight-plan)
     do
-      echo "Executing '$PREFIX $command': " >> flight-report/flight-report.txt 2>&1
-      eval "$PREFIX $command" >> flight-report/flight-report.txt 2>&1
+      echo "Executing '$PREFIX $command': " 2>&1 | tee -a flight-report/flight-report.txt
+      eval "$PREFIX $command" 2>&1 | tee -a flight-report/flight-report.txt
     done
     IFS=$old_IFS     # rétablissement du séparateur de champ par défaut
     cat flight-report/flight-report.txt

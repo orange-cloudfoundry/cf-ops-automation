@@ -89,7 +89,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
-- name: paas-template-<%=depls %>
+- name: paas-templates-<%=depls %>
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -136,7 +136,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
-- name: paas-template-<%= name %>
+- name: paas-templates-<%= name %>
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -208,6 +208,16 @@ resources:
     skip_ssl_verification: true
 <% end %>
 
+<% if enabled_deployments.any? %>
+- name: paas-templates-<%=depls %>-versions
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["<%= depls %>/<%= depls %>-versions.yml"]
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+<% end %>
+
 <% if all_ci_deployments.any? || disabled_deployments.any? %>
 - name: paas-templates-full
   type: git
@@ -264,6 +274,7 @@ jobs:
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
       - get: secrets-full
+        version: every
         trigger: true
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
         params: { submodules: none}
@@ -317,7 +328,7 @@ jobs:
       - get: secrets-<%= depls %>
         params: { submodules: none}
 #        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
-      - get: paas-template-<%= depls %>
+      - get: paas-templates-<%= depls %>
         params: { submodules: none}
 #        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
       - get: cf-ops-automation
@@ -325,7 +336,7 @@ jobs:
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
 
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-<%= depls %>, secrets: secrets-<%= depls %>}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-<%= depls %>, secrets: secrets-<%= depls %>}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: <%= depls %>/template
@@ -353,7 +364,7 @@ jobs:
       params: { submodules: none}
       trigger: true
 #      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
-    - get: paas-template-<%=depls %>
+    - get: paas-templates-<%=depls %>
       params: { submodules: none}
       trigger: true
 #      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
@@ -362,7 +373,7 @@ jobs:
       trigger: true
       <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
     - task: generate-<%= depls %>-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-template-<%=depls %>}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-templates-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -487,13 +498,13 @@ jobs:
       params: { submodules: none}
       trigger: true
 #     <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
-    - get: paas-template-<%= name %>
+    - get: paas-templates-<%= name %>
       trigger: true
   <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
       params: { submodules: <%= current_git_submodule || 'none' %>}
 #     <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
   - task: generate-<%= name %>-manifest
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-template-<%= name %>}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-templates-<%= name %>}
     output_mapping: {generated-files: release-manifest}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -506,14 +517,14 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
       IAAS_TYPE: ((iaas-type))
   - task: execute-<%= name %>-spiff-pre-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
     output_mapping: {generated-files: pre-bosh-deploy-resource}
     file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
       SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
   - task: copy-<%= name %>-required-files
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: pre-bosh-deploy-resource}
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: pre-bosh-deploy-resource}
     output_mapping: {generated-files: final-release-manifest}
     file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
     params:
@@ -631,7 +642,7 @@ jobs:
   <% end %>
       cleanup: true
   - task: execute-<%= name %>-post-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-release-manifest}
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-release-manifest}
     output_mapping: {generated-files: post-deploy-result}
     file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
     params:
@@ -668,7 +679,7 @@ jobs:
       params: { submodules: none}
       trigger: true
       passed: [deploy-<%= name %>]
-    - get: paas-template-<%= name %>
+    - get: paas-templates-<%= name %>
       params: { submodules: none}
       trigger: true
       passed: [deploy-<%= name %>]
@@ -741,7 +752,7 @@ jobs:
      - get: secrets-<%= depls %>
        params: { submodules: none}
        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
-     - get: paas-template-<%= depls %>
+     - get: paas-templates-<%= depls %>
        params: { submodules: none}
        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
      - get: cf-ops-automation
@@ -766,7 +777,7 @@ jobs:
        params: { submodules: none}
        passed: [recreate-all]
        trigger: true
-     - get: paas-template-<%= depls %>
+     - get: paas-templates-<%= depls %>
        params: { submodules: none}
        passed: [recreate-all]
        trigger: true
@@ -823,7 +834,10 @@ jobs:
     - get: secrets-full
       params: { submodules: none}
       attempts: 2
-#      trigger: true
+    - get: paas-templates-<%= depls %>-versions
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
   - task: generate-<%= depls %>-flight-plan
     output_mapping: {result-dir: init-<%= depls %>-plan}
     config:
@@ -836,19 +850,19 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
   <% uniq_releases.sort.each do |name, info| %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" | tee -a result-dir/flight-plan
     <% else %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" | tee -a result-dir/flight-plan
     <% end %>
   <% end %>
     <% if offline_stemcells_enabled %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
     <% else %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
     <% end %>
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-generated
@@ -881,7 +895,7 @@ jobs:
   - aggregate:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: paas-template-<%= depls %>
+    - get: paas-templates-<%= depls %>
       params: { submodules: none}
       attempts: 2
     - get: paas-templates-wip
@@ -900,6 +914,7 @@ jobs:
       params: { submodules: none}
       attempts: 2
     - get: secrets-full
+      version: every
       params: { submodules: none}
       attempts: 2
 
@@ -992,7 +1007,7 @@ jobs:
       params: { submodules: none}
       passed: [update-pipeline-<%= depls %>-generated]
       trigger: true
-    - get: paas-template-<%=depls %>
+    - get: paas-templates-<%=depls %>
       params: { submodules: none }
       trigger: true
     - get: secrets-<%= depls %>
@@ -1000,7 +1015,7 @@ jobs:
       params: { submodules: none }
       trigger: true
   - task: generate-terraform-tfvars
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-templates-<%=depls %>}
     output_mapping: {generated-files: terraform-tfvars}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -1013,7 +1028,7 @@ jobs:
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
   - task: terraform-plan
-    input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-template-<%=depls %>}
+    input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-templates-<%=depls %>}
     file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
     params:
       SPEC_PATH: "<%= terraform_config_path %>/spec"
@@ -1037,7 +1052,7 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [check-terraform-consistency]
-    - get: paas-template-<%=depls %>
+    - get: paas-templates-<%=depls %>
       params: { submodules: none}
       passed: [check-terraform-consistency]
       trigger: false
@@ -1045,7 +1060,7 @@ jobs:
       params: { submodules: none}
       passed: [check-terraform-consistency]
   - task: generate-terraform-tfvars
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-templates-<%=depls %>}
     output_mapping: {generated-files: terraform-tfvars}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -1058,7 +1073,7 @@ jobs:
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
   - task: terraform-apply
-    input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-template-<%=depls %>}
+    input_mapping: {secret-state-resource: secrets-<%= depls %>,spec-resource: paas-templates-<%=depls %>}
     output_mapping: {generated-files: terraform-cf}
     file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
     params:
