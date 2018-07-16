@@ -64,7 +64,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
-- name: paas-template-simple-depls
+- name: paas-templates-simple-depls
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -101,7 +101,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
-- name: paas-template-ntp
+- name: paas-templates-ntp
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -150,7 +150,6 @@ resources:
     - name: custom-team-name
       username: ((concourse-simple-depls-username))
       password: ((concourse-simple-depls-password))
-
 - name: paas-templates-wip
   type: git
   source:
@@ -163,6 +162,14 @@ resources:
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-simple-depls-versions
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: [ "simple-depls/simple-depls-versions.yml"]
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: paas-templates-full
@@ -196,14 +203,14 @@ jobs:
     - aggregate:
       - get: secrets-simple-depls
         params: { submodules: none}
-      - get: paas-template-simple-depls
+      - get: paas-templates-simple-depls
         params: { submodules: none}
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-simple-depls-generated]
 
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-simple-depls, secrets: secrets-simple-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-simple-depls, secrets: secrets-simple-depls}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: simple-depls/template
@@ -229,7 +236,7 @@ jobs:
     - get: secrets-simple-depls
       params: { submodules: none}
       trigger: true
-    - get: paas-template-simple-depls
+    - get: paas-templates-simple-depls
       params: { submodules: none}
       trigger: true
     - get: cf-ops-automation
@@ -237,9 +244,9 @@ jobs:
       trigger: true
       passed: [update-pipeline-simple-depls-generated]
 #    - task: generate-simple-depls-terraform-outputs-cloud-config
-#      input_mapping: {scripts-resource: paas-template, credentials-resource: secrets-simple-depls, additional-resource: terraform-outputs}
+#      input_mapping: {scripts-resource: paas-templates, credentials-resource: secrets-simple-depls, additional-resource: terraform-outputs}
 #      output_mapping: {generated-files: cloud-config-manifest}
-#      file: paas-template/concourse/tasks/extract_terraform_outputs.yml
+#      file: paas-templates/concourse/tasks/extract_terraform_outputs.yml
 #      params:
 #        STATE_FILE: "state-file-resource/terraform.tfstate"
 #        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
@@ -253,7 +260,7 @@ jobs:
 #        CUSTOM_SCRIPT_DIR: scripts-resource/simple-depls/template
 
     - task: generate-simple-depls-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-simple-depls, additional-resource: paas-template-simple-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-simple-depls, additional-resource: paas-templates-simple-depls}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -369,12 +376,12 @@ jobs:
       - get: secrets-ntp
         params: { submodules: none}
         trigger: true
-      - get: paas-template-ntp
+      - get: paas-templates-ntp
         trigger: true
         
         params: { submodules: none}
     - task: generate-ntp-manifest
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-ntp, additional-resource: paas-template-ntp}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-ntp, additional-resource: paas-templates-ntp}
       output_mapping: {generated-files: release-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -387,7 +394,7 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp/template
         IAAS_TYPE: ((iaas-type))
     - task: execute-ntp-spiff-pre-bosh-deploy
-      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-ntp, credentials-resource: secrets-ntp, additional-resource: release-manifest}
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp, credentials-resource: secrets-ntp, additional-resource: release-manifest}
       output_mapping: {generated-files: pre-bosh-deploy-resource}
       file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
       params:
@@ -396,7 +403,7 @@ jobs:
     - task: copy-ntp-required-files
       input_mapping:
         scripts-resource: cf-ops-automation
-        template-resource: paas-template-ntp
+        template-resource: paas-templates-ntp
         credentials-resource: secrets-ntp
         additional-resource: pre-bosh-deploy-resource
       output_mapping:
@@ -479,7 +486,7 @@ jobs:
           - ops-and-vars-files/vars/*
         cleanup: true
     - task: execute-ntp-post-bosh-deploy
-      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-ntp, credentials-resource: secrets-ntp, additional-resource: final-release-manifest}
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp, credentials-resource: secrets-ntp, additional-resource: final-release-manifest}
       output_mapping: {generated-files: post-deploy-result}
       file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
       params:
@@ -554,7 +561,7 @@ jobs:
        - get: secrets-simple-depls
          params: { submodules: none}
          passed: [update-pipeline-simple-depls-generated]
-       - get: paas-template-simple-depls
+       - get: paas-templates-simple-depls
          params: { submodules: none}
          passed: [update-pipeline-simple-depls-generated]
        - get: cf-ops-automation
@@ -577,7 +584,7 @@ jobs:
          params: { submodules: none}
          passed: [recreate-all]
          trigger: true
-       - get: paas-template-simple-depls
+       - get: paas-templates-simple-depls
          params: { submodules: none}
          passed: [recreate-all]
          trigger: true
@@ -633,7 +640,11 @@ jobs:
     - get: secrets-full
       params: { submodules: none}
       attempts: 2
-#      trigger: true
+    - get: paas-templates-simple-depls-versions
+      params:
+        submodules: none
+      attempts: 2
+      trigger: true
   - task: generate-simple-depls-flight-plan
     output_mapping: {result-dir: init-simple-depls-plan}
     config:
@@ -646,10 +657,10 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-generated
   - task: fly-into-concourse
@@ -674,7 +685,7 @@ jobs:
   - aggregate:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: paas-template-simple-depls
+    - get: paas-templates-simple-depls
       params: { submodules: none}
       attempts: 2
     - get: paas-templates-wip
@@ -694,6 +705,7 @@ jobs:
       params: { submodules: none}
       attempts: 2
     - get: secrets-full
+      version: every
       params: { submodules: none}
       attempts: 2
   - task: generate-simple-depls-pipeline
