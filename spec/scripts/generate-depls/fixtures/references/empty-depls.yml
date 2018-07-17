@@ -1,42 +1,41 @@
 ---
 resource_types:
-  - name: bosh-deployment
-    type: docker-image
-    source:
-      repository: concourse/bosh-deployment-resource
-      tag: latest
-  - name: slack-notification
-    type: docker-image
-    source:
-      repository: cfcommunity/slack-notification-resource
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: concourse/bosh-deployment-resource
+    tag: latest
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
 
-  - name: cron-resource
-    type: docker-image
-    source:
-      repository: cftoolsmiths/cron-resource
+- name: cron-resource
+  type: docker-image
+  source:
+    repository: cftoolsmiths/cron-resource
 
-  - name: bosh-config
-    type: docker-image
-    source:
-      repository: dellemcdojo/bosh-config-resource
+- name: bosh-config
+  type: docker-image
+  source:
+    repository: dellemcdojo/bosh-config-resource
 
-  - name: concourse-pipeline
-    type: docker-image
-    source:
-      repository: concourse/concourse-pipeline-resource
+- name: concourse-pipeline
+  type: docker-image
+  source:
+    repository: concourse/concourse-pipeline-resource
 
-  - name: bosh-deployment-v2
-    type: docker-image
-    source:
-      repository: cloudfoundry/bosh-deployment-resource
+- name: bosh-deployment-v2
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
 
-  - name: bosh-errand
-    type: docker-image
-    source:
-      repository: starkandwayne/bosh2-errand-resource
+- name: bosh-errand
+  type: docker-image
+  source:
+    repository: starkandwayne/bosh2-errand-resource
 
 resources:
-
 - name: at-noon
   type: cron-resource
   source:
@@ -49,8 +48,7 @@ resources:
   source:
     url: ((slack-webhook))
 
-
-- name: secrets-dummy-depls
+- name: secrets-dummy-depls-limited
   type: git
   source:
     uri: ((secrets-uri))
@@ -81,12 +79,6 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-
-
-
-
-
-
 jobs:
 - name: execute-deploy-script
   serial: true
@@ -101,18 +93,14 @@ jobs:
     - get: at-noon
       trigger: true
     - aggregate:
-      - get: secrets-dummy-depls
+      - get: secrets-dummy-depls-limited
         params: { submodules: none}
-        
       - get: paas-templates-dummy-depls
         params: { submodules: none}
-        
       - get: cf-ops-automation
         params: { submodules: none}
-        
-
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-dummy-depls, secrets: secrets-dummy-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-dummy-depls, secrets: secrets-dummy-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: dummy-depls/template
@@ -135,37 +123,17 @@ jobs:
   plan:
     - get: secrets-full-writer
       params: { submodules: none}
-
-    - get: secrets-dummy-depls
+    - get: secrets-dummy-depls-limited
       params: { submodules: none}
       trigger: true
-      
     - get: paas-templates-dummy-depls
       params: { submodules: none}
       trigger: true
-      
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-      
-#    - task: generate-dummy-depls-terraform-outputs-cloud-config
-#      input_mapping: {scripts-resource: paas-templates, credentials-resource: secrets-dummy-depls, additional-resource: terraform-outputs}
-#      output_mapping: {generated-files: cloud-config-manifest}
-#      file: paas-templates/concourse/tasks/extract_terraform_outputs.yml
-#      params:
-#        STATE_FILE: "state-file-resource/terraform.tfstate"
-#        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
-#
-#        SPRUCE_FILE_BASE_PATH: credentials-resource/dummy-depls/
-#        YML_TEMPLATE_DIR: scripts-resource/dummy-depls/template
-#        YML_FILES: |
-#            ./credentials-resource/dummy-depls/secrets/meta.yml
-#            ./credentials-resource/dummy-depls/secrets/secrets.yml
-#            ./credentials-resource/shared/secrets.yml
-#        CUSTOM_SCRIPT_DIR: scripts-resource/dummy-depls/template
-
     - task: generate-dummy-depls-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-dummy-depls, additional-resource: paas-templates-dummy-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-dummy-depls-limited, additional-resource: paas-templates-dummy-depls}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -183,7 +151,7 @@ jobs:
         attempts: 2
         input_mapping:
           scripts-resource: cf-ops-automation
-          secrets: secrets-dummy-depls
+          secrets: secrets-dummy-depls-limited
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
           BOSH_TARGET: ((bosh-target))
@@ -217,7 +185,7 @@ jobs:
         attempts: 2
         input_mapping:
           scripts-resource: cf-ops-automation
-          secrets: secrets-dummy-depls
+          secrets: secrets-dummy-depls-limited
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
           BOSH_TARGET: ((bosh-target))
@@ -247,9 +215,6 @@ jobs:
               repository: updated-runtime-config
               rebase: true
 
-
-
-
 - name: recreate-all
   on_failure:
     put: failure-alert
@@ -263,16 +228,10 @@ jobs:
     - aggregate:
        - get: secrets-dummy-depls
          params: { submodules: none}
-         
        - get: paas-templates-dummy-depls
          params: { submodules: none}
-         
        - get: cf-ops-automation
          params: { submodules: none}
-         
-
-
-
 
 groups:
 - name: Dummy-depls
@@ -288,5 +247,3 @@ groups:
     - cloud-config-and-runtime-config-for-dummy-depls
     - execute-deploy-script
     - recreate-all
-   
-

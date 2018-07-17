@@ -1,42 +1,41 @@
 ---
 resource_types:
-  - name: bosh-deployment
-    type: docker-image
-    source:
-      repository: concourse/bosh-deployment-resource
-      tag: latest
-  - name: slack-notification
-    type: docker-image
-    source:
-      repository: cfcommunity/slack-notification-resource
+- name: bosh-deployment
+  type: docker-image
+  source:
+    repository: concourse/bosh-deployment-resource
+    tag: latest
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: cfcommunity/slack-notification-resource
 
-  - name: cron-resource
-    type: docker-image
-    source:
-      repository: cftoolsmiths/cron-resource
+- name: cron-resource
+  type: docker-image
+  source:
+    repository: cftoolsmiths/cron-resource
 
-  - name: bosh-config
-    type: docker-image
-    source:
-      repository: dellemcdojo/bosh-config-resource
+- name: bosh-config
+  type: docker-image
+  source:
+    repository: dellemcdojo/bosh-config-resource
 
-  - name: concourse-pipeline
-    type: docker-image
-    source:
-      repository: concourse/concourse-pipeline-resource
+- name: concourse-pipeline
+  type: docker-image
+  source:
+    repository: concourse/concourse-pipeline-resource
 
-  - name: bosh-deployment-v2
-    type: docker-image
-    source:
-      repository: cloudfoundry/bosh-deployment-resource
+- name: bosh-deployment-v2
+  type: docker-image
+  source:
+    repository: cloudfoundry/bosh-deployment-resource
 
-  - name: bosh-errand
-    type: docker-image
-    source:
-      repository: starkandwayne/bosh2-errand-resource
+- name: bosh-errand
+  type: docker-image
+  source:
+    repository: starkandwayne/bosh2-errand-resource
 
 resources:
-
 - name: at-noon
   type: cron-resource
   source:
@@ -49,7 +48,7 @@ resources:
   source:
     url: ((slack-webhook))
 
-- name: secrets-simple-depls
+- name: secrets-simple-depls-limited
   type: git
   source:
     uri: ((secrets-uri))
@@ -95,8 +94,6 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    
-    
     paths: ["simple-depls/ntp","shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
@@ -157,10 +154,14 @@ resources:
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
-- name: secrets-full
+- name: secrets-simple-depls
   type: git
   source:
     uri: ((secrets-uri))
+    paths:
+    - private-config.yml
+    - simple-depls
+    - shared
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -180,12 +181,9 @@ resources:
     skip_ssl_verification: true
 
 - name: ntp_boshrelease
-  
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
-  
-
 
 jobs:
 - name: execute-deploy-script
@@ -201,7 +199,7 @@ jobs:
     - get: at-noon
       trigger: true
     - aggregate:
-      - get: secrets-simple-depls
+      - get: secrets-simple-depls-limited
         params: { submodules: none}
       - get: paas-templates-simple-depls
         params: { submodules: none}
@@ -210,7 +208,7 @@ jobs:
         passed: [update-pipeline-simple-depls-generated]
 
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-simple-depls, secrets: secrets-simple-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-simple-depls, secrets: secrets-simple-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: simple-depls/template
@@ -233,7 +231,7 @@ jobs:
   plan:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: secrets-simple-depls
+    - get: secrets-simple-depls-limited
       params: { submodules: none}
       trigger: true
     - get: paas-templates-simple-depls
@@ -243,24 +241,8 @@ jobs:
       params: { submodules: none}
       trigger: true
       passed: [update-pipeline-simple-depls-generated]
-#    - task: generate-simple-depls-terraform-outputs-cloud-config
-#      input_mapping: {scripts-resource: paas-templates, credentials-resource: secrets-simple-depls, additional-resource: terraform-outputs}
-#      output_mapping: {generated-files: cloud-config-manifest}
-#      file: paas-templates/concourse/tasks/extract_terraform_outputs.yml
-#      params:
-#        STATE_FILE: "state-file-resource/terraform.tfstate"
-#        OUTPUT_FILE: "result-dir/bosh.terraform-outputs.yml"
-#
-#        SPRUCE_FILE_BASE_PATH: credentials-resource/simple-depls/
-#        YML_TEMPLATE_DIR: scripts-resource/simple-depls/template
-#        YML_FILES: |
-#            ./credentials-resource/simple-depls/secrets/meta.yml
-#            ./credentials-resource/simple-depls/secrets/secrets.yml
-#            ./credentials-resource/shared/secrets.yml
-#        CUSTOM_SCRIPT_DIR: scripts-resource/simple-depls/template
-
     - task: generate-simple-depls-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-simple-depls, additional-resource: paas-templates-simple-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-simple-depls-limited, additional-resource: paas-templates-simple-depls}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -278,7 +260,7 @@ jobs:
         attempts: 2
         input_mapping:
           scripts-resource: cf-ops-automation
-          secrets: secrets-simple-depls
+          secrets: secrets-simple-depls-limited
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
           BOSH_TARGET: ((bosh-target))
@@ -313,7 +295,7 @@ jobs:
         attempts: 2
         input_mapping:
           scripts-resource: cf-ops-automation
-          secrets: secrets-simple-depls
+          secrets: secrets-simple-depls-limited
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
           BOSH_TARGET: ((bosh-target))
@@ -519,7 +501,7 @@ jobs:
     - aggregate:
       - get: cf-ops-automation
         params: { submodules: none}
-      - get: secrets-full
+      - get: secrets-simple-depls
         params: { submodules: none}
     - task: generate-simple-depls-pipeline
       output_mapping: {result-dir: trigger-simple-depls-plan}
@@ -637,7 +619,7 @@ jobs:
       params: { submodules: none}
       attempts: 2
 #      trigger: true
-    - get: secrets-full
+    - get: secrets-simple-depls
       params: { submodules: none}
       attempts: 2
     - get: paas-templates-simple-depls-versions
@@ -693,10 +675,9 @@ jobs:
         submodules: none
       attempts: 2
       trigger: true
-    - get: secrets-simple-depls
+    - get: secrets-simple-depls-limited
       params: { submodules: none}
       attempts: 2
-      trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
@@ -704,12 +685,13 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 2
-    - get: secrets-full
+    - get: secrets-simple-depls
       version: every
       params: { submodules: none}
       attempts: 2
+      trigger: true
   - task: generate-simple-depls-pipeline
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-simple-depls}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}
     config:
       platform: linux

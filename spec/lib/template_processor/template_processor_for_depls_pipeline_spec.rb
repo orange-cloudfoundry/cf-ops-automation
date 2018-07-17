@@ -451,7 +451,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           [
             { "task" => 'generate-terraform-tfvars',
               "input_mapping" =>
-                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls", "additional-resource" => "paas-templates-my-root-depls" },
+                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls-limited", "additional-resource" => "paas-templates-my-root-depls" },
               "output_mapping" => { "generated-files" => "terraform-tfvars" },
               "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
               "params" =>
@@ -463,7 +463,7 @@ describe 'DeplsPipelineTemplateProcessing' do
                "IAAS_TYPE" => "((iaas-type))" } },
             { "task" => "terraform-plan",
               "input_mapping" =>
-                   { "secret-state-resource" => "secrets-my-root-depls",
+                   { "secret-state-resource" => "secrets-my-root-depls-limited",
                      "spec-resource" => "paas-templates-my-root-depls" },
               "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
               "params" =>

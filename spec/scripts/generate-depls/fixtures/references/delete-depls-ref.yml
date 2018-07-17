@@ -41,7 +41,7 @@ resources:
     source:
       url: ((slack-webhook))
 
-  - name: secrets-delete-depls
+  - name: secrets-delete-depls-limited
     type: git
     source:
       uri: ((secrets-uri))
@@ -77,10 +77,14 @@ resources:
       tag_filter: ((cf-ops-automation-tag-filter))
       skip_ssl_verification: true
 
-  - name: secrets-full
+  - name: secrets-delete-depls
     type: git
     source:
       uri: ((secrets-uri))
+      paths:
+      - private-config.yml
+      - delete-depls
+      - shared
       branch: ((secrets-branch))
       skip_ssl_verification: true
   - name: paas-templates-full
@@ -108,7 +112,7 @@ jobs:
       - get: paas-templates-full
         params:
           submodules: none
-      - get: secrets-full
+      - get: secrets-delete-depls
         version: every
         trigger: true
         params:
@@ -134,7 +138,7 @@ jobs:
           submodules: none
         passed:
         - delete-deployments-review
-      - get: secrets-full
+      - get: secrets-delete-depls
         params:
           submodules: none
         passed:
@@ -142,7 +146,7 @@ jobs:
     - task: delete_deployments
       input_mapping:
         scripts-resource: cf-ops-automation
-        secrets: secrets-full
+        secrets: secrets-delete-depls
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
         BOSH_TARGET: ((bosh-target))
@@ -163,7 +167,7 @@ jobs:
     - get: at-noon
       trigger: true
     - aggregate:
-      - get: secrets-delete-depls
+      - get: secrets-delete-depls-limited
         params:
           submodules: none
       - get: paas-templates-delete-depls
@@ -176,7 +180,7 @@ jobs:
       input_mapping:
         scripts-resource: cf-ops-automation
         templates: paas-templates-delete-depls
-        secrets: secrets-delete-depls
+        secrets: secrets-delete-depls-limited
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: delete-depls/template
@@ -199,7 +203,7 @@ jobs:
     plan:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: secrets-delete-depls
+    - get: secrets-delete-depls-limited
       params:
         submodules: none
       trigger: true
@@ -214,7 +218,7 @@ jobs:
     - task: generate-delete-depls-all-config
       input_mapping:
         scripts-resource: cf-ops-automation
-        credentials-resource: secrets-delete-depls
+        credentials-resource: secrets-delete-depls-limited
         additional-resource: paas-templates-delete-depls
       output_mapping:
         generated-files: config-manifest
@@ -234,7 +238,7 @@ jobs:
         attempts: 2
         input_mapping:
           scripts-resource: cf-ops-automation
-          secrets: secrets-delete-depls
+          secrets: secrets-delete-depls-limited
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
           BOSH_TARGET: ((bosh-target))
@@ -271,7 +275,7 @@ jobs:
         attempts: 2
         input_mapping:
           scripts-resource: cf-ops-automation
-          secrets: secrets-delete-depls
+          secrets: secrets-delete-depls-limited
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
           BOSH_TARGET: ((bosh-target))
