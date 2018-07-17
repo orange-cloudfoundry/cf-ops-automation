@@ -226,7 +226,7 @@ jobs:
   serial_groups: [recreate]
   plan:
     - aggregate:
-       - get: secrets-dummy-depls
+       - get: secrets-dummy-depls-limited
          params: { submodules: none}
        - get: paas-templates-dummy-depls
          params: { submodules: none}

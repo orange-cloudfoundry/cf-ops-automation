@@ -320,7 +320,7 @@ jobs:
     - recreate
     plan:
     - aggregate:
-      - get: secrets-delete-depls
+      - get: secrets-delete-depls-limited
         params:
           submodules: none
       - get: paas-templates-delete-depls

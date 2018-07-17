@@ -750,7 +750,7 @@ jobs:
   serial_groups: [recreate]
   plan:
   - aggregate:
-     - get: secrets-<%= depls %>
+     - get: secrets-<%= depls %>-limited
        params: { submodules: none}
        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
      - get: paas-templates-<%= depls %>
@@ -774,7 +774,7 @@ jobs:
   serial_groups: [recreate]
   plan:
   - aggregate:
-     - get: secrets-<%= depls %>
+     - get: secrets-<%= depls %>-limited
        params: { submodules: none}
        passed: [recreate-all]
        trigger: true
@@ -787,7 +787,7 @@ jobs:
        passed: [recreate-all]
 
   - task: bosh-recreate-<%= name %>
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-limited}
     config:
         platform: linux
         image_resource:
