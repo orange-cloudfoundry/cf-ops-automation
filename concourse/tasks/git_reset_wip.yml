@@ -53,6 +53,9 @@ run:
 
     for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i ;done
 
+    echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .last-reset
+    git add .last-reset
+    git commit -m "Add reset timestamp"
 
 params:
     GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
