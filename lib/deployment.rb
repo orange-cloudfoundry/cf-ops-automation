@@ -1,4 +1,5 @@
 require 'yaml'
+require_relative 'active_support_copy_deep_merge'
 
 class Deployment
   attr_reader :name, :details
@@ -25,6 +26,10 @@ class Deployment
   def disable
     details['status'] = 'disabled'
     self
+  end
+
+  def merge(override)
+    Deployment.new(@name, @details&.deep_merge(override.details))
   end
 
   def self.default(deployment_name)

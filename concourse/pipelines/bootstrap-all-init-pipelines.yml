@@ -68,6 +68,8 @@ jobs:
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
     file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
+    params:
+      IAAS_TYPE: ((iaas-type))
   - task: set-all-init-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml

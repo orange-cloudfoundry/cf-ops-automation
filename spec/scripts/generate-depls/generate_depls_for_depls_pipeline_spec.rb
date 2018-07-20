@@ -11,9 +11,9 @@ describe 'generate-depls for depls pipeline' do
   let(:templates_path) { "#{fixture_path}/templates" }
   let(:secrets_path) { "#{fixture_path}/secrets" }
   let(:depls_name) { 'simple-depls' }
-  let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/depls-pipeline.yml.erb" }
+  let(:iaas_type) { 'my-custom-iaas' }
+  let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i ./concourse/pipelines/template/depls-pipeline.yml.erb" }
   let(:pipeline) { TestHelper.load_generated_pipeline(output_path, "#{depls_name}-generated.yml") }
-
   let(:cleanup) { FileUtils.rm_rf(output_path) unless output_path.nil? }
 
   context 'when a simple deployment is used' do

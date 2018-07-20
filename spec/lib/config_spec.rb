@@ -6,6 +6,7 @@ require 'config'
 
 describe Config do
   let(:config_dir) { Dir.mktmpdir }
+  let(:extended_config) { ExtendedConfigBuilder.new.with_iaas_type('my_custom_iaas').build }
   let(:default_config) do
     {
       'offline-mode' => {
@@ -14,6 +15,7 @@ describe Config do
         'docker-images' => false
       },
       'default' => {
+        'iaas' => 'my_custom_iaas',
         'stemcell' => {
           'name' => 'bosh-openstack-kvm-ubuntu-trusty-go_agent'
         }
@@ -30,14 +32,14 @@ describe Config do
   describe 'private-config.yml format validation'
 
   describe '#load_config' do
-    subject { described_class.new('not-existing-public-config.yml', 'not-existing-private-config.yml') }
+    subject { described_class.new('not-existing-public-config.yml', 'not-existing-private-config.yml', extended_config) }
 
     it 'generates a default config when no yaml detected' do
       expect(subject.load_config.loaded_config).to eq(default_config)
     end
 
     context 'when shared config exists' do
-      subject { described_class.new(shared_config_file, 'not-existing-private-config.yml') }
+      subject { described_class.new(shared_config_file, 'not-existing-private-config.yml', extended_config) }
 
       let(:shared_config_file) { File.join(config_dir, 'my-public-config.yml') }
       let(:shared_config_file_content) { { 'public-override' => true, 'offline-mode' => false } }
@@ -53,7 +55,7 @@ describe Config do
       end
 
       context 'when private config also exists' do
-        subject { described_class.new(shared_config_file, private_config_file) }
+        subject { described_class.new(shared_config_file, private_config_file, extended_config) }
 
         let(:private_config_file) { File.join(config_dir, 'my-private-config.yml') }
         let(:private_config_file_content) { { 'private-override' => true, 'offline-mode' => true } }

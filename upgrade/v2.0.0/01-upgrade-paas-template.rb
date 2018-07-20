@@ -1,33 +1,16 @@
 #!/usr/bin/env ruby
 require 'yaml'
-require 'optparse'
 require_relative '../../lib/deployment_deployers_config'
+require_relative '../../lib/coa_upgrader'
 
-# Argument parsing
-options = {
-  ops_automation: '.',
+OPTIONS = {
   dump_output: true,
-  paas_template_root: '../paas-templates'
-}
+  config_path: '',
+  templates_path: '../paas-templates'
+}.freeze
 
-opt_parser = OptionParser.new do |opts|
-  opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
-
-  opts.on('-t', '--templates-path PATH', "paas-templates location (main git directory). Default: #{options[:paas_template_root]}") do |tp_string|
-    options[:paas_template_root] = tp_string
-  end
-
-  opts.on('-a', '--automation-path PATH', 'Base location for cf-ops-automation') do |ap_string|
-    options[:ops_automation] = ap_string
-  end
-
-  opts.on('--[no-]dump', 'Dump genereted file on standart output') do |dump|
-    options[:dump_output] = dump
-  end
-end
-opt_parser.parse!
-
-paas_template_root = options[:paas_template_root]
+options = CoaUpgrader::CommandLineParser.new(OPTIONS.dup).parse
+paas_template_root = options[:templates_path]
 
 raise "invalid paas_template_root: <#{paas_template_root}> does not exist" unless Dir.exist?(paas_template_root)
 

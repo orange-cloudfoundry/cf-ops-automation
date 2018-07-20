@@ -11,13 +11,14 @@ describe 'generate-depls for news pipeline' do
     let(:output_path) { Dir.mktmpdir }
     let(:templates_path) { "#{fixture_path}/templates" }
     let(:secrets_path) { "#{fixture_path}/secrets" }
+    let(:iaas_type) { 'my-custom-iaas' }
 
     after do
       FileUtils.rm_rf(output_path) unless output_path.nil?
     end
 
     context 'when valid' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/news-pipeline.yml.erb" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i ./concourse/pipelines/template/news-pipeline.yml.erb" }
 
       stdout_str = stderr_str = ''
       before do

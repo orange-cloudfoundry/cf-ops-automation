@@ -41,7 +41,7 @@ class DeploymentDeployersConfig
     dependency_filename = File.join(@public_base_location, DEPLOYMENT_DEPENDENCIES_FILENAME)
     return unless File.exist?(dependency_filename)
 
-    @deployment_factory&.load_file(dependency_filename)&.each do |deployment|
+    @deployment_factory&.load_file_with_iaas(dependency_filename)&.each do |deployment|
       raise "#{@private_base_location} - Invalid deployment: expected <#{@deployment_name}> - Found <#{deployment.name}>" if deployment.name != @deployment_name
       deployment_details.merge! deployment.details
     end

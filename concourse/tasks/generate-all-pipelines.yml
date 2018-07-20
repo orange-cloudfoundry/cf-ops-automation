@@ -19,3 +19,5 @@ run:
     export OUTPUT_DIR=$(pwd)/result-dir
     cd scripts-resource
     ./scripts/concourse-generate-all-pipelines.sh
+param:
+  IAAS_TYPE:

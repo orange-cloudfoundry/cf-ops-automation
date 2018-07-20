@@ -41,7 +41,7 @@ describe 'list_used_ci_team task' do
               team: my-custom-team-2
               vars_files:
               - micro-depls/concourse-micro/pipelines/credentials-git-config.yml
-              - micro-depls/concourse-micro/pipelines/credentials-mattermost-certs.yml
+              - micro-depls/concourse-micro/pipelines/credentials-iaas-specific.yml
             ops-depls-s3-br-upload-generated:
               team: my-custom-team-1
               vars_files:

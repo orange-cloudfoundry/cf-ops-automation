@@ -81,28 +81,10 @@ jobs:
   - task: generate-simple-depls-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-full,secrets: secrets-full}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
-      inputs:
-        - name: scripts-resource
-        - name: secrets
-        - name: templates
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          cp -r templates/. result-dir
-          cp -r scripts-resource/. result-dir
-          cp -rf secrets/. result-dir
-          cd result-dir/
-          ./scripts/generate-depls.rb --depls simple-depls -t ../templates -p . -o concourse
-
+    file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
+    params:
+      ROOT_DEPLOYMENT: simple-depls
+      IAAS_TYPE: ((iaas-type))
   - put: TO_BE_DEFINED
     params:
       pipelines:

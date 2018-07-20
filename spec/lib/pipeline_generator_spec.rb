@@ -19,12 +19,14 @@ describe PipelineGenerator do
     let(:secrets_path) { "secret/path" }
     let(:input_pipeline) { "ppln" }
     let(:git_submodule_path) { "git_submodule_path" }
+    let(:rspec_iaas_type) { "rspec-iaas-type" }
     let(:options) do
       {
         paas_templates_path: paas_templates_path,
         depls: depls,
         secrets_path: secrets_path,
         input_pipelines: [input_pipeline],
+        iaas_type: rspec_iaas_type,
         git_submodule_path: git_submodule_path
       }
     end
@@ -41,7 +43,8 @@ describe PipelineGenerator do
     end
     let(:shared_config) { File.join(paas_templates_path, 'shared-config.yml') }
     let(:private_config) { File.join(secrets_path, 'private-config.yml') }
-    let(:config) { Config.new(shared_config, private_config) }
+    let(:extended_config) { ExtendedConfigBuilder.new.with_iaas_type(rspec_iaas_type).build }
+    let(:config) { Config.new(shared_config, private_config, extended_config) }
     let(:deployment_factory) do
       DeploymentFactory.new(depls, root_deployment_versions.versions, config)
     end
@@ -89,12 +92,12 @@ describe PipelineGenerator do
         with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
         and_return(root_deployment_versions)
 
-      expect(Config).to receive(:new).with(shared_config, private_config).
-        and_return(config)
-      expect(config).to receive(:load_config).
-        and_return(config)
-      expect(config).to receive(:loaded_config).
-        and_return(loaded_config)
+        expect(Config).to receive(:new).with(shared_config, private_config,extended_config).
+          and_return(config)
+        expect(config).to receive(:load_config).
+          and_return(config)
+        expect(config).to receive(:loaded_config).
+          and_return(loaded_config)
 
       expect(DeploymentFactory).to receive(:new).
         with(depls, root_deployment_versions.versions, config).

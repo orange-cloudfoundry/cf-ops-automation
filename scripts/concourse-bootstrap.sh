@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 set -e
-SECRETS=${SECRETS:-$(pwd)/../../preprod-secrets}
-FLY_TARGET=${FLY_TARGET:-cw-pp-micro}
+SECRETS=${SECRETS:-$(pwd)/../../int-secrets}
+FLY_TARGET=${FLY_TARGET:-fe-int}
 SKIP_TRIGGER=${SKIP_TRIGGER:=false}
 DEBUG=${DEBUG:=false}
-
 
 usage(){
     echo "$0" 1>&2
     echo -e "No parameter supported. Use environment variables:" 1>&2
-    echo -e "\t FLY_TARGET: fly target name to use. DEFAULT: $FLY_TARGET " 1>&2
-    echo -e "\t SECRETS: path to secrets directory. DEFAULT: $SECRETS " 1>&2
-    echo -e "\t SKIP_TRIGGER: skip job triggering after pipeline loading. DEFAULT: [$SKIP_TRIGGER] " 1>&2
-    echo -e "\t FLY_SET_PIPELINE_OPTION: set custom option like '--non-interactive'. DEFAULT: empty " 1>&2
+    echo -e "\t FLY_TARGET: fly target name to use. DEFAULT: $FLY_TARGET" 1>&2
+    echo -e "\t IAAS_TYPE: iaas type to use. NO DEFAULT VALUE" 1>&2
+    echo -e "\t SECRETS: path to secrets directory. DEFAULT: $SECRETS" 1>&2
+    echo -e "\t SKIP_TRIGGER: skip job triggering after pipeline loading. DEFAULT: [$SKIP_TRIGGER]" 1>&2
+    echo -e "\t FLY_SET_PIPELINE_OPTION: set custom option like '--non-interactive'. DEFAULT: empty" 1>&2
     exit 1
 }
 
@@ -44,13 +44,12 @@ PIPELINE="bootstrap-all-init-pipelines"
 echo "Load ${PIPELINE} on ${FLY_TARGET}"
 set +e
 fly -t ${FLY_TARGET} set-pipeline ${FLY_SET_PIPELINE_OPTION} -p ${PIPELINE} -c ${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml  \
-            -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml \
-            -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-mattermost-certs.yml \
-            -l ${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml
+            -l "${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml" \
+            -l "${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-iaas-specific.yml" \
+            -l "${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml"
 set -e
 fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
 if [ "$SKIP_TRIGGER" != "true" ]
 then
     fly -t ${FLY_TARGET} trigger-job -j "${PIPELINE}/bootstrap-init-pipelines"
 fi
-
