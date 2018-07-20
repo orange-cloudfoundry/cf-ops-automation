@@ -1,5 +1,6 @@
 require 'optparse'
 require_relative './config'
+require_relative './extended_config'
 require_relative './bosh_certificates'
 require_relative './deployment_factory'
 require_relative './template_processor'
@@ -31,7 +32,8 @@ class PipelineGenerator
     output_path: 'bootstrap-generated',
     ops_automation: '.',
     dump_output: true,
-    paas_templates_path: '../paas-templates'
+    paas_templates_path: '../paas-templates',
+    iaas_type: 'openstack'
   }.freeze
 
   def initialize(options)
@@ -64,7 +66,8 @@ class PipelineGenerator
   def set_context
     shared_config  = File.join(options.paas_templates_path, 'shared-config.yml')
     private_config = File.join(options.secrets_path, 'private-config.yml')
-    config = Config.new(shared_config, private_config).load_config
+    extended_config = ExtendedConfigBuilder.new.with_iaas_type(options.iaas_type).build
+    config = Config.new(shared_config, private_config, extended_config).load_config
     root_deployment_versions = RootDeploymentVersion.load_file("#{options.paas_templates_path}/#{options.depls}/#{options.depls}-versions.yml")
     deployment_factory = DeploymentFactory.new(options.depls, root_deployment_versions.versions, config)
 
@@ -166,6 +169,10 @@ class PipelineGenerator
 
         opts.on('--[no-]dump', 'Dump genereted file on standart output') do |dump|
           options[:dump_output] = dump
+        end
+
+        opts.on('--iaas', 'Target a specific iaas for pipeline generation') do |iaas_type|
+          options[:iaas_type] = iaas_type
         end
       end
     end

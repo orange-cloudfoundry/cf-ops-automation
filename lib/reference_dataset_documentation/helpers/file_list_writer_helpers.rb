@@ -11,12 +11,12 @@ module ReferenceDatasetDocumentation
       end
 
       def extract_prefix(path)
-        path_items = path.strip.gsub(%r{^.\/}, "").split('/')
+        path_items = path.strip.gsub(%r{^./}, "").split('/')
         "  " * (path_items.size - 1)
       end
 
       def clean_path(path)
-        path.strip.gsub(%r{^.\/}, "")
+        path.strip.gsub(%r{^./}, "")
       end
     end
   end

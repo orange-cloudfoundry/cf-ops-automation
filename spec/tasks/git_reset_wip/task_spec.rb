@@ -1,4 +1,5 @@
 # encoding: utf-8
+
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
@@ -16,17 +17,15 @@ describe 'git_reset_wip task' do
     FileUtils.rm_rf @git_test_reference_repo
   end
 
-
   context 'when executed with develop as base branch' do
-
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
 
       @output = execute('--include-ignored -c concourse/tasks/git_reset_wip.yml ' \
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
-        'SKIP_SSL_VERIFICATION' =>'true',
-        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"')
+                        'SKIP_SSL_VERIFICATION' => 'true',
+                        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"')
     end
 
     after(:context) do
@@ -36,17 +35,15 @@ describe 'git_reset_wip task' do
     it 'only merges branches matching filter' do
       expect(@output).to include('Processing wip-1').and \
         include('Processing WIP-2').and \
-        include('Processing feature-1').and \
-        include('Processing Feature-2').and \
-        include("Switched to a new branch 'develop'")
+          include('Processing feature-1').and \
+            include('Processing Feature-2').and \
+              include("Switched to a new branch 'develop'")
     end
 
     %w[develop feature-1 Feature-2 wip-1 WIP-2].each do |merged_file|
       it "contains #{merged_file} file" do
         expect(File).to exist(File.join(@updated_git_resource, "#{merged_file}.md"))
       end
-
-
     end
 
     it 'does not contain files from a-branch' do
@@ -62,11 +59,9 @@ describe 'git_reset_wip task' do
         expect(@output).to include('Skipping ssl verification')
       end
     end
-
   end
 
   context 'when executed with master as base branch' do
-
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
 
@@ -88,7 +83,5 @@ describe 'git_reset_wip task' do
     it 'contains master.md file' do
       expect(File).to exist(File.join(@updated_git_resource, 'master.md'))
     end
-
   end
-
 end

@@ -14,6 +14,16 @@ class DeploymentFactory
     validate_version_reference
   end
 
+  def load_file_with_iaas(filename = '')
+    deployment_dependencies_extension = File.extname(filename)
+    deployment_dependencies_basename = filename.gsub(deployment_dependencies_extension, '')
+    deployment_dependencies_loaded = load_file(filename)
+
+    iaas_filename = "#{deployment_dependencies_basename}-#{@config.iaas_type}.yml"
+    iaas_loaded = File.exist?(iaas_filename) ? load_file(iaas_filename) : [Deployment.new('empty-deployment')]
+    merge(deployment_dependencies_loaded.first, iaas_loaded.first)
+  end
+
   def load_file(filename = '')
     validate_file(filename)
     puts "DeploymentFactory - processing #{filename}"
@@ -78,6 +88,10 @@ class DeploymentFactory
       raise "Missing boshrelease version: expecting '#{a_release}-version' key in #{@root_deployment_name}-versions.yml" if version.nil?
       deployment_details['releases'][a_release]['version'] = version
     end
+  end
+
+  def merge(initial, override)
+    [initial.merge(override)]
   end
 
   def validate

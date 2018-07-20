@@ -920,29 +920,10 @@ jobs:
   - task: generate-<%= depls %>-pipeline
     input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-<%= depls %>-trigger}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
-      inputs:
-        - name: scripts-resource
-        - name: templates
-        - name: secrets
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          cp -r templates/. result-dir
-          cp -r scripts-resource/. result-dir
-          cp -rf secrets/. result-dir
-          cd result-dir/
-          ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse
-      params:
-        ROOT_DEPLOYMENT: <%= depls %>
+    file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
+    params:
+      ROOT_DEPLOYMENT: <%= depls %>
+      IAAS_TYPE: ((iaas-type))
   - put: <%= all_ci_deployments[depls]['target_name'] %>
     params:
       pipelines:
