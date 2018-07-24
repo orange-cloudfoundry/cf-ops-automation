@@ -154,7 +154,7 @@ resources:
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
-- name: secrets-simple-depls
+- name: secrets-simple-depls-trigger
   type: git
   source:
     uri: ((secrets-uri))
@@ -501,7 +501,7 @@ jobs:
     - aggregate:
       - get: cf-ops-automation
         params: { submodules: none}
-      - get: secrets-simple-depls
+      - get: secrets-simple-depls-trigger
         params: { submodules: none}
     - task: generate-simple-depls-pipeline
       output_mapping: {result-dir: trigger-simple-depls-plan}
@@ -619,7 +619,7 @@ jobs:
       params: { submodules: none}
       attempts: 2
 #      trigger: true
-    - get: secrets-simple-depls
+    - get: secrets-simple-depls-trigger
       params: { submodules: none}
       attempts: 2
     - get: paas-templates-simple-depls-versions
@@ -685,13 +685,13 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 2
-    - get: secrets-simple-depls
+    - get: secrets-simple-depls-trigger
       version: every
       params: { submodules: none}
       attempts: 2
       trigger: true
   - task: generate-simple-depls-pipeline
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-simple-depls}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-simple-depls-trigger}
     output_mapping: {result-dir: concourse-simple-depls-pipeline}
     config:
       platform: linux

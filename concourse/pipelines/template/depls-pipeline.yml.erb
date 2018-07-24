@@ -200,7 +200,7 @@ resources:
 <% end %>
 
 <% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments.any? %>
-- name: secrets-<%=depls %>
+- name: secrets-<%=depls %>-trigger
   type: git
   source:
     uri: ((secrets-uri))
@@ -274,7 +274,7 @@ jobs:
       - get: paas-templates-full
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
-      - get: secrets-<%= depls %>
+      - get: secrets-<%= depls %>-trigger
         version: every
         trigger: true
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
@@ -298,11 +298,11 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [delete-deployments-review]
-      - get: secrets-<%= depls %>
+      - get: secrets-<%= depls %>-trigger
         params: { submodules: none}
         passed: [delete-deployments-review]
     - task: delete_deployments
-      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>}
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
          BOSH_TARGET: ((bosh-target))
@@ -706,7 +706,7 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-    - get: secrets-<%= depls %>
+    - get: secrets-<%= depls %>-trigger
       params: { submodules: none}
   - task: generate-<%= depls %>-pipeline
     output_mapping: {result-dir: trigger-<%= depls %>-plan}
@@ -832,7 +832,7 @@ jobs:
       params: { submodules: none}
       attempts: 2
 #      trigger: true
-    - get: secrets-<%= depls %>
+    - get: secrets-<%= depls %>-trigger
       params: { submodules: none}
       attempts: 2
     - get: paas-templates-<%= depls %>-versions
@@ -913,13 +913,13 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 2
-    - get: secrets-<%= depls %>
+    - get: secrets-<%= depls %>-trigger
       version: every
       params: { submodules: none}
       attempts: 2
       trigger: true
   - task: generate-<%= depls %>-pipeline
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-<%= depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-<%= depls %>-trigger}
     output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
     config:
       platform: linux

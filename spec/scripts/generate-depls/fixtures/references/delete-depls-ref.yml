@@ -77,7 +77,7 @@ resources:
       tag_filter: ((cf-ops-automation-tag-filter))
       skip_ssl_verification: true
 
-  - name: secrets-delete-depls
+  - name: secrets-delete-depls-trigger
     type: git
     source:
       uri: ((secrets-uri))
@@ -112,7 +112,7 @@ jobs:
       - get: paas-templates-full
         params:
           submodules: none
-      - get: secrets-delete-depls
+      - get: secrets-delete-depls-trigger
         version: every
         trigger: true
         params:
@@ -138,7 +138,7 @@ jobs:
           submodules: none
         passed:
         - delete-deployments-review
-      - get: secrets-delete-depls
+      - get: secrets-delete-depls-trigger
         params:
           submodules: none
         passed:
@@ -146,7 +146,7 @@ jobs:
     - task: delete_deployments
       input_mapping:
         scripts-resource: cf-ops-automation
-        secrets: secrets-delete-depls
+        secrets: secrets-delete-depls-trigger
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
         BOSH_TARGET: ((bosh-target))

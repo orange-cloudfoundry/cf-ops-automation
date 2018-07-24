@@ -13,7 +13,6 @@ bin/
 out/
 /coverage/
 
-spec/tasks/git_reset_wip/**
+spec/tasks/git_reset_wip/reference-resource/
 /Readme.md.toc.*
 /Readme.md.orig.*
-
