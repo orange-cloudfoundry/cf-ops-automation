@@ -957,7 +957,7 @@ jobs:
       <% if vars_file.end_with?('-versions.yml') %>
         <%= "- paas-templates-wip/#{vars_file}" %>
       <% else %>
-        <%= "- secrets-#{depls}/#{vars_file}" %>
+        <%= "- secrets-#{depls}-trigger/#{vars_file}" %>
       <% end %>
     <% end %>
   <% end %>
