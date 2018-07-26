@@ -17,3 +17,6 @@ deployment:
       ntp:
         base_location: https://bosh.io/d/github.com/
         repository: cloudfoundry-community/ntp-release
+      vault:
+        base_location: http://github.com/
+        repository: cloudfoundry-community/vault-boshrelease

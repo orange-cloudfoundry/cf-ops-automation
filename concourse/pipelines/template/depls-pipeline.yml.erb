@@ -23,6 +23,10 @@
 
   offline_stemcells_enabled = config['offline-mode'] && config['offline-mode']['stemcells'] && true
   jobs = Hash.new {|h,k| h[k]=[]}
+
+  def bosh_io_hosted?(info)
+    info["base_location"]&.include?("bosh.io")
+  end
 %>
 ---
 resource_types:
@@ -497,7 +501,7 @@ jobs:
       <% if offline_stemcells_enabled %>
       version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
       <% else %>
-      version: { version: ((stemcell-version)) }
+      version: { version: "((stemcell-version))" }
       <% end %>
       trigger: true
       attempts: 2
@@ -508,12 +512,12 @@ jobs:
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     - get: <%= release %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-      version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
+      version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-<%= info['version'] %>.tgz }
     <% else %>
-      <% if info['base_location'].include?('bosh.io') %>
-      version: { version: ((<%= release %>-version)) }
+      <% if bosh_io_hosted?(info) %>
+      version: { version: "<%= info['version'] %>" }
       <% else %>
-      version: { tag: v((<%= release %>-version)) }
+      version: { tag: "<%= info['version'] %>" }
       <% end %>
     <% end %>
       trigger: true
@@ -654,7 +658,7 @@ jobs:
       releases:<%= ' []' if boshrelease['releases']&.empty? %>
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-      - <%= release %>/<%= release %>-((<%= release %>-version)).tgz
+      - <%= release %>/<%= release %>-<%= info['version']%>.tgz
     <% else %>
       - <%= release %>/release.tgz
     <% end %>
@@ -895,17 +899,18 @@ jobs:
         - -ec
         - |
   <% uniq_releases.sort.each do |name, info| %>
+    <% from_prefix = bosh_io_hosted?(info) ? "version" : "tag" %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-<%= info['version'] %>.tgz" | tee -a result-dir/flight-plan
     <% else %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= info['version'] %>" | tee -a result-dir/flight-plan
     <% end %>
   <% end %>
-    <% if offline_stemcells_enabled %>
+  <% if offline_stemcells_enabled %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
-    <% else %>
+  <% else %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
-    <% end %>
+  <% end %>
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-generated
   - task: fly-into-concourse

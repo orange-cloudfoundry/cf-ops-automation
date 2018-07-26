@@ -70,6 +70,22 @@ resources:
     secret_access_key: ((s3-br-secret-key))
     endpoint: ((s3-br-endpoint))
     skip_ssl_verification: ((s3-br-skip-ssl-verification))
+- name: vault
+  type: github-release
+  source:
+    user: cloudfoundry-community
+    repository: vault-boshrelease
+    access_token: ((github-access-token))
+- name: vault-s3
+  type: s3
+  source:
+    bucket: ((s3-br-bucket))
+    region_name: ((s3-br-region-name))
+    regexp: cloudfoundry-community/vault-(.*).tgz
+    access_key_id: ((s3-br-access-key-id))
+    secret_access_key: ((s3-br-secret-key))
+    endpoint: ((s3-br-endpoint))
+    skip_ssl_verification: ((s3-br-skip-ssl-verification))
 jobs:
 - name: init-concourse-boshrelease-for-hello-world-root-depls
   on_failure:
@@ -103,6 +119,7 @@ jobs:
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-cpi-release --from version:((bosh-openstack-cpi-release-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: hello-world-root-depls-s3-br-upload-generated
   - task: fly-into-concourse
@@ -217,7 +234,7 @@ jobs:
     - aggregate:
       - get: nginx
         attempts: 2
-        version: {version: ((nginx-version))}
+        version: { version: 1.13.12 }
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
@@ -307,7 +324,7 @@ jobs:
     - aggregate:
       - get: ntp
         attempts: 2
-        version: {version: ((ntp-version))}
+        version: { version: 4.2.8p11 }
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
@@ -383,4 +400,94 @@ jobs:
     - put: ntp-s3
       params:
         file: ntp/*.tgz
+        acl: public-read
+- name: upload-current-vault
+  serial_groups: [vault]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: vault
+        attempts: 2
+        version: { tag: v1.0.1 }
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ init-concourse-boshrelease-for-hello-world-root-depls ]
+    - task: generate-vault-name
+      input_mapping: {release: vault}
+      output_mapping: {result-dir: vault}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: vault
+    - put: vault-s3
+      params:
+        file: vault/*.tgz
+        acl: public-read
+- name: upload-latest-vault
+  serial_groups: [vault]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: vault
+        attempts: 2
+        version: every
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ upload-current-vault ]
+    - task: generate-vault-name
+      input_mapping: {release: vault}
+      output_mapping: {result-dir: vault}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: vault
+    - put: vault-s3
+      params:
+        file: vault/*.tgz
         acl: public-read

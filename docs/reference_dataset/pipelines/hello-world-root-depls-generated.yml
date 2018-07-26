@@ -142,6 +142,11 @@ resources:
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
+- name: vault
+  type: github-release
+  source:
+    user: cloudfoundry-community
+    repository: vault-boshrelease
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -364,7 +369,7 @@ jobs:
     - get: secrets-full-writer
       params: { submodules: none}
     - get: ((stemcell-main-name))
-      version: { version: ((stemcell-version)) }
+      version: { version: "((stemcell-version))" }
       trigger: true
       attempts: 2
     - get: cf-ops-automation
@@ -376,11 +381,15 @@ jobs:
       trigger: true
       attempts: 2
     - get: nginx
-      version: { version: ((nginx-version)) }
+      version: { version: "1.13.12" }
       trigger: true
       attempts: 2
     - get: ntp
-      version: { version: ((ntp-version)) }
+      version: { version: "4.2.8p11" }
+      trigger: true
+      attempts: 2
+    - get: vault
+      version: { tag: "v1.0.1" }
       trigger: true
       attempts: 2
     - get: secrets-bosh-deployment-sample
@@ -485,6 +494,7 @@ jobs:
       - bosh-openstack-cpi-release/release.tgz
       - nginx/release.tgz
       - ntp/release.tgz
+      - vault/release.tgz
       ops_files:
       - ops-and-vars-files/operators/*
       vars_files:
@@ -658,6 +668,7 @@ jobs:
           echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-cpi-release --from version:((bosh-openstack-cpi-release-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: hello-world-root-depls-generated
