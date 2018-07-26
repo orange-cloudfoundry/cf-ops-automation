@@ -33,16 +33,22 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-<% uniq_releases= {} %>
-<% all_dependencies.sort.each do |name,boshrelease| %>
-<% boshrelease["releases"]&.each do |release, info|  %>
-<% uniq_releases[release]= info %>
-<% end %>
-<% end %>
+<%
+  def bosh_io_hosted?(info)
+    info["base_location"]&.include?("bosh.io")
+  end
 
-<% uniq_releases.sort.each do |release, info|  %>
+  uniq_releases= {}
+  all_dependencies.sort.each do |name, boshrelease|
+    boshrelease["releases"]&.each do |release, info|
+      uniq_releases[release] = info
+    end
+  end
+%>
+
+<% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
-  <% if info["base_location"].include?("bosh.io") %>
+  <% if bosh_io_hosted?(info) %>
   type: bosh-io-release
   source:
     repository: <%= info["repository"] %>
@@ -51,6 +57,7 @@ resources:
   source:
     user: <%= info["repository"].split('/').first %>
     repository: <%= info["repository"].split('/').last %>
+    access_token: ((github-access-token))
   <% end %>
 
 - name: <%= release %>-s3
@@ -96,8 +103,9 @@ jobs:
         args:
         - -exc
         - |
-          <% uniq_releases.sort.each do |name,_| %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from version:((<%= name %>-version))" >> result-dir/flight-plan
+          <% uniq_releases.sort.each do |name, info| %>
+            <% from_prefix = bosh_io_hosted?(info) ? "version" : "tag" %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= info["version"] %>" >> result-dir/flight-plan
           <% end %>
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-s3-br-upload-generated
@@ -114,7 +122,6 @@ jobs:
       FLY_TEAM: <%= current_team || 'main' %>
 
 <% uniq_releases.sort.each do |release, info|  %>
-
 - name: upload-current-<%= release %>
   serial_groups: [<%= release %>]
   on_failure:
@@ -128,7 +135,11 @@ jobs:
     - aggregate:
       - get: <%= release %>
         attempts: 2
-        version: {version: ((<%= release %>-version))}
+  <% if bosh_io_hosted?(info) %>
+        version: { version: <%= info["version"] %> }
+  <% else %>
+        version: { tag: <%= info["version"] %> }
+  <% end %>
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
@@ -153,7 +164,11 @@ jobs:
           - -exc
           - |
             VERSION=$(cat release/version)
+  <% if bosh_io_hosted?(info) %>
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+  <% else %>
+            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+  <% end %>
         params:
           RELEASE_PREFIX: <%= release %>
     - put: <%= release %>-s3
@@ -199,12 +214,16 @@ jobs:
           - -exc
           - |
             VERSION=$(cat release/version)
+  <% if bosh_io_hosted?(info) %>
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+  <% else %>
+            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+  <% end %>
+
         params:
           RELEASE_PREFIX: <%= release %>
     - put: <%= release %>-s3
       params:
         file: <%= release %>/*.tgz
         acl: public-read
-
 <% end %>

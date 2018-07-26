@@ -262,8 +262,6 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
 * iaas-type
-* nginx-version
-* ntp-version
 * paas-templates-branch
 * paas-templates-uri
 * secrets-branch
@@ -306,6 +304,7 @@ hello-world-root-depls
 * slack-webhook
 * stemcell-name
 * stemcell-version
+* vault-version
 
 ### hello-world-root-depls-s3-br-upload-generated.yml
 
@@ -316,8 +315,7 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-password
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
-* nginx-version
-* ntp-version
+* github-access-token
 * s3-br-access-key-id
 * s3-br-bucket
 * s3-br-endpoint
@@ -467,6 +465,10 @@ hello-world-root-depls
 * hello-world-root-depls-s3-br-upload-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
+### github-access-token
+
+* hello-world-root-depls-s3-br-upload-generated.yml
+
 ### iaas-type
 
 * hello-world-root-depls-concourse-generated.yml
@@ -476,15 +478,11 @@ hello-world-root-depls
 
 ### nginx-version
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-s3-br-upload-generated.yml
 
 ### ntp-version
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-s3-br-upload-generated.yml
 
 ### paas-templates-branch
 
@@ -612,4 +610,8 @@ hello-world-root-depls
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
+
+### vault-version
+
+* hello-world-root-depls-news-generated.yml
 
