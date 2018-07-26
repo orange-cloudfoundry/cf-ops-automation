@@ -41,11 +41,11 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
-- name: secrets-hello-world-root-depls
+- name: secrets-hello-world-root-depls-limited
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["private-config.yml","hello-world-root-depls/ci-deployment-overview.yml","hello-world-root-depls/secrets","shared","hello-world-root-depls/terraform-config"]
+    paths: ["private-config.yml", "hello-world-root-depls/ci-deployment-overview.yml", "hello-world-root-depls/secrets", "shared", "hello-world-root-depls/terraform-config"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: secrets-full-writer
@@ -54,11 +54,11 @@ resources:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-- name: paas-template-hello-world-root-depls
+- name: paas-templates-hello-world-root-depls
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml","hello-world-root-depls/template","hello-world-root-depls/terraform-config"]
+    paths: ["shared-config.yml", "hello-world-root-depls/template", "hello-world-root-depls/terraform-config"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
@@ -68,18 +68,10 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
-- name: bosh-stemcell
-# name: ((stemcell-name))
-  type: s3
+- name: ((stemcell-main-name))
+  type: bosh-io-stemcell
   source:
-    bucket: ((s3-stemcell-bucket))
-    region_name: ((s3-stemcell-region-name))
-    # customization is required to remove bosh prefix in stemcell name
-    regexp: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-(.*)-((stemcell-main-name)).tgz
-    access_key_id: ((s3-stemcell-access-key-id))
-    secret_access_key: ((s3-stemcell-secret-key))
-    endpoint: ((s3-stemcell-endpoint))
-    skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+    name: ((stemcell-name-prefix))((stemcell-main-name))
 - name: secrets-bosh-deployment-sample
   type: git
   source:
@@ -87,7 +79,7 @@ resources:
     paths: ["hello-world-root-depls/bosh-deployment-sample","shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
-- name: paas-template-bosh-deployment-sample
+- name: paas-templates-bosh-deployment-sample
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -117,11 +109,19 @@ resources:
     uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
-- name: secrets-full
+- name: secrets-hello-world-root-depls-trigger
   type: git
   source:
     uri: ((secrets-uri))
+    paths: ["private-config.yml", "hello-world-root-depls", "shared", "hello-world-root-depls/terraform-config"]
     branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-templates-hello-world-root-depls-versions
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["hello-world-root-depls/hello-world-root-depls-versions.yml"]
+    branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: paas-templates-full
   type: git
@@ -155,7 +155,8 @@ jobs:
       - get: paas-templates-full
         params: { submodules: none}
         passed: [update-pipeline-hello-world-root-depls-generated]
-      - get: secrets-full
+      - get: secrets-hello-world-root-depls-trigger
+        version: every
         trigger: true
         passed: [update-pipeline-hello-world-root-depls-generated]
         params: { submodules: none}
@@ -177,11 +178,11 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [delete-deployments-review]
-      - get: secrets-full
+      - get: secrets-hello-world-root-depls-trigger
         params: { submodules: none}
         passed: [delete-deployments-review]
     - task: delete_deployments
-      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full}
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
          BOSH_TARGET: ((bosh-target))
@@ -202,17 +203,17 @@ jobs:
     - get: at-noon
       trigger: true
     - aggregate:
-      - get: secrets-hello-world-root-depls
+      - get: secrets-hello-world-root-depls-limited
         params: { submodules: none}
 #        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
-      - get: paas-template-hello-world-root-depls
+      - get: paas-templates-hello-world-root-depls
         params: { submodules: none}
 #        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-hello-world-root-depls-generated]
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-hello-world-root-depls, secrets: secrets-hello-world-root-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-hello-world-root-depls, secrets: secrets-hello-world-root-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: hello-world-root-depls/template
@@ -234,11 +235,11 @@ jobs:
   plan:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: secrets-hello-world-root-depls
+    - get: secrets-hello-world-root-depls-limited
       params: { submodules: none}
       trigger: true
 #      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
-    - get: paas-template-hello-world-root-depls
+    - get: paas-templates-hello-world-root-depls
       params: { submodules: none}
       trigger: true
 #      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
@@ -247,7 +248,7 @@ jobs:
       trigger: true
       passed: [update-pipeline-hello-world-root-depls-generated]
     - task: generate-hello-world-root-depls-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-template-hello-world-root-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -262,7 +263,7 @@ jobs:
     - aggregate:
       - task: update-cloud-config-for-hello-world-root-depls
         attempts: 2
-        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls}
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
            BOSH_TARGET: ((bosh-target))
@@ -293,7 +294,7 @@ jobs:
               rebase: true
       - task: update-runtime-config-for-hello-world-root-depls
         attempts: 2
-        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls}
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
            BOSH_TARGET: ((bosh-target))
@@ -335,8 +336,8 @@ jobs:
   - aggregate:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: bosh-stemcell
-      version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
+    - get: ((stemcell-main-name))
+      version: { version: ((stemcell-version)) }
       trigger: true
       attempts: 2
     - get: cf-ops-automation
@@ -355,12 +356,12 @@ jobs:
       params: { submodules: none}
       trigger: true
 #     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
-    - get: paas-template-bosh-deployment-sample
+    - get: paas-templates-bosh-deployment-sample
       trigger: true
       params: { submodules: none}
 #     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
   - task: generate-bosh-deployment-sample-manifest
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-bosh-deployment-sample, additional-resource: paas-template-bosh-deployment-sample}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-bosh-deployment-sample, additional-resource: paas-templates-bosh-deployment-sample}
     output_mapping: {generated-files: release-manifest}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -373,14 +374,14 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/bosh-deployment-sample/template
       IAAS_TYPE: ((iaas-type))
   - task: execute-bosh-deployment-sample-spiff-pre-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: release-manifest}
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: release-manifest}
     output_mapping: {generated-files: pre-bosh-deploy-resource}
     file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
       SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
   - task: copy-bosh-deployment-sample-required-files
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: pre-bosh-deploy-resource}
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: pre-bosh-deploy-resource}
     output_mapping: {generated-files: final-release-manifest}
     file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
     params:
@@ -448,7 +449,7 @@ jobs:
       manifest: final-release-manifest/bosh-deployment-sample.yml
       # source_file: bosh-generated-config/bosh_config.json
       stemcells:
-      - bosh-stemcell/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+      - ((stemcell-main-name))/stemcell.tgz
       releases:
       - nginx/release.tgz
       - ntp/release.tgz
@@ -458,7 +459,7 @@ jobs:
       - ops-and-vars-files/vars/*
       cleanup: true
   - task: execute-bosh-deployment-sample-post-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-template-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: final-release-manifest}
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: final-release-manifest}
     output_mapping: {generated-files: post-deploy-result}
     file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
     params:
@@ -489,7 +490,7 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-    - get: secrets-full
+    - get: secrets-hello-world-root-depls-trigger
       params: { submodules: none}
   - task: generate-hello-world-root-depls-pipeline
     output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
@@ -527,10 +528,10 @@ jobs:
   serial_groups: [recreate]
   plan:
   - aggregate:
-     - get: secrets-hello-world-root-depls
+     - get: secrets-hello-world-root-depls-limited
        params: { submodules: none}
        passed: [update-pipeline-hello-world-root-depls-generated]
-     - get: paas-template-hello-world-root-depls
+     - get: paas-templates-hello-world-root-depls
        params: { submodules: none}
        passed: [update-pipeline-hello-world-root-depls-generated]
      - get: cf-ops-automation
@@ -548,11 +549,11 @@ jobs:
   serial_groups: [recreate]
   plan:
   - aggregate:
-     - get: secrets-hello-world-root-depls
+     - get: secrets-hello-world-root-depls-limited
        params: { submodules: none}
        passed: [recreate-all]
        trigger: true
-     - get: paas-template-hello-world-root-depls
+     - get: paas-templates-hello-world-root-depls
        params: { submodules: none}
        passed: [recreate-all]
        trigger: true
@@ -560,7 +561,7 @@ jobs:
        params: { submodules: none}
        passed: [recreate-all]
   - task: bosh-recreate-bosh-deployment-sample
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls}
+    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
     config:
         platform: linux
         image_resource:
@@ -601,10 +602,13 @@ jobs:
       params: { submodules: none}
       attempts: 2
 #      trigger: true
-    - get: secrets-full
+    - get: secrets-hello-world-root-depls-trigger
       params: { submodules: none}
       attempts: 2
-#      trigger: true
+    - get: paas-templates-hello-world-root-depls-versions
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
   - task: generate-hello-world-root-depls-flight-plan
     output_mapping: {result-dir: init-hello-world-root-depls-plan}
     config:
@@ -617,11 +621,11 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" >> result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" >> result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-stemcell --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: hello-world-root-depls-generated
   - task: fly-into-concourse
@@ -645,17 +649,16 @@ jobs:
   - aggregate:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: paas-template-hello-world-root-depls
+    - get: paas-templates-hello-world-root-depls
       params: { submodules: none}
       attempts: 2
     - get: paas-templates-wip
       params: { submodules: none}
       attempts: 2
       trigger: true
-    - get: secrets-hello-world-root-depls
+    - get: secrets-hello-world-root-depls-limited
       params: { submodules: none}
       attempts: 2
-      trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
@@ -663,11 +666,13 @@ jobs:
     - get: paas-templates-full
       params: { submodules: none}
       attempts: 2
-    - get: secrets-full
+    - get: secrets-hello-world-root-depls-trigger
+      version: every
       params: { submodules: none}
       attempts: 2
+      trigger: true
   - task: generate-hello-world-root-depls-pipeline
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-full}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-hello-world-root-depls-trigger}
     output_mapping: {result-dir: concourse-hello-world-root-depls-pipeline}
     config:
       platform: linux
@@ -702,7 +707,7 @@ jobs:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
         # trick to manage <depls>-versions.yml (not included in secrets)
-        - secrets-full/shared/concourse-credentials.yml
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
       - name: bosh-sample-cf-apps-generated
         team: main
         config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/bosh-sample-cf-apps-generated.yml
@@ -710,7 +715,7 @@ jobs:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
         # trick to manage <depls>-versions.yml (not included in secrets)
-        - secrets-full/shared/concourse-credentials.yml
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
   - task: update-concourse-depls-pipeline
     input_mapping: {reference-resource: secrets-full-writer, generated-resource: concourse-hello-world-root-depls-pipeline}
     output_mapping: {updated-git-resource: updated-secrets}
@@ -737,7 +742,7 @@ jobs:
     params:
       repository: paas-templates-wip
       force: true
-- name: check-terraform-cf-consistency
+- name: check-terraform-consistency
   serial: true
   on_failure:
     put: failure-alert
@@ -747,19 +752,20 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - get: at-noon
-    trigger: true
-  - get: cf-ops-automation
-    params: { submodules: none}
-    passed: [update-pipeline-hello-world-root-depls-generated]
-    trigger: true
-  - get: paas-template-hello-world-root-depls
-    params: { submodules: none }
-  - get: secrets-hello-world-root-depls
-    passed: [update-pipeline-hello-world-root-depls-generated]
-    params: { submodules: none }
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [update-pipeline-hello-world-root-depls-generated]
+      trigger: true
+    - get: paas-templates-hello-world-root-depls
+      params: { submodules: none }
+      trigger: true
+    - get: secrets-hello-world-root-depls-limited
+      passed: [update-pipeline-hello-world-root-depls-generated]
+      params: { submodules: none }
+      trigger: true
   - task: generate-terraform-tfvars
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-template-hello-world-root-depls}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
     output_mapping: {generated-files: terraform-tfvars}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -772,24 +778,13 @@ jobs:
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
   - task: terraform-plan
-    input_mapping: {secret-state-resource: secrets-hello-world-root-depls,spec-resource: paas-template-hello-world-root-depls}
+    input_mapping: {secret-state-resource: secrets-hello-world-root-depls-limited,spec-resource: paas-templates-hello-world-root-depls}
     file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
     params:
       SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
       SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
       IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
-- name: cf-manual-approval
-  plan:
-  - get: cf-ops-automation
-    params: { submodules: none}
-    passed: [check-terraform-cf-consistency]
-  - get: paas-template-hello-world-root-depls
-    params: { submodules: none}
-    passed: [check-terraform-cf-consistency]
-  - get: secrets-hello-world-root-depls
-    params: { submodules: none}
-    passed: [check-terraform-cf-consistency]
-- name: enforce-terraform-cf-consistency
+- name: approve-and-enforce-terraform-consistency
   serial: true
   on_failure:
     put: failure-alert
@@ -804,18 +799,16 @@ jobs:
       params: { submodules: none}
     - get: cf-ops-automation
       params: { submodules: none}
-      passed: [cf-manual-approval]
-      trigger: true
-    - get: paas-template-hello-world-root-depls
+      passed: [check-terraform-consistency]
+    - get: paas-templates-hello-world-root-depls
       params: { submodules: none}
-      passed: [cf-manual-approval]
-      trigger: true
-    - get: secrets-hello-world-root-depls
+      passed: [check-terraform-consistency]
+      trigger: false
+    - get: secrets-hello-world-root-depls-limited
       params: { submodules: none}
-      passed: [cf-manual-approval]
-      trigger: true
+      passed: [check-terraform-consistency]
   - task: generate-terraform-tfvars
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-template-hello-world-root-depls}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
     output_mapping: {generated-files: terraform-tfvars}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -828,7 +821,7 @@ jobs:
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
   - task: terraform-apply
-    input_mapping: {secret-state-resource: secrets-hello-world-root-depls,spec-resource: paas-template-hello-world-root-depls}
+    input_mapping: {secret-state-resource: secrets-hello-world-root-depls-limited,spec-resource: paas-templates-hello-world-root-depls}
     output_mapping: {generated-files: terraform-cf}
     file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
     params:
@@ -861,12 +854,11 @@ groups:
 - name: Hello-world-root-depls
   jobs:
     - approve-and-delete-disabled-deployments
-    - cf-manual-approval
-    - check-terraform-cf-consistency
+    - approve-and-enforce-terraform-consistency
+    - check-terraform-consistency
     - cloud-config-and-runtime-config-for-hello-world-root-depls
     - delete-deployments-review
     - deploy-bosh-deployment-sample
-    - enforce-terraform-cf-consistency
     - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
     - recreate-all
@@ -882,9 +874,8 @@ groups:
     - recreate-bosh-deployment-sample
 - name: Terraform
   jobs:
-    - cf-manual-approval
-    - check-terraform-cf-consistency
-    - enforce-terraform-cf-consistency
+    - approve-and-enforce-terraform-consistency
+    - check-terraform-consistency
 - name: Utils
   jobs:
     - approve-and-delete-disabled-deployments

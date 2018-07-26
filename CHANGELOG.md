@@ -1,5 +1,40 @@
 # Change Log
 
+## [v2.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.2.0) (2018-07-26)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.1.0...v2.2.0)
+
+**Implemented enhancements:**
+
+- Support online stemcell [\#128](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/128)
+- Support terraform provider UAA [\#120](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/120)
+- Terraform pipeline UX: single job to apply TF specs [\#22](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/22)
+
+**Fixed bugs:**
+
+- The job update-pipeline-\<root deployment\> is not triggered as expected [\#172](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/172)
+
+**Closed issues:**
+
+- Reset git to a previous commit [\#173](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/173)
+- terraform plan phase should not be recurrent daily, but triggered by secrets update [\#156](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/156)
+- add terraform azure support [\#153](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/153)
+- Regression: IAAS\_SPEC\_PATH is missing in Concourse pipelines  [\#151](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/151)
+- Remove consistency check on deployment-dependencies.yml\#deployment.\<dep\_name\> [\#150](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/150)
+- Setup a reference dataset [\#111](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/111)
+- Add living user documentation generated from tests [\#107](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/107)
+
+**Merged pull requests:**
+
+- task\(git\_reset\_wip\): create a commit after reset [\#174](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/174)
+- trigger update-pipeline on each`secrets-repo` commit and `init-concourse-boshrelease-and-stemcell` improvements [\#171](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/171)
+- Online stemcells support [\#169](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/169)
+- Terraform improvements [\#166](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/166)
+- allow usage of generic key in deployment-dependencies [\#163](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/163)
+- Living doc missing cf app hooks [\#161](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/161)
+- Upgrade script for config repo for upcoming release 2.2.0 [\#160](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/160)
+- pipeline\(depls\): collapse delete task to speed up concourse execution [\#154](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/154)
+- 107 living documentation refactored [\#149](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/149)
+
 ## [v2.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.1.0) (2018-06-20)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.1...v2.1.0)
 
@@ -7,10 +42,6 @@
 
 - offer a preview in logs of interpolated \(manifest + operators + vars\) [\#52](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/52)
 - Add delete lifecycle [\#4](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/4)
-
-**Closed issues:**
-
-- Regression: IAAS\_SPEC\_PATH is missing in Concourse pipelines  [\#151](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/151)
 
 **Merged pull requests:**
 

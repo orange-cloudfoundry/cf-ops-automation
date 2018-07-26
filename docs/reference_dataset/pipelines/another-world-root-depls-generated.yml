@@ -41,11 +41,11 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
-- name: secrets-another-world-root-depls
+- name: secrets-another-world-root-depls-limited
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["private-config.yml","another-world-root-depls/ci-deployment-overview.yml","another-world-root-depls/secrets","shared"]
+    paths: ["private-config.yml", "another-world-root-depls/ci-deployment-overview.yml", "another-world-root-depls/secrets", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: secrets-full-writer
@@ -54,11 +54,11 @@ resources:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-- name: paas-template-another-world-root-depls
+- name: paas-templates-another-world-root-depls
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml","another-world-root-depls/template"]
+    paths: ["shared-config.yml", "another-world-root-depls/template"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
@@ -82,16 +82,16 @@ jobs:
     - get: at-noon
       trigger: true
     - aggregate:
-      - get: secrets-another-world-root-depls
+      - get: secrets-another-world-root-depls-limited
         params: { submodules: none}
 #        <!---->
-      - get: paas-template-another-world-root-depls
+      - get: paas-templates-another-world-root-depls
         params: { submodules: none}
 #        <!---->
       - get: cf-ops-automation
         params: { submodules: none}
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-template-another-world-root-depls, secrets: secrets-another-world-root-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-another-world-root-depls, secrets: secrets-another-world-root-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
         CURRENT_DEPLS: another-world-root-depls/template
@@ -113,11 +113,11 @@ jobs:
   plan:
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: secrets-another-world-root-depls
+    - get: secrets-another-world-root-depls-limited
       params: { submodules: none}
       trigger: true
 #      <!---->
-    - get: paas-template-another-world-root-depls
+    - get: paas-templates-another-world-root-depls
       params: { submodules: none}
       trigger: true
 #      <!---->
@@ -125,7 +125,7 @@ jobs:
       params: { submodules: none}
       trigger: true
     - task: generate-another-world-root-depls-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-another-world-root-depls, additional-resource: paas-template-another-world-root-depls}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-another-world-root-depls-limited, additional-resource: paas-templates-another-world-root-depls}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
@@ -140,7 +140,7 @@ jobs:
     - aggregate:
       - task: update-cloud-config-for-another-world-root-depls
         attempts: 2
-        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls}
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited}
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
            BOSH_TARGET: ((bosh-target))
@@ -171,7 +171,7 @@ jobs:
               rebase: true
       - task: update-runtime-config-for-another-world-root-depls
         attempts: 2
-        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls}
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited}
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
            BOSH_TARGET: ((bosh-target))
@@ -211,9 +211,9 @@ jobs:
   serial_groups: [recreate]
   plan:
   - aggregate:
-     - get: secrets-another-world-root-depls
+     - get: secrets-another-world-root-depls-limited
        params: { submodules: none}
-     - get: paas-template-another-world-root-depls
+     - get: paas-templates-another-world-root-depls
        params: { submodules: none}
      - get: cf-ops-automation
        params: { submodules: none}

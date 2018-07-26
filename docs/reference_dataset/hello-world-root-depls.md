@@ -80,7 +80,9 @@ hello-world-root-depls
 |       `-- template
 |           |-- Staticfile
 |           |-- index.html
-|           `-- manifest-tpl.yml
+|           |-- manifest-tpl.yml
+|           |-- post-deploy.sh
+|           `-- pre-cf-push.sh
 |-- hello-world-root-depls-versions.yml
 |-- pipeline-sample
 |   |-- concourse-pipeline-config
@@ -181,6 +183,8 @@ hello-world-root-depls
         * [Staticfile](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/Staticfile)
         * [index.html](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/index.html)
         * [manifest-tpl.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/manifest-tpl.yml)
+        * [post-deploy.sh](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/post-deploy.sh)
+        * [pre-cf-push.sh](/docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/pre-cf-push.sh)
   * [hello-world-root-depls-versions.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/hello-world-root-depls-versions.yml)
   * [pipeline-sample](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample)
     * [concourse-pipeline-config](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config)
@@ -252,18 +256,11 @@ hello-world-root-depls
 * ntp-version
 * paas-templates-branch
 * paas-templates-uri
-* s3-stemcell-access-key-id
-* s3-stemcell-bucket
-* s3-stemcell-endpoint
-* s3-stemcell-region-name
-* s3-stemcell-secret-key
-* s3-stemcell-skip-ssl-verification
 * secrets-branch
 * secrets-uri
 * slack-channel
 * slack-webhook
 * stemcell-main-name
-* stemcell-name
 * stemcell-name-prefix
 * stemcell-version
 
@@ -513,32 +510,26 @@ hello-world-root-depls
 
 ### s3-stemcell-access-key-id
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### s3-stemcell-bucket
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### s3-stemcell-endpoint
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### s3-stemcell-region-name
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### s3-stemcell-secret-key
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### s3-stemcell-skip-ssl-verification
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### secrets-branch
@@ -590,7 +581,6 @@ hello-world-root-depls
 
 ### stemcell-name
 
-* hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
 
 ### stemcell-name-prefix

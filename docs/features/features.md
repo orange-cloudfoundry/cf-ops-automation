@@ -11,18 +11,6 @@ Feature: Cf application deployment support
       TODO (Cucumber::Pending)
       ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
       features/cf_app_deployment_environment_variable_available.feature:10:in `But needs documentation'
-    Then the following environment variables exist:
-      | name              | description                                                                     |
-      | GENERATE_DIR      | directory holding generated files. It's an absolute path.                       |
-      | BASE_TEMPLATE_DIR | directory where `pre-cf-push.sh` is located. It's an relative path.             |
-      | SECRETS_DIR       | directory holding secrets related to current deployment. It's an relative path. |
-      | CF_API_URL        | current application Cloud Foundry API url                                       |
-      | CF_USERNAME       | current Cloud Foundry application user                                          |
-      | CF_PASSWORD       | current Cloud Foundry application user password                                 |
-      | CF_ORG            | current Cloud Foundry application organization                                  |
-      | CF_SPACE          | current Cloud Foundry application space                                         |
-      | CUSTOM_SCRIPT_DIR | TODO                                                                            |
-      | CF_MANIFEST       | TODO                                                                            |
 
 Feature: Creating pipelines with the COA engine
   As a paas-template user,
@@ -134,13 +122,5 @@ Feature: Terraform support for root deployment
       features/terraform_support_for_root_deployment.feature:10:in `But needs documentation'
 
 12 scenarios (10 pending, 2 passed)
-33 steps (1 undefined, 10 pending, 22 passed)
-0m6.896s
-
-You can implement step definitions for undefined steps with these snippets:
-
-Then("the following environment variables exist:") do |table|
-  # table is a Cucumber::MultilineArgument::DataTable
-  pending # Write code here that turns the phrase above into concrete actions
-end
-
+32 steps (10 pending, 22 passed)
+0m5.585s
