@@ -199,4 +199,49 @@ describe 'generate_manifest task' do
       expect(generated_files_dir_content).to match_array(expected_content)
     end
   end
+
+  context 'when secrets.yml and meta.yml are empty' do
+    before(:context) do
+      @generated_files = Dir.mktmpdir
+      @credentials_dir = Dir.mktmpdir
+      @additional_resource = Dir.mktmpdir
+
+      File.open(File.join(@additional_resource,'dummy-tpl.yml'), 'w') do |file|
+        file.write <<~YAML
+          dummy_yaml:
+            empty: true
+        YAML
+      end
+
+      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+        '-i scripts-resource=. ' \
+        "-i credentials-resource=#{@credentials_dir} " \
+        "-i additional-resource=#{@additional_resource} " \
+        "-o generated-files=#{@generated_files} ",
+                        'YML_TEMPLATE_DIR' => 'additional-resource',
+                        'SPRUCE_FILE_BASE_PATH' => 'credentials-resource',
+                        'YML_FILES' => "'./credentials-resource/custom_dir/subdir/meta.yml ./credentials-resource/secrets.yml'",
+                        'SUFFIX' => '')
+    end
+
+    after(:context) do
+      FileUtils.rm_rf @generated_files
+      FileUtils.rm_rf @credentials_dir
+      FileUtils.rm_rf @additional_resource
+    end
+
+    it 'processes dummy template' do
+      expected_filename = File.join(@generated_files, 'dummy.yml')
+      expect(File).to exist(expected_filename)
+    end
+
+    it 'displays warning about missing files' do
+      expect(@output).to include('WARNING: ./credentials-resource/custom_dir/subdir/meta.yml does not exist, generating an empty yaml file').and \
+        include('WARNING: ./credentials-resource/secrets.yml does not exist, generating an empty yaml file')
+    end
+
+    it 'successes' do
+      expect(@output).to end_with("succeeded\n")
+    end
+  end
 end
