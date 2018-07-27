@@ -3,6 +3,8 @@ require 'fileutils'
 require_relative 'active_support_copy_deep_merge'
 require_relative 'extended_config'
 
+# Manage configuration shared by root-deployments. A public config file can be overridden by a private config file and
+# an extended configuration (based on environment variables)
 class Config
   DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-trusty-go_agent'.freeze
 
