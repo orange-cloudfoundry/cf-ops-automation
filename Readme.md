@@ -722,6 +722,15 @@ The following tools are required to run [create-root-depls](scripts/create-root-
 
 * ruby
 
+## How to use recreate-all or recreate-x?
+
+It is possible to trigger a `bosh recreate` for a root-deployment using `recreate-all`. This job automatically recreates
+ all active deployments in a `root-deployment` sequentially.
+
+Once `recreate-all` has been executed, it is possible to trigger a single recreate job using `recreate-xxx`
+**Warning**: triggering a single recreation is possible when pipeline inputs are synchronized with `recreate-all` outputs.
+ Otherwise a `fatal: reference is not a tree"` error occurs.
+
 # Credits
 
 This repo was inspired by great work shared in:
