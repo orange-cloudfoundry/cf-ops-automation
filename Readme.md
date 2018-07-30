@@ -76,6 +76,7 @@
          * [pre requisite](#pre-requisite)
       * [How to create a new root deployment?](#how-to-create-a-new-root-deployment)
          * [pre requisite](#pre-requisite-1)
+      * [How to use recreate-all or recreate-x?](#how-to-use-recreate-all-or-recreate-x)
    * [Credits](#credits)
    * [Changelog](#changelog)
    * [Upgrade](#upgrade)
