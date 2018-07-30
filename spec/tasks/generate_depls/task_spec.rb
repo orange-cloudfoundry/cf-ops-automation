@@ -6,7 +6,8 @@ require_relative '../task_spec_helper'
 describe 'generate_depls task' do
   context 'when environment variables are valid' do
     let(:static_pipelines) { Dir["#{@root_dir}/concourse/pipelines/*.yml"] }
-    let(:template_pipelines) { Dir["#{@root_dir}/concourse/pipelines/template/*.erb"] }
+    let(:template_pipelines_dir_content) { Dir["#{@root_dir}/concourse/pipelines/template/*.erb"] }
+    let(:template_pipelines) { template_pipelines_dir_content.map { |filename| File.basename(filename) } }
     let(:expected_pipelines) { static_pipelines.concat(templated_pipelines).sort }
     let(:generated_pipeline_filenames) { Dir["#{@result_dir}/concourse/pipelines/*.yml"] }
 
@@ -42,7 +43,8 @@ describe 'generate_depls task' do
     end
 
     it 'generates expected pipelines' do
-      expect(@output.scan(/^processing ..concourse.pipelines.template.*\w+/).length).to eq(template_pipelines.length)
+      processed_pipeline_templates = @output.scan(/^processing ..concourse.pipelines.template.(.*\w+)/).flatten
+      expect(processed_pipeline_templates).to match_array(template_pipelines)
     end
 
     it 'runs successfully' do
