@@ -2,7 +2,7 @@
 platform: linux
 image_resource:
   type: docker-image
-  source: {repository: ruby, tag: 2.3.1-slim}
+  source: {repository: ruby, tag: 2.3.5-slim}
 inputs:
   - name: scripts-resource
   - name: secrets-resource
@@ -19,5 +19,6 @@ run:
     export OUTPUT_DIR=$(pwd)/result-dir
     cd scripts-resource
     ./scripts/concourse-generate-all-pipelines.sh
-param:
+    du -a ../result-dir
+params:
   IAAS_TYPE:
