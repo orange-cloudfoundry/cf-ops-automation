@@ -1,4 +1,6 @@
 <%
+  require './lib/pipeline_helpers'
+
   terraform_config_path = nil
   TERRAFORM_CONFIG_DIRNAME_KEY = 'terraform_config'.freeze
   if all_ci_deployments&.any? && all_ci_deployments[depls][TERRAFORM_CONFIG_DIRNAME_KEY]
@@ -23,11 +25,8 @@
 
   offline_stemcells_enabled = config['offline-mode'] && config['offline-mode']['stemcells'] && true
   jobs = Hash.new {|h,k| h[k]=[]}
-
-  def bosh_io_hosted?(info)
-    info["base_location"]&.include?("bosh.io")
-  end
 %>
+
 ---
 resource_types:
 - name: bosh-deployment
@@ -512,12 +511,12 @@ jobs:
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     - get: <%= release %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-      version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-<%= info['version'] %>.tgz }
+      version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
     <% else %>
-      <% if bosh_io_hosted?(info) %>
-      version: { version: "<%= info['version'] %>" }
+      <% if PipelineHelpers.bosh_io_hosted?(info) %>
+      version: { version: "((<%= release %>-version))" }
       <% else %>
-      version: { tag: "<%= info['version'] %>" }
+      version: { tag: "((<%= release %>-version))" }
       <% end %>
     <% end %>
       trigger: true
@@ -658,7 +657,7 @@ jobs:
       releases:<%= ' []' if boshrelease['releases']&.empty? %>
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-      - <%= release %>/<%= release %>-<%= info['version']%>.tgz
+      - <%= release %>/<%= release %>-((<%= release %>-version)).tgz
     <% else %>
       - <%= release %>/release.tgz
     <% end %>
@@ -899,11 +898,11 @@ jobs:
         - -ec
         - |
   <% uniq_releases.sort.each do |name, info| %>
-    <% from_prefix = bosh_io_hosted?(info) ? "version" : "tag" %>
+    <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-<%= info['version'] %>.tgz" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" | tee -a result-dir/flight-plan
     <% else %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= info['version'] %>" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:((<%= name %>-version))" | tee -a result-dir/flight-plan
     <% end %>
   <% end %>
   <% if offline_stemcells_enabled %>

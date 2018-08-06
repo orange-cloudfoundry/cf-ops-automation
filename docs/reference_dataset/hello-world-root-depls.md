@@ -207,6 +207,7 @@ hello-world-root-depls
     * [public-config-operators.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/public-config-operators.yml)
     * [public-runtime-operators.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/public-runtime-operators.yml)
     * [runtime-config.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/runtime-config.yml)
+    * [virtualbox](/docs/reference_dataset/template_repository/hello-world-root-depls/template/virtualbox)
   * [terraform-config](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config)
     * [spec](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config/spec)
       * [local-provider-sample.tf](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config/spec/local-provider-sample.tf)

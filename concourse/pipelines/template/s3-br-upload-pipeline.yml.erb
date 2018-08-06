@@ -1,3 +1,14 @@
+<%
+  require './lib/pipeline_helpers'
+
+  uniq_releases= {}
+  all_dependencies.sort.each do |name, boshrelease|
+    boshrelease["releases"]&.each do |release, info|
+      uniq_releases[release] = info
+    end
+  end
+%>
+
 ---
 resource_types:
   - name: slack-notification
@@ -33,22 +44,9 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-<%
-  def bosh_io_hosted?(info)
-    info["base_location"]&.include?("bosh.io")
-  end
-
-  uniq_releases= {}
-  all_dependencies.sort.each do |name, boshrelease|
-    boshrelease["releases"]&.each do |release, info|
-      uniq_releases[release] = info
-    end
-  end
-%>
-
 <% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
-  <% if bosh_io_hosted?(info) %>
+  <% if PipelineHelpers.bosh_io_hosted?(info) %>
   type: bosh-io-release
   source:
     repository: <%= info["repository"] %>
@@ -57,7 +55,7 @@ resources:
   source:
     user: <%= info["repository"].split('/').first %>
     repository: <%= info["repository"].split('/').last %>
-    access_token: ((github-access-token))
+    access_token: ((github-access-token)) # this is neeed to avoid getting limited by GitHub. See https://github.com/concourse/github-release-resource/blob/master/README.md#github-releases-resource
   <% end %>
 
 - name: <%= release %>-s3
@@ -104,8 +102,8 @@ jobs:
         - -exc
         - |
           <% uniq_releases.sort.each do |name, info| %>
-            <% from_prefix = bosh_io_hosted?(info) ? "version" : "tag" %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= info["version"] %>" >> result-dir/flight-plan
+            <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:((<%= name %>-version))" >> result-dir/flight-plan
           <% end %>
       params:
         BUILD_PIPELINE_NAME: <%= depls %>-s3-br-upload-generated
@@ -135,10 +133,10 @@ jobs:
     - aggregate:
       - get: <%= release %>
         attempts: 2
-  <% if bosh_io_hosted?(info) %>
-        version: { version: <%= info["version"] %> }
+  <% if PipelineHelpers.bosh_io_hosted?(info) %>
+        version: { version: "((<%= release %>-version))" }
   <% else %>
-        version: { tag: <%= info["version"] %> }
+        version: { tag: "((<%= release %>-version))" }
   <% end %>
         trigger: true
         params: {tarball: true}
@@ -164,7 +162,7 @@ jobs:
           - -exc
           - |
             VERSION=$(cat release/version)
-  <% if bosh_io_hosted?(info) %>
+  <% if PipelineHelpers.bosh_io_hosted?(info) %>
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
   <% else %>
             cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
@@ -214,7 +212,7 @@ jobs:
           - -exc
           - |
             VERSION=$(cat release/version)
-  <% if bosh_io_hosted?(info) %>
+  <% if PipelineHelpers.bosh_io_hosted?(info) %>
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
   <% else %>
             cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz

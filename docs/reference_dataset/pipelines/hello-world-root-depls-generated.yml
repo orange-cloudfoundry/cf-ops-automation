@@ -377,19 +377,19 @@ jobs:
       passed: [update-pipeline-hello-world-root-depls-generated]
       trigger: true
     - get: bosh-openstack-cpi-release
-      version: { version: ((bosh-openstack-cpi-release-version)) }
+      version: { version: "((bosh-openstack-cpi-release-version))" }
       trigger: true
       attempts: 2
     - get: nginx
-      version: { version: "1.13.12" }
+      version: { version: "((nginx-version))" }
       trigger: true
       attempts: 2
     - get: ntp
-      version: { version: "4.2.8p11" }
+      version: { version: "((ntp-version))" }
       trigger: true
       attempts: 2
     - get: vault
-      version: { tag: "v1.0.1" }
+      version: { tag: "((vault-version))" }
       trigger: true
       attempts: 2
     - get: secrets-bosh-deployment-sample
