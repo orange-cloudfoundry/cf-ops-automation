@@ -155,14 +155,29 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           apk add bash coreutils --no-cache
           export SECRETS=$(pwd)/secrets
-          export ATC_EXTERNAL_URL=$(grep ${ATC_EXTERNAL_URL_KEY} ${SECRETS}/${CREDENTIALS_FILENAME} |cut -d':' -f2-|tr -d [:blank:])
-          export FLY_USERNAME=$(grep ${FLY_USERNAME_KEY} ${SECRETS}/${CREDENTIALS_FILENAME} |cut -d':' -f2-|tr -d [:blank:])
-          export FLY_PASSWORD=$(grep ${FLY_PASSWORD_KEY} ${SECRETS}/${CREDENTIALS_FILENAME} |cut -d':' -f2-|tr -d [:blank:])
+          CREDENTIALS_FILES=$(ls ${SECRETS}/${CREDENTIALS_FILTER})
+          ALL_CREDENTIALS_FILE=$(mktemp /tmp/all-credentials.XXXXXX)
+          for FILE in ${CREDENTIALS_FILES};do
+            {
+             cat ${FILE}
+             echo ""
+            } >> ${ALL_CREDENTIALS_FILE}
+          done
+          export ATC_EXTERNAL_URL=$(grep ${ATC_EXTERNAL_URL_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
+          export FLY_USERNAME=$(grep ${FLY_USERNAME_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
+          export FLY_PASSWORD=$(grep ${FLY_PASSWORD_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
 
+          export IAAS_TYPE=$(grep ${IAAS_TYPE_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
+          if [ -z "${IAAS_TYPE}" ]
+          then
+          echo "ERROR: missing environment variable: IAAS_TYPE"
+          fi
+          echo "Duplicated keys found:"
+          cat $ALL_CREDENTIALS_FILE| sort | uniq -c|sort|grep -v '\-\-\-'|grep -v -e "^[ ]*1.*"|cut -d':' -f1
           mkdir -p /usr/local/bin
           FLY=/usr/local/bin/fly
           echo "Fetching fly...";
@@ -176,7 +191,8 @@ jobs:
           cd scripts-resource/
           ./concourse-bootstrap.sh
       params:
-        CREDENTIALS_FILENAME: micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
+        CREDENTIALS_FILTER: micro-depls/concourse-micro/pipelines/credentials-*.yml
         ATC_EXTERNAL_URL_KEY: concourse-micro-depls-target
         FLY_USERNAME_KEY: concourse-micro-depls-username
         FLY_PASSWORD_KEY: concourse-micro-depls-password
+        IAAS_TYPE_KEY: iaas-type
