@@ -9,8 +9,8 @@ SPRUCE_SCRIPT_DIR=${SPRUCE_SCRIPT_DIR:-scripts-resource/concourse/tasks/generate
 
 SUFFIX=${SUFFIX:-"-tpl.yml"}
 
-for yaml in ${YML_FILES};do
-    if [ ! -e "${yaml}" ];then
+for yaml in ${YML_FILES}; do
+    if [ ! -e "${yaml}" ]; then
     yaml_dirname=$(dirname "${yaml}")
     mkdir -p "${yaml_dirname}"
     echo "WARNING: ${yaml} does not exist, generating an empty yaml file"

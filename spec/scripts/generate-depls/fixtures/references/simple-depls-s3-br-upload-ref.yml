@@ -75,7 +75,7 @@ jobs:
         args:
         - "-exc"
         - |2
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:4" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-s3-br-upload-generated
   - task: fly-into-concourse
@@ -104,7 +104,7 @@ jobs:
     - get: ntp_boshrelease
       attempts: 2
       version:
-        version: 4
+        version: ((ntp_boshrelease-version))
       trigger: true
       params:
         tarball: true

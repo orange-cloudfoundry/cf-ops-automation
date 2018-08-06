@@ -1,3 +1,4 @@
+
 ---
 resource_types:
   - name: slack-notification
@@ -75,7 +76,7 @@ resources:
   source:
     user: cloudfoundry-community
     repository: vault-boshrelease
-    access_token: ((github-access-token))
+    access_token: ((github-access-token)) # this is neeed to avoid getting limited by GitHub. See https://github.com/concourse/github-release-resource/blob/master/README.md#github-releases-resource
 - name: vault-s3
   type: s3
   source:
@@ -144,7 +145,7 @@ jobs:
     - aggregate:
       - get: bosh-openstack-cpi-release
         attempts: 2
-        version: {version: ((bosh-openstack-cpi-release-version))}
+        version: { version: "((bosh-openstack-cpi-release-version))" }
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
@@ -234,7 +235,7 @@ jobs:
     - aggregate:
       - get: nginx
         attempts: 2
-        version: { version: 1.13.12 }
+        version: { version: "((nginx-version))" }
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
@@ -324,7 +325,7 @@ jobs:
     - aggregate:
       - get: ntp
         attempts: 2
-        version: { version: 4.2.8p11 }
+        version: { version: "((ntp-version))" }
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
@@ -414,7 +415,7 @@ jobs:
     - aggregate:
       - get: vault
         attempts: 2
-        version: { tag: v1.0.1 }
+        version: { tag: "((vault-version))" }
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation

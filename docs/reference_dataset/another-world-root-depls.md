@@ -102,6 +102,7 @@ another-world-root-depls
     * [openstack](/docs/reference_dataset/template_repository/another-world-root-depls/template/openstack)
       * [disk-types-cloud-operators.yml](/docs/reference_dataset/template_repository/another-world-root-depls/template/openstack/disk-types-cloud-operators.yml)
     * [runtime-config-tpl.yml](/docs/reference_dataset/template_repository/another-world-root-depls/template/runtime-config-tpl.yml)
+    * [virtualbox](/docs/reference_dataset/template_repository/another-world-root-depls/template/virtualbox)
 
 ## Required pipeline credentials for another-world-root-depls
 
