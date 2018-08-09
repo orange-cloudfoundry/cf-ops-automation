@@ -13,7 +13,8 @@ def insert_iaas_specific_pipeline(ci_deployment_overview)
   migrated = false
   ci_deployment_overview['ci-deployment']&.each do |_, details|
     details['pipelines']&.each do |name, pipeline_config|
-      if name.end_with?('-init-generated')
+      if name.end_with?('-init-generated') || name == 'bootstrap-all-init-pipelines'
+        puts "\t>> INFO: checking #{name} configuration"
         if pipeline_config['vars_files'].include?('micro-depls/concourse-micro/pipelines/credentials-iaas-specific.yml')
           puts "\t>> INFO: required credentials already part of #{name} configuration"
         else
