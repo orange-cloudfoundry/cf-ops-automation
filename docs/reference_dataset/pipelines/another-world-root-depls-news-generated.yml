@@ -5,14 +5,12 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
-  - name: concourse-pipeline
-    type: docker-image
-    source:
-      repository: concourse/concourse-pipeline-resource
+      tag: v1.4.2
   - name: cron-resource
     type: docker-image
     source:
       repository: cftoolsmiths/cron-resource
+      # use latest as no other recent tag available
 resources:
 jobs:
 #      - get: bosh-stemcell

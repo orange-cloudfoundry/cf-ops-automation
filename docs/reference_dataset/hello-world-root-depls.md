@@ -24,19 +24,21 @@ hello-world-root-depls
 |   `-- generic-app
 |       |-- enable-cf-app.yml
 |       `-- secrets
-|           |-- meta.yml
 |           `-- secrets.yml
 |-- ci-deployment-overview.yml
 |-- pipeline-sample
-|   |-- enable-deployment.yml
-|   `-- secrets
-|       |-- meta.yml
-|       `-- secrets.yml
+|   |-- Readme.md
+|   `-- enable-deployment.yml
 |-- secrets
 |   |-- meta.yml
 |   |-- private-config-operators.yml
 |   |-- private-runtime-operators.yml
 |   `-- secrets.yml
+|-- terraform-config
+|   |-- secrets
+|   |   `-- secrets.yml
+|   `-- spec
+|       `-- my-private-terraform-spec.tf
 |-- terraform-sample
 |   |-- secrets
 |   |   |-- meta.yml
@@ -45,7 +47,6 @@ hello-world-root-depls
 |       `-- my-private-terraform-spec.tf
 `-- to-delete-bosh-deployment-sample
     `-- secrets
-        |-- meta.yml
         `-- secrets.yml
 ```
 
@@ -65,6 +66,7 @@ hello-world-root-depls
 ```bash
 hello-world-root-depls
 |-- bosh-deployment-sample
+|   |-- deployment-dependencies-openstack.yml
 |   |-- deployment-dependencies.yml
 |   `-- template
 |       |-- adding-ntp-release-operators.yml
@@ -124,14 +126,11 @@ hello-world-root-depls
     * [generic-app](/docs/reference_dataset/config_repository/hello-world-root-depls/cf-apps-deployments/generic-app)
       * [enable-cf-app.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/cf-apps-deployments/generic-app/enable-cf-app.yml)
       * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/cf-apps-deployments/generic-app/secrets)
-        * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/cf-apps-deployments/generic-app/secrets/meta.yml)
         * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/cf-apps-deployments/generic-app/secrets/secrets.yml)
   * [ci-deployment-overview.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/ci-deployment-overview.yml)
   * [pipeline-sample](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample)
+    * [Readme.md](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/Readme.md)
     * [enable-deployment.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/enable-deployment.yml)
-    * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/secrets)
-      * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/secrets/meta.yml)
-      * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/secrets/secrets.yml)
   * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets)
     * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/meta.yml)
     * [private-config-operators.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/private-config-operators.yml)
@@ -139,7 +138,6 @@ hello-world-root-depls
     * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/secrets.yml)
   * [terraform-config](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config)
     * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/secrets)
-      * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/secrets/meta.yml)
       * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/secrets/secrets.yml)
     * [spec](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/spec)
       * [my-private-terraform-spec.tf](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-config/spec/my-private-terraform-spec.tf)
@@ -151,7 +149,6 @@ hello-world-root-depls
       * [my-private-terraform-spec.tf](/docs/reference_dataset/config_repository/hello-world-root-depls/terraform-sample/spec/my-private-terraform-spec.tf)
   * [to-delete-bosh-deployment-sample](/docs/reference_dataset/config_repository/hello-world-root-depls/to-delete-bosh-deployment-sample)
     * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/to-delete-bosh-deployment-sample/secrets)
-      * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/to-delete-bosh-deployment-sample/secrets/meta.yml)
       * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/to-delete-bosh-deployment-sample/secrets/secrets.yml)
 
 ### The shared files
@@ -160,7 +157,6 @@ hello-world-root-depls
   * [certs](/docs/reference_dataset/shared/shared/certs)
     * [internal_paas-ca](/docs/reference_dataset/shared/shared/certs/internal_paas-ca)
       * [server-ca.crt](/docs/reference_dataset/shared/shared/certs/internal_paas-ca/server-ca.crt)
-  * [meta.yml](/docs/reference_dataset/shared/shared/meta.yml)
   * [pipeline-credentials.yml](/docs/reference_dataset/shared/shared/pipeline-credentials.yml)
   * [secrets.yml](/docs/reference_dataset/shared/shared/secrets.yml)
 
@@ -176,6 +172,7 @@ hello-world-root-depls
 
 * [hello-world-root-depls](/docs/reference_dataset/template_repository/hello-world-root-depls)
   * [bosh-deployment-sample](/docs/reference_dataset/template_repository/hello-world-root-depls/bosh-deployment-sample)
+    * [deployment-dependencies-openstack.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/bosh-deployment-sample/deployment-dependencies-openstack.yml)
     * [deployment-dependencies.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/bosh-deployment-sample/deployment-dependencies.yml)
     * [template](/docs/reference_dataset/template_repository/hello-world-root-depls/bosh-deployment-sample/template)
       * [adding-ntp-release-operators.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/bosh-deployment-sample/template/adding-ntp-release-operators.yml)
@@ -250,6 +247,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-generated.yml
 
+* bosh-openstack-cpi-release-version
 * bosh-password
 * bosh-target
 * bosh-username
@@ -282,6 +280,7 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-password
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
+* iaas-type
 * paas-templates-branch
 * paas-templates-uri
 * secrets-branch
@@ -291,6 +290,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-news-generated.yml
 
+* bosh-openstack-cpi-release-version
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -306,6 +306,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-s3-br-upload-generated.yml
 
+* bosh-openstack-cpi-release-version
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -375,6 +376,12 @@ hello-world-root-depls
 ### anonymized-secrets-repo-uri
 
 * hello-world-root-depls-sync-helper-generated.yml
+
+### bosh-openstack-cpi-release-version
+
+* hello-world-root-depls-generated.yml
+* hello-world-root-depls-news-generated.yml
+* hello-world-root-depls-s3-br-upload-generated.yml
 
 ### bosh-password
 
@@ -461,6 +468,7 @@ hello-world-root-depls
 
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
+* hello-world-root-depls-init-generated.yml
 * hello-world-root-depls-tf-generated.yml
 
 ### nginx-version

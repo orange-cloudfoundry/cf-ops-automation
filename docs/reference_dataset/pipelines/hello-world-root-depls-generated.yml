@@ -5,31 +5,32 @@ resource_types:
   type: docker-image
   source:
     repository: concourse/bosh-deployment-resource
-    tag: latest
+    tag: latest  # use latest as no other tag available
 - name: slack-notification
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+    tag: v1.4.2
 - name: cron-resource
   type: docker-image
   source:
     repository: cftoolsmiths/cron-resource
-- name: bosh-config
-  type: docker-image
-  source:
-    repository: dellemcdojo/bosh-config-resource
+    # use latest as no other recent tag available
 - name: concourse-pipeline
   type: docker-image
   source:
     repository: concourse/concourse-pipeline-resource
+    tag: 3
 - name: bosh-deployment-v2
   type: docker-image
   source:
     repository: cloudfoundry/bosh-deployment-resource
+    tag: v2.12.0
 - name: bosh-errand
   type: docker-image
   source:
     repository: starkandwayne/bosh2-errand-resource
+    tag: v0.1.2
 resources:
 - name: at-noon
   type: cron-resource
@@ -91,7 +92,7 @@ resources:
   source:
     target: ((bosh-target))
     client: ((bosh-username))
-    client_secret: ((bosh-password))
+    client_secret: "((bosh-password))"
     deployment: bosh-deployment-sample
     ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDFDCCAfygAwIBAgIRAJhACeUupTq0v90nAyb+vUowDQYJKoZIhvcNAQELBQAw\nMzEMMAoGA1UEBhMDVVNBMRYwFAYDVQQKEw1DbG91ZCBGb3VuZHJ5MQswCQYDVQQD\nEwJjYTAeFw0xODA3MTEwOTE4MjZaFw0xOTA3MTEwOTE4MjZaMDMxDDAKBgNVBAYT\nA1VTQTEWMBQGA1UEChMNQ2xvdWQgRm91bmRyeTELMAkGA1UEAxMCY2EwggEiMA0G\nCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDMlqBlpRz8h1nnqGm1rdOTRZO+yddM\nl4YwvDf9hpPVm0gqFrmIlcGFVTZ6+PbU9x8kklx+BwmB9dA2D1Vo1VMz7VQPsGu4\n1pEmSLpaxz86LshW8JjCDauMblFIm+baB0o5MmukJzZzqdQv4kn2s5+57fVUQz33\nk20T1mahuA0INzbHwO4vX1WGteInTH3GsDLOyVGSMTrpuUAUZgfU8IR019BzgaiA\nYIBRU//VRv68PesQFtOXxOcM9V0BiTrs3yGRWGevvcfqP/6EI6qA+b+AJi/IhxbR\nO+fxo58lUIRw0OrmmoEDuuHO6kCCe590YLU5wAttvp8baahLFrsEBTIJAgMBAAGj\nIzAhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEB\nCwUAA4IBAQDGvUob4v0Mm2MIpE0IAbEa0oDCGiF99PhYHZwrvpdQjr/iVHd/7i+y\nI7q4YFswRGj5oGj5zRjW9bFVKB6DJsyBD0NpcLTy7VEewkT8mwd2GmZkmRWFQYcA\n2RUhIFGpYSI+g7ed6ZuPX2P4+92mxURHElTAuRTrrw5vqUVsebZO49tuvyXqmghP\nAyKvSQanegmNviGdkHTWKPyD3nP2Ms0lBgGZxFfhlN4sPTWHxfEpud4xLX/AhW6X\n8QS3GQ4QwevfKnUekbciU7CASVCymAKupFAxjksyz8xmHvalXe83HK+G7AmsYkEl\nYowS7B+zXRNZHGoagYkRSBeaSKlIpZXF\n-----END CERTIFICATE-----\n"
 - name: concourse-target
@@ -102,7 +103,7 @@ resources:
     teams:
     - name: main
       username: ((concourse-hello-world-root-depls-username))
-      password: ((concourse-hello-world-root-depls-password))
+      password: "((concourse-hello-world-root-depls-password))"
 - name: paas-templates-wip
   type: git
   source:
@@ -129,6 +130,10 @@ resources:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
+- name: bosh-openstack-cpi-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-incubator/bosh-openstack-cpi-release
 - name: nginx
   type: bosh-io-release
   source:
@@ -187,7 +192,7 @@ jobs:
       params:
          BOSH_TARGET: ((bosh-target))
          BOSH_CLIENT: ((bosh-username))
-         BOSH_CLIENT_SECRET: ((bosh-password))
+         BOSH_CLIENT_SECRET: "((bosh-password))"
          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
          DEPLOYMENTS_TO_DELETE: "terraform-sample to-delete-bosh-deployment-sample"
 - name: execute-deploy-script
@@ -221,7 +226,7 @@ jobs:
         SECRETS_DIR: secrets
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
-        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_CLIENT_SECRET: "((bosh-password))"
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 - name: cloud-config-and-runtime-config-for-hello-world-root-depls
   serial: true
@@ -268,7 +273,7 @@ jobs:
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
-           BOSH_CLIENT_SECRET: ((bosh-password))
+           BOSH_CLIENT_SECRET: "((bosh-password))"
            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
@@ -299,7 +304,7 @@ jobs:
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
-           BOSH_CLIENT_SECRET: ((bosh-password))
+           BOSH_CLIENT_SECRET: "((bosh-password))"
            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
@@ -344,6 +349,10 @@ jobs:
       params: { submodules: none}
       passed: [update-pipeline-hello-world-root-depls-generated]
       trigger: true
+    - get: bosh-openstack-cpi-release
+      version: { version: ((bosh-openstack-cpi-release-version)) }
+      trigger: true
+      attempts: 2
     - get: nginx
       version: { version: ((nginx-version)) }
       trigger: true
@@ -451,6 +460,7 @@ jobs:
       stemcells:
       - ((stemcell-main-name))/stemcell.tgz
       releases:
+      - bosh-openstack-cpi-release/release.tgz
       - nginx/release.tgz
       - ntp/release.tgz
       ops_files:
@@ -516,7 +526,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
-      FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+      FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
 - name: recreate-all
   on_failure:
     put: failure-alert
@@ -585,7 +595,7 @@ jobs:
     params:
        BOSH_TARGET: ((bosh-target))
        BOSH_CLIENT: ((bosh-username))
-       BOSH_CLIENT_SECRET: ((bosh-password))
+       BOSH_CLIENT_SECRET: "((bosh-password))"
        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
        BOSH_DEPLOYMENT: bosh-deployment-sample
 - name: init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
@@ -623,6 +633,7 @@ jobs:
         args:
         - -ec
         - |
+          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-cpi-release --from version:((bosh-openstack-cpi-release-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
@@ -635,7 +646,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
-      FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+      FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
 - name: update-pipeline-hello-world-root-depls-generated
   serial: true
   on_failure:
@@ -674,29 +685,10 @@ jobs:
   - task: generate-hello-world-root-depls-pipeline
     input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-hello-world-root-depls-trigger}
     output_mapping: {result-dir: concourse-hello-world-root-depls-pipeline}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: {repository: ruby, tag: 2.3.1-slim}
-      inputs:
-        - name: scripts-resource
-        - name: templates
-        - name: secrets
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          cp -r templates/. result-dir
-          cp -r scripts-resource/. result-dir
-          cp -rf secrets/. result-dir
-          cd result-dir/
-          ./scripts/generate-depls.rb --depls ${ROOT_DEPLOYMENT} -t ../templates -p . -o concourse
-      params:
-        ROOT_DEPLOYMENT: hello-world-root-depls
+    file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
+    params:
+      ROOT_DEPLOYMENT: hello-world-root-depls
+      IAAS_TYPE: ((iaas-type))
   - put: concourse-target
     params:
       pipelines:

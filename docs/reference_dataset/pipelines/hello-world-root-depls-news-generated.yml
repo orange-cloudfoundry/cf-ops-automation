@@ -5,14 +5,12 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
-  - name: concourse-pipeline
-    type: docker-image
-    source:
-      repository: concourse/concourse-pipeline-resource
+      tag: v1.4.2
   - name: cron-resource
     type: docker-image
     source:
       repository: cftoolsmiths/cron-resource
+      # use latest as no other recent tag available
 resources:
 #- name: bosh-stemcell
 #  type: bosh-io-stemcell
@@ -51,6 +49,10 @@ resources:
     expression: 30 8 * * 1
     location: "Europe/Paris"
     fire_immediately: true
+- name: bosh-openstack-cpi-release
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-incubator/bosh-openstack-cpi-release
 - name: nginx
   type: bosh-io-release
   source:
@@ -64,6 +66,60 @@ jobs:
 #        version: { version: ((stemcell-version)) }
 #        trigger: true
 #        attempts: 2
+- name: check-bosh-openstack-cpi-release
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+      - get: monday-morning
+        trigger: true
+      - get: bosh-openstack-cpi-release
+        attempts: 2
+        params: {tarball: false}
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: cf-ops-automation
+        params: { submodules: none}
+    - task: generate-update-message
+      input_mapping: {boshrelease: bosh-openstack-cpi-release}
+      output_mapping: {message: bosh-openstack-cpi-release-message}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: governmentpaas/curl-ssl}
+        inputs:
+          - name: boshrelease
+        outputs:
+          - name: message
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            MESSAGE_FILE=message/update_notif
+            NEW_VERSION=$(cat boshrelease/version)
+            RELEASE_URL=$(cat boshrelease/url|sed 's|/d/|/releases/|'|sed 's/?v=/?version=/')
+            if [ "${NEW_VERSION}" != "${CURRENT_VERSION}" ]
+            then
+              echo "New version of bosh-openstack-cpi-release detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
+              echo "hello-world-root-depls is using ${CURRENT_VERSION} of bosh-openstack-cpi-release" >>${MESSAGE_FILE}
+            else
+              echo "hello-world-root-depls is  running the latest bosh-openstack-cpi-release (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
+            fi
+      params:
+        CURRENT_VERSION: ((bosh-openstack-cpi-release-version))
+    - put: new-version-alert
+      params:
+        channel: ((slack-channel))
+        text_file: bosh-openstack-cpi-release-message/update_notif
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
 - name: check-nginx
   on_failure:
     put: failure-alert

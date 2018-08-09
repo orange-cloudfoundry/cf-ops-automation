@@ -4,17 +4,8 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
-  - name: cron-resource
-    type: docker-image
-    source:
-      repository: cftoolsmiths/cron-resource
+      tag: v1.4.2
 resources:
-#- name: at-noon
-#  type: cron-resource
-#  source:
-#    expression: "15 12 * * 1-5"
-#    location: "Europe/Paris"
-#    fire_immediately: true
 - name: failure-alert
   type: slack-notification
   source:
@@ -91,7 +82,7 @@ jobs:
       params:
         ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
         FLY_USERNAME: ((concourse-hello-world-root-depls-username))
-        FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+        FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
 - name: cf-push-generic-app
   serial: true
   on_failure:
@@ -138,8 +129,8 @@ jobs:
         CF_API_URL: https://my-cloudfroundry.org
         CF_ORG: my-test-org
         CF_SPACE: my-test-space
-        CF_USERNAME: a-test-User
-        CF_PASSWORD: a-test-Password
+        CF_USERNAME: "a-test-User"
+        CF_PASSWORD: "a-test-Password"
     - task: update-generic-app-files
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
       output_mapping: {updated-git-resource: updated-generic-app-secrets}
@@ -163,8 +154,8 @@ jobs:
         CF_API_URL: https://my-cloudfroundry.org
         CF_ORG: my-test-org
         CF_SPACE: my-test-space
-        CF_USERNAME: a-test-User
-        CF_PASSWORD: a-test-Password
+        CF_USERNAME: "a-test-User"
+        CF_PASSWORD: "a-test-Password"
 groups:
 - name: Hello-world-root-depls
   jobs:

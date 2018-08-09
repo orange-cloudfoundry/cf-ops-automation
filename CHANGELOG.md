@@ -1,6 +1,24 @@
 # Change Log
 
-## [v2.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.2.0) (2018-07-26)
+## [v3.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.0.0) (2018-08-09)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.2.0...v3.0.0)
+
+**Implemented enhancements:**
+
+- add documentation for bosh deployments recreate pipeline [\#124](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/124)
+- Concourse pipeline input bosh releases should be configurable by iaas-type [\#89](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/89)
+
+**Closed issues:**
+
+- Terraform helm support [\#180](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/180)
+- Find and apply global solution to print password in yaml files [\#145](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/145)
+- provide automated non-attended COA env bootstrap [\#113](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/113)
+
+**Merged pull requests:**
+
+- tasks\(generate\_manifest\): make files used by spruce optional [\#177](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/177)
+
+## [v2.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.2.0) (2018-07-24)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.1.0...v2.2.0)
 
 **Implemented enhancements:**
@@ -25,10 +43,13 @@
 
 **Merged pull requests:**
 
+- support iaas-type for deployement-dependencies [\#175](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/175)
 - task\(git\_reset\_wip\): create a commit after reset [\#174](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/174)
 - trigger update-pipeline on each`secrets-repo` commit and `init-concourse-boshrelease-and-stemcell` improvements [\#171](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/171)
 - Online stemcells support [\#169](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/169)
+- 145 yaml passwords [\#167](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/167)
 - Terraform improvements [\#166](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/166)
+- bootstrap-coa-env\(\*\) [\#164](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/164)
 - allow usage of generic key in deployment-dependencies [\#163](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/163)
 - Living doc missing cf app hooks [\#161](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/161)
 - Upgrade script for config repo for upcoming release 2.2.0 [\#160](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/160)

@@ -123,4 +123,4 @@ Feature: Terraform support for root deployment
 
 12 scenarios (10 pending, 2 passed)
 32 steps (10 pending, 22 passed)
-0m5.585s
+0m5.020s

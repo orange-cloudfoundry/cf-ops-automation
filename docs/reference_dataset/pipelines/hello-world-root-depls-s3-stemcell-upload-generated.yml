@@ -4,10 +4,12 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
+      tag: v1.4.2
   - name: cron-resource
     type: docker-image
     source:
       repository: cftoolsmiths/cron-resource
+      # use latest as no other recent tag available
 resources:
 - name: weekday-morning
   type: cron-resource
@@ -81,7 +83,7 @@ jobs:
     params:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
-      FLY_PASSWORD:  ((concourse-hello-world-root-depls-password))
+      FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
       FLY_TEAM: main
 - name: upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent
   on_failure:
