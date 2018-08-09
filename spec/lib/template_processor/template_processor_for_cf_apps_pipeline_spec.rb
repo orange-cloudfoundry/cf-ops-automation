@@ -63,11 +63,7 @@ describe 'CfAppsPipelineTemplateProcessing' do
         type: docker-image
         source:
           repository: cfcommunity/slack-notification-resource
-
-      - name: cron-resource
-        type: docker-image
-        source:
-          repository: cftoolsmiths/cron-resource
+          tag: v1.4.2
     YAML
     YAML.safe_load(resource_types_yaml)
   end
@@ -128,7 +124,7 @@ describe 'CfAppsPipelineTemplateProcessing' do
       end
 
       it 'generates all resource_types' do
-        expect(generated_pipeline['resource_types']).to match(expected_resource_types)
+        expect(generated_pipeline['resource_types']).to match_array(expected_resource_types)
       end
 
       it 'generates all groups' do

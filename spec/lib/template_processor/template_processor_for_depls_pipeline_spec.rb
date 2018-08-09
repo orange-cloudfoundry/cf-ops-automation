@@ -79,26 +79,26 @@ describe 'DeplsPipelineTemplateProcessing' do
         type: docker-image
         source:
           repository: cfcommunity/slack-notification-resource
+          tag: v1.4.2
       - name: cron-resource
         type: docker-image
         source:
           repository: cftoolsmiths/cron-resource
-      - name: bosh-config
-        type: docker-image
-        source:
-          repository: dellemcdojo/bosh-config-resource
       - name: concourse-pipeline
         type: docker-image
         source:
           repository: concourse/concourse-pipeline-resource
+          tag: 3
       - name: bosh-deployment-v2
         type: docker-image
         source:
           repository: cloudfoundry/bosh-deployment-resource
+          tag: v2.12.0
       - name: bosh-errand
         type: docker-image
         source:
           repository: starkandwayne/bosh2-errand-resource
+          tag: v0.1.2
     YAML
     YAML.safe_load(resource_types_yaml)
   end

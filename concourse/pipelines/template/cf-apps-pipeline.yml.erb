@@ -4,19 +4,8 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
-
-  - name: cron-resource
-    type: docker-image
-    source:
-      repository: cftoolsmiths/cron-resource
-
+      tag: v1.4.2
 resources:
-#- name: at-noon
-#  type: cron-resource
-#  source:
-#    expression: "15 12 * * 1-5"
-#    location: "Europe/Paris"
-#    fire_immediately: true
 
 <% if ! all_cf_apps.empty? %>
 - name: failure-alert

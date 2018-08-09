@@ -4,11 +4,13 @@ resource_types:
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
+      tag: v1.4.2
 
   - name: cron-resource
     type: docker-image
     source:
       repository: cftoolsmiths/cron-resource
+      # use latest as no other recent tag available
 
 resources:
 <% if all_ci_deployments.any? %>
