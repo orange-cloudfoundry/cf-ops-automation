@@ -1,0 +1,20 @@
+pipeline-vars:
+  slack-webhook: https://example.slack.com/webhook
+  slack-channel: channel
+  slack-disable-it: true
+  secrets-branch: master
+  paas-templates-branch: master
+  cf-ops-automation-branch: master
+  cf-ops-automation-tag-filter: ""
+  iaas-type: virtualbox
+  s3-stemcell-access-key-id: ""
+  s3-stemcell-region-name: us-east-1
+  s3-stemcell-secret-key: ""
+  s3-stemcell-bucket: bosh-core-stemcells
+  s3-stemcell-endpoint: https://s3.amazonaws.com
+  s3-stemcell-skip-ssl-verification: false
+  stemcell-name-prefix: ""
+  stemcell-main-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
+  stemcell-version: "3541.10"
+  bosh-openstack-cpi-release-version: "37"
+  paas-templates-branch: master

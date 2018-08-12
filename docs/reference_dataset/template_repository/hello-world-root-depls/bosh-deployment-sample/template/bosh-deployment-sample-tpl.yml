@@ -24,7 +24,7 @@ instance_groups:
   persistent_disk: 0
   stemcell: trusty
   networks:
-  - name: default
+  - name: concourse-bucc #default
   jobs:
   - name: nginx
     release: nginx

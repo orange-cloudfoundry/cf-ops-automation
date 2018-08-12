@@ -1,4 +1,4 @@
-pipeline_credentials:
+pipeline-vars:
   slack-webhook: https://example.slack.com/webhook
   slack-channel: channel
   secrets-branch: master

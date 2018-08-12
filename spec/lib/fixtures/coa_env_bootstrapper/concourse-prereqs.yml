@@ -1,5 +1,7 @@
 concourse:
   concourse_url: http://example.com
+  concourse_target: rspec
   concourse_username: concourse_username
   concourse_password: concourse_password
-  concouse_ca_cert: concouse_ca_cert
+  concourse_ca_cert: concouse_ca_cert
+  concourse_insecure: true

@@ -71,9 +71,8 @@ jobs:
         - name: cf-ops-automation
         - name: private-prereqs
         run:
-          path: ruby
+          path: cf-ops-automation/scripts/bootstrap_coa_env.rb
           args:
-          - cf-ops-automation/scripts/bootstrap_coa_env.rb
           - cf-ops-automation/ci/bootstrap_coa_env/prereqs.yml
           - private-prereqs/bosh-prereqs.yml
           - private-prereqs/concourse-prereqs.yml

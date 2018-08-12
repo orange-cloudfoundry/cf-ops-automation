@@ -638,7 +638,7 @@ jobs:
       <% else %>
       - ((stemcell-main-name))/stemcell.tgz
       <% end %>
-      releases:<%= ' []' if boshrelease['releases']&.empty? %>
+      releases: <%= '[]' if boshrelease['releases']&.empty? %>
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
       - <%= release %>/<%= release %>-((<%= release %>-version)).tgz

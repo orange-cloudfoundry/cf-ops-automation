@@ -20,7 +20,7 @@ module ReferenceDatasetDocumentation
     end
 
     def validate
-      Dir["#{@generated_pipelines_dir}/pipelines/*-generated.yml"].each do |pipeline_filename|
+      Dir["#{generated_pipelines_dir}/pipelines/*-generated.yml"].each do |pipeline_filename|
         command = "fly validate-pipeline -c #{pipeline_filename} --strict"
         stdout_str, stderr_str, = Open3.capture3(command)
         raise "Invalid generated pipeline (#{pipeline_filename}): #{stderr_str}" unless stderr_str.empty?
@@ -56,12 +56,14 @@ module ReferenceDatasetDocumentation
       FileUtils.rm_rf(pipelines_to_delete)
     end
 
-    def self.generated_pipeline_names
+    def generated_pipeline_names(prefix = nil)
       path = File.join(PROJECT_ROOT_DIR, 'concourse', 'pipelines', 'template', '*.yml.erb')
+      prefix ||= generator.root_deployment_name
 
       Dir[path].map do |file|
         filename = File.basename(file)
-        filename == "depls-pipeline.yml.erb" ? "" : filename.gsub('-pipeline.yml.erb', '-')
+        basename = filename == "depls-pipeline.yml.erb" ? "" : filename.gsub('-pipeline.yml.erb', '-')
+        "#{prefix}-#{basename}generated"
       end
     end
 
@@ -95,8 +97,8 @@ module ReferenceDatasetDocumentation
     end
 
     def generated_pipeline_paths
-      self.class.generated_pipeline_names.map do |generated_file|
-        "#{generated_pipelines_dir}/pipelines/#{generator.root_deployment_name}-#{generated_file}generated.yml"
+      generated_pipeline_names.map do |generated_file|
+        "#{generated_pipelines_dir}/pipelines/#{generated_file}.yml"
       end
     end
 

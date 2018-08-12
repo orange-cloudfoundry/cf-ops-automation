@@ -77,6 +77,13 @@ describe ReferenceDatasetDocumentation::Pipelines do
     describe "#write_pipelines_credential_list" do
       let(:pipelines) { described_class.new(generator, pipelines_base_output_dir) }
       let(:generated_pipelines_dir) { File.join(File.dirname(__FILE__), 'fixtures') }
+      let(:generate_pipelines_names) do
+        [
+          'root_deployment_name-with-creds-generated',
+          'root_deployment_name-with-creds2-generated',
+          'root_deployment_name-without-creds-generated'
+        ]
+      end
 
       it "write the list of required credentials for each pipeline in the docs" do
         expect(generator).to receive(:add).
@@ -85,8 +92,8 @@ describe ReferenceDatasetDocumentation::Pipelines do
         allow(pipelines).to receive(:generated_pipelines_dir).
           and_return(generated_pipelines_dir)
 
-        allow(pipelines.class).to receive(:generated_pipeline_names).
-          and_return(['with-creds-', 'with-creds2-', 'without-creds-'])
+        allow(pipelines).to receive(:generated_pipeline_names).
+          and_return(generate_pipelines_names)
 
         expect(generator).to receive(:add).
           with("### #{generator.root_deployment_name}-with-creds-generated.yml", "")
@@ -110,6 +117,13 @@ describe ReferenceDatasetDocumentation::Pipelines do
     describe "#write_credentials_pipeline_list" do
       let(:pipelines) { described_class.new(generator, pipelines_base_output_dir) }
       let(:generated_pipelines_dir) { File.join(File.dirname(__FILE__), 'fixtures') }
+      let(:generate_pipelines_names) do
+        [
+          'root_deployment_name-with-creds-generated',
+          'root_deployment_name-with-creds2-generated',
+          'root_deployment_name-without-creds-generated'
+        ]
+      end
 
       it "write the list of pipelines for each credential in the docs" do
         expect(generator).to receive(:add).
@@ -118,8 +132,8 @@ describe ReferenceDatasetDocumentation::Pipelines do
         allow(pipelines).to receive(:generated_pipelines_dir).
           and_return(generated_pipelines_dir)
 
-        allow(pipelines.class).to receive(:generated_pipeline_names).
-          and_return(['with-creds-', 'with-creds2-', 'without-creds-'])
+        allow(pipelines).to receive(:generated_pipeline_names).
+          and_return(generate_pipelines_names)
 
         expect(generator).to receive(:add).
           with("### face-a-face", "")

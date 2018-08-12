@@ -97,7 +97,6 @@ class CiDeployment
     processes_pipeline_definitions(root_deployment_details)
   end
 
-  # TODO: LP 07.05.18: Does this method do anything?
   def processes_pipeline_definitions(deployment_details)
     deployment_details['pipelines'].each do |pipeline_name, pipeline_details|
       next unless pipeline_details
