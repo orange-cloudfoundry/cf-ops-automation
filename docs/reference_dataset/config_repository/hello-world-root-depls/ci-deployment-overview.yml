@@ -6,14 +6,42 @@ ci-deployment:
       state_file_path: hello-world-root-depls/terraform-config
     pipelines:
       hello-world-root-depls-generated:
+        team: main
         vars_files:
         - hello-world-root-depls/hello-world-root-depls-versions.yml
         - shared/concourse-credentials.yml
       hello-world-root-depls-init-generated:
+        team: main
         vars_files:
         - hello-world-root-depls/hello-world-root-depls-versions.yml
         - shared/concourse-credentials.yml
       hello-world-root-depls-cf-apps-generated:
+        team: currently-disabled
         vars_files:
         - hello-world-root-depls/hello-world-root-depls-versions.yml
         - shared/concourse-credentials.yml
+      hello-world-root-depls-update-generated:
+        team: main
+        vars_files:
+        - hello-world-root-depls/hello-world-root-depls-versions.yml
+        - shared/concourse-credentials.yml
+      hello-world-root-depls-bosh-generated:
+        team: main
+        vars_files:
+          - hello-world-root-depls/hello-world-root-depls-versions.yml
+          - shared/concourse-credentials.yml
+      hello-world-root-depls-s3-br-upload-generated:
+        team: upload
+        vars_files:
+          - hello-world-root-depls/hello-world-root-depls-versions.yml
+          - shared/concourse-credentials.yml
+      hello-world-root-depls-s3-stemcell-upload-generated:
+        team: upload
+        vars_files:
+          - hello-world-root-depls/hello-world-root-depls-versions.yml
+          - shared/concourse-credentials.yml
+      hello-world-root-depls-concourse-generated:
+        team: main
+        vars_files:
+          - hello-world-root-depls/hello-world-root-depls-versions.yml
+          - shared/concourse-credentials.yml

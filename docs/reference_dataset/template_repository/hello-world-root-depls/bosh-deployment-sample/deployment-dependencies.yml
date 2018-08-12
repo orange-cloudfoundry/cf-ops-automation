@@ -17,6 +17,8 @@ deployment:
       ntp:
         base_location: https://bosh.io/d/github.com/
         repository: cloudfoundry-community/ntp-release
-      vault:
-        base_location: http://github.com/
-        repository: cloudfoundry-community/vault-boshrelease
+      # NOTE: this resource is not working ATM, see https://github.com/orange-cloudfoundry/cf-ops-automation/issues/220
+      # vault:
+      #   base_location: http://github.com/
+      #   repository: cloudfoundry-community/vault-boshrelease
+

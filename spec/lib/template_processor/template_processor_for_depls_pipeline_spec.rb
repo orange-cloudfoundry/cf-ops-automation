@@ -103,7 +103,7 @@ describe 'DeplsPipelineTemplateProcessing' do
     YAML.safe_load(resource_types_yaml)
   end
   let(:groups) do
-    groups_yaml = [
+    [
       { 'name' => 'My-root-depls',
         'jobs' =>
          ['approve-and-delete-disabled-deployments',
@@ -264,7 +264,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           'haproxy-boshrelease' => 'cloudfoundry-community' }
       end
       let(:expected_s3_boshreleases) do
-        expected_yaml = expected_boshreleases.map do |br_name, br_repo|
+        expected_boshreleases.map do |br_name, br_repo|
           fragment = <<~YAML
             - name: #{br_name}
               type: s3
@@ -345,7 +345,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           - name: ((stemcell-main-name))
             type: bosh-io-stemcell
             source:
-              name: ((stemcell-name-prefix))((stemcell-main-name))
+              name:  ((stemcell-main-name))
         YAML
         YAML.safe_load expected_yaml
       end

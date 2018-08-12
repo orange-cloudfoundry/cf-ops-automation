@@ -43,6 +43,15 @@ resources:
     branch: ((cf-ops-automation-git-branch))
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
+- name: ci-coa-it
+  type: git
+  source:
+    uri: ((cf-ops-automation-git-uri))
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-password))
+    branch: ((cf-ops-automation-git-branch-it))
+    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+
 - name: ci-master
   type: git
   source:
@@ -78,20 +87,6 @@ resources:
     owner: ((cf-ops-automation-git-hub-owner))
     repository: ((cf-ops-automation-git-hub-repository))
     access_token: ((cf-ops-automation-git-hub-token))
-
-- name: cf-ops-automation-test-secrets
-  type: git
-  source:
-    uri: ((cf-ops-automation-test-secrets-uri))
-    branch: master
-    skip_ssl_verification: ((cf-ops-automation-test-git-insecure))
-
-- name: cf-ops-automation-test-templates
-  type: git
-  source:
-    uri: ((cf-ops-automation-test-templates-uri))
-    branch: master
-    skip_ssl_verification: ((cf-ops-automation-test-git-insecure))
 
 - name: hotfix-branch
   type: git
@@ -200,15 +195,9 @@ jobs:
     plan:
       - aggregate:
         - get: cf-ops-automation
-          resource: ci-develop
+          resource: ci-coa-it
           trigger: true
-          passed: [unit-tests]
         - get: cf-ops-automation-docker-image
-          passed: [unit-tests]
-        - get: cf-ops-automation-test-templates
-        - get: cf-ops-automation-test-secrets
-          trigger: true
-
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image
@@ -217,110 +206,36 @@ jobs:
           inputs:
           - name: cf-ops-automation
           outputs:
-          - name: paas-templates
-#          - name: secrets
-          - name: all-pipelines
+          - name: prereqs
           run:
-            dir: cf-ops-automation
             path: /bin/bash
             args:
-            - -cex
-#              fly -t cf-ops-automation login -u ((concourse-username)) -p ((concourse-password)) -k -c ((concourse-url))
-#              cp -r spec/scripts/generate-depls/fixtures/secrets/{shared,simple-depls} ../secrets|true
-#              cd ../secrets
-#              git init .
-#              git add .
-#              git commit -m "update secrets"
-#              PIPELINE_DIR=../all-pipelines/pipelines
-#              mkdir -p ${PIPELINE_DIR}
-#              cp -r spec/scripts/generate-depls/fixtures/references/simple-depls*.yml ${PIPELINE_DIR}|true
+            - -ce
             - |
-              git config --global user.email "$GIT_USER_EMAIL"
-              git config --global user.name "$GIT_USER_NAME"
+              cp cf-ops-automation/ci/bootstrap_coa_env/inactive-steps-prereqs.yml  prereqs/inactive-steps-prereqs.yml
+              cp cf-ops-automation/ci/bootstrap_coa_env/git-server-manifest-prereqs.yml  prereqs/git-server-manifest-prereqs.yml
+              cp cf-ops-automation/ci/bootstrap_coa_env/pipeline-vars-prereqs.yml  prereqs/pipeline-vars-prereqs.yml
+              echo "  slack-webhook: ((slack-webhook))" >> prereqs/pipeline-vars-prereqs.yml
+              echo "  slack-channel: ((slack-channel))" >> prereqs/pipeline-vars-prereqs.yml
+              echo "  slack-proxy:" >> prereqs/pipeline-vars-prereqs.yml
+              echo "  slack-disable: ((slack-disable-it))" >> prereqs/pipeline-vars-prereqs.yml
+              echo "  slack-proxy-https-tunnel:" >> prereqs/pipeline-vars-prereqs.yml
+              printenv INTEGRATION_TEST_PREREQS > prereqs/integration-test-prereqs.yml
+        params:
+            INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
 
-              cp -r spec/scripts/generate-depls/fixtures/templates/simple-depls ../paas-templates|true
-              cd ../paas-templates
-              git init .
-              git add .
-              git commit -m "update templates"
-        params:
-          GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
-          GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
-#      - put: cf-ops-automation-test-secrets
-#        params:
-#          repository: secrets
-#          force: true
-      - put: cf-ops-automation-test-templates
-        params:
-          repository: paas-templates
-          force: true
-      - task: generate-all-pipelines
-        input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates,secrets-resource: cf-ops-automation-test-secrets}
-        output_mapping: {result-dir: all-pipelines}
-        file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
-#      - task: set-all-init-pipelines
-#        input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates,secrets-resource: cf-ops-automation-test-secrets, pipelines-resource: all-pipelines}
-#        file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
-#        params:
-#          ATC_EXTERNAL_URL: ((concourse-url))
-#          FLY_USERNAME: ((concourse-username))
-#          FLY_PASSWORD:  ((concourse-password))
       - task: upload-pipelines
-        input_mapping: {secrets-resource: cf-ops-automation-test-secrets}
         attempts: 1
         image: cf-ops-automation-docker-image
         config:
           platform: linux
           inputs:
           - name: cf-ops-automation
-          - name: paas-templates
-          - name: secrets-resource
-          - name: all-pipelines
+          - name: prereqs
           run:
-            dir: cf-ops-automation
-            path: /bin/bash
-            args:
-            - -cex
-            - |
-              fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
-              export SECRETS=../secrets-resource
-              export TARGET_NAME=cf-ops-automation
-              export PIPELINES_DIR=../all-pipelines/pipelines
-              ./scripts/concourse-manual-pipelines-update.rb -dsimple-depls --no-interactive --fail-on-error
-
-
-      - task: generate-auto-trigger-flight-plan
-        output_mapping: {result-dir: init-auto-trigger-flight-plan}
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source: {repository: concourse/busyboxplus, tag: "git"}
-          inputs:
-            - name: all-pipelines
-          outputs:
-            - name: result-dir
-          run:
-            path: sh
-            args:
-            - -exc
-            - |
-              DEST_DIR=$(pwd)/result-dir
-              cd all-pipelines/pipelines
-              for aFile in $(ls *init-ref.yml)
-              do
-              PIPELINE=$(basename ${aFile} .yml)
-              DEPLS=${PIPELINE%%-init-ref}
-              echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
-              done
-      - task: fly-into-concourse
-        input_mapping: {fly-cmd: init-auto-trigger-flight-plan}
-        output_mapping: {flight-report: concourse-<%= depls %>-init-report}
-        file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
-        params:
-          ATC_EXTERNAL_URL: ((concourse-url))
-          FLY_USERNAME: ((concourse-username))
-          FLY_PASSWORD:  '((concourse-password))'
+            path: ./cf-ops-automation/scripts/run_integration_tests.rb
+          params:
+            PREREQS_PATHS_RAW: "./prereqs/*.yml"
 
   - name: update-documentation
     on_failure: *on_failure_alert
@@ -454,7 +369,6 @@ jobs:
             type: docker-image
             source:
               repository: orangecloudfoundry/cf-ops-automation
-          platform: linux
           inputs:
           - name: cf-ops-automation
           - name: version

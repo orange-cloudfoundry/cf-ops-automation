@@ -15,4 +15,3 @@ File.open(filename, 'w') do |file|
   file.flush
 end
 
-

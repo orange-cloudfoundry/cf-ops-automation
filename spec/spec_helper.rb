@@ -44,6 +44,7 @@ RSpec.configure do |config|
     # a real object. This is generally recommended, and will default to
     # `true` in RSpec 4.
     mocks.verify_partial_doubles = true
+    mocks.verify_doubled_constant_names = true
   end
 
   # This option will default to `:apply_to_host_groups` in RSpec 4 (and will
@@ -117,8 +118,8 @@ RSpec.configure do |config|
   config.tty = true
 
   config.before do
-    # $stdout = StringIO.new
-    # $stderr = StringIO.new
+    $stdout = StringIO.new
+    $stderr = StringIO.new
   end
   config.after(:all) do
     $stdout = STDOUT

@@ -1,26 +1,31 @@
 require 'yaml'
-require_relative './command_runner'
+require_relative './base'
 require_relative './errors'
 
 module CoaEnvBootstrapper
-  # Manage BUCC deployment
-  class Bucc
-    include CommandRunner
+  # This class manages BUCC deployment and can provide `bucc vars`
+  class Bucc < Base
     attr_reader :prereqs
 
     def initialize(prereqs)
       @prereqs = prereqs || {}
     end
 
+    # NOTE: the presence of a state.json file in the bucc repo leads bucc
+    # to beleive that the VM is up when it's not.
     def deploy_transient_infra
       run_cmd "#{bucc_cli_path} up --cpi #{prereqs['cpi']} \
 #{prereqs['cpi_specific_options']} --lite --debug"
     end
 
+    def in_use?
+      prereqs == {}
+    end
+
     def vars
       @vars ||=
         begin
-          command_result = run_cmd("#{bucc_cli_path} vars")
+          command_result = run_cmd("#{bucc_cli_path} vars", verbose: false)
           YAML.safe_load(command_result)
         rescue ::Errno::ENOENT => error
           raise BuccCommandError, "You may be missing bucc in your $PATH. Error:\n#{error.message}"
@@ -30,7 +35,7 @@ module CoaEnvBootstrapper
     end
 
     def bucc_cli_path
-      "#{prereqs['bin_path']}/bucc"
+      "#{PROJECT_ROOT_DIR}/bin/bucc/bin/bucc"
     end
 
     def concourse_target

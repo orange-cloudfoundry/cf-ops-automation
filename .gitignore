@@ -8,11 +8,25 @@
 bootstrap-generated/**/*-generated.yml
 
 /ci/private*.yml
+ci/bootstrap_coa_env/prereqs.yml
 bin/
 .bundle/
 out/
+log/
 /coverage/
 
 spec/tasks/git_reset_wip/reference-resource/
 /Readme.md.toc.*
 /Readme.md.orig.*
+
+bin/bucc
+
+docs/reference_dataset/config_repository/coa/config/credentials-git-config.yml
+docs/reference_dataset/config_repository/coa/config/credentials-auto-init.yml
+docs/reference_dataset/config_repository/shared/certs/internal_paas-ca/server-ca.crt
+docs/reference_dataset/config_repository/shared/concourse-credentials.yml
+docs/reference_dataset/config_repository/shared/pipeline-credentials.yml
+
+
+ci/bootstrap_coa_env/bosh-prereqs.yml
+ci/bootstrap_coa_env/concourse-prereqs.yml

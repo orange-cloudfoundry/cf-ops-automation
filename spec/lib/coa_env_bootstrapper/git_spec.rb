@@ -1,50 +1,89 @@
 require 'spec_helper'
-require 'coa_env_bootstrapper/base'
+require 'yaml'
+require 'coa_env_bootstrapper/bosh'
 require 'coa_env_bootstrapper/git'
 
-describe CoaEnvBootstrapper::Git do
-  let(:ceb) { CoaEnvBootstrapper::Base.new([]) }
-  let(:server_ip) { "1.2.3.4" }
+shared_examples_for "an initiated and pushed repo" do |repo_path, repo_name|
+  it "executes a set of git commands" do
+    expect(CoaCommandRunner).to receive(:new).
+      with("git remote", profile: "").ordered.
+      and_return(git_remote_runner)
+    expect(git_remote_runner).to receive(:execute).and_return("origin")
 
-  describe '.new'
+    expect(Dir).to receive(:chdir).with(repo_path).and_yield
+    commands = [
+      ["git init .", {}],
+      ["git config --local user.email 'coa_env_bootstrapper@example.com'", {}],
+      ["git config --local user.name 'Fake User For COA Bootstrapper Pipeline'", {}],
+      ["git remote remove origin", {}],
+      ["git remote add origin git://1.2.3.4/#{repo_name}", {}],
+      ["git add -A && git commit -m 'Commit'", fail_silently: true],
+      ["git checkout master", {}],
+      ["git push origin master --force", { profile: "" }]
+    ]
+    commands.each do |command, options|
+      expect(CoaCommandRunner).
+        to receive(:new).with(command, options).and_return(runner)
+      expect(runner).to receive(:execute)
+    end
 
-  describe '#push_templates_repo' do
-    it "runs a set of git commands"
+    git.push_secrets_repo(concourse_config)
   end
+end
+
+describe CoaEnvBootstrapper::Git do
+  let(:server_ip) { "1.2.3.4" }
+  let(:prereqs) { {} }
+  let(:bosh_ca_cert) { "ca cert" }
+  let(:bosh) do
+    instance_double("CoaEnvBootstrapper::Bosh",
+                    git_server_ip: server_ip,
+                    config: { "ca-cert" => bosh_ca_cert },
+                    bosh_client: CoaBoshClient.new({}))
+  end
+  let(:git) { described_class.new(bosh, prereqs) }
+  let(:git_remote_runner) { instance_double("CoaCommandRunner") }
 
   describe '#push_secrets_repo' do
-    it "runs a set of git commands"
-  end
-
-  describe '#download_git_dependencies' do
-    let(:git) { described_class.new(ceb) }
-
-    context "when ceb.config_dir is nil" do
-      it "errors" do
-        expect { git.download_git_dependencies }.
-          to raise_error(CoaEnvBootstrapper::ConfigDirNotFound)
-      end
+    let(:file) { instance_double("File") }
+    let(:runner) { instance_double("CoaCommandRunner") }
+    let(:git_remote_runner) { instance_double("CoaCommandRunner") }
+    let(:concourse_config) { {} }
+    let(:credentials_auto_init_path) { described_class::CREDENTIALS_AUTO_INIT_PATH }
+    let(:concourse_credentials_path) { described_class::CONCOURSE_CREDENTIALS_PATH }
+    let(:bosh_ca_certs_path) { described_class::BOSH_CA_CERTS_PATH }
+    let(:git_config_path) { described_class::GIT_CONFIG_PATH }
+    let(:credentdials_auto_init) { git.send(:generated_concouse_credentials, concourse_config).to_yaml }
+    let(:git_config) do
+      {
+        "cf-ops-automation-tag-filter" => "",
+        "cf-ops-automation-uri" => "git://1.2.3.4/cf-ops-automation"
+      }
     end
 
-    context "when there is a config dir" do
-      let(:tmpdirpath) { Dir.mktmpdir }
-
-      after { FileUtils.remove_entry_secure tmpdirpath }
-
-      it "runs a set of git commands"
+    before do
+      allow(CoaCommandRunner).to receive(:new).and_return(runner)
+      allow(runner).to receive(:execute).and_return("")
+      allow(File).to receive(:open).and_yield(file)
+      allow(file).to receive(:write)
     end
-  end
 
-  describe '#server_ip' do
-    let(:git) { described_class.new(ceb) }
+    it "writes some config files and pushes the repo" do
+      git.push_secrets_repo(concourse_config)
 
-    it "runs a set of git commands" do
-      allow(ceb).to receive(:source_profile_path).and_return("")
-      allow(git).to receive(:run_cmd).
-        with("bosh -d git-server is --column ips|cut -f1", source_file_path: ceb.source_profile_path).
-        and_return(server_ip)
+      expect(File).to have_received(:open).with(credentials_auto_init_path, 'w').once
+      expect(file).to have_received(:write).with(credentdials_auto_init).twice
 
-      expect(git.server_ip).to eq server_ip
+      expect(File).to have_received(:open).with(concourse_credentials_path, 'w').once
+
+      expect(File).to have_received(:open).with(bosh_ca_certs_path, 'w').once
+      expect(file).to have_received(:write).with(bosh_ca_cert).once
+
+      expect(File).to have_received(:open).with(git_config_path, 'w').once
+      expect(file).to have_received(:write).with(git_config.to_yaml).once
     end
+
+    it_behaves_like "an initiated and pushed repo",
+      described_class::SECRETS_REPO_DIR, "secrets"
   end
 end

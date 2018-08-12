@@ -2,7 +2,9 @@ require_relative './bucc'
 require_relative './errors'
 
 module CoaEnvBootstrapper
-  class EnvCreatorAdapter
+  # This class serves as a adapter to communicate with whichever software
+  # created the environment
+  class EnvCreatorAdapter < Base
     attr_reader :adapter
 
     def initialize(adapter_name, prereqs)
@@ -12,11 +14,15 @@ module CoaEnvBootstrapper
       @adapter =
         case adapter_name
         when "bucc" then Bucc.new(prereqs["bucc"])
-        else raise EnvCreatorAdapterNotImplementedError, "No adapter implemented for #{adapter_name}"
+        else
+          message = "No adapter implemented for #{adapter_name}"
+          logger.error message
+          raise EnvCreatorAdapterNotImplementedError, message
         end
     end
 
     def deploy_transient_infra
+      logger.log_and_puts :debug, 'Deploying transient infra source profile'
       adapter.deploy_transient_infra
     end
 
