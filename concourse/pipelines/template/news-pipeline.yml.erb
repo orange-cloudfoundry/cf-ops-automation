@@ -91,6 +91,7 @@ resources:
   source:
     user: <%= info["repository"].split('/').first %>
     repository: <%= info["repository"].split('/').last %>
+    access_token: ((bot-github-access-token))
   <% end %>
 <% end %>
 

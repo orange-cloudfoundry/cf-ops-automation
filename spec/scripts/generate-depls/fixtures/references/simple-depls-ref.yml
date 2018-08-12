@@ -485,7 +485,7 @@ jobs:
         - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
         releases: 
         
-        - ntp_boshrelease/release.tgz
+        - ntp_boshrelease/*.tgz
         ops_files:
           - ops-and-vars-files/operators/*
         vars_files:

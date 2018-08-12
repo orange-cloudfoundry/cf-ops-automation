@@ -10,24 +10,28 @@ describe CoaEnvBootstrapper::Runner do
   let(:tempfile) { Tempfile.new }
 
   describe '.new' do
-    let(:prereqs_yml_path) do
-      File.join(CoaEnvBootstrapper::Base::PROJECT_ROOT_DIR, 'ci', 'bootstrap_coa_env', 'bosh-prereqs.example.yml')
-    end
-    let(:not_existing_yml_path) { "not_existing.yml" }
+    let(:bosh_prereqs_path) { File.join(fixtures_dir('lib'), 'coa_env_bootstrapper', 'bosh-prereqs.yml') }
+    let(:bucc_prereqs_path) { File.join(fixtures_dir('lib'), 'coa_env_bootstrapper', 'bucc-prereqs.yml') }
+    let(:not_existing_path) { "not_existing.yml" }
     let(:expected_prereqs) do
       {
         "bosh" => {
-          "bosh_environment" => "192.168.50.6",
-          "bosh_target" => "192.168.50.6",
-          "bosh_client" => "admin",
-          "bosh_client_secret" => nil,
-          "bosh_ca_cert" => nil
+          "bosh_environment"   => "own_bosh",
+          "bosh_target"        => "target",
+          "bosh_client"        => "client",
+          "bosh_client_secret" => "client_secret",
+          "bosh_ca_cert"       => "ca_cert"
+        },
+        "bucc" => {
+          "bin_path"             => "/path/to/bucc/bin",
+          "cpi"                  => "openstack",
+          "cpi_specific_options" => "--keystone-v2"
         }
       }
     end
 
     it "loads proper arguments files and ignore others" do
-      runner = described_class.new([prereqs_yml_path, not_existing_yml_path])
+      runner = described_class.new([bosh_prereqs_path, bucc_prereqs_path, not_existing_path])
 
       expect(runner.prereqs).to eq(expected_prereqs)
     end
@@ -50,7 +54,7 @@ describe CoaEnvBootstrapper::Runner do
       allow(bosh).to receive(:git_server_ip).and_return(git_server_ip)
     end
 
-    context "with a default configuration" do
+    context "with no configuration" do
       let(:runner) { described_class.new([]) }
 
       it "runs all steps" do
@@ -160,7 +164,7 @@ describe CoaEnvBootstrapper::Runner do
 
         runner.run_pipeline_jobs
 
-        expect(tempfile).to have_received(:write).with(pipeline_vars.merge(generated_vars).to_yaml)
+        expect(tempfile).to have_received(:write).with(generated_vars.merge(pipeline_vars).to_yaml)
         expect(concourse).to have_received(:set_pipelines).with(pipeline_vars_filepath, git_server_ip)
         expect(concourse).to have_received(:unpause_pipelines)
         expect(concourse).to have_received(:trigger_jobs)

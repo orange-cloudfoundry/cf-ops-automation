@@ -11,11 +11,6 @@ module CoaEnvBootstrapper
     SECRETS_REPO_DIR   = "#{PROJECT_ROOT_DIR}/docs/reference_dataset/config_repository".freeze
     TEMPLATES_REPO_DIR = "#{PROJECT_ROOT_DIR}/docs/reference_dataset/template_repository".freeze
 
-    def extract_from_prereqs(prereqs, prereqs_key, additional_info = {})
-      keys_prereqs = prereqs[prereqs_key] || {}
-      keys_prereqs&.merge(additional_info) || {}
-    end
-
     def run_cmd(command, options = {})
       CoaCommandRunner.new(command, options).execute
     end

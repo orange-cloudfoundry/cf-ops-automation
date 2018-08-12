@@ -1,6 +1,7 @@
 pipeline-vars:
   slack-webhook: https://example.slack.com/webhook
   slack-channel: channel
+  slack-disable-it: true
   secrets-branch: master
   cf-ops-automation-branch: master
   cf-ops-automation-tag-filter: ""
@@ -10,7 +11,7 @@ pipeline-vars:
   s3-stemcell-secret-key: ""
   s3-stemcell-bucket: bosh-core-stemcells
   stemcell-name-prefix: ""
-  stemcell-main-name: warden-boshlite-ubuntu-trusty-go_agent
+  stemcell-main-name: bosh-warden-boshlite-ubuntu-trusty-go_agent
   stemcell-version: "3586.25"
   s3-stemcell-endpoint: https://s3.amazonaws.com
   s3-stemcell-skip-ssl-verification: false

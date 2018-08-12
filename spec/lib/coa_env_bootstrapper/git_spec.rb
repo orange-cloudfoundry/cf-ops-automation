@@ -42,12 +42,11 @@ describe CoaEnvBootstrapper::Git do
                     bosh_client: CoaBoshClient.new({}))
   end
   let(:git) { described_class.new(bosh, prereqs) }
+  let(:runner) { instance_double("CoaCommandRunner") }
   let(:git_remote_runner) { instance_double("CoaCommandRunner") }
 
   describe '#push_secrets_repo' do
     let(:file) { instance_double("File") }
-    let(:runner) { instance_double("CoaCommandRunner") }
-    let(:git_remote_runner) { instance_double("CoaCommandRunner") }
     let(:concourse_config) { {} }
     let(:credentials_auto_init_path) { described_class::CREDENTIALS_AUTO_INIT_PATH }
     let(:concourse_credentials_path) { described_class::CONCOURSE_CREDENTIALS_PATH }
@@ -86,4 +85,36 @@ describe CoaEnvBootstrapper::Git do
     it_behaves_like "an initiated and pushed repo",
       described_class::SECRETS_REPO_DIR, "secrets"
   end
+
+  describe 'push_cf_ops_automation' do
+    # TODO: have better values for current_branch_name, remote_name, branch_name
+    before do
+      allow(CoaCommandRunner).to receive(:new).and_return(runner)
+      allow(runner).to receive(:execute).and_return("")
+      allow(SecureRandom).to receive(:hex).and_return("random")
+    end
+
+    it "creates a random remote name for the git server ip and a random branch name and then push on master from it" do
+
+      expect(Dir).to receive(:chdir).with(described_class::PROJECT_ROOT_DIR).and_yield
+      commands = [
+        ["git branch -q | grep '*' | cut -d ' ' -f2", {}],
+        ["git remote add random git://1.2.3.4/cf-ops-automation", {}],
+        ["git checkout -b random", {}],
+        ["git push random random:master --force", { profile: "" }],
+        ["git checkout ", {}],
+        ["git branch", { profile: "" }],
+        ["git remote", { profile: "" }]
+      ]
+      commands.each do |command, options|
+        expect(CoaCommandRunner).
+          to receive(:new).with(command, options).and_return(runner)
+        expect(runner).to receive(:execute)
+      end
+
+      git.push_cf_ops_automation
+    end
+  end
 end
+
+

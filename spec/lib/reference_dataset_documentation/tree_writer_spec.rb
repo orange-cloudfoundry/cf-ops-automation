@@ -34,15 +34,11 @@ describe ReferenceDatasetDocumentation::TreeWriter do
       expect(generator).to receive(:add).
         with("## The config repo", "", "### root level overview", "", "```bash", tree_root_level_answer, "```", "")
 
-
       expect(generator).to receive(:add).
           with("### #{root_deployment_name} overview", "", "```bash", tree_answer, "```", "").twice
 
-
-
       expect(generator).to receive(:add).
           with("## The template repo", "", "### root level overview", "", "```bash", tree_root_level_answer, "```", "")
-
 
       tree_writer.perform
     end
