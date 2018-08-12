@@ -10,7 +10,6 @@ shared_examples_for "an initiated and pushed repo" do |repo_path, repo_name|
       with("git remote", profile: profile).ordered.
       and_return(runner)
     expect(runner).to receive(:execute).and_return("origin")
-
     expect(Dir).to receive(:chdir).with(repo_path).and_yield
     commands = [
       ["git init .", {}],
@@ -52,7 +51,6 @@ describe Coa::EnvBootstrapper::Git do
   end
   let(:git) { described_class.new(bosh, prereqs) }
   let(:runner) { instance_double("Coa::Utils::CommandRunner") }
-
   describe '#push_secrets_repo' do
     let(:file) { instance_double("File") }
     let(:concourse_config) do

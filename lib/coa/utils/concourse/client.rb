@@ -60,7 +60,6 @@ module Coa
 
         def run_and_watch_job(full_job_name, opts, max_retries)
           fly.trigger_job(full_job_name) if opts["trigger"] == true
-          logger.log_and_puts :info, "Watching job #{full_job_name}"
           finished_build = Concourse::Build.watch_job(full_job_name, max_retries, fly)
           finished_build.handle_result(opts["ignore-failure"])
         end

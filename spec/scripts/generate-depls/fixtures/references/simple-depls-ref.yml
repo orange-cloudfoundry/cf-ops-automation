@@ -93,7 +93,9 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["simple-depls/ntp","shared"]
+    paths:
+    - "simple-depls/ntp"
+    - "shared"
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -101,7 +103,8 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/ntp"]
+    paths:
+    - "simple-depls/ntp"
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
@@ -224,8 +227,10 @@ jobs:
     - aggregate:
       - get: secrets-simple-depls-limited
         params: { submodules: none}
+        passed: [update-pipeline-simple-depls-generated]
       - get: paas-templates-simple-depls
         params: { submodules: none}
+        passed: [update-pipeline-simple-depls-generated]
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-simple-depls-generated]
@@ -257,9 +262,11 @@ jobs:
     - get: secrets-simple-depls-limited
       params: { submodules: none}
       trigger: true
+      passed: [update-pipeline-simple-depls-generated]
     - get: paas-templates-simple-depls
       params: { submodules: none}
       trigger: true
+      passed: [update-pipeline-simple-depls-generated]
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true

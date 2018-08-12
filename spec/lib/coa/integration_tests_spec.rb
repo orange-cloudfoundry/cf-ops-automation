@@ -38,7 +38,7 @@ describe Coa::IntegrationTests do
         concourse_config = integration_tests.concourse_config
         expect(concourse_config.target).to eq("rspec")
         expect(concourse_config.insecure).to be_truthy
-      end
+     end
     end
 
     context "when values are not provided in the 'concourse' prereqs" do

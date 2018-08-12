@@ -4,16 +4,17 @@ deployment:
                    # after COA 2.2, it is possible to use 'bosh-deployment' key
     # cli_version: v1 # DEPRECATED: uncomment to use bosh_cli v1 to deploy manifest
     resources:
-      secrets:
+      secrets: {}
+      templates:
+        extended_scan_path: ["shared-files"]
+
         # DEPRECATED: this deployment depends on another secrets deployment, so it also have to scan change onto the other one
         # As bosh 2 deployment does not require the manifest to interact, you should use bosh link, instead !
         # extended_scan_path: ["hello-world-root-depls/pipeline-sample"]
 
      # bosh-release required. Don't set version here, set it in paas-template/<depls>-versions.yml
     releases:
-      nginx:
-        base_location: https://bosh.io/d/github.com/
-        repository: cloudfoundry-community/nginx-release
+      #ngnix should be defined here but as sample it is defined in deployment-dependencies-<IAAS_TYPE>.yml
       ntp:
         base_location: https://bosh.io/d/github.com/
         repository: cloudfoundry-community/ntp-release
