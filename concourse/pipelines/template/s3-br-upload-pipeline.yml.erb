@@ -60,7 +60,7 @@ resources:
   source:
     user: <%= info["repository"].split('/').first %>
     repository: <%= info["repository"].split('/').last %>
-    access_token: ((github-access-token)) # this is neeed to avoid getting limited by GitHub. See https://github.com/concourse/github-release-resource/blob/master/README.md#github-releases-resource
+    access_token: ((bot-github-access-token))
   <% end %>
 
 - name: <%= release %>-s3

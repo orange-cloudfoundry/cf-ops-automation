@@ -89,7 +89,7 @@ module CoaEnvBootstrapper
       [CREDENTIALS_AUTO_INIT_PATH, CONCOURSE_CREDENTIALS_PATH].each do |path|
         File.open(path, 'w') do |file|
           generated_creds = generated_concouse_credentials(concourse_config)
-          crendentials_auto_init = extract_from_prereqs(prereqs, "pipeline-vars", generated_creds)
+          crendentials_auto_init = generated_creds.merge(prereqs["pipeline-vars"].to_h)
           file.write crendentials_auto_init.to_yaml
         end
       end

@@ -257,6 +257,7 @@ resources:
   source:
     user: <%= info['repository'].split('/').first %>
     repository: <%= info['repository'].split('/').last %>
+    access_token: ((bot-github-access-token))
     <% end %>
   <% end %>
 <% end %>
@@ -661,13 +662,9 @@ jobs:
       <% else %>
       - ((stemcell-main-name))/stemcell.tgz
       <% end %>
-      releases:<%= ' []' if boshrelease['releases']&.empty? %>
+      releases: <%= '[]' if boshrelease['releases']&.empty? %>
   <% boshrelease['releases']&.sort&.each do |release, info| %>
-    <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-      - <%= release %>/<%= release %>-((<%= release %>-version)).tgz
-    <% else %>
-      - <%= release %>/release.tgz
-    <% end %>
+      - "<%= release %>/*.tgz"
   <% end %>
   <% if boshrelease['cli_version'] != 'v1' %>
       ops_files:

@@ -284,7 +284,7 @@ describe 'DeplsPipelineTemplateProcessing' do
         expected_boshreleases.flat_map { |name, repo| { name => "#{repo}/#{name}-((#{name}-version)).tgz" } }
       end
       let(:expected_boshrelease_put_version) do
-        expected_boshreleases.flat_map { |name, _repo| { name => "#{name}/#{name}-((#{name}-version)).tgz" } }
+        expected_boshreleases.flat_map { |name, _repo| { name => "#{name}/*.tgz" } }
       end
       let(:expected_s3_deployment_put) do
         expected_yaml = <<~YAML
@@ -345,7 +345,7 @@ describe 'DeplsPipelineTemplateProcessing' do
           - name: ((stemcell-main-name))
             type: bosh-io-stemcell
             source:
-              name:  ((stemcell-main-name))
+              name: ((stemcell-main-name))
         YAML
         YAML.safe_load expected_yaml
       end

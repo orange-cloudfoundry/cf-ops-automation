@@ -1,0 +1,3 @@
+- type: replace
+  path: /releases/-
+  value: {name: vault, version: ((vault_release_version))}

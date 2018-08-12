@@ -2,6 +2,7 @@ require 'json'
 require 'tmpdir'
 require 'yaml'
 
+require_relative '../active_support_copy_deep_merge'
 require_relative './base'
 require_relative './bosh'
 require_relative './concourse'
@@ -27,7 +28,7 @@ module CoaEnvBootstrapper
     def load_prereqs(prereqs_paths)
       prereqs_paths.inject({}) do |ps, path|
         if File.exist?(path)
-          ps.merge(YAML.load_file(path))
+          ps.deep_merge(YAML.load_file(path))
         else
           logger.log_and_puts :info, "File #{path} not found. Will be ignored."
           ps
@@ -89,27 +90,33 @@ module CoaEnvBootstrapper
     end
 
     def set_pipelines
-      pipeline_vars_file = Tempfile.new("pipeline-vars.yml")
-      concourse_vars = extract_from_prereqs(prereqs, "pipeline-vars", generated_pipeline_vars)
-      pipeline_vars_file.write(concourse_vars.to_yaml)
-      pipeline_vars_file.close
+      pipeline_vars_file = create_temp_vars_file
       concourse.set_pipelines(pipeline_vars_file.path, bosh.git_server_ip)
     ensure
       pipeline_vars_file&.unlink
     end
 
+    def create_temp_vars_file
+      pipeline_vars_file = Tempfile.new("pipeline-vars.yml")
+      concourse_vars = generated_pipeline_vars.merge(prereqs["pipeline-vars"].to_h)
+      pipeline_vars_file.write(concourse_vars.to_yaml)
+      pipeline_vars_file.close
+      pipeline_vars_file
+    end
+
     def generated_pipeline_vars
       bosh_config = bosh.config
       concourse_config = concourse.config
+      git_server_ip = bosh.git_server_ip
       {
         "bosh-target"      => bosh_config["target"],
         "bosh-username"    => bosh_config["client"],
         "bosh-password"    => bosh_config["client-secret"],
         "bosh-ca-cert"     => bosh_config["ca-cert"],
         "bosh-environment" => bosh_config["target"],
-        "secrets-uri"            => "git://#{bosh.git_server_ip}/secrets",
-        "paas-templates-uri"     => "git://#{bosh.git_server_ip}/paas-templates",
-        "cf-ops-automation-uri" => "git://#{bosh.git_server_ip}/cf-ops-automation",
+        "secrets-uri"           => "git://#{git_server_ip}/secrets",
+        "paas-templates-uri"    => "git://#{git_server_ip}/paas-templates",
+        "cf-ops-automation-uri" => "git://#{git_server_ip}/cf-ops-automation",
         "concourse-hello-world-root-depls-insecure" => concourse_config["insecure"],
         "concourse-hello-world-root-depls-password" => concourse_config["password"],
         "concourse-hello-world-root-depls-target"   => concourse_config["url"],
