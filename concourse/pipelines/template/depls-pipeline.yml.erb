@@ -132,14 +132,28 @@ resources:
 <% end %>
 <% end %>
 
-<% enabled_deployments.sort.each do |name, boshrelease| %>
-  <% ext_scan_path = boshrelease['resources']['secrets']['extended_scan_path'] if (boshrelease['resources'] && boshrelease['resources']['secrets'] && boshrelease['resources']['secrets']['extended_scan_path']) %>
-  <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
+<% enabled_deployments.sort.each do |name, boshrelease|
+  secrets_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: depls,
+    name: name,
+    git_submodules: git_submodules,
+    config: boshrelease,
+    config_key: 'secrets',
+    defaults: ["#{depls}/#{name}", "shared"])
+  paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: depls,
+    name: name,
+    git_modules: git_submodules,
+    config: boshrelease,
+    config_key: 'templates',
+    defaults: ["#{depls}/#{name}"])
+%>
+
 - name: secrets-<%= name %>
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || '' %>]
+    paths: <%= secrets_selected_paths %>
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -147,7 +161,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["<%= depls %>/<%= name %>"<%= ',.gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>]
+    paths: <%= paas_templates_selected_paths %>
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
@@ -360,10 +374,10 @@ jobs:
     - aggregate:
       - get: secrets-<%= depls %>-limited
         params: { submodules: none}
-#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
+        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
       - get: paas-templates-<%= depls %>
         params: { submodules: none}
-#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
+        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
@@ -396,11 +410,11 @@ jobs:
     - get: secrets-<%=depls %>-limited
       params: { submodules: none}
       trigger: true
-#      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
+      <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
     - get: paas-templates-<%=depls %>
       params: { submodules: none}
       trigger: true
-#      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
+      <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
@@ -487,7 +501,7 @@ jobs:
               rebase: true
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
-    <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
+  <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
 
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
@@ -534,10 +548,25 @@ jobs:
       params: { submodules: none}
       trigger: true
 #     <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
+  <%
+    paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
+      depls: depls,
+      name: name,
+      git_submodules: git_submodules,
+      config: boshrelease,
+      config_key: 'templates',
+      defaults: ["#{depls}/#{name}"]
+    )
+    submodules = PipelineHelpers.git_resource_loaded_submodules(
+      depls: depls,
+      name: name,
+      loaded_submodules: git_submodules,
+      observed_paths: paas_templates_selected_paths
+    )
+  %>
     - get: paas-templates-<%= name %>
       trigger: true
-  <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
-      params: { submodules: <%= current_git_submodule || 'none' %>}
+      params: { submodules: <%= submodules %> }
 #     <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
   - task: generate-<%= name %>-manifest
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-templates-<%= name %>}

@@ -1,0 +1,3 @@
+[submodule "docs/reference_dataset/template_repository/shared-files/cf-ops-automation-reference-dataset-submodule-sample"]
+	path = docs/reference_dataset/template_repository/shared-files/cf-ops-automation-reference-dataset-submodule-sample
+	url = https://github.com/orange-cloudfoundry/cf-ops-automation-reference-dataset-submodule-sample.git

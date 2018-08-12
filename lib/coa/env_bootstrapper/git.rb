@@ -75,15 +75,40 @@ module Coa
       end
 
       def init_and_push(repo_path, repo_name)
+        coa_submodule_path = "shared-files/cf-ops-automation-reference-dataset-submodule-sample"
         Dir.chdir repo_path do
+          submodule_commit_reference = templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
           run_cmd "git init ."
           run_cmd "git config --local user.email 'coa_env_bootstrapper@example.com'"
           run_cmd "git config --local user.name 'Fake User For COA Bootstrapper Pipeline'"
           run_cmd "git remote remove origin" if remote_exists?("origin")
           run_cmd "git remote add origin git://#{server_ip}/#{repo_name}"
+          create_git_submodule_from_templates_repo(coa_submodule_path, repo_path, submodule_commit_reference)
           run_cmd "git add -A && git commit -m 'Commit'", fail_silently: true
           run_cmd "git checkout master"
           bosh_sourced_cmd "git push origin master --force" # not working with virtualbox? `bucc routes`
+        end
+      end
+
+      def templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
+        return unless repo_path == TEMPLATES_REPO_DIR
+        extract_submodule_commit_reference(coa_submodule_path)
+      end
+
+      def create_git_submodule_from_templates_repo(coa_submodule_path, repo_path, submodule_commit_reference)
+        return unless repo_path == TEMPLATES_REPO_DIR
+        run_cmd "rm -rf #{coa_submodule_path}"
+        run_cmd "git submodule add -f https://github.com/orange-cloudfoundry/cf-ops-automation-reference-dataset-submodule-sample.git #{coa_submodule_path}"
+        Dir.chdir coa_submodule_path do
+          run_cmd "git checkout #{submodule_commit_reference}"
+        end
+      end
+
+      def extract_submodule_commit_reference(coa_submodule_path)
+        git_submodule_status_result = run_cmd "git submodule status"
+        git_submodule_status_result.each_line do |line|
+          commit_sha1, submodule_path, = line.split(' ')
+          return commit_sha1 if submodule_path.include?(coa_submodule_path)
         end
       end
 

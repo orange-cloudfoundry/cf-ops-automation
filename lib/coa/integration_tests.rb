@@ -27,6 +27,7 @@ module Coa
         "update-pipeline-hello-world-root-depls" => {}
       },
       "control-plane" => {
+        "save-deployed-pipelines"  => {},
         "on-git-commit"            => {},
         "load-generated-pipelines" => {},
         "push-changes"             => {}
@@ -36,12 +37,12 @@ module Coa
       },
       "hello-world-root-depls-bosh-generated" => {
         "cloud-config-and-runtime-config-for-hello-world-root-depls" => { "pause" => true },
-        "recreate-bosh-deployment-sample"                            => { "pause" => true },
         "execute-deploy-script"                                      => {},
-        # see issue https://github.com/orange-cloudfoundry/cf-ops-automation/issues/220 "deploy-bosh-deployment-sample" => { "trigger" => true },
+        "deploy-bosh-deployment-sample"                              => { "trigger" => true },
         "recreate-all"                                               => { "trigger" => true },
         "check-terraform-consistency"                                => {},
         "approve-and-enforce-terraform-consistency"                  => { "trigger" => true },
+        "recreate-bosh-deployment-sample"                            => {},
         "cancel-all-bosh-tasks"                                      => { "trigger" => true }
       },
       "hello-world-root-depls-generated" => {

@@ -3,7 +3,6 @@ require 'tmpdir'
 require 'yaml'
 
 describe 'reference concourse pipelines spec' do
-
   context 'resource_type exists' do
     let(:pipelines_dir) { File.join(File.dirname(__FILE__), 'fixtures/references') }
     let(:pipeline_files) { Dir.glob(pipelines_dir + '**/*.yml') }
@@ -50,7 +49,7 @@ describe 'reference concourse pipelines spec' do
           manifest = docker_registry.manifest(docker_image, docker_image_tag)
           expect(manifest).not_to be_empty
           rescue DockerRegistry2::NotFound => not_found
-            raise DockerRegistry2::NotFound, " #{image} used by #{files.to_s}"
+            raise DockerRegistry2::NotFound, " #{image} used by #{files}"
         end
       end
     end

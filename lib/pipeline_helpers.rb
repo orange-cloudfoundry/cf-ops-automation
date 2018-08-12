@@ -28,6 +28,25 @@ module PipelineHelpers
       vars_files
     end
 
+    def git_resource_selected_paths(opts = {})
+      paths = opts[:defaults] || []
+      paths << '.gitmodules' unless opts[:git_submodules].nil? || opts[:git_submodules].empty?
+      paths += opts[:config].dig('resources', opts[:config_key], 'extended_scan_path') || []
+      paths.flatten.compact
+    end
+
+    def git_resource_loaded_submodules(depls:, name:, observed_paths:, loaded_submodules:)
+      observed_submodules = []
+
+      observed_submodules << loaded_submodules[depls][name] if loaded_submodules[depls]
+
+      all_submodules = loaded_submodules.values.map(&:values).flatten.uniq
+      shared_paths = find_shared_paths(all_submodules, observed_paths)
+      observed_submodules.push(*shared_paths)
+
+      observed_submodules.empty? ? "none" : observed_submodules.uniq
+    end
+
     private
 
     def generate_pipeline_credentials_filename(config_dir, pipeline_name)
@@ -38,6 +57,15 @@ module PipelineHelpers
 
     def filter_credentials_file(file_path)
       File.basename(file_path).include?('pipeline') || File.basename(file_path).include?('generated')
+    end
+
+    def find_shared_paths(source, comparator)
+      comparator.each_with_object([]) do |comparator_string, common_paths|
+        source.each do |source_string|
+          common_paths << source_string if source_string.start_with?(comparator_string) || comparator_string.start_with?(source_string)
+        end
+        common_paths
+      end
     end
   end
 end

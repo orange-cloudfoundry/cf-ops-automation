@@ -6,7 +6,7 @@ pipeline-vars:
   paas-templates-branch: master
   cf-ops-automation-branch: master
   cf-ops-automation-tag-filter: ""
-  iaas-type: virtualbox
+  iaas-type: openstack
   s3-stemcell-access-key-id: ""
   s3-stemcell-region-name: us-east-1
   s3-stemcell-secret-key: ""
@@ -17,4 +17,3 @@ pipeline-vars:
   stemcell-main-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
   stemcell-version: "3541.10"
   bosh-openstack-cpi-release-version: "37"
-  paas-templates-branch: master

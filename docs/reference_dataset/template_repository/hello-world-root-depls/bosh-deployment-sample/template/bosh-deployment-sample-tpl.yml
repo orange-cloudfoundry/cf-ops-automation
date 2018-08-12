@@ -1,15 +1,9 @@
 ---
 name: bosh-deployment-sample
 
-releases:
-- {name: nginx, version: latest}
+releases: [] # defined in a operators file
 
-update:
-  canaries: 1
-  max_in_flight: 50
-  canary_watch_time: 1000-30000
-  update_watch_time: 1000-30000
-  serial: false
+update: {} # defined in a operators file
 
 stemcells:
 - alias: trusty
