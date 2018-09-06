@@ -9,7 +9,6 @@ usage(){
     echo "$0" 1>&2
     echo -e "No parameter supported. Use environment variables:" 1>&2
     echo -e "\t FLY_TARGET: fly target name to use. DEFAULT: $FLY_TARGET" 1>&2
-    echo -e "\t IAAS_TYPE: iaas type to use. NO DEFAULT VALUE" 1>&2
     echo -e "\t SECRETS: path to secrets directory. DEFAULT: $SECRETS" 1>&2
     echo -e "\t SKIP_TRIGGER: skip job triggering after pipeline loading. DEFAULT: [$SKIP_TRIGGER]" 1>&2
     echo -e "\t FLY_SET_PIPELINE_OPTION: set custom option like '--non-interactive'. DEFAULT: empty" 1>&2
