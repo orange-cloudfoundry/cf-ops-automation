@@ -26,7 +26,7 @@ outputs:
   - name: run-resource
 
 run:
-  path: sh
+  path: /bin/bash
   args:
   - -exc
   - |

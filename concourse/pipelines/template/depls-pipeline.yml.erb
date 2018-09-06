@@ -274,9 +274,9 @@ jobs:
     input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-<%=depls %>-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
     params:
-      BOSH_CLIENT: ((bosh-client))
-      BOSH_CLIENT_SECRET: ((bosh-client-secret))
-      BOSH_ENVIRONMENT: ((bosh-environment))
+      BOSH_CLIENT: ((bosh-username))
+      BOSH_CLIENT_SECRET: ((bosh-password))
+      BOSH_TARGET: ((bosh-target))
       BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 
 <% if disabled_deployments.any? %>
