@@ -13,7 +13,7 @@ describe BoshTasksCanceller do
 
   describe ".execute" do
     context "when the environment is not complete" do
-      before { allow(ENV).to receive(:[]).and_return(nil) }
+      before { allow(ENV).to receive(:[]).and_return("") }
       after {}
 
       it "error" do
@@ -24,6 +24,8 @@ describe BoshTasksCanceller do
     end
 
     context "when the environment is complete" do
+      let(:cmd_env) { { "BOSH_ENVIRONMENT" => "1.2.3.4" } }
+
       let(:tasks_json) do
         <<~TASKS
           {
@@ -75,24 +77,28 @@ describe BoshTasksCanceller do
       end
 
       before do
-        %w[BOSH_ENVIRONMENT BOSH_CLIENT BOSH_CLIENT_SECRET BOSH_CA_CERT].each do |arg|
-          allow(ENV).to receive(:[]).with(arg).and_return(arg.downcase)
+        %w[BOSH_TARGET BOSH_CLIENT BOSH_CLIENT_SECRET BOSH_CA_CERT].each do |arg|
+          if arg == "BOSH_TARGET"
+            allow(ENV).to receive(:[]).with(arg).and_return("1.2.3.4")
+          else
+            allow(ENV).to receive(:[]).with(arg).and_return(arg.downcase)
+          end
         end
       end
 
       context "when all CLI commands run successfully" do
         before do
-          allow(Open3).to receive(:capture3).with("bosh tasks --json").once.
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh tasks --json").once.
             and_return([tasks_json, nil, process_status_zero])
-          allow(Open3).to receive(:capture3).with("bosh cancel-task 19").
-            and_return(["", nil, process_status_zero])
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh cancel-task 19").
+            and_return(["", "", process_status_zero])
         end
 
         it "run the bosh cancel-task command on processing tasks" do
           BoshTasksCanceller.new.execute
 
-          expect(Open3).to have_received(:capture3).with("bosh cancel-task 19")
-          expect(Open3).not_to have_received(:capture3).with("bosh cancel-task 20")
+          expect(Open3).to have_received(:capture3).with(cmd_env, "bosh cancel-task 19")
+          expect(Open3).not_to have_received(:capture3).with(cmd_env, "bosh cancel-task 20")
         end
       end
 
@@ -101,9 +107,9 @@ describe BoshTasksCanceller do
         let(:stdout) { "o" }
 
         before do
-          allow(Open3).to receive(:capture3).with("bosh tasks --json").once.
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh tasks --json").once.
             and_return([tasks_json, nil, process_status_zero])
-          allow(Open3).to receive(:capture3).with("bosh cancel-task 19").
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh cancel-task 19").
             and_return([stdout, stderr, process_status_one])
         end
 

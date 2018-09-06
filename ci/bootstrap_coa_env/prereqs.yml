@@ -1,11 +1,11 @@
 inactive_steps:
-  - deploy_transient_infra
-  - upload_stemcell
-  # - upload_cloud_config
+  # - deploy_transient_infra
+  # - upload_stemcell
+  - upload_cloud_config
   # - install_git_server
 
 bucc:
-  path: bucc/bin/
+  bin_path: /path/to/starkandwayne/bucc/bin
   cpi: virtualbox
 
 stemcell:

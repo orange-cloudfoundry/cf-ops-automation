@@ -1,7 +1,11 @@
 require 'json'
 require 'fileutils'
+require 'resolv'
+require 'uri'
+require 'open3'
 
 # this class helps cancelling all processing BOSH task.
+# TODO: export methods in module
 class BoshTasksCanceller
   def execute
     self.class.cancel_tasks
@@ -35,7 +39,7 @@ class BoshTasksCanceller
     def bosh_tasks
       @bosh_tasks ||=
         begin
-          stdout, stderr, status = Open3.capture3("bosh tasks --json")
+          stdout, stderr, status = Open3.capture3(cmd_env, "bosh tasks --json")
           handle_bosh_cli_response(stdout, stderr, status)
           stdout
         end
@@ -49,13 +53,12 @@ class BoshTasksCanceller
 
     def cancel_task_with_id(task_id)
       puts "Cancelling task with Id `#{task_id}`."
-      stdout, stderr, status = Open3.capture3(bosh_cancel_task_cmd(task_id))
+      stdout, stderr, status = Open3.capture3(cmd_env, bosh_cancel_task_cmd(task_id))
       handle_bosh_cli_response(stdout, stderr, status)
     end
 
     def handle_bosh_cli_response(stdout, stderr, status)
-      raise BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}" if stderr || status.exitstatus != 0
-      puts stdout
+      raise BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}" if (stderr != nil && stderr != "") || status.exitstatus != 0
     end
 
     def bosh_cancel_task_cmd(task_id)
@@ -63,7 +66,7 @@ class BoshTasksCanceller
     end
 
     def check_environment
-      %w[BOSH_ENVIRONMENT BOSH_CLIENT BOSH_CLIENT_SECRET BOSH_CA_CERT].each do |arg|
+      %w[BOSH_TARGET BOSH_CLIENT BOSH_CLIENT_SECRET BOSH_CA_CERT].each do |arg|
         check_env_var(arg)
       end
 
@@ -80,6 +83,19 @@ class BoshTasksCanceller
 
     def error_filepath
       "result-dir/error.log"
+    end
+
+    # This method helps us adding BOSH_ENVIRONMENT to the shell environment
+    def cmd_env
+      @cmd_env ||=
+        begin
+          uri = ENV['BOSH_TARGET']
+          return { "BOSH_ENVIRONMENT" => uri } if uri =~ Resolv::IPv4::Regex || uri =~ Resolv::IPv6::Regex
+
+          host = URI(uri).host
+          bosh_env = Resolv.getaddress(host)
+          { "BOSH_ENVIRONMENT" => bosh_env }
+        end
     end
   end
 
