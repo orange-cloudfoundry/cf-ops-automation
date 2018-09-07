@@ -1,0 +1,20 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: governmentpaas/bosh-cli-v2
+    tag: c88f3e0b03558c987693fad3f180d9052b77342c
+inputs:
+  - name: scripts-resource
+  - name: secrets # required for certificates injection
+outputs:
+  - name: result-dir
+run:
+  path: ./scripts-resource/concourse/tasks/bosh_variables/run.rb
+params:
+  BOSH_TARGET:
+  BOSH_CLIENT:
+  BOSH_CLIENT_SECRET:
+  BOSH_CA_CERT:
+  BOSH_DEPLOYMENT:
