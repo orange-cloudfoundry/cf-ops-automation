@@ -490,16 +490,30 @@ jobs:
         vars_files:
           - ops-and-vars-files/vars/*
         cleanup: true
-    - task: execute-ntp-post-bosh-deploy
-      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp, credentials-resource: secrets-ntp, additional-resource: final-release-manifest}
-      output_mapping: {generated-files: post-deploy-result}
-      file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+    - task: bosh-variables
+      input_mapping:
+        scripts-resource: cf-ops-automation
+        secrets: secrets-simple-depls-limited
+      output_mapping:
+        result-dir: bosh-variables-result
+      file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
       params:
-        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
-        SECRETS_DIR: credentials-resource/simple-depls/ntp
+        BOSH_DEPLOYMENT: ntp
+        BOSH_TARGET: "((bosh-target))"
+        BOSH_CLIENT: "((bosh-username))"
+        BOSH_CLIENT_SECRET: "((bosh-password))"
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+    - task: update-ntp-fingerprints-file
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: bosh-variables-result}
+      output_mapping: {updated-git-resource: updated-ntp-fingerprints-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: simple-depls/ntp/ntp-fingerprints.json
+        NEW_FILE: "credential_fingerprints.json"
+        COMMIT_MESSAGE: "ntp variable fingerprints auto update - [skip ci]"
 
     - task: update-ntp-files
-      input_mapping: {reference-resource: secrets-full-writer, generated-resource: ntp-deployment}
+      input_mapping: {reference-resource: updated-ntp-fingerprints-secrets, generated-resource: ntp-deployment}
       output_mapping: {updated-git-resource: updated-ntp-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
@@ -511,6 +525,14 @@ jobs:
       params:
         repository: updated-ntp-secrets
         rebase: true
+    - task: execute-ntp-post-bosh-deploy
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp, credentials-resource: secrets-ntp, additional-resource: final-release-manifest}
+      output_mapping: {generated-files: post-deploy-result}
+      file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
+        SECRETS_DIR: credentials-resource/simple-depls/ntp
+
 
 - name: retrigger-all-jobs
   on_failure:
