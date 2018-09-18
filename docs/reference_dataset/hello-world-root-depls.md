@@ -6,6 +6,7 @@
 
 ```bash
 .
+|-- concourse
 |-- hello-world-root-depls
 |-- private-config.yml
 `-- shared
@@ -110,6 +111,7 @@ hello-world-root-depls
 
 ### The root config files
 
+* [concourse](/docs/reference_dataset/config_repository/concourse)
 * [hello-world-root-depls](/docs/reference_dataset/config_repository/hello-world-root-depls)
 * [private-config.yml](/docs/reference_dataset/config_repository/private-config.yml)
 * [shared](/docs/reference_dataset/config_repository/shared)
@@ -157,6 +159,7 @@ hello-world-root-depls
   * [certs](/docs/reference_dataset/shared/shared/certs)
     * [internal_paas-ca](/docs/reference_dataset/shared/shared/certs/internal_paas-ca)
       * [server-ca.crt](/docs/reference_dataset/shared/shared/certs/internal_paas-ca/server-ca.crt)
+  * [concourse-credentials.yml](/docs/reference_dataset/shared/shared/concourse-credentials.yml)
   * [pipeline-credentials.yml](/docs/reference_dataset/shared/shared/pipeline-credentials.yml)
   * [secrets.yml](/docs/reference_dataset/shared/shared/secrets.yml)
 
@@ -248,9 +251,6 @@ hello-world-root-depls
 ### hello-world-root-depls-generated.yml
 
 * bosh-openstack-cpi-release-version
-* bosh-client
-* bosh-client-secret
-* bosh-environment
 * bosh-password
 * bosh-target
 * bosh-username
@@ -385,18 +385,6 @@ hello-world-root-depls
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-s3-br-upload-generated.yml
-
-### bosh-client
-
-* hello-world-root-depls-generated.yml
-
-### bosh-client-secret
-
-* hello-world-root-depls-generated.yml
-
-### bosh-environment
-
-* hello-world-root-depls-generated.yml
 
 ### bosh-password
 

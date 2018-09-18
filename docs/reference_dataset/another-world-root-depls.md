@@ -6,6 +6,7 @@
 
 ```bash
 .
+|-- concourse
 |-- hello-world-root-depls
 |-- private-config.yml
 `-- shared
@@ -55,6 +56,7 @@ another-world-root-depls
 
 ### The root config files
 
+* [concourse](/docs/reference_dataset/config_repository/concourse)
 * [hello-world-root-depls](/docs/reference_dataset/config_repository/hello-world-root-depls)
 * [private-config.yml](/docs/reference_dataset/config_repository/private-config.yml)
 * [shared](/docs/reference_dataset/config_repository/shared)
@@ -68,6 +70,7 @@ another-world-root-depls
   * [certs](/docs/reference_dataset/shared/shared/certs)
     * [internal_paas-ca](/docs/reference_dataset/shared/shared/certs/internal_paas-ca)
       * [server-ca.crt](/docs/reference_dataset/shared/shared/certs/internal_paas-ca/server-ca.crt)
+  * [concourse-credentials.yml](/docs/reference_dataset/shared/shared/concourse-credentials.yml)
   * [pipeline-credentials.yml](/docs/reference_dataset/shared/shared/pipeline-credentials.yml)
   * [secrets.yml](/docs/reference_dataset/shared/shared/secrets.yml)
 
@@ -112,9 +115,6 @@ No credentials required
 
 ### another-world-root-depls-generated.yml
 
-* bosh-client
-* bosh-client-secret
-* bosh-environment
 * bosh-password
 * bosh-target
 * bosh-username
@@ -168,18 +168,6 @@ No credentials required
 No credentials required
 
 ## List of pipelines in which credentials appear for another-world-root-depls
-
-### bosh-client
-
-* another-world-root-depls-generated.yml
-
-### bosh-client-secret
-
-* another-world-root-depls-generated.yml
-
-### bosh-environment
-
-* another-world-root-depls-generated.yml
 
 ### bosh-password
 

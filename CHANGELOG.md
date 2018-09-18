@@ -1,5 +1,25 @@
 # Change Log
 
+## [v3.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.1.0) (2018-09-18)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.0.0...v3.1.0)
+
+**Implemented enhancements:**
+
+- add features to purge bosh tasks in a root deployment [\#90](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/90)
+
+**Fixed bugs:**
+
+- Errand jobs failed with ` no versions of image available` [\#199](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/199)
+
+**Closed issues:**
+
+- Reference Dataset links are broken [\#192](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/192)
+
+**Merged pull requests:**
+
+- pipeline\(depls\): fix invalid bosh-errand-resource [\#200](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/200)
+- depls\(utils\) change bosh cancel all tasks vars to bosh cl1 v1 [\#193](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/193)
+
 ## [v3.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.0.0) (2018-08-09)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.2.0...v3.0.0)
 
@@ -43,6 +63,7 @@
 
 **Merged pull requests:**
 
+- create a utils task to cancel all running bosh tasks [\#176](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/176)
 - support iaas-type for deployement-dependencies [\#175](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/175)
 - task\(git\_reset\_wip\): create a commit after reset [\#174](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/174)
 - trigger update-pipeline on each`secrets-repo` commit and `init-concourse-boshrelease-and-stemcell` improvements [\#171](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/171)
