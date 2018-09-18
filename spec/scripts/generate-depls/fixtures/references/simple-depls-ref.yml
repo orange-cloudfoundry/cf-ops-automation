@@ -493,7 +493,7 @@ jobs:
     - task: bosh-variables
       input_mapping:
         scripts-resource: cf-ops-automation
-        secrets: secrets-simple-depls-limited
+        secrets: secrets-ntp
       output_mapping:
         result-dir: bosh-variables-result
       file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml

@@ -670,7 +670,7 @@ jobs:
   <% end %>
       cleanup: true
   - task: bosh-variables
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-limited}
+    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= name %>}
     output_mapping: {result-dir: bosh-variables-result}
     file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
     params:
