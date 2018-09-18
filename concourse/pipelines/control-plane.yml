@@ -4,7 +4,7 @@ resource_types:
     type: docker-image
     source:
       repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-      tag: 3
+      tag: 2.1.1
   - name: slack-notification
     type: docker-image
     source:
@@ -265,6 +265,7 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [ manual-reset-avoid-please ]
+      trigger: true
 
   - task: delete-generated-pipelines
     config:
@@ -290,6 +291,7 @@ jobs:
           if [ -d "${DEST_DIR}" ]; then
             cd ${DEST_DIR}
             rm -rfv *
+            touch .gitkeep
             git add .
             git commit -m"Reset COA generated pipelines" --allow-empty
           fi
@@ -301,3 +303,41 @@ jobs:
     params:
       repository: reset-secrets
       rebase: true
+
+- name: manual-setup
+  serial: true
+  on_failure: *failure_alert
+  plan:
+  - aggregate:
+    - get: paas-templates-full
+      params: { submodules: none}
+  - task: create-required-branch
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+      - name: paas-templates-full
+      outputs:
+      - name: empty-templates
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          git config --global user.email "$GIT_USER_EMAIL"
+          git config --global user.name "$GIT_USER_NAME"
+
+          cp -pr paas-templates-full/.git empty-templates/
+          cd empty-templates
+          git add .
+          git commit -m"Initalize empty branch [skip ci]"
+      params:
+        GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+        GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+  - put: paas-templates-scanned
+    get_params: {submodules: none}
+    params:
+      repository: paas-templates-full
+      force: true

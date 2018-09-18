@@ -20,7 +20,7 @@ resource_types:
   type: docker-image
   source:
     repository: "((docker-registry-url))concourse/concourse-pipeline-resource"
-    tag: 3
+    tag: 2.1.1
 
 - name: bosh-deployment-v2
   type: docker-image
@@ -447,7 +447,7 @@ jobs:
         trigger: true
       - get: paas-templates-ntp-with-scan
         trigger: true
-        
+
         params: { submodules: none}
     - task: generate-ntp-with-scan-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-ntp-with-scan, additional-resource: paas-templates-ntp-with-scan}
@@ -503,7 +503,7 @@ jobs:
             echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
         params:
           BOSH_TARGET: ((bosh-target))
-    
+
     - task: generate-empty-ops-and-vars-files
       # this task is required as long as all deployments still don't use ops/vars files
       output_mapping: {result-dir: ops-and-vars-files}
@@ -543,11 +543,11 @@ jobs:
       params:
         manifest: final-release-manifest/ntp-with-scan.yml
 #        source_file: bosh-generated-config/bosh_config.json
-        
+
         stemcells:
         - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
-        releases: 
-        
+        releases:
+
         - ntp_boshrelease/*.tgz
         ops_files:
           - ops-and-vars-files/operators/*

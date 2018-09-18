@@ -58,6 +58,7 @@ jobs:
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
+      trigger: true
     - get: paas-templates-full
       params: { submodules: none}
     - get: secrets-full
@@ -73,6 +74,8 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
+    - get: weekday-morning
+      trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
@@ -179,7 +182,7 @@ jobs:
             exit 1
           fi
           echo "Fetching fly...";
-          curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+          curl -SsL "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
           chmod +x $FLY;
 
           fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
@@ -254,7 +257,7 @@ jobs:
           mkdir -p /usr/local/bin
           FLY=/usr/local/bin/fly
           echo "Fetching fly...";
-          curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+          curl -SsL "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
           chmod +x $FLY;
 
           echo "Login to Concourse using extracted credentials (ATC_EXTERNAL_URL, FLY_USERNAME, FLY_PASSWORD)"
@@ -320,11 +323,13 @@ jobs:
           cat concourse-teams/teams.yml
           echo "=== end: dump ==="
           for team_name in $(cat concourse-teams/teams.yml|tail -n +2|cut -c3-); do
-          echo "set-team -n $team_name --basic-auth-username=\"$FLY_USERNAME\" --basic-auth-password=\"$FLY_PASSWORD\" --non-interactive"  >> ${DEST_DIR}/flight-plan
+            echo "set-team -n $team_name --local-user=\"$FLY_USERNAME\" --ldap-group=\"${LDAP_GROUP_AUTHENTICATION}\" --cf-org=\"${CF_ORG_AUTHENTICATION}\" --non-interactive"  >> ${DEST_DIR}/flight-plan
           done
       params:
         FLY_USERNAME: ((concourse-micro-depls-username))
         FLY_PASSWORD: "((concourse-micro-depls-password))"
+        LDAP_GROUP_AUTHENTICATION: admin #FIXME this should not be hardcoded
+        CF_ORG_AUTHENTICATION: system_domain #FIXME this should not be hardcoded
   - task: fly-into-concourse
     input_mapping: {fly-cmd: initialized-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}

@@ -584,7 +584,7 @@ It can contain up to 8 main keys:
     * deploy_transient_infra: you can deactivate this step if you already have an infrastructure with BOSH and Concourse
     * upload_stemcell: you can deactivate this step if you don't want a new stemcell to be uploaded to the BOSH Director
     * upload_cloud_config: you can deactivate this step if you don't want to overwrite the cloud config of the BOSH Director
-    * install_git_server: you can deactivate this step if you have the git-server deployment already deployed on the BOSH Director
+    * deploy_git_server: you can deactivate this step if you have the git-server deployment already deployed on the BOSH Director
 * bucc, _optional_: you have to pass this key unless you deactivate the deploy_transient_infra step:
     * bin_path: the path to your installation of the bucc project. The project can be found at [https://github.com/starkandwayne/bucc](https://github.com/starkandwayne/bucc)
     * cpi: the cpi you want to use for the deployment. The list of existing CPIs can be found on the bucc GitHub project
