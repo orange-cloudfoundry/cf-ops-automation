@@ -4,7 +4,7 @@ inactive_steps: []
     # - deploy_transient_infra
     # - upload_stemcell
     # - upload_cloud_config
-    # - install_git_server
+    # - deploy_git_server
 
 # This will tell the script when to find the bucc CLI and with which options to
 # run `bucc up`

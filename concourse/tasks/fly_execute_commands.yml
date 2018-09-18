@@ -31,7 +31,7 @@ run:
     mkdir -p /usr/local/bin
     FLY=/usr/local/bin/fly
     echo "Fetching fly...";
-    curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+    curl -SsL "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
     chmod +x $FLY;
 
     echo "Login into Concourse@${ATC_EXTERNAL_URL}"

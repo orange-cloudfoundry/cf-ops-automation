@@ -72,6 +72,8 @@ resources:
       secret_access_key: ((s3-stemcell-secret-key))
       endpoint: ((s3-stemcell-endpoint))
       skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+    version:
+      path: "((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz"
   - name: secrets-ntp-with-scan
     type: git
     source:
@@ -303,7 +305,6 @@ jobs:
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
-            version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
             trigger: true
             attempts: 2
           - get: cf-ops-automation
@@ -505,8 +506,6 @@ jobs:
         params:
           submodules: none
       - get: "((stemcell-main-name))"
-        version:
-          path: "((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz"
         trigger: true
         attempts: 2
       - get: cf-ops-automation
