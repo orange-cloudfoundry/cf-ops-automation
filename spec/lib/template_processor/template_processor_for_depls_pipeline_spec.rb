@@ -97,7 +97,7 @@ describe 'DeplsPipelineTemplateProcessing' do
       - name: bosh-errand
         type: docker-image
         source:
-          repository: starkandwayne/bosh2-errand-resource
+          repository: cfcommunity/bosh2-errand-resource
           tag: v0.1.2
     YAML
     YAML.safe_load(resource_types_yaml)

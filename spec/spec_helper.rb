@@ -1,5 +1,6 @@
 require 'open3'
 require 'helpers/utils'
+require 'docker_registry2'
 
 if ENV['COVERAGE']
   require 'simplecov'
@@ -134,5 +135,9 @@ RSpec.configure do |config|
 
   def execute(cmd, env = {})
     fly("execute #{cmd}", env)
+  end
+
+  def docker_registry
+    DockerRegistry2.connect
   end
 end
