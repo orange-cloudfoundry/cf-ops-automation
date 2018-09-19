@@ -42,8 +42,13 @@ describe 'generate_depls task' do
       expect(File).not_to exist(File.join(@result_dir, 'error.log'))
     end
 
+    it 'generates execution log file' do
+      expect(File).to exist(File.join(@result_dir, 'generate-depls.log'))
+    end
+
     it 'generates expected pipelines' do
-      processed_pipeline_templates = @output.scan(/^processing ..concourse.pipelines.template.(.*\w+)/).flatten
+      execution_log = File.read(File.join(@result_dir, 'generate-depls.log'))
+      processed_pipeline_templates = execution_log.scan(/^processing ..concourse.pipelines.template.(.*\w+)/).flatten
       expect(processed_pipeline_templates).to match_array(template_pipelines)
     end
 

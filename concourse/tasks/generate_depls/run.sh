@@ -34,4 +34,4 @@ cp -r templates/. result-dir
 cp -r scripts-resource/. result-dir
 cp -rf secrets/. result-dir
 cd result-dir
-./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}"
+./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}"| tee generate-depls.log

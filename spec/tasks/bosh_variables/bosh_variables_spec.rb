@@ -35,14 +35,14 @@ describe BoshVariablesExecutor do
 
       context "when all CLI commands run successfully" do
         before do
-          allow(Open3).to receive(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json >> #{result_filepath}")).once.
+          allow(Open3).to receive(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}")).once.
             and_return(["whatever message", nil, process_status_zero])
         end
 
         it "runs the bosh variables task command" do
           BoshVariablesExecutor.new.execute
 
-          expect(Open3).to have_received(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json >> #{result_filepath}"))
+          expect(Open3).to have_received(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}"))
           expect(ENV).not_to have_received(:[]).with('BOSH_ENVIRONMENT')
         end
       end
@@ -52,7 +52,7 @@ describe BoshVariablesExecutor do
         let(:stdout) { "o" }
 
         before do
-          allow(Open3).to receive(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json >> #{result_filepath}")).once.
+          allow(Open3).to receive(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}")).once.
             and_return([stdout, stderr, process_status_one])
         end
 
