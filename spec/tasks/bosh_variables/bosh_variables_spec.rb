@@ -3,6 +3,7 @@ require 'tempfile'
 require_relative '../../../concourse/tasks/bosh_variables/bosh_variables_executor'
 
 describe BoshVariablesExecutor do
+  let(:executor) { described_class.new }
   let(:process_status_zero) { double(Process::Status, exitstatus: 0) }
   let(:process_status_one) { double(Process::Status, exitstatus: 1) }
   let(:error_filepath) { Tempfile.new }
@@ -20,7 +21,7 @@ describe BoshVariablesExecutor do
 
       it "error" do
         err_msg = "The environment is missing env vars for this task to be able to work properly."
-        expect { BoshVariablesExecutor.new.execute }.
+        expect {executor.execute }.
           to raise_error(BoshVariablesExecutor::EnvVarMissing, err_msg)
       end
     end
@@ -34,17 +35,27 @@ describe BoshVariablesExecutor do
       end
 
       context "when all CLI commands run successfully" do
+        let(:executor) { described_class.new }
+        let(:stderr) { "" }
+        let(:stdout) { "whatever message" }
+
         before do
           allow(Open3).to receive(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}")).once.
-            and_return(["whatever message", nil, process_status_zero])
+            and_return([stdout, stderr, process_status_zero])
         end
 
         it "runs the bosh variables task command" do
-          BoshVariablesExecutor.new.execute
+          executor.execute
 
           expect(Open3).to have_received(:capture3).with(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}"))
           expect(ENV).not_to have_received(:[]).with('BOSH_ENVIRONMENT')
         end
+
+        it "does not generate an error log file" do
+          executor.execute
+          expect(File).to be_zero(error_filepath)
+        end
+
       end
 
       context "when a CLI commands fails" do
@@ -56,9 +67,10 @@ describe BoshVariablesExecutor do
             and_return([stdout, stderr, process_status_one])
         end
 
-        it "error" do
-          expect { BoshVariablesExecutor.new.execute }.
+        it "generates an error and a error log file" do
+          expect { executor.execute }.
             to raise_error(BoshVariablesExecutor::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
+          expect(File).not_to be_zero(error_filepath)
         end
       end
     end

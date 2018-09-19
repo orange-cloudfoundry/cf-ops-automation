@@ -22,7 +22,7 @@ class BoshVariablesExecutor
     def handle_bosh_cli_response(stdout, stderr, status)
       puts stdout
       puts "Exit status: #{status.exitstatus}"
-      if stderr || status.exitstatus != 0
+      if !stderr.to_s.empty? || status.exitstatus != 0
         puts "Error log: <#{stderr}>"
         error_msg = "Stderr:\n#{stderr}\nStdout:\n#{stdout}"
         File.open(error_filepath, 'w+') { |file| file.write(error_msg) }
