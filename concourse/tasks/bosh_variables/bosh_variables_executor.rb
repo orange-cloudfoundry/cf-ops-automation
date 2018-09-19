@@ -15,19 +15,19 @@ class BoshVariablesExecutor
     end
 
     def execute_bosh_command
-      stdout, stderr, status = Open3.capture3(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json >> #{result_filepath}"))
+      stdout, stderr, status = Open3.capture3(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}"))
       handle_bosh_cli_response(stdout, stderr, status)
-      puts stdout
     end
 
     def handle_bosh_cli_response(stdout, stderr, status)
+      puts stdout
+      puts "Exit status: #{status.exitstatus}"
       if stderr || status.exitstatus != 0
+        puts "Error log: <#{stderr}>"
         error_msg = "Stderr:\n#{stderr}\nStdout:\n#{stdout}"
         File.open(error_filepath, 'w+') { |file| file.write(error_msg) }
         raise BoshCliError, error_msg
       end
-
-      puts stdout
     end
 
     def check_environment
