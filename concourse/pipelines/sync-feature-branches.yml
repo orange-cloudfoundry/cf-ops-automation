@@ -52,8 +52,6 @@ jobs:
   serial_groups: [git]
   plan:
     - aggregate:
-      - get: features-or-wip-merged
-        params: { submodules: none}
       - get: paas-templates-features
         params: { submodules: none}
         trigger: true
@@ -82,8 +80,6 @@ jobs:
       username: Concourse
   plan:
     - aggregate:
-      - get: features-or-wip-merged
-        params: { submodules: none}
       - get: paas-templates-reference
         params: { submodules: none}
       - get: cf-ops-automation
