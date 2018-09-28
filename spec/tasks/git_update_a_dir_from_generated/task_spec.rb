@@ -6,7 +6,7 @@ require 'tmpdir'
 require 'fileutils'
 require 'git'
 
-describe 'git_reset_wip task' do
+describe 'git_update_a_dir_from_generated task' do
 
   context 'when executed' do
     after(:context) do
@@ -24,6 +24,8 @@ describe 'git_reset_wip task' do
 
       FileUtils.cp_r(File.join(File.dirname(__FILE__), 'reference-resource', '.'), @reference_resource)
       repo = Git.init(@reference_resource)
+      repo.config('user.name', 'COA CI')
+      repo.config('user.email', 'coa-ci@orange.com')
       repo.add
       repo.commit('initialize repository')
       @output = execute('--include-ignored -c concourse/tasks/git_update_a_dir_from_generated.yml ' \

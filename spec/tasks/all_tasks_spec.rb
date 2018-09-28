@@ -26,7 +26,7 @@ describe 'all tasks' do
       images
     end
 
-    it 'xxx' do
+    it 'ensures some tasks exist' do
       expect(tasks).not_to be_empty
     end
 
