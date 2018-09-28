@@ -51,6 +51,7 @@ GEM
     faraday-http-cache (2.0.0)
       faraday (~> 0.8)
     gherkin (5.1.0)
+    git (1.5.0)
     github_changelog_generator (1.14.3)
       activesupport
       faraday-http-cache
@@ -156,6 +157,7 @@ PLATFORMS
 DEPENDENCIES
   cucumber
   docker_registry2 (>= 1.4.0)
+  git (= 1.5.0)
   github_changelog_generator (>= 1.14.3)
   mdl (= 0.4.0)
   rake (= 12.2.1)
