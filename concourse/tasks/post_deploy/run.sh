@@ -15,7 +15,7 @@ if [ -n "$CUSTOM_SCRIPT_DIR" ]; then
     GENERATE_DIR=${OUTPUT_DIR} BASE_TEMPLATE_DIR=${CUSTOM_SCRIPT_DIR} ${CUSTOM_SCRIPT_DIR}/post-deploy.sh
  elif [ -f "$CUSTOM_SCRIPT_DIR/post-bosh-deploy.sh" ]; then
     echo "**deprecated** LEGACY post bosh deploy script detected"
-    echo "Please rename pre-bosh-deploy.sh to pre-deploy.sh to be compliant"
+    echo "Please rename post-bosh-deploy.sh to post-deploy.sh to be compliant"
     chmod +x $CUSTOM_SCRIPT_DIR/post-bosh-deploy.sh
     GENERATE_DIR=${OUTPUT_DIR} BASE_TEMPLATE_DIR=${CUSTOM_SCRIPT_DIR} ${CUSTOM_SCRIPT_DIR}/post-bosh-deploy.sh
  else
