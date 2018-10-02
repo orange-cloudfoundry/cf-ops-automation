@@ -9,17 +9,17 @@ describe 'generate_concourse_pipeline_config task' do
     expected_yaml = <<~YAML
       ---
       pipelines:
-      - name: a-pipeline
+      - name: sample-a-generated
         team: main
-        config_file: config-resource/coa/pipelines/generated/main/a-root-depls/a-pipeline.yml
+        config_file: config-resource/coa/pipelines/generated/main/a-root-depls/sample-a-generated.yml
         vars_files:
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
-        - config-resource/coa/config/credentials-a-pipeline.yml
+        - config-resource/coa/config/credentials-sample-a-pipeline.yml
         - templates-resource/a-root-depls/a-root-depls-versions.yml
-      - name: b-pipeline
+      - name: sample-b-generated
         team: upload
-        config_file: config-resource/coa/pipelines/generated/upload/a-root-depls/b-pipeline.yml
+        config_file: config-resource/coa/pipelines/generated/upload/a-root-depls/sample-b-generated.yml
         vars_files:
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
