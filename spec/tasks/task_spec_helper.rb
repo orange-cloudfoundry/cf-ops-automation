@@ -1,4 +1,9 @@
 class TaskSpecHelper
+  def self.reference_dataset_dir
+    relative_path = File.join(__FILE__, '..', '..', '..', 'docs', 'reference_dataset')
+    File.absolute_path(relative_path)
+  end
+
   def self.bosh_cli_v2_image
     'governmentpaas/bosh-cli-v2'
   end

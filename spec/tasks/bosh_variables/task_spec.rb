@@ -18,7 +18,6 @@ describe 'bosh_variables task' do
   end
 
   context 'when executed on concourse' do
-    let(:deployments_to_delete_list_file) { File.join(@deployments_to_delete, 'list.txt') }
     let(:expected_deployments_to_delete_list) do
       <<~TEXT
         hello-world-deployment
