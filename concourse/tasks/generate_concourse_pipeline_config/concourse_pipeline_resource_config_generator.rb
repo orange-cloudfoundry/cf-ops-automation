@@ -65,7 +65,10 @@ class ConcoursePipelineResourceConfigGenerator
 
   def generate_vars_files(pipeline_name, root_deployment)
     vars_files = Dir[File.join(@config_dir, 'credentials-*.yml')].reject { |file| File.basename(file).include?('pipeline') || File.basename(file).include?('generated') }
-    current_pipeline_config_file = File.join(@config_dir, "credentials-#{pipeline_name.gsub('-generated', '-pipeline')}.yml")
+    config_file_suffix = pipeline_name.gsub('-generated', '')
+    config_file_suffix += '-pipeline' unless config_file_suffix.end_with?('-pipeline')
+    current_pipeline_config_file = File.join(@config_dir, "credentials-#{config_file_suffix}.yml")
+    puts "INFO - checking existence of #{current_pipeline_config_file}"
     vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
     versions_file = File.join(@templates_dir, root_deployment, "#{root_deployment}-versions.yml")
     puts Dir[@templates_dir + '/**']

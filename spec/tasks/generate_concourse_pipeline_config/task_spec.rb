@@ -24,6 +24,14 @@ describe 'generate_concourse_pipeline_config task' do
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
         - templates-resource/a-root-depls/a-root-depls-versions.yml
+      - name: sync-feature-branches
+        team: main
+        config_file: config-resource/coa/pipelines/generated/main/a-root-depls/sync-feature-branches.yml
+        vars_files:
+        - config-resource/coa/config/credentials-one.yml
+        - config-resource/coa/config/credentials-two.yml
+        - config-resource/coa/config/credentials-sync-feature-branches-pipeline.yml
+        - templates-resource/a-root-depls/a-root-depls-versions.yml
     YAML
     YAML.safe_load(expected_yaml)
   end
