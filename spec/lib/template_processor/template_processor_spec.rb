@@ -233,6 +233,7 @@ describe TemplateProcessor do
               .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-s3-br-upload-generated.yml") }
               .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-sync-helper-generated.yml") }
               .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-generated.yml") }
+              .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-bosh-generated.yml") }
         end
 
         before do
