@@ -197,7 +197,6 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["public-config.yml", "<%= depls %>"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 <% end %>
@@ -955,6 +954,9 @@ jobs:
       params: { submodules: none}
       attempts: 2
       trigger: true
+    - get: paas-templates-full
+      params: { submodules: none}
+      attempts: 2
     - get: secrets-<%= depls %>-trigger
       version: every
       params: { submodules: none}
