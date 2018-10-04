@@ -178,30 +178,6 @@ resources:
   <% end %>
 <% end %>
 
-<% if all_ci_deployments.any? %>
-- name: <%= all_ci_deployments[depls]['target_name'] %>
-  type: concourse-pipeline
-  source:
-    target: ((concourse-<%= depls %>-target))
-    insecure: ((concourse-<%= depls %>-insecure))
-    teams:
-    - name: main
-      username: ((concourse-<%= depls %>-username))
-      password: "((concourse-<%= depls %>-password))"
-  <% CiDeployment.teams(all_ci_deployments).each do |team| %>
-    - name: <%= team %>
-      username: ((concourse-<%= depls %>-username))
-      password: "((concourse-<%= depls %>-password))"
-  <% end %>
-
-- name: paas-templates-wip
-  type: git
-  source:
-    uri: ((paas-templates-uri))
-    branch: ((paas-templates-branch))
-    skip_ssl_verification: true
-<% end %>
-
 <% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments.any? %>
 - name: secrets-<%=depls %>-trigger
   type: git
@@ -296,15 +272,12 @@ jobs:
     - aggregate:
       - get: cf-ops-automation
         params: { submodules: none}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
         trigger: true
       - get: paas-templates-full
         params: { submodules: none}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
       - get: secrets-<%= depls %>-trigger
         version: every
         trigger: true
-        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
         params: { submodules: none}
     - task: prepare_deployment_to_be_deleted
       input_mapping: {scripts-resource: cf-ops-automation}
@@ -355,13 +328,10 @@ jobs:
     - aggregate:
       - get: secrets-<%= depls %>-limited
         params: { submodules: none}
-#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
       - get: paas-templates-<%= depls %>
         params: { submodules: none}
-#        <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
       - get: cf-ops-automation
         params: { submodules: none}
-        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
 
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-<%= depls %>, secrets: secrets-<%= depls %>-limited}
@@ -391,15 +361,12 @@ jobs:
     - get: secrets-<%=depls %>-limited
       params: { submodules: none}
       trigger: true
-#      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
     - get: paas-templates-<%=depls %>
       params: { submodules: none}
       trigger: true
-#      <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-      <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
     - task: generate-<%= depls %>-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>-limited, additional-resource: paas-templates-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
@@ -482,6 +449,8 @@ jobs:
               rebase: true
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
+
+
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   serial: true
@@ -506,7 +475,6 @@ jobs:
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none}
-      <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
       trigger: true
   <% boshrelease['releases']&.sort&.each do |release, info| %>
     - get: <%= release %>
@@ -525,12 +493,10 @@ jobs:
     - get: secrets-<%= name %>
       params: { submodules: none}
       trigger: true
-#     <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
     - get: paas-templates-<%= name %>
       trigger: true
   <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
       params: { submodules: <%= current_git_submodule || 'none' %>}
-#     <!--<%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>-->
   - task: generate-<%= name %>-manifest
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-templates-<%= name %>}
     output_mapping: {generated-files: release-manifest}
@@ -770,7 +736,7 @@ jobs:
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
   <% end %>
       params:
-        BUILD_PIPELINE_NAME: <%= depls %>-generated
+        BUILD_PIPELINE_NAME: <%= depls %>-bosh-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
@@ -796,13 +762,10 @@ jobs:
   - aggregate:
      - get: secrets-<%= depls %>-limited
        params: { submodules: none}
-       <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
      - get: paas-templates-<%= depls %>
        params: { submodules: none}
-       <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
      - get: cf-ops-automation
        params: { submodules: none}
-       <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
 
 <% enabled_deployments.sort.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
@@ -911,7 +874,7 @@ jobs:
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
   <% end %>
       params:
-        BUILD_PIPELINE_NAME: <%= depls %>-generated
+        BUILD_PIPELINE_NAME: <%= depls %>-bosh-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: init-<%= depls %>-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
@@ -927,93 +890,6 @@ jobs:
   <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]" unless current_depls_generated %>
   <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1] %>
   <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]" unless current_cf_apps_generated %>
-- name: update-pipeline-<%= depls %>-generated
-  <% jobs['utils'] << "update-pipeline-#{depls}-generated" %>
-  serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-  - aggregate:
-    - get: secrets-full-writer
-      params: { submodules: none}
-    - get: paas-templates-<%= depls %>
-      params: { submodules: none}
-      attempts: 2
-    - get: paas-templates-wip
-      params: { submodules: none}
-      attempts: 2
-      trigger: true
-    - get: secrets-<%= depls %>-limited
-      params: { submodules: none}
-      attempts: 2
-    - get: cf-ops-automation
-      params: { submodules: none}
-      attempts: 2
-      trigger: true
-    - get: paas-templates-full
-      params: { submodules: none}
-      attempts: 2
-    - get: secrets-<%= depls %>-trigger
-      version: every
-      params: { submodules: none}
-      attempts: 2
-      trigger: true
-  - task: generate-<%= depls %>-pipeline
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-<%= depls %>-trigger}
-    output_mapping: {result-dir: concourse-<%= depls %>-pipeline}
-    file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
-    params:
-      ROOT_DEPLOYMENT: <%= depls %>
-      IAAS_TYPE: ((iaas-type))
-  - put: <%= all_ci_deployments[depls]['target_name'] %>
-    params:
-      pipelines:
-  <% all_ci_deployments[depls]['pipelines'].each do |pipeline_name, pipeline_details| %>
-      - name: <%= pipeline_name %>
-        team: <%= pipeline_details['team'] || 'main' %>
-        config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
-        vars_files:
-    <% pipeline_details['vars_files'].each do |vars_file| %>
-        # trick to manage <depls>-versions.yml (not included in secrets)
-      <% if vars_file.end_with?('-versions.yml') %>
-        <%= "- paas-templates-wip/#{vars_file}" %>
-      <% else %>
-        <%= "- secrets-#{depls}-trigger/#{vars_file}" %>
-      <% end %>
-    <% end %>
-  <% end %>
-
-  - task: update-concourse-depls-pipeline
-    input_mapping: {reference-resource: secrets-full-writer, generated-resource: concourse-<%= depls %>-pipeline}
-    output_mapping: {updated-git-resource: updated-secrets}
-    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-    params:
-      OLD_FILE: <%= current_depls_generated['config_file'] %>
-      NEW_FILE: "concourse/pipelines/<%= depls %>-generated.yml"
-      COMMIT_MESSAGE: "<%= depls %> generated pipeline auto update - [skip ci]"
-  - task: update-concourse-cf-apps-pipeline
-    input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-<%= depls %>-pipeline}
-    output_mapping: {updated-git-resource: updated-secrets}
-    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-    params:
-      OLD_FILE: <%= current_cf_apps_generated['config_file'] %>
-      NEW_FILE: "concourse/pipelines/<%= depls %>-cf-apps-generated.yml"
-      COMMIT_MESSAGE: "<%= depls %> cf-apps generated pipeline auto update - [skip ci]"
-  - put: secrets-full-writer
-    get_params: {submodules: none}
-    params:
-      repository: updated-secrets
-      rebase: true
-  - put: paas-templates-full
-    get_params: {submodules: none}
-    params:
-      repository: paas-templates-wip
-      force: true
 
   <% if all_ci_deployments[depls][TERRAFORM_CONFIG_DIRNAME_KEY] %>
     <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][#{TERRAFORM_CONFIG_DIRNAME_KEY}][state_file_path] or delete terraform-config key." if terraform_config_path.nil? %>
@@ -1031,13 +907,11 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-      passed: [update-pipeline-<%= depls %>-generated]
       trigger: true
     - get: paas-templates-<%=depls %>
       params: { submodules: none }
       trigger: true
     - get: secrets-<%= depls %>-limited
-      passed: [update-pipeline-<%= depls %>-generated]
       params: { submodules: none }
       trigger: true
   - task: generate-terraform-tfvars
