@@ -1,0 +1,252 @@
+---
+resource_types:
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+      tag: 3
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: v1.4.2
+resources:
+- name: secrets-generated-pipelines
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+    paths: ["private-config.yml", "coa/config", "coa/pipelines/generated", "shared"]
+    # Changes on theses paths are imply updates on generated pipelines: [ "**/ci-deployment-overview.yml", "**/enable-cf-app.yml", "**/enable-deployment.yml" ]
+- name: secrets-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: secrets-full
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-versions
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+    paths: ["**/*-versions.yml"]
+- name: paas-templates-full
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+- name: paas-templates-scanned
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+
+- name: fe-int-micro
+  type: concourse-pipeline
+  source:
+    target: ((concourse-micro-depls-target))
+    insecure: "true"
+    teams:
+    - name: main
+      username: ((concourse-micro-depls-username))
+      password: "((concourse-micro-depls-password))"
+    - name: upload
+      username: ((concourse-micro-depls-username))
+      password: "((concourse-micro-depls-password))"
+    - name: currently-disabled
+      username: ((concourse-micro-depls-username))
+      password: "((concourse-micro-depls-password))"
+jobs:
+- name: save-deployed-pipelines
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+    - get: secrets-full
+      params: { submodules: none}
+    - get: fe-int-micro
+      trigger: true
+#      version: every #not sure we need to trigger on each change
+  - task: list-pipelines
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+      - name: fe-int-micro
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          ls -lrt fe-int-micro
+          ls -lrt fe-int-micro|wc -l
+  - task: sort-pipelines
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.5}
+      inputs:
+      - name: fe-int-micro
+      outputs:
+      - name: sorted-pipelines
+      run:
+        path: /bin/bash
+        args:
+          - -ec
+          - |
+            cp -p fe-int-micro/*.yml sorted-pipelines/
+            cd sorted-pipelines
+            ruby -ryaml -e 'Dir["*.yml"].each{|yaml_file| yaml=YAML.load_file(yaml_file); resources=yaml["resources"]&.sort_by { |x| x["name"] }; yaml["resources"] = resources; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) }}'
+
+  - task: update-git-deployed-pipelines
+    input_mapping: {reference-resource: secrets-full, generated-resource: sorted-pipelines}
+    output_mapping: {updated-git-resource: updated-pipelines}
+    file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
+    params:
+      COMMIT_MESSAGE: "Deployed pipelines update - [skip ci]"
+      OLD_DIR: "coa/pipelines/deployed"
+  - put: secrets-writer
+    params:
+      repository: updated-pipelines
+      rebase: true
+
+- name: on-git-commit
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+    - get: secrets-generated-pipelines
+      params: { submodules: none}
+      trigger: true
+      version: every
+    - get: paas-templates-full
+      params: { submodules: none}
+      trigger: true
+      version: every
+    - get: paas-templates-versions
+      params: { submodules: none}
+      trigger: true
+
+- name: load-generated-pipelines
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [on-git-commit]
+    - get: config-resource
+      resource: secrets-generated-pipelines
+      params: { submodules: none}
+      trigger: true
+      version: every
+      passed: [on-git-commit]
+    - get: templates-resource
+      resource: paas-templates-versions
+      params: { submodules: none}
+      trigger: true
+      version: every
+      passed: [on-git-commit]
+  - task: list-pipelines
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+      - name: config-resource
+      run:
+        path: sh
+        args:
+        - -c
+        - |
+          du -a config-resource/coa/pipelines/generated
+          du -a config-resource/coa/pipelines/generated|wc -l
+  - task: generate-concourse-pipeline-config
+    file: cf-ops-automation/concourse/tasks/generate_concourse_pipeline_config/task.yml
+  - put: fe-int-micro
+    params:
+      pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+
+- name: push-changes
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+    - get: paas-templates-versions
+      params: { submodules: none}
+      trigger: true
+      passed: [load-generated-pipelines]
+      version: every
+    - get: paas-templates-full
+      params: { submodules: none}
+      trigger: true
+      version: every
+      passed: [on-git-commit]
+  - put: paas-templates-scanned
+    get_params: {submodules: none}
+    params:
+      repository: paas-templates-full
+      force: true
+
+- name: detect-paas-templates-scanned-changes
+  plan:
+    - get: paas-templates-scanned
+      params: { submodules: none}
+      trigger: true
+      version: every
