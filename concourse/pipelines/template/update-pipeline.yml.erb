@@ -19,13 +19,19 @@ resources:
   source:
     url: ((slack-webhook))
 
-- name: secrets-<%= depls %>
+- name: secrets-<%= depls %>-for-pipeline
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-    paths: [ "<%= depls %>", "shared", 'private-config.yml' ]
+    paths: [ "<%= depls %>/ci-deployment-overview.yml", coa/config, shared, private-config.yml, "<%= depls %>/**/enable-cf-app.yml", "<%= depls %>/**/enable-deployment.yml" ]
+- name: secrets-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
 
 - name: paas-templates-<%= depls %>
   type: git
@@ -64,24 +70,24 @@ jobs:
       params: { submodules: none}
       attempts: 2
       trigger: true
-    - get: secrets-<%= depls %>
+    - get: secrets-<%= depls %>-for-pipeline
       params: { submodules: none}
       attempts: 2
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
-      trigger: false
+      trigger: true
 
   - task: generate-<%= depls %>-pipelines
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-<%= depls %>,secrets: secrets-<%= depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-<%= depls %>,secrets: secrets-<%= depls %>-for-pipeline}
     output_mapping: {result-dir: concourse-generated-pipeline}
     file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
     params:
       ROOT_DEPLOYMENT: <%= depls %>
       IAAS_TYPE: ((iaas-type))
   - task: copy-and-filter-generated-pipeline
-    input_mapping: {templates: paas-templates-<%= depls %>,config: secrets-<%= depls %>}
+    input_mapping: {templates: paas-templates-<%= depls %>,config: secrets-<%= depls %>-for-pipeline}
     config:
       platform: linux
       image_resource:
@@ -105,13 +111,13 @@ jobs:
     params:
       ROOT_DEPLOYMENT: <%= depls %>
   - task: update-git-generated-pipelines
-    input_mapping: {reference-resource: secrets-<%= depls %>, generated-resource: selected-pipelines}
+    input_mapping: {reference-resource: secrets-<%= depls %>-for-pipeline, generated-resource: selected-pipelines}
     output_mapping: {updated-git-resource: generated-pipelines}
     file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
     params:
       COMMIT_MESSAGE: "Generated pipelines update"
       OLD_DIR: "coa/pipelines/generated"
-  - put: secrets-<%= depls %>
+  - put: secrets-writer
     params:
       repository: generated-pipelines
       rebase: true
