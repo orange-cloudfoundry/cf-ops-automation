@@ -49,7 +49,7 @@ run:
     done
     export DEPLS_LIST="${DEPLS_LIST:-${DYNAMIC_DEPLS_LIST}}"
     for depls in ${DEPLS_LIST};do
-    ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t init
+    ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t ${PIPELINE_TYPE}
     done
 
 params:
@@ -57,6 +57,7 @@ params:
   FLY_USERNAME:
   FLY_PASSWORD:
   DEPLS_LIST:
+  PIPELINE_TYPE: init
 
 
 

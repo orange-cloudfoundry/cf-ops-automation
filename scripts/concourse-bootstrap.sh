@@ -50,5 +50,5 @@ set -e
 fly -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
 if [ "$SKIP_TRIGGER" != "true" ]
 then
-    fly -t ${FLY_TARGET} trigger-job -j "${PIPELINE}/bootstrap-init-pipelines"
+    fly -t ${FLY_TARGET} trigger-job -j "${PIPELINE}/bootstrap-pipelines"
 fi

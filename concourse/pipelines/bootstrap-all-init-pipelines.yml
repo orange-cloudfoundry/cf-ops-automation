@@ -48,14 +48,7 @@ resources:
     skip_ssl_verification: true
 
 jobs:
-- name: bootstrap-init-pipelines
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+- name: bootstrap-pipelines
   plan:
   - aggregate:
     - get: weekday-morning
@@ -66,6 +59,29 @@ jobs:
       params: { submodules: none}
     - get: secrets-full
       params: { submodules: none}
+
+- name: bootstrap-init-pipelines
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      passed: [ create-teams ]
+    - get: paas-templates-full
+      params: { submodules: none}
+      passed: [ create-teams ]
+      trigger: true
+    - get: secrets-full
+      params: { submodules: none}
+      passed: [ create-teams ]
+      trigger: true
   - task: generate-all-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
@@ -79,10 +95,6 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
       FLY_USERNAME: ((concourse-micro-depls-username))
       FLY_PASSWORD: "((concourse-micro-depls-password))"
-  - task: get-pipeline-teams
-    input_mapping: {secrets: secrets-full}
-    output_mapping: {ci-deployment-overview: concourse-teams}
-    file: cf-ops-automation/concourse/tasks/list_used_ci_team/task.yml
   - task: generate-flight-plan
     output_mapping: {result-dir: initialized-flight-plan}
     config:
@@ -92,29 +104,23 @@ jobs:
         source: {repository: concourse/busyboxplus, tag: "git"}
       inputs:
         - name: all-pipelines
-        - name: concourse-teams
       outputs:
         - name: result-dir
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
           for aFile in $(ls *init-generated.yml)
           do
           PIPELINE=$(basename ${aFile} .yml)
-          DEPLS=${PIPELINE%%-init-generated}
+          DEPLS=${PIPELINE%%-update-generated}
           echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
-          cd ../..
-          echo "Dump teams.yml content:"
-          cat concourse-teams/teams.yml
-          echo "=== end: dump ==="
-          for team_name in $(cat concourse-teams/teams.yml|tail -n +2|cut -c3-); do
-          echo "set-team -n $team_name --basic-auth-username=\"$FLY_USERNAME\" --basic-auth-password=\"$FLY_PASSWORD\" --non-interactive"  >> ${DEST_DIR}/flight-plan
-          done
+          echo "Flight plan:"
+          cat ${DEST_DIR}/flight-plan
       params:
         FLY_USERNAME: ((concourse-micro-depls-username))
         FLY_PASSWORD: "((concourse-micro-depls-password))"
@@ -127,7 +133,55 @@ jobs:
       FLY_USERNAME: ((concourse-micro-depls-username))
       FLY_PASSWORD: "((concourse-micro-depls-password))"
 
+- name: bootstrap-control-plane
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      passed: [ bootstrap-pipelines ]
+    - get: secrets-full
+      params: { submodules: none}
+      passed: [ bootstrap-pipelines ]
+      trigger: true
+  - task: set-control-plane-pipeline
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+        - name: cf-ops-automation
+        - name: secrets-full
+      outputs:
+        - name: initialized-flight-plan
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          mkdir -p /usr/local/bin
+          FLY=/usr/local/bin/fly
 
+          echo "Fetching fly...";
+          curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+          chmod +x $FLY;
+
+          fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
+          PIPELINE_FILE_PATH="cf-ops-automation/concourse/pipelines/control-plane.yml"
+          echo "set pipeline ${PIPELINE_FILE_PATH}"
+          fly -t fe-int set-pipeline -p control-plane -c ${PIPELINE_FILE_PATH} -l secrets-full/coa/config/pipelines/credentials-auto-init.yml -l secrets-full/coa/config/credentials-git-config.yml -n
+      params:
+        ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
+        FLY_USERNAME: ((concourse-micro-depls-username))
+        FLY_PASSWORD: "((concourse-micro-depls-password))"
 
 - name: update-bootstrap-all-init-pipelines
   on_failure:
@@ -198,3 +252,174 @@ jobs:
         FLY_USERNAME_KEY: concourse-micro-depls-username
         FLY_PASSWORD_KEY: concourse-micro-depls-password
         IAAS_TYPE_KEY: iaas-type
+
+
+- name: create-teams
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      passed: [ bootstrap-pipelines ]
+    - get: secrets-full
+      params: { submodules: none}
+      passed: [ bootstrap-pipelines ]
+      trigger: true
+    - get: paas-templates-full
+      params: { submodules: none}
+      passed: [ bootstrap-pipelines ]
+      trigger: true
+  - task: get-pipeline-teams
+    input_mapping: {secrets: secrets-full}
+    output_mapping: {ci-deployment-overview: concourse-teams}
+    file: cf-ops-automation/concourse/tasks/list_used_ci_team/task.yml
+  - task: generate-flight-plan
+    output_mapping: {result-dir: initialized-flight-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+      - name: concourse-teams
+      outputs:
+      - name: result-dir
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          DEST_DIR=$(pwd)/result-dir
+          echo "Dump teams.yml content:"
+          cat concourse-teams/teams.yml
+          echo "=== end: dump ==="
+          for team_name in $(cat concourse-teams/teams.yml|tail -n +2|cut -c3-); do
+          echo "set-team -n $team_name --basic-auth-username=\"$FLY_USERNAME\" --basic-auth-password=\"$FLY_PASSWORD\" --non-interactive"  >> ${DEST_DIR}/flight-plan
+          done
+      params:
+        FLY_USERNAME: ((concourse-micro-depls-username))
+        FLY_PASSWORD: "((concourse-micro-depls-password))"
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: initialized-flight-plan}
+    output_mapping: {flight-report: concourse-<%= depls %>-init-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
+      FLY_USERNAME: ((concourse-micro-depls-username))
+      FLY_PASSWORD: "((concourse-micro-depls-password))"
+
+
+- name: bootstrap-update-pipelines
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+      trigger: true
+      passed: [ create-teams ]
+    - get: paas-templates-full
+      params: { submodules: none}
+      passed: [ create-teams ]
+      trigger: true
+    - get: secrets-full
+      params: { submodules: none}
+      passed: [ create-teams ]
+      trigger: true
+  - task: generate-all-pipelines
+    input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
+    output_mapping: {result-dir: all-pipelines}
+    file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
+    params:
+      IAAS_TYPE: ((iaas-type))
+  - task: set-all-update-pipelines
+    input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.1}
+      inputs:
+      - name: scripts-resource
+      - name: pipelines-resource
+      - name: secrets-resource
+      - name: templates-resource
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          mkdir -p /usr/local/bin
+          FLY=/usr/local/bin/fly
+
+          echo "Fetching fly...";
+          curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+          chmod +x $FLY;
+
+          fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
+          export TARGET_NAME=main
+          export SECRETS=$(pwd)/secrets-resource
+          export PAAS_TEMPLATES=$(pwd)/templates-resource
+          export PIPELINES_DIR=$(pwd)/pipelines-resource/pipelines
+          cd scripts-resource
+          DYNAMIC_DEPLS_FILE_LIST=$(cd $SECRETS && find . -maxdepth 1 -type d -name "*-depls")
+          for i in $DYNAMIC_DEPLS_FILE_LIST;
+          do
+          export DYNAMIC_DEPLS_LIST="$DYNAMIC_DEPLS_LIST $(basename $i)"
+          done
+          export DEPLS_LIST="${DEPLS_LIST:-${DYNAMIC_DEPLS_LIST}}"
+          for depls in ${DEPLS_LIST};do
+          ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t update
+          done
+    params:
+      ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
+      FLY_USERNAME: ((concourse-micro-depls-username))
+      FLY_PASSWORD: "((concourse-micro-depls-password))"
+  - task: generate-flight-plan
+    output_mapping: {result-dir: initialized-flight-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+      - name: all-pipelines
+      outputs:
+      - name: result-dir
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          DEST_DIR=$(pwd)/result-dir
+          cd all-pipelines/pipelines
+          for aFile in $(ls *init-generated.yml)
+          do
+          PIPELINE=$(basename ${aFile} .yml)
+          DEPLS=${PIPELINE%%-init-generated}
+          echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
+          done
+      params:
+        FLY_USERNAME: ((concourse-micro-depls-username))
+        FLY_PASSWORD: "((concourse-micro-depls-password))"
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: initialized-flight-plan}
+    output_mapping: {flight-report: concourse-<%= depls %>-init-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
+      FLY_USERNAME: ((concourse-micro-depls-username))
+      FLY_PASSWORD: "((concourse-micro-depls-password))"
+
