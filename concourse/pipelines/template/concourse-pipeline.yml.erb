@@ -60,6 +60,7 @@ resources:
       - "<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>"
       - "<%= "#{depls}/#{depls}-versions.yml" %>"
       <%= '- .gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>
+    # We trigger before pipeline-current-<paas-template> to update generated pipelines at first
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 <% end %>

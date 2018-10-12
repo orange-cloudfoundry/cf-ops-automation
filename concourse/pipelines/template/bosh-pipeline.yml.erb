@@ -97,7 +97,7 @@ resources:
   source:
     uri: ((paas-templates-uri))
     paths: ["shared-config.yml", "<%= depls %>/template"<%= terraform_config_path_value || '' %>]
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
@@ -143,7 +143,7 @@ resources:
   source:
     uri: ((paas-templates-uri))
     paths: ["<%= depls %>/<%= name %>"<%= ',.gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>]
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 
   <% if boshrelease['cli_version'] == "v1" %>
@@ -193,7 +193,7 @@ resources:
   source:
     uri: ((paas-templates-uri))
     paths: ["<%= depls %>/<%= depls %>-versions.yml"]
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 <% end %>
 
