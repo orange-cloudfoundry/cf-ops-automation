@@ -25,12 +25,12 @@ resources:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-- name: secrets-full
-  type: git
-  source:
-    uri: ((secrets-uri))
-    branch: ((secrets-branch))
-    skip_ssl_verification: true
+#- name: secrets-full
+#  type: git
+#  source:
+#    uri: ((secrets-uri))
+#    branch: ((secrets-branch))
+#    skip_ssl_verification: true
 
 - name: paas-templates-versions
   type: git
@@ -92,7 +92,7 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-    - get: secrets-full
+    - get: secrets-writer
       params: { submodules: none}
     - get: fe-int-micro
       trigger: true
@@ -129,10 +129,10 @@ jobs:
           - |
             cp -p fe-int-micro/*.yml sorted-pipelines/
             cd sorted-pipelines
-            ruby -ryaml -e 'Dir["*.yml"].each{|yaml_file| yaml=YAML.load_file(yaml_file); resources=yaml["resources"]&.sort_by { |x| x["name"] }; yaml["resources"] = resources; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) }}'
+            ruby -ryaml -e 'Dir["*.yml"].each { |yaml_file| puts "processing #{yaml_file}"; yaml = YAML.load_file(yaml_file); yaml["resources"] = yaml["resources"]&.sort_by { |x| x["name"]}; yaml["resource_types"] = yaml["resource_types"]&.sort_by { |x| x["name"]}; puts "rewriting #{yaml_file}"; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) } }'
 
   - task: update-git-deployed-pipelines
-    input_mapping: {reference-resource: secrets-full, generated-resource: sorted-pipelines}
+    input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
     output_mapping: {updated-git-resource: updated-pipelines}
     file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
     params:
