@@ -113,9 +113,9 @@ jobs:
   - task: update-git-generated-pipelines
     input_mapping: {reference-resource: secrets-<%= depls %>-for-pipeline, generated-resource: selected-pipelines}
     output_mapping: {updated-git-resource: generated-pipelines}
-    file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
+    file: cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml
     params:
-      COMMIT_MESSAGE: "Generated pipelines update"
+      COMMIT_MESSAGE: "Generated pipelines update for <%= depls %>"
       OLD_DIR: "coa/pipelines/generated"
   - put: secrets-writer
     params:
