@@ -197,7 +197,7 @@ resources:
     skip_ssl_verification: true
 <% end %>
 
-<% if all_ci_deployments.any? || disabled_deployments.any? %>
+<% if disabled_deployments.any? %>
 - name: paas-templates-full
   type: git
   source:
