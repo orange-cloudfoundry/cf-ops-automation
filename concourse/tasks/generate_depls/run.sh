@@ -23,6 +23,8 @@ fi
 if [ -z "${IAAS_TYPE}" ]
 then
     echo "ERROR: missing environment variable: IAAS_TYPE" | tee -a result-dir/error.log
+else
+    echo "Selected Iaas Type: <${IAAS_TYPE}>"
 fi
 
 if [ -s "result-dir/error.log" ]

@@ -50,7 +50,7 @@ then
 fi
 mkdir -p ${OUTPUT_DIR}/pipelines
 
-echo "Generating pipelines using secrets in $SECRET_DIR to ${OUTPUT_DIR}/pipelines"
+echo "Generating pipelines using secrets in $SECRET_DIR to ${OUTPUT_DIR}/pipelines for ${IAAS_TYPE} (Iaas Type)"
 for depls in ${DEPLS_LIST};do
     "${CURRENT_SCRIPT_DIR}/generate-depls.rb" -d "${depls}" -p "${SECRET_DIR}" -o "${OUTPUT_DIR}" -t "${TEMPLATES}" --iaas "${IAAS_TYPE}" --no-dump
     PIPELINE="${depls}-init-generated"

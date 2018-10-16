@@ -21,6 +21,7 @@ class DeploymentFactory
 
     iaas_filename = "#{deployment_dependencies_basename}-#{@config.iaas_type}.yml"
     iaas_loaded = File.exist?(iaas_filename) ? load_file(iaas_filename) : [Deployment.new('empty-deployment')]
+    puts "#{iaas_filename} content: #{iaas_loaded}"
     merge(deployment_dependencies_loaded.first, iaas_loaded.first)
   end
 

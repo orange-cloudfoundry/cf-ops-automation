@@ -36,6 +36,7 @@ class Config
     @loaded_config = @loaded_config.deep_merge(public_config) unless public_config.nil?
     @loaded_config = @loaded_config.deep_merge(private_config) unless private_config.nil?
     @loaded_config = @loaded_config.deep_merge(@extended_config.default_config)
+    puts "Loaded config: #{@loaded_config.to_yaml}"
     self
   end
 

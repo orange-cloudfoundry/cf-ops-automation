@@ -14,6 +14,7 @@ run:
   args:
   - -exc
   - |
+    echo "Selected Iaas Type: <${IAAS_TYPE}>"
     export SECRETS=$(pwd)/secrets-resource
     export TEMPLATES=$(pwd)/templates-resource
     export OUTPUT_DIR=$(pwd)/result-dir
