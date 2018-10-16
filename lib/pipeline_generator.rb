@@ -171,7 +171,7 @@ class PipelineGenerator
           options[:dump_output] = dump
         end
 
-        opts.on('--iaas', 'Target a specific iaas for pipeline generation') do |iaas_type|
+        opts.on('--iaas IAAS_TYPE', 'Target a specific iaas for pipeline generation') do |iaas_type|
           options[:iaas_type] = iaas_type
         end
       end
