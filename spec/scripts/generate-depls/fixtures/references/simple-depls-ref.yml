@@ -634,7 +634,7 @@ jobs:
           outputs:
             - name: run-resource
           run:
-            path: sh
+            path: bash
             args:
               - -e
               - -c
