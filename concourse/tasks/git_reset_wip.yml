@@ -50,13 +50,15 @@ run:
     git checkout -B ${GIT_CHECKOUT_BRANCH} -t origin/${GIT_CHECKOUT_BRANCH}
 
     git_br=$(echo $current_heads |awk '{ for (i=2;i<=NF;i+=2) $i=""; print}' )
-
-    for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i ;done
+    echo "WIP Reset Complete" > .git/reset_branches
+    echo "" >> .git/reset_branches
+    echo "Restored branches:" >> .git/reset_branches
+    echo "${current_heads}" >> .git/reset_branches
+    for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset [skip ci]" origin/$i;done
 
     echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .last-reset
     git add .last-reset
-    git commit -m "Add reset timestamp"
-
+    git commit --file .git/reset_branches
 params:
     GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
     GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
