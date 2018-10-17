@@ -54,7 +54,7 @@ run:
     echo "" >> .git/reset_branches
     echo "Restored branches:" >> .git/reset_branches
     echo "${current_heads}" >> .git/reset_branches
-    for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset [skip ci]" origin/$i;done
+    for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i;done
 
     echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .last-reset
     git add .last-reset
