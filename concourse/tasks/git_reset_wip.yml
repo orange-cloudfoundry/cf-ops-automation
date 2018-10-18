@@ -25,6 +25,7 @@ run:
   args:
   - -ec
   - |
+    set -o pipefail
     git config --global user.email "$GIT_USER_EMAIL"
     git config --global user.name "$GIT_USER_NAME"
 
@@ -54,11 +55,30 @@ run:
     echo "" >> .git/reset_branches
     echo "Restored branches:" >> .git/reset_branches
     echo "${current_heads}" >> .git/reset_branches
-    for i in $git_br; do echo ${DISPLAY_SEPARATOR};echo "Processing $i";git merge -m "Merge branch '$i' after WIP reset" origin/$i;done
+    for i in $git_br; do
+      echo ${DISPLAY_SEPARATOR}
+      echo "Processing $i"
+      git merge -m "Merge branch '$i' after WIP reset [skip ci]" origin/$i
+    done
 
-    echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .last-reset
-    git add .last-reset
-    git reset origin/${GIT_CHECKOUT_BRANCH}
+    git diff --name-only origin/${GIT_CHECKOUT_BRANCH} > .git/changed_files
+    echo "Changed Files:"
+    cat .git/changed_files
+    # test
+    if [ -s .git/changed_files ]; then
+      cat .git/changed_files|xargs -0 dirname |sort |uniq > .git/changed_dirs
+      echo "." >> .git/changed_dirs
+      echo "Changed detected in the following dirs:"
+      cat .git/changed_dirs
+      echo ${DISPLAY_SEPARATOR}
+
+      echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .git/.last-reset
+      for i in $(cat .git/changed_dirs); do
+        cp .git/.last-reset $i
+      done
+    else
+      echo "WARNING: no change detected"
+    fi
     git add .
     git commit --file .git/reset_branches
 params:

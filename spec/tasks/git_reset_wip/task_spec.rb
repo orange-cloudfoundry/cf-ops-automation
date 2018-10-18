@@ -50,8 +50,9 @@ describe 'git_reset_wip task' do
       expect(File).not_to exist(File.join(@updated_git_resource, 'a-branch.md'))
     end
 
-    it 'contains reset timestamp' do
-      expect(File).to exist(File.join(@updated_git_resource, ".last-reset"))
+    it 'contains reset timestamps' do
+      expect(File).to exist(File.join(@updated_git_resource, ".last-reset")).and \
+        exist(File.join(@updated_git_resource, "Feature-2", ".last-reset"))
     end
 
     context 'when skip_ssl is enabled' do
