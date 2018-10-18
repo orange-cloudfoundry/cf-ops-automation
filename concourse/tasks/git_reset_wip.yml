@@ -66,15 +66,20 @@ run:
     cat .git/changed_files
     # test
     if [ -s .git/changed_files ]; then
-      cat .git/changed_files|xargs -0 dirname |sort |uniq > .git/changed_dirs
-      echo "." >> .git/changed_dirs
+      touch .git/all_changed_dirs
+      for aFile in $(cat .git/changed_files);do
+        dirname ${aFile} >> .git/all_changed_dirs
+      done
+      cat .git/all_changed_dirs|sort |uniq > .git/changed_dirs
       echo "Changed detected in the following dirs:"
       cat .git/changed_dirs
       echo ${DISPLAY_SEPARATOR}
 
       echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .git/.last-reset
-      for i in $(cat .git/changed_dirs); do
-        cp .git/.last-reset $i
+      for aDir in $(cat .git/changed_dirs); do
+        if [ -d ${aDir} ]; then
+          cp .git/.last-reset $aDir
+        fi
       done
     else
       echo "WARNING: no change detected"
