@@ -62,6 +62,16 @@ describe BoshTasksCanceller do
                               "started_at": "Wed Aug  1 11:53:58 UTC 2018",
                               "state": "cancelled",
                               "user": "admin"
+                          },
+                          {
+                              "deployment": "",
+                              "description": "create release",
+                              "id": "21",
+                              "last_activity_at": "Wed Oct 17 14:53:22 UTC 2018",
+                              "result": "",
+                              "started_at": "Thu Jan  1 00:00:00 UTC 1970",
+                              "state": "queued",
+                              "user": "admin"
                           }
                       ],
                       "Notes": null
@@ -92,12 +102,15 @@ describe BoshTasksCanceller do
             and_return([tasks_json, nil, process_status_zero])
           allow(Open3).to receive(:capture3).with(cmd_env, "bosh cancel-task 19").
             and_return(["", "", process_status_zero])
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh cancel-task 21").
+              and_return(["", "", process_status_zero])
         end
 
         it "run the bosh cancel-task command on processing tasks" do
           BoshTasksCanceller.new.execute
 
           expect(Open3).to have_received(:capture3).with(cmd_env, "bosh cancel-task 19")
+          expect(Open3).to have_received(:capture3).with(cmd_env, "bosh cancel-task 21")
           expect(Open3).not_to have_received(:capture3).with(cmd_env, "bosh cancel-task 20")
         end
       end

@@ -13,7 +13,7 @@ class BoshTasksCanceller
 
   class << self
     def cancel_tasks
-      puts "NOTE: the BOSH Director can only cancel processing tasks."
+      puts "NOTE: the BOSH Director can only cancel processing or queued tasks."
 
       check_environment
       check_processing_tasks
@@ -33,7 +33,7 @@ class BoshTasksCanceller
     def processing_tasks
       tasks_table = extract_tasks_from_bosh_tasks_table(bosh_tasks)
       active_tasks = tasks_table.first["Rows"]
-      active_tasks.keep_if { |task| task["state"] == "processing" }
+      active_tasks.keep_if { |task| task["state"] == "processing" || task["state"] == "queued" }
     end
 
     def bosh_tasks
