@@ -58,6 +58,8 @@ run:
 
     echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .last-reset
     git add .last-reset
+    git reset origin/${GIT_CHECKOUT_BRANCH}
+    git add .
     git commit --file .git/reset_branches
 params:
     GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
