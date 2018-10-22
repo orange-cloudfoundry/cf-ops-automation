@@ -38,7 +38,7 @@ resources:
     uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
-    paths: ["**/*-versions.yml"]
+    paths: ["**/*-versions.yml","*-depls/.last-reset"]
 - name: paas-templates-full
   type: git
   source:
@@ -162,11 +162,11 @@ jobs:
     - get: secrets-generated-pipelines
       params: { submodules: none}
       trigger: true
-      version: every
+#      version: every
     - get: paas-templates-full
       params: { submodules: none}
       trigger: true
-      version: every
+#      version: every
     - get: paas-templates-versions
       params: { submodules: none}
       trigger: true
@@ -189,13 +189,13 @@ jobs:
       resource: secrets-generated-pipelines
       params: { submodules: none}
       trigger: true
-      version: every
+#      version: every
       passed: [on-git-commit]
     - get: templates-resource
       resource: paas-templates-versions
       params: { submodules: none}
       trigger: true
-      version: every
+#      version: every
       passed: [on-git-commit]
   - task: list-pipelines
     config:
@@ -235,11 +235,11 @@ jobs:
       params: { submodules: none}
       trigger: true
       passed: [load-generated-pipelines]
-      version: every
+#      version: every
     - get: paas-templates-full
       params: { submodules: none}
       trigger: true
-      version: every
+#      version: every
       passed: [on-git-commit]
   - put: paas-templates-scanned
     get_params: {submodules: none}
