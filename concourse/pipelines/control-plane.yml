@@ -84,7 +84,7 @@ resources:
 jobs:
 - name: save-deployed-pipelines
   serial: true
-  on_failure:
+  on_failure: &failure_alert
     put: failure-alert
     params:
       channel: ((slack-channel))
@@ -173,13 +173,7 @@ jobs:
 
 - name: load-generated-pipelines
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *failure_alert
   plan:
   - aggregate:
     - get: cf-ops-automation
@@ -220,13 +214,7 @@ jobs:
 
 - name: push-changes
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *failure_alert
   plan:
   - aggregate:
     - get: cf-ops-automation
@@ -253,3 +241,46 @@ jobs:
       params: { submodules: none}
       trigger: true
       version: every
+
+- name: manual-reset-avoid-please
+  plan:
+  - get: cf-ops-automation
+    params: { submodules: none}
+
+- name: reset-secrets-pipeline-generation
+  on_failure: *failure_alert
+  plan:
+  - aggregate:
+    - get: secrets-writer
+      params: { submodules: none}
+    - get: cf-ops-automation
+      params: { submodules: none}
+      passed: [ manual-reset-avoid-please ]
+
+  - task: delete-generated-pipelines
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      inputs:
+      - name: secrets-writer
+      outputs:
+      - name: reset-secrets
+      run:
+        path: sh
+        args:
+        - -ec
+        - |
+          git clone secrets-writer reset-secrets
+          cd reset-secrets
+          DEST_DIR=coa/pipelines/generated
+          if [ -d "${DEST_DIR}" ]; then
+          cd ${DEST_DIR}
+          rm -rfv *
+          fi
+  - put: secrets-writer
+    get_params: {submodules: none}
+    params:
+      repository: reset-secrets
+      rebase: true
