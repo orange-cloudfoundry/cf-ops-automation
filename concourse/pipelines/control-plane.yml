@@ -272,13 +272,21 @@ jobs:
         args:
         - -ec
         - |
+          git config --global user.email "$GIT_USER_EMAIL"
+          git config --global user.name "$GIT_USER_NAME"
+
           git clone secrets-writer reset-secrets
           cd reset-secrets
           DEST_DIR=coa/pipelines/generated
           if [ -d "${DEST_DIR}" ]; then
-          cd ${DEST_DIR}
-          rm -rfv *
+            cd ${DEST_DIR}
+            rm -rfv *
+            git add .
+            git commit -m"Reset COA generated pipelines"
           fi
+      params:
+        GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+        GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
   - put: secrets-writer
     get_params: {submodules: none}
     params:
