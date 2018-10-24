@@ -999,6 +999,7 @@ jobs:
 - name: check-terraform-consistency
     <% jobs['terraform'] << 'check-terraform-consistency' %>
   serial: true
+  serial_groups: [terraform]
   on_failure:
     put: failure-alert
     params:
@@ -1043,6 +1044,7 @@ jobs:
 - name: approve-and-enforce-terraform-consistency
     <% jobs['terraform'] << 'approve-and-enforce-terraform-consistency' %>
   serial: true
+  serial_groups: [terraform]
   on_failure:
     put: failure-alert
     params:
