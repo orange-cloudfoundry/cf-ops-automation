@@ -19,6 +19,8 @@ image_resource:
 inputs:
   - name: reference-resource
   - name: generated-resource
+  - name: concourse-meta
+    optional: true
 outputs:
   - name: updated-git-resource
 run:
@@ -38,12 +40,26 @@ run:
 
     cp -rf generated-resource/. ${FINAL_RELEASE_REPO}
 
+    echo "$COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
+    if [ -d concourse-meta ];then
+      cd concourse-meta
+      BUILD_TEAM=$(if [ -f build-team-name ];then cat build-team-name;fi)
+      BUILD_PIPELINE=$(if [ -f build-pipeline-name ];then cat build-pipeline-name;fi)
+      BUILD_JOB=$(if [ -f build-job-name ];then cat build-job-name;fi)
+      BUILD_ID=$(if [ -f build-id ];then cat build-id;fi)
+      BUILD_NAME=$(if [ -f build-name ];then cat build-name;fi)
+      BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_ID - $BUILD_NAME")
+      cd ..
+      echo "" >> ${FINAL_RELEASE_REPO}/.git/message
+      echo "Created by $BUILD_INFO" >> ${FINAL_RELEASE_REPO}/.git/message
+    fi
+
     cd ${FINAL_RELEASE_REPO}
     git add .
     CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
     if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
     then
-      git commit -m "$COMMIT_MESSAGE"
+      git commit --file .git/message
     else
       echo "No change detected, skip commit"
     fi
