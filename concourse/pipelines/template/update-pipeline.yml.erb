@@ -5,15 +5,21 @@ resource_types:
     source:
       repository: concourse/concourse-pipeline-resource
       tag: 3
-
   - name: slack-notification
     type: docker-image
     source:
       repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
+  - name: meta
+    type: docker-image
+    source:
+      repository: swce/metadata-resource
+      tag: release-v0.0.3
 resources:
 
 <% if all_ci_deployments.any? %>
+- name: concourse-meta
+  type: meta
 - name: failure-alert
   type: slack-notification
   source:
@@ -69,6 +75,7 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
+    - get: concourse-meta
     - get: paas-templates-<%= depls %>
       params: { submodules: none}
       attempts: 2

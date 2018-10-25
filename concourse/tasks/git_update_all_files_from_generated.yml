@@ -48,7 +48,7 @@ run:
       BUILD_JOB=$(if [ -f build-job-name ];then cat build-job-name;fi)
       BUILD_ID=$(if [ -f build-id ];then cat build-id;fi)
       BUILD_NAME=$(if [ -f build-name ];then cat build-name;fi)
-      BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_ID - $BUILD_NAME")
+      BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_NAME - $BUILD_ID")
       cd ..
       echo "" >> ${FINAL_RELEASE_REPO}/.git/message
       echo "Created by $BUILD_INFO" >> ${FINAL_RELEASE_REPO}/.git/message

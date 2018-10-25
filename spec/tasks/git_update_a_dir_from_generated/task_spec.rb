@@ -94,7 +94,7 @@ describe 'git_update_a_dir_from_generated task' do
     it 'sets a valid commit message' do
       repo = Git.open(@updated_git_resource)
       commit = repo.log.first
-      expect(commit.message).to eq("my commit message\n\nCreated by main/pipeline/job/1 - build-name")
+      expect(commit.message).to eq("my commit message\n\nCreated by main/pipeline/job/build-name - 1")
     end
 
   end
