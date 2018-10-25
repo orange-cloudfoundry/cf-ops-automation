@@ -63,11 +63,12 @@ resource_types:
   source:
     repository: cfcommunity/bosh2-errand-resource
     tag: v0.1.2
-    - name: meta
-      type: docker-image
-      source:
-        repository: swce/metadata-resource
-        tag: release-v0.0.3
+
+- name: meta
+  type: docker-image
+  source:
+    repository: swce/metadata-resource
+    tag: release-v0.0.3
 
 resources:
 - name: concourse-meta
