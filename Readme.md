@@ -681,7 +681,7 @@ deployment:
 
 ## How to upload a bosh release not available on bosh.io?
 
-use `deploy.sh` script like [this](ops-depls/template/deploy.sh) to manually upload release.
+use `deploy.sh` script like [this](docs/reference_dataset/template_repository/hello-world-root-depls/template/deploy.sh) to manually upload release.
 `deploy.sh` use bosh cli v2 syntax.
 
 ## How to generate a tfvars in json from a yaml template?
