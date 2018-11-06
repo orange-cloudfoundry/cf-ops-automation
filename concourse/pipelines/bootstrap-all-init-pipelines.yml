@@ -183,7 +183,7 @@ jobs:
         FLY_USERNAME: ((concourse-micro-depls-username))
         FLY_PASSWORD: "((concourse-micro-depls-password))"
 
-- name: update-bootstrap-all-init-pipelines
+- name: reload-this-pipeline-from-git
   on_failure:
     put: failure-alert
     params:
@@ -215,23 +215,32 @@ jobs:
         - |
           apk add bash coreutils --no-cache
           export SECRETS=$(pwd)/secrets
-          CREDENTIALS_FILES=$(ls ${SECRETS}/${CREDENTIALS_FILTER})
+          if [ -d ${SECRETS}/coa/config ];then
+            CONFIG_DIR=${SECRETS}/coa/config
+          else
+            CONFIG_DIR=${SECRETS}/micro-depls/concourse-micro/pipelines
+          fi
+          echo "COA config directory detected: <${CONFIG_DIR}>"
+          FILTER_CMD="ls ${CONFIG_DIR}/$CREDENTIALS_FILTER"
+          CREDENTIALS_FILES=$(eval $FILTER_CMD)
           ALL_CREDENTIALS_FILE=$(mktemp /tmp/all-credentials.XXXXXX)
+          echo "Credentials files used: ${CREDENTIALS_FILES}"
           for FILE in ${CREDENTIALS_FILES};do
             {
              cat ${FILE}
              echo ""
             } >> ${ALL_CREDENTIALS_FILE}
           done
-          export ATC_EXTERNAL_URL=$(grep ${ATC_EXTERNAL_URL_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
-          export FLY_USERNAME=$(grep ${FLY_USERNAME_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
-          export FLY_PASSWORD=$(grep ${FLY_PASSWORD_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
+          export ATC_EXTERNAL_URL=$(grep -e "^${ATC_EXTERNAL_URL_KEY}:" ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
+          export FLY_USERNAME=$(grep -e "^${FLY_USERNAME_KEY}:" ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
+          export FLY_PASSWORD=$(grep -e "^${FLY_PASSWORD_KEY}:" ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
 
           export IAAS_TYPE=$(grep ${IAAS_TYPE_KEY} ${ALL_CREDENTIALS_FILE} |cut -d':' -f2-|tr -d [:blank:])
           if [ -z "${IAAS_TYPE}" ]
           then
           echo "ERROR: missing environment variable: IAAS_TYPE"
           fi
+          echo "Extracted IAAS_TYPE: <${IAAS_TYPE}>"
           echo "Duplicated keys found:"
           cat $ALL_CREDENTIALS_FILE| sort | uniq -c|sort|grep -v '\-\-\-'|grep -v -e "^[ ]*1.*"|cut -d':' -f1
           mkdir -p /usr/local/bin
@@ -240,14 +249,16 @@ jobs:
           curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
           chmod +x $FLY;
 
+          echo "Login to Concourse using extracted credentials (ATC_EXTERNAL_URL, FLY_USERNAME, FLY_PASSWORD)"
           fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
 
           export FLY_TARGET=main
           export FLY_SET_PIPELINE_OPTION="--non-interactive"
           cd scripts-resource/
+          echo "Launching concourse-bootstrap.sh"
           ./concourse-bootstrap.sh
       params:
-        CREDENTIALS_FILTER: micro-depls/concourse-micro/pipelines/credentials-*.yml
+        CREDENTIALS_FILTER: credentials-*.yml|grep -v pipeline
         ATC_EXTERNAL_URL_KEY: concourse-micro-depls-target
         FLY_USERNAME_KEY: concourse-micro-depls-username
         FLY_PASSWORD_KEY: concourse-micro-depls-password
