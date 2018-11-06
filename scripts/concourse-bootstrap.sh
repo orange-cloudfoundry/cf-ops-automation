@@ -41,11 +41,25 @@ echo "Deploy on ${FLY_TARGET} using secrets in $SECRET_DIR"
 
 PIPELINE="bootstrap-all-init-pipelines"
 echo "Load ${PIPELINE} on ${FLY_TARGET}"
+
+if [ -d ${SECRET_DIR}/coa/config ];then
+    CONFIG_DIR=${SECRET_DIR}/coa/config
+else
+    CONFIG_DIR=${SECRET_DIR}/micro-depls/concourse-micro/pipelines
+fi
+echo "COA config directory detected: <${CONFIG_DIR}>"
+
+FILTERED_CONFIG_FILES=$(cd ${CONFIG_DIR} && ls -1 credentials-*.yml|grep -v pipeline)
+VARS_FILES=""
+for config_file in ${FILTERED_CONFIG_FILES}; do
+    VARS_FILES="${VARS_FILES}-l \"${CONFIG_DIR}/${config_file}\" "
+done
+echo ${VARS_FILES}
 set +e
+set -x
 ${FLY_CMD} -t ${FLY_TARGET} set-pipeline ${FLY_SET_PIPELINE_OPTION} -p ${PIPELINE} -c ${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml  \
-            -l "${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-auto-init.yml" \
-            -l "${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-iaas-specific.yml" \
-            -l "${SECRET_DIR}/micro-depls/concourse-micro/pipelines/credentials-git-config.yml"
+            ${VARS_FILES}
+set +x
 set -e
 ${FLY_CMD} -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
 if [ "$SKIP_TRIGGER" != "true" ]
