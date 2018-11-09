@@ -6,7 +6,8 @@ module CoaUpgrader
     OPTIONS = {
       dump_output: true,
       config_path: '',
-      templates_path: ''
+      templates_path: '',
+      version: ''
     }.freeze
 
     def initialize(options = OPTIONS.dup)
@@ -24,6 +25,10 @@ module CoaUpgrader
 
         opts.on('-t', '--templates PATH', "paas-templates path location (main git directory). Default: #{options[:templates_path]}") do |tp_string|
           options[:templates_path] = tp_string
+        end
+
+        opts.on('-v', '--version VERSION', "version to upgrade to. Default: #{options[:version]}") do |v_string|
+          options[:version] = v_string
         end
 
         opts.on('--[no-]dump', 'Dump genereted file on standart output') do |dump|
