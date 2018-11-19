@@ -691,6 +691,7 @@ jobs:
   <% if boshrelease['errands'] && boshrelease['errands'].any? %>
 - name: run-errand-<%= name %>
     <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}" %>
+  serial: true
   on_failure:
     put: failure-alert
     params:

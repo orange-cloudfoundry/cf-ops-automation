@@ -223,6 +223,11 @@ describe 'DeplsPipelineTemplateProcessing' do
         generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe' }.flat_map { |job| job['plan'] }
         expect(generated_errand_job).to match(expected_shield_errand)
       end
+
+      it 'generates a serialized errand job for shield boshrelease' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe' }.first
+        expect(generated_errand_job['serial']).to be_truthy
+      end
     end
 
     context 'without ci deployment overview' do
