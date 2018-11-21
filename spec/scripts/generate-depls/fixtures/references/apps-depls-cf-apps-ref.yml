@@ -105,6 +105,7 @@ jobs:
 
 - name: cf-push-test-app
   serial: true
+  serial_groups: [concurrent-group-1]
   on_failure:
     put: failure-alert
     params:

@@ -7,7 +7,10 @@ require_relative 'extended_config'
 # an extended configuration (based on environment variables)
 class Config
   DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-trusty-go_agent'.freeze
-
+  CONFIG_DEFAULT_KEY = 'default'.freeze
+  CONFIG_CONCOURSE_KEY = 'concourse'.freeze
+  CONFIG_PARALLEL_EXECUTION_LIMIT_KEY = 'parallel_execution_limit'.freeze
+  DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT = 5
   attr_reader :loaded_config
 
   def initialize(public_yaml_location = '', private_yaml_location = '', extended_config = ExtendedConfigBuilder.new.build)
@@ -25,7 +28,8 @@ class Config
         'docker-images' => false
       },
       'default' => {
-        'stemcell' => { 'name' => DEFAULT_STEMCELL }
+        'stemcell' => { 'name' => DEFAULT_STEMCELL },
+        'concourse' => { 'parallel_execution_limit' => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT }
       }
     }.deep_merge(@extended_config.default_config)
   end

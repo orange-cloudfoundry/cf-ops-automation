@@ -1,3 +1,9 @@
+<%
+  require './lib/pipeline_helpers'
+
+  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
+  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
+%>
 ---
 resource_types:
   - name: slack-notification
@@ -103,9 +109,12 @@ jobs:
 <% end %>
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
+<% current_serial_group = "concurrent-group-#{all_cf_apps.length % parallel_execution_limit}" %>
+
 - name: cf-push-<%= app_name %>
 <% jobs["app-#{app_name[0]}*"] << "cf-push-#{app_name}" %>
   serial: true
+  <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
   on_failure:
     put: failure-alert
     params:

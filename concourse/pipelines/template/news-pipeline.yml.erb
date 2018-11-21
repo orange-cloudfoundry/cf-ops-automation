@@ -1,4 +1,6 @@
 <%
+  require './lib/pipeline_helpers'
+
   enabled_deployments = all_dependencies.select do |_,deployment_infos|
     deployment_infos['status'] == 'enabled'
   end
@@ -8,7 +10,11 @@
     boshrelease["releases"]&.each do |release, info|
       uniq_releases[release] = info
     end
+
   end
+
+  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
+  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
 %>
 ---
 resource_types:
@@ -95,7 +101,9 @@ jobs:
 - name: this-is-an-empty-pipeline
 <% else %>
   <% uniq_releases.sort.each do |release, info| %>
+  <% current_serial_group = "concurrent-group-#{uniq_releases.length % parallel_execution_limit}" %>
 - name: check-<%= release %>
+  <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
   on_failure:
     put: failure-alert
     params:
