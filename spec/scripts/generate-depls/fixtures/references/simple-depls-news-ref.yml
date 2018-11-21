@@ -54,7 +54,7 @@ resources:
 jobs:
 
 - name: check-ntp_boshrelease
-  serial_groups: [concurrent-group-1]
+  serial_groups: [concurrent-group-0]
   on_failure:
     put: failure-alert
     params:

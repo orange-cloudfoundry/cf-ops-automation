@@ -92,7 +92,7 @@ jobs:
 - name: upload-current-ntp_boshrelease
   serial_groups:
   - ntp_boshrelease
-  - concurrent-group-1
+  - concurrent-group-0
   on_failure:
     put: failure-alert
     params:
@@ -147,7 +147,7 @@ jobs:
 - name: upload-latest-ntp_boshrelease
   serial_groups:
   - ntp_boshrelease
-  - concurrent-group-1
+  - concurrent-group-0
   on_failure:
     put: failure-alert
     params:
