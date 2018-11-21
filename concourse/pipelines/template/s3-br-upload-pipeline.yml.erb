@@ -7,6 +7,9 @@
       uniq_releases[release] = info
     end
   end
+
+  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
+  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
 %>
 
 ---
@@ -120,8 +123,10 @@ jobs:
       FLY_TEAM: <%= current_team || 'main' %>
 
 <% uniq_releases.sort.each do |release, info|  %>
+
+  <% current_serial_group = "concurrent-group-#{uniq_releases.length % parallel_execution_limit}" %>
 - name: upload-current-<%= release %>
-  serial_groups: [<%= release %>]
+  serial_groups: [<%= release %><%= ",#{current_serial_group}" if enabled_parallel_execution_limit%>]
   on_failure:
     put: failure-alert
     params:
@@ -175,7 +180,7 @@ jobs:
         acl: public-read
 
 - name: upload-latest-<%= release %>
-  serial_groups: [<%= release %>]
+  serial_groups: [<%= release %><%= ",#{current_serial_group}" if enabled_parallel_execution_limit%>]
   on_failure:
     put: failure-alert
     params:

@@ -7,3 +7,5 @@
 #default:
 #  stemcell:
 #    name: bosh-openstack-kvm-ubuntu-trusty-go_agent  # Default: bosh-openstack-kvm-ubuntu-trusty-go_agent
+#  concourse:
+#    parrallel_execution_limit: 5 # Default: -1, ie unlimited
