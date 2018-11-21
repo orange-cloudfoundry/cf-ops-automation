@@ -27,6 +27,7 @@
 
   parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
   enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
+  concurent_group_counter = 0
 %>
 
 ---
@@ -484,7 +485,8 @@ jobs:
               rebase: true
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
-  <% current_serial_group = "concurrent-group-#{enabled_deployments.length % parallel_execution_limit}" %>
+  <% current_serial_group = "concurrent-group-#{concurent_group_counter % parallel_execution_limit}" %>
+  <% concurent_group_counter += 1 %>
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   serial: true

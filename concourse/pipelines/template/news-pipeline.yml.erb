@@ -15,6 +15,7 @@
 
   parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
   enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
+  concurent_group_counter = 0
 %>
 ---
 resource_types:
@@ -101,7 +102,8 @@ jobs:
 - name: this-is-an-empty-pipeline
 <% else %>
   <% uniq_releases.sort.each do |release, info| %>
-  <% current_serial_group = "concurrent-group-#{uniq_releases.length % parallel_execution_limit}" %>
+  <% current_serial_group = "concurrent-group-#{concurent_group_counter % parallel_execution_limit}" %>
+  <% concurent_group_counter += 1 %>
 - name: check-<%= release %>
   <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
   on_failure:
