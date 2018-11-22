@@ -25,8 +25,8 @@
   offline_stemcells_enabled = config['offline-mode'] && config['offline-mode']['stemcells'] && true
   jobs = Hash.new {|h,k| h[k]=[]}
 
-  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
-  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
+  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config, depls)
+  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config, depls)
   concurent_group_counter = 0
 %>
 

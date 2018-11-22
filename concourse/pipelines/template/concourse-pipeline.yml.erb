@@ -1,8 +1,8 @@
 <%
   require './lib/pipeline_helpers'
 
-  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config)
-  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config)
+  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config, depls)
+  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config, depls)
   concurent_group_counter = 0
 %>
 ---
