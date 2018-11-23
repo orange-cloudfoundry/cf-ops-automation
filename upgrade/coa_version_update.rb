@@ -10,7 +10,8 @@ class CommandLineParser
     concourse_url: '',
     concourse_username: 'atc',
     concourse_password: '',
-    concourse_target: 'coa-version'
+    concourse_target: 'coa-version',
+    coa_version: ''
   }.freeze
 
   def initialize(options = OPTIONS.dup)
@@ -26,12 +27,16 @@ class CommandLineParser
         options[:concourse_url] = c_string
       end
 
-      opts.on('-u', '--username VALUE', "concourse admin username. Default: #{options[:concourse_username]}") do |u_string|
-        options[:concourse_username] = u_string
+      opts.on('-v', '--version VERSION', 'MANDATORY - coa version to switch to v<x.y.z>') do |v_string|
+        options[:coa_version] = v_string if v_string =~ /v\d{1,2}\.\d{1,2}\.\d{1,2}/
       end
 
       opts.on('-p', '--password VALUE', "MANDATORY - concourse admin password. Default: #{options[:concourse_password]}") do |p_string|
         options[:concourse_password] = p_string
+      end
+
+      opts.on('-u', '--username VALUE', "concourse admin username. Default: #{options[:concourse_username]}") do |u_string|
+        options[:concourse_username] = u_string
       end
 
       opts.on('-t', '--target VALUE', "concourse target name. Default: #{options[:concourse_target]}") do |t_string|
@@ -41,6 +46,7 @@ class CommandLineParser
     opt_parser.parse!
     raise OptionParser::MissingArgument, "'concourse_url', please check required parameter using --help" if options[:concourse_url].to_s.empty?
     raise OptionParser::MissingArgument, "'concourse_password', please check required parameter using --help" if options[:concourse_password].to_s.empty?
+
     @options = options
   end
 end
@@ -54,6 +60,7 @@ class CoaVersionUpdate
 
     @fly_target_base = @config[:concourse_target]
     @fly_main = Fly.new(@fly_target_base)
+    @coa_version = @config[:coa_version]
   end
 
   def run
@@ -72,7 +79,7 @@ class CoaVersionUpdate
       puts "Pipelines:"
       pipelines = current_fly.pipelines
       pipelines.each do |name, _|
-        coa_version = ''
+        coa_version = @coa_version
         begin
           check_output = current_fly.check_resource(name, COA_RESOURCE_NAME, coa_version)
           puts check_output
@@ -134,8 +141,10 @@ class Fly
   end
 
   def check_resource(pipeline, resource_name, version = '',env = {})
-    puts "Checking #{pipeline}/#{resource_name}"
-    fly("check-resource --resource #{pipeline}/#{resource_name}", env)
+    puts "Checking #{pipeline}/#{resource_name}: #{+ version}"
+    check_resource_cmd = "check-resource --resource #{pipeline}/#{resource_name}"
+    check_resource_cmd += " -from ref:#{version} " unless version.empty?
+    fly(check_resource_cmd, env)
   end
 
 end
