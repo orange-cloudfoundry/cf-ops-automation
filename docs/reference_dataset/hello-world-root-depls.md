@@ -29,7 +29,11 @@ hello-world-root-depls
 |-- ci-deployment-overview.yml
 |-- pipeline-sample
 |   |-- Readme.md
-|   `-- enable-deployment.yml
+|   |-- concourse-pipeline-config
+|   |   `-- virtualbox
+|   |-- enable-deployment.yml
+|   `-- secrets
+|       `-- secrets.yml
 |-- secrets
 |   |-- meta.yml
 |   |-- private-config-operators.yml
@@ -89,7 +93,7 @@ hello-world-root-depls
 |-- hello-world-root-depls-versions.yml
 |-- pipeline-sample
 |   |-- concourse-pipeline-config
-|   |   `-- pipeline-sample.yml
+|   |   `-- pipeline-sample-tpl.yml
 |   `-- deployment-dependencies.yml
 |-- template
 |   |-- cloud-config.yml
@@ -132,7 +136,11 @@ hello-world-root-depls
   * [ci-deployment-overview.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/ci-deployment-overview.yml)
   * [pipeline-sample](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample)
     * [Readme.md](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/Readme.md)
+    * [concourse-pipeline-config](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config)
+      * [virtualbox](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config/virtualbox)
     * [enable-deployment.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/enable-deployment.yml)
+    * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/secrets)
+      * [secrets.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/pipeline-sample/secrets/secrets.yml)
   * [secrets](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets)
     * [meta.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/meta.yml)
     * [private-config-operators.yml](/docs/reference_dataset/config_repository/hello-world-root-depls/secrets/private-config-operators.yml)
@@ -197,7 +205,7 @@ hello-world-root-depls
   * [hello-world-root-depls-versions.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/hello-world-root-depls-versions.yml)
   * [pipeline-sample](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample)
     * [concourse-pipeline-config](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config)
-      * [pipeline-sample.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config/pipeline-sample.yml)
+      * [pipeline-sample-tpl.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config/pipeline-sample-tpl.yml)
     * [deployment-dependencies.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/pipeline-sample/deployment-dependencies.yml)
   * [template](/docs/reference_dataset/template_repository/hello-world-root-depls/template)
     * [cloud-config.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/cloud-config.yml)
@@ -207,7 +215,6 @@ hello-world-root-depls
     * [public-config-operators.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/public-config-operators.yml)
     * [public-runtime-operators.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/public-runtime-operators.yml)
     * [runtime-config.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/template/runtime-config.yml)
-    * [virtualbox](/docs/reference_dataset/template_repository/hello-world-root-depls/template/virtualbox)
   * [terraform-config](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config)
     * [spec](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config/spec)
       * [local-provider-sample.tf](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config/spec/local-provider-sample.tf)
@@ -216,6 +223,35 @@ hello-world-root-depls
       * [terraform-tpl.tfvars.yml](/docs/reference_dataset/template_repository/hello-world-root-depls/terraform-config/template/terraform-tpl.tfvars.yml)
 
 ## Required pipeline credentials for hello-world-root-depls
+
+### hello-world-root-depls-bosh-generated.yml
+
+* bosh-openstack-cpi-release-version
+* bosh-password
+* bosh-target
+* bosh-username
+* cf-ops-automation-branch
+* cf-ops-automation-tag-filter
+* cf-ops-automation-uri
+* concourse-hello-world-root-depls-password
+* concourse-hello-world-root-depls-target
+* concourse-hello-world-root-depls-username
+* iaas-type
+* nginx-version
+* ntp-version
+* paas-templates-branch
+* paas-templates-uri
+* secrets-branch
+* secrets-uri
+* slack-channel
+* slack-disable
+* slack-proxy
+* slack-proxy-https-tunnel
+* slack-webhook
+* stemcell-main-name
+* stemcell-name-prefix
+* stemcell-version
+* vault-version
 
 ### hello-world-root-depls-cf-apps-generated.yml
 
@@ -263,6 +299,8 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
 * iaas-type
+* nginx-version
+* ntp-version
 * paas-templates-branch
 * paas-templates-uri
 * secrets-branch
@@ -272,6 +310,7 @@ hello-world-root-depls
 * stemcell-main-name
 * stemcell-name-prefix
 * stemcell-version
+* vault-version
 
 ### hello-world-root-depls-init-generated.yml
 
@@ -317,6 +356,8 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
 * github-access-token
+* nginx-version
+* ntp-version
 * s3-br-access-key-id
 * s3-br-bucket
 * s3-br-endpoint
@@ -325,6 +366,7 @@ hello-world-root-depls
 * s3-br-skip-ssl-verification
 * slack-channel
 * slack-webhook
+* vault-version
 
 ### hello-world-root-depls-s3-stemcell-upload-generated.yml
 
@@ -369,6 +411,22 @@ hello-world-root-depls
 * slack-channel
 * slack-webhook
 
+### hello-world-root-depls-update-generated.yml
+
+* cf-ops-automation-branch
+* cf-ops-automation-tag-filter
+* cf-ops-automation-uri
+* iaas-type
+* paas-templates-branch
+* paas-templates-uri
+* secrets-branch
+* secrets-uri
+* slack-channel
+* slack-disable
+* slack-proxy
+* slack-proxy-https-tunnel
+* slack-webhook
+
 ## List of pipelines in which credentials appear for hello-world-root-depls
 
 ### anonymized-secrets-compare-repo-uri
@@ -381,24 +439,29 @@ hello-world-root-depls
 
 ### bosh-openstack-cpi-release-version
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-s3-br-upload-generated.yml
 
 ### bosh-password
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 
 ### bosh-target
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 
 ### bosh-username
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 
 ### cf-ops-automation-branch
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -408,9 +471,11 @@ hello-world-root-depls
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### cf-ops-automation-tag-filter
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -420,9 +485,11 @@ hello-world-root-depls
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### cf-ops-automation-uri
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -432,6 +499,7 @@ hello-world-root-depls
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### concourse-hello-world-root-depls-insecure
 
@@ -441,6 +509,7 @@ hello-world-root-depls
 
 ### concourse-hello-world-root-depls-password
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -450,6 +519,7 @@ hello-world-root-depls
 
 ### concourse-hello-world-root-depls-target
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -459,6 +529,7 @@ hello-world-root-depls
 
 ### concourse-hello-world-root-depls-username
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -472,36 +543,48 @@ hello-world-root-depls
 
 ### iaas-type
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-init-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### nginx-version
 
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
+* hello-world-root-depls-s3-br-upload-generated.yml
 
 ### ntp-version
 
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
+* hello-world-root-depls-s3-br-upload-generated.yml
 
 ### paas-templates-branch
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-init-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### paas-templates-uri
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-init-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### s3-br-access-key-id
 
@@ -553,15 +636,18 @@ hello-world-root-depls
 
 ### secrets-branch
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-init-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### secrets-uri
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -569,9 +655,11 @@ hello-world-root-depls
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### slack-channel
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -581,9 +669,26 @@ hello-world-root-depls
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
+
+### slack-disable
+
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-update-generated.yml
+
+### slack-proxy
+
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-update-generated.yml
+
+### slack-proxy-https-tunnel
+
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### slack-webhook
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
 * hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-generated.yml
@@ -593,9 +698,11 @@ hello-world-root-depls
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 * hello-world-root-depls-sync-helper-generated.yml
 * hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### stemcell-main-name
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 
 ### stemcell-name
@@ -604,15 +711,20 @@ hello-world-root-depls
 
 ### stemcell-name-prefix
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 
 ### stemcell-version
 
+* hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
 * hello-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### vault-version
 
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-generated.yml
 * hello-world-root-depls-news-generated.yml
+* hello-world-root-depls-s3-br-upload-generated.yml
 

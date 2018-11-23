@@ -1,15 +1,40 @@
 # Change Log
 
+## [v3.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.2.0) (2018-11-23)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.1.2...v3.2.0)
+
+**Closed issues:**
+
+- Limit concurrent updates that trigger overload and cascading failures [\#184](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/184)
+
+**Merged pull requests:**
+
+- pipeline\(\*\): introduce concurrent update limitations [\#208](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/208)
+
+## [v3.1.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.1.2) (2018-11-21)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.1.1...v3.1.2)
+
+## [v3.1.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.1.1) (2018-11-19)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.1.0...v3.1.1)
+
+**Implemented enhancements:**
+
+- bosh config server / credhub variables fingerprint [\#72](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/72)
+- First class support for public bosh release not hosted on bosh.io [\#12](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/12)
+
+**Fixed bugs:**
+
+- Bosh recreate is broken [\#205](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/205)
+- Deployment-dependencies per iaas\_type support is broken [\#204](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/204)
+- warning: inexact rename detection was skipped due to too many files. [\#203](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/203)
+- Errand jobs failed with ` no versions of image available` [\#199](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/199)
+
 ## [v3.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.1.0) (2018-09-18)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.0.0...v3.1.0)
 
 **Implemented enhancements:**
 
 - add features to purge bosh tasks in a root deployment [\#90](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/90)
-
-**Fixed bugs:**
-
-- Errand jobs failed with ` no versions of image available` [\#199](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/199)
 
 **Closed issues:**
 
@@ -18,6 +43,8 @@
 **Merged pull requests:**
 
 - pipeline\(depls\): fix invalid bosh-errand-resource [\#200](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/200)
+- Document source of docker image used for terraform [\#198](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/198)
+- bosh config server / credhub variables fingerprint [\#194](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/194)
 - depls\(utils\) change bosh cancel all tasks vars to bosh cl1 v1 [\#193](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/193)
 
 ## [v3.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.0.0) (2018-08-09)
@@ -36,6 +63,7 @@
 
 **Merged pull requests:**
 
+- 12 non bosh io boshrelease support [\#179](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/179)
 - tasks\(generate\_manifest\): make files used by spruce optional [\#177](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/177)
 
 ## [v2.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.2.0) (2018-07-24)

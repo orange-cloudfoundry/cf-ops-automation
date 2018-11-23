@@ -1,0 +1,121 @@
+---
+resource_types:
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+      tag: 3
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: v1.4.2
+  - name: meta
+    type: docker-image
+    source:
+      repository: swce/metadata-resource
+      tag: release-v0.0.3
+resources:
+- name: concourse-meta
+  type: meta
+- name: failure-alert
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
+- name: secrets-hello-world-root-depls-for-pipeline
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+    paths: [ "hello-world-root-depls/ci-deployment-overview.yml", coa/config, "coa/pipelines/generated/**/hello-world-root-depls-*-generated.yml", shared, private-config.yml, "hello-world-root-depls/**/enable-cf-app.yml", "hello-world-root-depls/**/enable-deployment.yml" ]
+- name: secrets-writer
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-templates-hello-world-root-depls
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+    paths: [ "hello-world-root-depls", '.gitmodules', 'public-config.yml' ]
+- name: cf-ops-automation
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+jobs:
+- name: update-pipeline-hello-world-root-depls
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+      text: |
+        ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: concourse-meta
+    - get: paas-templates-hello-world-root-depls
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: secrets-hello-world-root-depls-for-pipeline
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+    - get: cf-ops-automation
+      params: { submodules: none}
+      attempts: 2
+      trigger: true
+  - task: generate-hello-world-root-depls-pipelines
+    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-hello-world-root-depls,secrets: secrets-hello-world-root-depls-for-pipeline}
+    output_mapping: {result-dir: concourse-generated-pipeline}
+    file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
+    params:
+      ROOT_DEPLOYMENT: hello-world-root-depls
+      IAAS_TYPE: ((iaas-type))
+  - task: copy-and-filter-generated-pipeline
+    input_mapping: {templates: paas-templates-hello-world-root-depls,config: secrets-hello-world-root-depls-for-pipeline}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: ruby, tag: 2.3.5-slim}
+      inputs:
+      - name: cf-ops-automation
+      - name: config
+      - name: concourse-generated-pipeline
+      outputs:
+      - name: selected-pipelines
+      run:
+        path: /bin/bash
+        args:
+        - -ec
+        - |
+          ruby -ryaml -rfileutils -e 'depls = ENV["ROOT_DEPLOYMENT"]; ci_overview_file = File.join("config",depls ,"ci-deployment-overview.yml"); raise "ERROR - Missing file : #{ci_overview_file}" unless File.exist?(ci_overview_file); ci_overview=YAML.load_file(ci_overview_file);ci_overview["ci-deployment"][depls]["pipelines"].each { |pipeline_name,pipeline_details| team = pipeline_details["team"] || "main"; pipeline_dest_dir = File.join("selected-pipelines", team, depls);FileUtils.mkdir_p(pipeline_dest_dir); pipeline_filename = File.join("concourse-generated-pipeline","concourse","pipelines","#{pipeline_name}.yml"); FileUtils.cp(pipeline_filename, pipeline_dest_dir)}'
+          echo "Filtering pipelines:"
+          ruby -ryaml -rfileutils -e 'Dir[File.join("selected-pipelines","**","*.yml")].each { |file_path| file_content = YAML.load_file(file_path); if file_content["jobs"]&.fetch(0)&.fetch("name") == "this-is-an-empty-pipeline"; puts " deleting empty pipeline: #{file_path}";FileUtils.rm(file_path);else puts " keeping #{file_path}";end}'
+    params:
+      ROOT_DEPLOYMENT: hello-world-root-depls
+  - task: update-git-generated-pipelines
+    input_mapping: {reference-resource: secrets-hello-world-root-depls-for-pipeline, generated-resource: selected-pipelines}
+    output_mapping: {updated-git-resource: generated-pipelines}
+    file: cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml
+    params:
+      COMMIT_MESSAGE: "Generated pipelines update for hello-world-root-depls"
+      OLD_DIR: "coa/pipelines/generated"
+  - put: secrets-writer
+    params:
+      repository: generated-pipelines
+      rebase: true
+   

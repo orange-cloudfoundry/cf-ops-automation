@@ -1,3 +1,4 @@
+
 ---
 resource_types:
   - name: slack-notification
@@ -85,6 +86,7 @@ jobs:
         FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
 - name: cf-push-generic-app
   serial: true
+  serial_groups: [concurrent-group-0]
   on_failure:
     put: failure-alert
     params:

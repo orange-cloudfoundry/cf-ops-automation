@@ -102,9 +102,27 @@ another-world-root-depls
     * [openstack](/docs/reference_dataset/template_repository/another-world-root-depls/template/openstack)
       * [disk-types-cloud-operators.yml](/docs/reference_dataset/template_repository/another-world-root-depls/template/openstack/disk-types-cloud-operators.yml)
     * [runtime-config-tpl.yml](/docs/reference_dataset/template_repository/another-world-root-depls/template/runtime-config-tpl.yml)
-    * [virtualbox](/docs/reference_dataset/template_repository/another-world-root-depls/template/virtualbox)
 
 ## Required pipeline credentials for another-world-root-depls
+
+### another-world-root-depls-bosh-generated.yml
+
+* bosh-password
+* bosh-target
+* bosh-username
+* cf-ops-automation-branch
+* cf-ops-automation-tag-filter
+* cf-ops-automation-uri
+* iaas-type
+* paas-templates-branch
+* paas-templates-uri
+* secrets-branch
+* secrets-uri
+* slack-channel
+* slack-disable
+* slack-proxy
+* slack-proxy-https-tunnel
+* slack-webhook
 
 ### another-world-root-depls-cf-apps-generated.yml
 
@@ -168,34 +186,44 @@ No credentials required
 
 No credentials required
 
+### another-world-root-depls-update-generated.yml
+
+No credentials required
+
 ## List of pipelines in which credentials appear for another-world-root-depls
 
 ### bosh-password
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### bosh-target
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### bosh-username
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### cf-ops-automation-branch
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 * another-world-root-depls-s3-br-upload-generated.yml
 * another-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### cf-ops-automation-tag-filter
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 * another-world-root-depls-s3-br-upload-generated.yml
 * another-world-root-depls-s3-stemcell-upload-generated.yml
 
 ### cf-ops-automation-uri
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 * another-world-root-depls-s3-br-upload-generated.yml
 * another-world-root-depls-s3-stemcell-upload-generated.yml
@@ -217,32 +245,51 @@ No credentials required
 
 ### iaas-type
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### paas-templates-branch
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### paas-templates-uri
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### secrets-branch
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### secrets-uri
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 
 ### slack-channel
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 * another-world-root-depls-s3-br-upload-generated.yml
 * another-world-root-depls-s3-stemcell-upload-generated.yml
 
+### slack-disable
+
+* another-world-root-depls-bosh-generated.yml
+
+### slack-proxy
+
+* another-world-root-depls-bosh-generated.yml
+
+### slack-proxy-https-tunnel
+
+* another-world-root-depls-bosh-generated.yml
+
 ### slack-webhook
 
+* another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-generated.yml
 * another-world-root-depls-s3-br-upload-generated.yml
 * another-world-root-depls-s3-stemcell-upload-generated.yml

@@ -1,4 +1,3 @@
-
 ---
 resource_types:
   - name: concourse-pipeline
@@ -11,6 +10,11 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
+  - name: meta
+    type: docker-image
+    source:
+      repository: swce/metadata-resource
+      tag: release-v0.0.3
 resources:
 jobs:
 - name: this-is-an-empty-pipeline

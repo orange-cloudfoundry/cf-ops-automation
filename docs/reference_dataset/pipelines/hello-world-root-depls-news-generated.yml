@@ -72,6 +72,7 @@ jobs:
 #        trigger: true
 #        attempts: 2
 - name: check-bosh-openstack-cpi-release
+  serial_groups: [concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
@@ -126,6 +127,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 - name: check-nginx
+  serial_groups: [concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -180,6 +182,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 - name: check-ntp
+  serial_groups: [concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -234,6 +237,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 - name: check-vault
+  serial_groups: [concurrent-group-3]
   on_failure:
     put: failure-alert
     params:

@@ -133,7 +133,7 @@ jobs:
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
       FLY_TEAM: main
 - name: upload-current-bosh-openstack-cpi-release
-  serial_groups: [bosh-openstack-cpi-release]
+  serial_groups: [bosh-openstack-cpi-release,concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
@@ -178,7 +178,7 @@ jobs:
         file: bosh-openstack-cpi-release/*.tgz
         acl: public-read
 - name: upload-latest-bosh-openstack-cpi-release
-  serial_groups: [bosh-openstack-cpi-release]
+  serial_groups: [bosh-openstack-cpi-release,concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
@@ -223,7 +223,7 @@ jobs:
         file: bosh-openstack-cpi-release/*.tgz
         acl: public-read
 - name: upload-current-nginx
-  serial_groups: [nginx]
+  serial_groups: [nginx,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -268,7 +268,7 @@ jobs:
         file: nginx/*.tgz
         acl: public-read
 - name: upload-latest-nginx
-  serial_groups: [nginx]
+  serial_groups: [nginx,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -313,7 +313,7 @@ jobs:
         file: nginx/*.tgz
         acl: public-read
 - name: upload-current-ntp
-  serial_groups: [ntp]
+  serial_groups: [ntp,concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -358,7 +358,7 @@ jobs:
         file: ntp/*.tgz
         acl: public-read
 - name: upload-latest-ntp
-  serial_groups: [ntp]
+  serial_groups: [ntp,concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -403,7 +403,7 @@ jobs:
         file: ntp/*.tgz
         acl: public-read
 - name: upload-current-vault
-  serial_groups: [vault]
+  serial_groups: [vault,concurrent-group-3]
   on_failure:
     put: failure-alert
     params:
@@ -448,7 +448,7 @@ jobs:
         file: vault/*.tgz
         acl: public-read
 - name: upload-latest-vault
-  serial_groups: [vault]
+  serial_groups: [vault,concurrent-group-3]
   on_failure:
     put: failure-alert
     params:

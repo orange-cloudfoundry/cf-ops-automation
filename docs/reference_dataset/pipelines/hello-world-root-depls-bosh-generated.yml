@@ -31,7 +31,14 @@ resource_types:
   source:
     repository: cfcommunity/bosh2-errand-resource
     tag: v0.1.2
+- name: meta
+  type: docker-image
+  source:
+    repository: swce/metadata-resource
+    tag: release-v0.0.3
 resources:
+- name: concourse-meta
+  type: meta
 - name: at-noon
   type: cron-resource
   source:
@@ -42,6 +49,9 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 - name: secrets-hello-world-root-depls-limited
   type: git
   source:
@@ -60,7 +70,7 @@ resources:
   source:
     uri: ((paas-templates-uri))
     paths: ["shared-config.yml", "hello-world-root-depls/template", "hello-world-root-depls/terraform-config"]
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
   type: git
@@ -85,7 +95,7 @@ resources:
   source:
     uri: ((paas-templates-uri))
     paths: ["hello-world-root-depls/bosh-deployment-sample"]
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: bosh-deployment-sample-deployment
   type: bosh-deployment-v2
@@ -95,21 +105,6 @@ resources:
     client_secret: "((bosh-password))"
     deployment: bosh-deployment-sample
     ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDFDCCAfygAwIBAgIRAJhACeUupTq0v90nAyb+vUowDQYJKoZIhvcNAQELBQAw\nMzEMMAoGA1UEBhMDVVNBMRYwFAYDVQQKEw1DbG91ZCBGb3VuZHJ5MQswCQYDVQQD\nEwJjYTAeFw0xODA3MTEwOTE4MjZaFw0xOTA3MTEwOTE4MjZaMDMxDDAKBgNVBAYT\nA1VTQTEWMBQGA1UEChMNQ2xvdWQgRm91bmRyeTELMAkGA1UEAxMCY2EwggEiMA0G\nCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDMlqBlpRz8h1nnqGm1rdOTRZO+yddM\nl4YwvDf9hpPVm0gqFrmIlcGFVTZ6+PbU9x8kklx+BwmB9dA2D1Vo1VMz7VQPsGu4\n1pEmSLpaxz86LshW8JjCDauMblFIm+baB0o5MmukJzZzqdQv4kn2s5+57fVUQz33\nk20T1mahuA0INzbHwO4vX1WGteInTH3GsDLOyVGSMTrpuUAUZgfU8IR019BzgaiA\nYIBRU//VRv68PesQFtOXxOcM9V0BiTrs3yGRWGevvcfqP/6EI6qA+b+AJi/IhxbR\nO+fxo58lUIRw0OrmmoEDuuHO6kCCe590YLU5wAttvp8baahLFrsEBTIJAgMBAAGj\nIzAhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEB\nCwUAA4IBAQDGvUob4v0Mm2MIpE0IAbEa0oDCGiF99PhYHZwrvpdQjr/iVHd/7i+y\nI7q4YFswRGj5oGj5zRjW9bFVKB6DJsyBD0NpcLTy7VEewkT8mwd2GmZkmRWFQYcA\n2RUhIFGpYSI+g7ed6ZuPX2P4+92mxURHElTAuRTrrw5vqUVsebZO49tuvyXqmghP\nAyKvSQanegmNviGdkHTWKPyD3nP2Ms0lBgGZxFfhlN4sPTWHxfEpud4xLX/AhW6X\n8QS3GQ4QwevfKnUekbciU7CASVCymAKupFAxjksyz8xmHvalXe83HK+G7AmsYkEl\nYowS7B+zXRNZHGoagYkRSBeaSKlIpZXF\n-----END CERTIFICATE-----\n"
-- name: concourse-target
-  type: concourse-pipeline
-  source:
-    target: ((concourse-hello-world-root-depls-target))
-    insecure: ((concourse-hello-world-root-depls-insecure))
-    teams:
-    - name: main
-      username: ((concourse-hello-world-root-depls-username))
-      password: "((concourse-hello-world-root-depls-password))"
-- name: paas-templates-wip
-  type: git
-  source:
-    uri: ((paas-templates-uri))
-    branch: ((paas-templates-branch))
-    skip_ssl_verification: true
 - name: secrets-hello-world-root-depls-trigger
   type: git
   source:
@@ -122,7 +117,7 @@ resources:
   source:
     uri: ((paas-templates-uri))
     paths: ["hello-world-root-depls/hello-world-root-depls-versions.yml"]
-    branch: ((paas-templates-branch))
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: paas-templates-full
   type: git
@@ -182,15 +177,12 @@ jobs:
     - aggregate:
       - get: cf-ops-automation
         params: { submodules: none}
-        passed: [update-pipeline-hello-world-root-depls-generated]
         trigger: true
       - get: paas-templates-full
         params: { submodules: none}
-        passed: [update-pipeline-hello-world-root-depls-generated]
       - get: secrets-hello-world-root-depls-trigger
         version: every
         trigger: true
-        passed: [update-pipeline-hello-world-root-depls-generated]
         params: { submodules: none}
     - task: prepare_deployment_to_be_deleted
       input_mapping: {scripts-resource: cf-ops-automation}
@@ -237,13 +229,10 @@ jobs:
     - aggregate:
       - get: secrets-hello-world-root-depls-limited
         params: { submodules: none}
-#        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
       - get: paas-templates-hello-world-root-depls
         params: { submodules: none}
-#        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
       - get: cf-ops-automation
         params: { submodules: none}
-        passed: [update-pipeline-hello-world-root-depls-generated]
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-hello-world-root-depls, secrets: secrets-hello-world-root-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
@@ -265,20 +254,18 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
+    - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}
     - get: secrets-hello-world-root-depls-limited
       params: { submodules: none}
       trigger: true
-#      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
     - get: paas-templates-hello-world-root-depls
       params: { submodules: none}
       trigger: true
-#      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-      passed: [update-pipeline-hello-world-root-depls-generated]
     - task: generate-hello-world-root-depls-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
       output_mapping: {generated-files: config-manifest}
@@ -367,6 +354,7 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
+    - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}
     - get: ((stemcell-main-name))
@@ -375,7 +363,6 @@ jobs:
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none}
-      passed: [update-pipeline-hello-world-root-depls-generated]
       trigger: true
     - get: bosh-openstack-cpi-release
       version: { version: "((bosh-openstack-cpi-release-version))" }
@@ -396,11 +383,9 @@ jobs:
     - get: secrets-bosh-deployment-sample
       params: { submodules: none}
       trigger: true
-#     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
     - get: paas-templates-bosh-deployment-sample
       trigger: true
       params: { submodules: none}
-#     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
   - task: generate-bosh-deployment-sample-manifest
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-bosh-deployment-sample, additional-resource: paas-templates-bosh-deployment-sample}
     output_mapping: {generated-files: release-manifest}
@@ -569,7 +554,7 @@ jobs:
         - |
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-bosh-deployment-sample" >> result-dir/flight-plan
       params:
-        BUILD_PIPELINE_NAME: hello-world-root-depls-generated
+        BUILD_PIPELINE_NAME: hello-world-root-depls-bosh-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: trigger-hello-world-root-depls-plan}
     output_mapping: {flight-report: concourse-hello-world-root-depls-trigger-report}
@@ -591,13 +576,10 @@ jobs:
   - aggregate:
      - get: secrets-hello-world-root-depls-limited
        params: { submodules: none}
-       passed: [update-pipeline-hello-world-root-depls-generated]
      - get: paas-templates-hello-world-root-depls
        params: { submodules: none}
-       passed: [update-pipeline-hello-world-root-depls-generated]
      - get: cf-ops-automation
        params: { submodules: none}
-       passed: [update-pipeline-hello-world-root-depls-generated]
 - name: recreate-bosh-deployment-sample
   serial: true
   on_failure:
@@ -690,7 +672,7 @@ jobs:
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
       params:
-        BUILD_PIPELINE_NAME: hello-world-root-depls-generated
+        BUILD_PIPELINE_NAME: hello-world-root-depls-bosh-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: init-hello-world-root-depls-plan}
     output_mapping: {flight-report: concourse-hello-world-root-depls-init-report}
@@ -699,101 +681,6 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
-- name: update-pipeline-hello-world-root-depls-generated
-  serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-  - aggregate:
-    - get: secrets-full-writer
-      params: { submodules: none}
-    - get: paas-templates-hello-world-root-depls
-      params: { submodules: none}
-      attempts: 2
-    - get: paas-templates-wip
-      params: { submodules: none}
-      attempts: 2
-      trigger: true
-    - get: secrets-hello-world-root-depls-limited
-      params: { submodules: none}
-      attempts: 2
-    - get: cf-ops-automation
-      params: { submodules: none}
-      attempts: 2
-      trigger: true
-    - get: paas-templates-full
-      params: { submodules: none}
-      attempts: 2
-    - get: secrets-hello-world-root-depls-trigger
-      version: every
-      params: { submodules: none}
-      attempts: 2
-      trigger: true
-  - task: generate-hello-world-root-depls-pipeline
-    input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-wip,secrets: secrets-hello-world-root-depls-trigger}
-    output_mapping: {result-dir: concourse-hello-world-root-depls-pipeline}
-    file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
-    params:
-      ROOT_DEPLOYMENT: hello-world-root-depls
-      IAAS_TYPE: ((iaas-type))
-  - put: concourse-target
-    params:
-      pipelines:
-      - name: hello-world-root-depls-generated
-        team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-generated.yml
-        vars_files:
-        # trick to manage <depls>-versions.yml (not included in secrets)
-        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
-        # trick to manage <depls>-versions.yml (not included in secrets)
-        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
-      - name: hello-world-root-depls-init-generated
-        team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-init-generated.yml
-        vars_files:
-        # trick to manage <depls>-versions.yml (not included in secrets)
-        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
-        # trick to manage <depls>-versions.yml (not included in secrets)
-        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
-      - name: hello-world-root-depls-cf-apps-generated
-        team: main
-        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
-        vars_files:
-        # trick to manage <depls>-versions.yml (not included in secrets)
-        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
-        # trick to manage <depls>-versions.yml (not included in secrets)
-        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
-  - task: update-concourse-depls-pipeline
-    input_mapping: {reference-resource: secrets-full-writer, generated-resource: concourse-hello-world-root-depls-pipeline}
-    output_mapping: {updated-git-resource: updated-secrets}
-    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-    params:
-      OLD_FILE: concourse/pipelines/hello-world-root-depls-generated.yml
-      NEW_FILE: "concourse/pipelines/hello-world-root-depls-generated.yml"
-      COMMIT_MESSAGE: "hello-world-root-depls generated pipeline auto update - [skip ci]"
-  - task: update-concourse-cf-apps-pipeline
-    input_mapping: {reference-resource: updated-secrets, generated-resource: concourse-hello-world-root-depls-pipeline}
-    output_mapping: {updated-git-resource: updated-secrets}
-    file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-    params:
-      OLD_FILE: concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
-      NEW_FILE: "concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml"
-      COMMIT_MESSAGE: "hello-world-root-depls cf-apps generated pipeline auto update - [skip ci]"
-  - put: secrets-full-writer
-    get_params: {submodules: none}
-    params:
-      repository: updated-secrets
-      rebase: true
-  - put: paas-templates-full
-    get_params: {submodules: none}
-    params:
-      repository: paas-templates-wip
-      force: true
 - name: check-terraform-consistency
   serial: true
   serial_groups: [terraform]
@@ -808,13 +695,11 @@ jobs:
   - aggregate:
     - get: cf-ops-automation
       params: { submodules: none}
-      passed: [update-pipeline-hello-world-root-depls-generated]
       trigger: true
     - get: paas-templates-hello-world-root-depls
       params: { submodules: none }
       trigger: true
     - get: secrets-hello-world-root-depls-limited
-      passed: [update-pipeline-hello-world-root-depls-generated]
       params: { submodules: none }
       trigger: true
   - task: generate-terraform-tfvars
@@ -849,6 +734,7 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
+    - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}
     - get: cf-ops-automation
@@ -919,7 +805,6 @@ groups:
     - recreate-all
     - recreate-bosh-deployment-sample
     - retrigger-all-jobs
-    - update-pipeline-hello-world-root-depls-generated
 - name: Deploy-b*
   jobs:
     - deploy-bosh-deployment-sample
@@ -941,4 +826,3 @@ groups:
     - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
     - recreate-all
     - retrigger-all-jobs
-    - update-pipeline-hello-world-root-depls-generated

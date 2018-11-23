@@ -1,3 +1,4 @@
+
 ---
 resource_types:
   - name: concourse-pipeline
@@ -45,10 +46,12 @@ resources:
     paths:
       - "hello-world-root-depls/pipeline-sample/concourse-pipeline-config"
       - "hello-world-root-depls/hello-world-root-depls-versions.yml"
+    # We trigger before pipeline-current-<paas-template> to update generated pipelines at first
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 jobs:
 - name: deploy-concourse-pipeline-sample-pipeline
+  serial_groups: [concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
