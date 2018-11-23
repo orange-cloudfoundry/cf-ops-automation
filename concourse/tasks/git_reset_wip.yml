@@ -64,8 +64,9 @@ run:
     git diff --name-only origin/${GIT_CHECKOUT_BRANCH} > .git/changed_files
     echo "Changed Files:"
     cat .git/changed_files
-    # test
+    echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .git/.last-reset
     if [ -s .git/changed_files ]; then
+      # add timestamp to force triggering
       touch .git/all_changed_dirs
       for aFile in $(cat .git/changed_files);do
         dirname ${aFile} >> .git/all_changed_dirs
@@ -75,7 +76,6 @@ run:
       cat .git/changed_dirs
       echo ${DISPLAY_SEPARATOR}
 
-      echo "$(date +'%Y-%m-%d-%H-%M-%S')" | tee .git/.last-reset
       for aDir in $(cat .git/changed_dirs); do
         if [ -d ${aDir} ]; then
           cp .git/.last-reset $aDir
@@ -83,7 +83,9 @@ run:
       done
     else
       echo "WARNING: no change detected"
+      cp .git/.last-reset .
     fi
+    echo "Adding changes to git"
     git add .
     git commit --file .git/reset_branches
 params:
