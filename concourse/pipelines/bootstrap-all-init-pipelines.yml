@@ -116,7 +116,7 @@ jobs:
           for aFile in $(ls *init-generated.yml)
           do
           PIPELINE=$(basename ${aFile} .yml)
-          DEPLS=${PIPELINE%%-update-generated}
+          DEPLS=${PIPELINE%%-init-generated}
           echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
           echo "Flight plan:"
@@ -169,7 +169,10 @@ jobs:
         - |
           mkdir -p /usr/local/bin
           FLY=/usr/local/bin/fly
-
+          if [ ! -d secrets-full/coa/config/ ];then
+            echo "Missing coa/config directory. Please adjust your configuration"
+            exit 1
+          fi
           echo "Fetching fly...";
           curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
           chmod +x $FLY;
@@ -258,7 +261,7 @@ jobs:
           echo "Launching concourse-bootstrap.sh"
           ./concourse-bootstrap.sh
       params:
-        CREDENTIALS_FILTER: credentials-*.yml|grep -v pipeline
+        CREDENTIALS_FILTER: credentials-*.yml|grep -ve '\Wpipeline\W'
         ATC_EXTERNAL_URL_KEY: concourse-micro-depls-target
         FLY_USERNAME_KEY: concourse-micro-depls-username
         FLY_PASSWORD_KEY: concourse-micro-depls-password
