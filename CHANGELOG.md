@@ -1,6 +1,17 @@
 # Change Log
 
-## [v3.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.2.0) (2018-11-23)
+## [v3.2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.2.2) (2018-11-26)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.2.0...v3.2.2)
+
+**Fixed bugs:**
+
+- Dual mode jobs are broken on bootstrap-all-init-pipeline  [\#209](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/209)
+
+**Closed issues:**
+
+- Root-deployment concurrent execution limit overriding is broken for bosh-pipeline [\#210](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/210)
+
+## [v3.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.2.0) (2018-11-22)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.1.2...v3.2.0)
 
 **Closed issues:**
