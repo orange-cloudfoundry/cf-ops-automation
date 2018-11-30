@@ -1,7 +1,6 @@
-# encoding: utf-8
-# require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
+require_relative '../task_spec_helper'
 
 describe 'cf push task' do
 
@@ -15,23 +14,23 @@ describe 'cf push task' do
     before(:context) do
       generated_files = Dir.mktmpdir
 
-      # @output = execute('-c concourse/tasks/cf_push.yml ' \
-      #   '-i scripts-resource=. ' \
-      #   '-i templates-resource=spec/tasks/cf_push/template-resource ' \
-      #   '-i credentials-resource=spec/tasks/cf_push/credentials-resource ' \
-      #   '-i additional-resource=spec/tasks/cf_push/additional-resource ' \
-      #   "-o generated-files=#{generated_files} ",
-      #   'CUSTOM_SCRIPT_DIR' =>'',
-      #   'SECRETS_DIR' => '' )
+      @output = execute('-c concourse/tasks/cf_push.yml ' \
+        '-i scripts-resource=. ' \
+        '-i templates-resource=spec/tasks/cf_push/template-resource ' \
+        '-i credentials-resource=spec/tasks/cf_push/credentials-resource ' \
+        '-i additional-resource=spec/tasks/cf_push/additional-resource ' \
+        "-o generated-files=#{generated_files} ",
+        'CUSTOM_SCRIPT_DIR' =>'',
+        'SECRETS_DIR' => '' )
     end
 
     after(:context) do
       FileUtils.rm_rf generated_files
     end
 
-    it 'displays an ignore message'
-      # expect(@output).to include('ignoring pre CF push. No /pre-cf-push.sh detected')
-
+    it 'displays an ignore message' do
+      expect(@output).to include('ignoring pre CF push. No /pre-cf-push.sh detected')
+    end
   end
 
   context 'when a custom pre-push script script is detected' do
