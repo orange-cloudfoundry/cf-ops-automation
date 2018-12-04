@@ -27,7 +27,7 @@ describe 'generate-depls for sync-help pipeline' do
     end
 
     context 'when valid' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i ./concourse/pipelines/template/sync-helper-pipeline.yml.erb" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --no-dump -i sync-helper" }
 
       stdout_str = stderr_str = ''
       before do

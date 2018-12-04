@@ -13,7 +13,11 @@ describe 'all tasks' do
       tasks.each do |task_filename|
         puts "processing file #{task_filename}"
         task = YAML.load_file (task_filename)
-        docker_image = task['image_resource']['source']['repository'].to_s
+        docker_image = task['image_resource']&.fetch('source',[])&.fetch('repository',[]).to_s
+        if docker_image.empty?
+          puts "No image detected, ignoring #{task_filename}"
+          next
+        end
         docker_image = "library/#{docker_image}" unless docker_image.include?('/')
         docker_image_tag = task['image_resource']['source']['tag'] || 'latest'
         name = "#{docker_image}:#{docker_image_tag}"

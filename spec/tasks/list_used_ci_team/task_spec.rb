@@ -7,7 +7,7 @@ describe 'list_used_ci_team task' do
   let(:teams_file) { File.join(@ci_deployment_overview, 'teams.yml') }
 
   def setup_secrets
-    ops_depls_ci_deployment_yaml= <<~YAML
+    ops_depls_ci_deployment_yaml = <<~YAML
       ---
       ci-deployment:
         ops-depls:
@@ -44,13 +44,7 @@ describe 'list_used_ci_team task' do
               - micro-depls/concourse-micro/pipelines/credentials-iaas-specific.yml
             ops-depls-s3-br-upload-generated:
               team: my-custom-team-1
-              vars_files:
-              - ops-depls/ops-depls-versions.yml
             ops-depls-s3-stemcell-upload-generated:
-              team: my-custom-team-2
-              vars_files:
-              - micro-depls/concourse-micro/pipelines/credentials-s3-stemcell.yml
-              - ops-depls/ops-depls-versions.yml
     YAML
     master_depls_ci_deployment_yaml = <<~YAML
       ---
@@ -71,6 +65,8 @@ describe 'list_used_ci_team task' do
               vars_files:
               - micro-depls/concourse-micro/pipelines/credentials-git-config.yml
     YAML
+
+
     @temp_dir = Dir.mktmpdir
     @ops_depls_file = File.join(@temp_dir, 'ops-depls')
     @ops_depls_dir = Dir.mkdir(@ops_depls_file)

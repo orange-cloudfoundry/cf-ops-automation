@@ -905,11 +905,6 @@ jobs:
 <% end %>
 
 <% if all_ci_deployments.any? %>
-  <% current_depls_generated = all_ci_deployments[depls]["pipelines"]["#{depls}-generated"] || all_ci_deployments[depls]["pipelines"].to_a[0][1] %>
-  <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-generated]" unless current_depls_generated %>
-  <% current_cf_apps_generated= all_ci_deployments[depls]["pipelines"]["#{depls}-cf-apps-generated"] || all_ci_deployments[depls]["pipelines"].to_a[1][1] %>
-  <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][pipelines][#{depls}-cf-apps-generated]" unless current_cf_apps_generated %>
-
   <% if all_ci_deployments[depls][PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY] %>
     <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][#{PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY}][state_file_path] or delete terraform-config key." if terraform_config_path.nil? %>
 - name: check-terraform-consistency

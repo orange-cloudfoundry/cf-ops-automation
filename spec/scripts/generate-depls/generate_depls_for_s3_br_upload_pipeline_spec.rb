@@ -22,7 +22,7 @@ describe 'generate-depls for s3 boshrelease upload pipeline' do
     end
 
     context 'when valid' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i ./concourse/pipelines/template/s3-br-upload-pipeline.yml.erb" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i s3-br-upload" }
 
       stdout_str = stderr_str = ''
       before do

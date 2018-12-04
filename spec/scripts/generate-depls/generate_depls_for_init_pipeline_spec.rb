@@ -19,7 +19,7 @@ describe 'generate-depls for init pipeline' do
 
     context 'when valid' do
       let(:options) do
-        "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i ./concourse/pipelines/template/init-pipeline.yml.erb"
+        "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i init"
       end
 
       stdout_str = stderr_str = ''

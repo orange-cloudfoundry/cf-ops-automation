@@ -97,10 +97,11 @@ jobs:
       pipelines:
       <% all_ci_deployments[depls]["pipelines"].each do |pipeline_name,pipeline_details| %>
       - name: <%= pipeline_name %>
-        team: <%= pipeline_details['team'] || 'main' %>
+        team: <%= (pipeline_details && pipeline_details['team']) || 'main' %>
         config_file: concourse-<%= depls %>-pipeline/concourse/pipelines/<%= pipeline_name %>.yml
         vars_files:
-        <% pipeline_details["vars_files"].each do |vars_file| %>
+        <% next unless pipeline_details %>
+        <% pipeline_details["vars_files"]&.each do |vars_file| %>
         # trick to manage <depls>-versions.yml (not included in secrets)
         <%= "- secrets-full/#{vars_file}" unless vars_file.end_with?("-versions.yml") %>
         <%= "- paas-templates-full/#{vars_file}" if vars_file.end_with?("-versions.yml") %>

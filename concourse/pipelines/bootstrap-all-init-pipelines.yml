@@ -82,12 +82,13 @@ jobs:
       params: { submodules: none}
       passed: [ create-teams ]
       trigger: true
-  - task: generate-all-pipelines
+  - task: generate-all-init-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
     file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
     params:
       IAAS_TYPE: ((iaas-type))
+      PIPELINE_TYPES: init
   - task: set-all-init-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
@@ -95,6 +96,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
       FLY_USERNAME: ((concourse-micro-depls-username))
       FLY_PASSWORD: "((concourse-micro-depls-password))"
+      COA_CONFIG_MODE: --no-use-coa-config
   - task: generate-flight-plan
     output_mapping: {result-dir: initialized-flight-plan}
     config:
@@ -113,11 +115,11 @@ jobs:
         - |
           DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
-          for aFile in $(ls *init-generated.yml)
-          do
-          PIPELINE=$(basename ${aFile} .yml)
-          DEPLS=${PIPELINE%%-init-generated}
-          echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
+          for aFile in $(ls *init-generated.yml);do
+            echo "Processing ${aFile}"
+            PIPELINE=$(basename ${aFile} .yml)
+            DEPLS=${PIPELINE%%-init-generated}
+            echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
           echo "Flight plan:"
           cat ${DEST_DIR}/flight-plan
@@ -352,55 +354,21 @@ jobs:
       params: { submodules: none}
       passed: [ create-teams ]
       trigger: true
-  - task: generate-all-pipelines
+  - task: generate-all-update-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
     file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
     params:
       IAAS_TYPE: ((iaas-type))
+      PIPELINE_TYPES: update
   - task: set-all-update-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source: {repository: ruby, tag: 2.3.1}
-      inputs:
-      - name: scripts-resource
-      - name: pipelines-resource
-      - name: secrets-resource
-      - name: templates-resource
-      run:
-        path: sh
-        args:
-        - -ec
-        - |
-          mkdir -p /usr/local/bin
-          FLY=/usr/local/bin/fly
-
-          echo "Fetching fly...";
-          curl -SsL -u "$FLY_USERNAME:$FLY_PASSWORD" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
-          chmod +x $FLY;
-
-          fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
-          export TARGET_NAME=main
-          export SECRETS=$(pwd)/secrets-resource
-          export PAAS_TEMPLATES=$(pwd)/templates-resource
-          export PIPELINES_DIR=$(pwd)/pipelines-resource/pipelines
-          cd scripts-resource
-          DYNAMIC_DEPLS_FILE_LIST=$(cd $SECRETS && find . -maxdepth 1 -type d -name "*-depls")
-          for i in $DYNAMIC_DEPLS_FILE_LIST;
-          do
-          export DYNAMIC_DEPLS_LIST="$DYNAMIC_DEPLS_LIST $(basename $i)"
-          done
-          export DEPLS_LIST="${DEPLS_LIST:-${DYNAMIC_DEPLS_LIST}}"
-          for depls in ${DEPLS_LIST};do
-          ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t update
-          done
+    file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
     params:
       ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
       FLY_USERNAME: ((concourse-micro-depls-username))
       FLY_PASSWORD: "((concourse-micro-depls-password))"
+      PIPELINE_TYPE: update
   - task: generate-flight-plan
     output_mapping: {result-dir: initialized-flight-plan}
     config:
@@ -419,12 +387,11 @@ jobs:
         - |
           DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
-          for aFile in $(ls *update-generated.yml)
-          do
-          echo "Processing ${aFile}"
-          PIPELINE=$(basename ${aFile} .yml)
-          DEPLS=${PIPELINE%%-init-generated}
-          echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
+          for aFile in $(ls *update-generated.yml);do
+            echo "Processing ${aFile}"
+            PIPELINE=$(basename ${aFile} .yml)
+            DEPLS=${PIPELINE%%-update-generated}
+            echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
           done
           cat ${DEST_DIR}/flight-plan
       params:

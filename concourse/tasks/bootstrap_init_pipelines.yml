@@ -27,7 +27,7 @@ inputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
     mkdir -p /usr/local/bin
     FLY=/usr/local/bin/fly
@@ -49,7 +49,7 @@ run:
     done
     export DEPLS_LIST="${DEPLS_LIST:-${DYNAMIC_DEPLS_LIST}}"
     for depls in ${DEPLS_LIST};do
-    ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t ${PIPELINE_TYPE}
+    ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t ${PIPELINE_TYPE} ${COA_CONFIG_MODE}
     done
 
 params:
@@ -58,6 +58,7 @@ params:
   FLY_PASSWORD:
   DEPLS_LIST:
   PIPELINE_TYPE: init
+  COA_CONFIG_MODE:
 
 
 

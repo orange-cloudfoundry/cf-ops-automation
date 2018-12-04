@@ -41,8 +41,13 @@ describe 'generate-depls' do
           include('-p, --secrets-path PATH          Base secrets dir (i.e. enable-deployment.yml, enable-cf-app.yml, etc.)').and \
           include('-o, --output-path PATH           Output dir for generated pipelines.').and \
           include('-a, --automation-path PATH       Base location for cf-ops-automation').and \
-          include('-i, --input PIPELINE1,PIPELINE2, List of pipelines to process').and \
+          include('-i, --input PIPELINE1,PIPELINE2  List of pipelines to process').and \
           include('--[no-]dump                  Dump genereted file on standart output')
+          include('-e PIPELINE1,PIPELINE2,          List of pipelines to exclude).and').and \
+          include('--exclude').and \
+          include('--[no-]dump            Dump genereted file on standart output').and \
+          include('--iaas IAAS_TYPE             Target a specific iaas for pipeline generation')
+
         expect(stdout_str).to be_empty
       end
     end
@@ -59,7 +64,7 @@ describe 'generate-depls' do
 
     context 'when only a pipeline is selected' do
       let(:depls_name) { 'dummy-depls' }
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i ./concourse/pipelines/template/depls-pipeline.yml.erb --no-dump" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i depls --no-dump" }
 
       stdout_str, stderr_str, = ''
       before do

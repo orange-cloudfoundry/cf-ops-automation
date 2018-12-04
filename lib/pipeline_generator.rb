@@ -33,7 +33,9 @@ class PipelineGenerator
     ops_automation: '.',
     dump_output: true,
     paas_templates_path: '../paas-templates',
-    iaas_type: 'openstack'
+    iaas_type: 'openstack',
+    exclude_pipelines: [],
+    include_pipelines: []
   }.freeze
 
   def initialize(options)
@@ -43,6 +45,9 @@ class PipelineGenerator
   end
 
   def execute
+    pipeline_templates_filter = PipelineTemplatesFiltering.new(@options)
+    @options.input_pipelines = pipeline_templates_filter.filter
+
     load_erb_context
     process_templates
   end
@@ -120,60 +125,116 @@ class PipelineGenerator
   end
 
   class Parser
-    def self.parse(args)
-      options = PipelineGenerator::DEFAULT_OPTIONS.dup
+    class << self
+      def parse(args)
+        options = PipelineGenerator::DEFAULT_OPTIONS.dup
 
-      opt_parser = option_parser(options)
-      opt_parser.parse!(args)
-      opt_parser.abort(opt_parser.to_s) if options[:depls].nil? || options[:depls].empty?
+        opt_parser = option_parser(options)
+        opt_parser.parse!(args)
+        opt_parser.abort(opt_parser.to_s) if options[:depls].to_s.empty?
 
-      if options[:input_pipelines].nil?
-        options[:input_pipelines] = Dir["#{options[:ops_automation]}/concourse/pipelines/template/*.yml.erb"]
+        options
       end
 
-      options
+      def option_parser(options)
+        OptionParser.new do |opts|
+          opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
+
+          opts.on('-d', '--depls ROOT_DEPLOYMENT', 'Specify a root deployment name to generate template for. MANDATORY') do |deployment_string|
+            options[:depls] = deployment_string
+          end
+
+          opts.on('-t', '--templates-path PATH', 'Base location for paas-templates (implies -s)') do |tp_string|
+            options[:paas_templates_path] = tp_string
+            options[:git_submodule_path] = tp_string
+          end
+
+          opts.on('-s', '--git-submodule-path PATH', '.gitsubmodule path') do |gsp_string|
+            options[:git_submodule_path] = gsp_string
+          end
+
+          opts.on('-p', '--secrets-path PATH', 'Base secrets dir (i.e. enable-deployment.yml, enable-cf-app.yml, etc.)') do |sp_string|
+            options[:secrets_path] = sp_string
+          end
+
+          opts.on('-o', '--output-path PATH', 'Output dir for generated pipelines.') do |op_string|
+            options[:output_path] = op_string
+          end
+
+          opts.on('-a', '--automation-path PATH', 'Base location for cf-ops-automation') do |ap_string|
+            options[:ops_automation] = ap_string
+          end
+
+          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process') do |ip_array|
+            options[:input_pipelines] = ip_array
+          end
+
+          opts.on('-e', '--exclude PIPELINE1,PIPELINE2', Array, 'List of pipelines to exclude') do |ep_array|
+            options[:exclude_pipelines] = ep_array
+          end
+
+          opts.on('--[no-]dump', 'Dump genereted file on standart output') do |dump|
+            options[:dump_output] = dump
+          end
+
+          opts.on('--iaas IAAS_TYPE', 'Target a specific iaas for pipeline generation') do |iaas_type|
+            options[:iaas_type] = iaas_type
+          end
+        end
+      end
+    end
+  end
+
+  class PipelineTemplatesFiltering
+    attr_reader :options
+
+    def initialize(options, location = "/concourse/pipelines/template")
+      @required_pipeline_templates = options.input_pipelines || []
+      @excluded_pipeline_templates = options.exclude_pipelines || []
+      @templates_base_dir = File.join(options.ops_automation || '.', location)
     end
 
-    def self.option_parser(options)
-      OptionParser.new do |opts|
-        opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
+    def filter
+      pipelines_to_process = filter_pipeline_templates
+      raise "No pipeline templates detected. Please check your CLI options." if pipelines_to_process.empty?
+      pipelines_to_process
+    end
 
-        opts.on('-d', '--depls ROOT_DEPLOYMENT', 'Specify a root deployment name to generate template for. MANDATORY') do |deployment_string|
-          options[:depls] = deployment_string
-        end
+    private
 
-        opts.on('-t', '--templates-path PATH', 'Base location for paas-templates (implies -s)') do |tp_string|
-          options[:paas_templates_path] = tp_string
-          options[:git_submodule_path] = tp_string
-        end
+    def filter_pipeline_templates
+      selected_templates = if @required_pipeline_templates.empty?
+                             select_all_pipeline_templates
+                           else
+                             select_matching_pipeline_templates(@required_pipeline_templates)
+                           end
 
-        opts.on('-s', '--git-submodule-path PATH', '.gitsubmodule path') do |gsp_string|
-          options[:git_submodule_path] = gsp_string
-        end
+      exclude_pipeline_templates(selected_templates)
+      selected_templates
+    end
 
-        opts.on('-p', '--secrets-path PATH', 'Base secrets dir (i.e. enable-deployment.yml, enable-cf-app.yml, etc.)') do |sp_string|
-          options[:secrets_path] = sp_string
-        end
+    def exclude_pipeline_templates(pipelines)
+      @excluded_pipeline_templates.each do |excluded_pipeline|
+        remove_excluded_pipeline_templates(excluded_pipeline, pipelines)
+      end
+    end
 
-        opts.on('-o', '--output-path PATH', 'Output dir for generated pipelines.') do |op_string|
-          options[:output_path] = op_string
-        end
+    def select_matching_pipeline_templates(pipelines_to_process)
+      pipelines_subset = []
+      pipelines_to_process.each do |template_name|
+        pipelines_subset.concat(Dir["#{@templates_base_dir}/#{template_name}-pipeline.yml.erb"])
+      end
+      pipelines_subset
+    end
 
-        opts.on('-a', '--automation-path PATH', 'Base location for cf-ops-automation') do |ap_string|
-          options[:ops_automation] = ap_string
-        end
+    def select_all_pipeline_templates
+      Dir["#{@templates_base_dir}/*.yml.erb"]
+    end
 
-        opts.on('-i', '--input PIPELINE1,PIPELINE2,', Array, 'List of pipelines to process') do |ip_array|
-          options[:input_pipelines] = ip_array
-        end
-
-        opts.on('--[no-]dump', 'Dump genereted file on standart output') do |dump|
-          options[:dump_output] = dump
-        end
-
-        opts.on('--iaas IAAS_TYPE', 'Target a specific iaas for pipeline generation') do |iaas_type|
-          options[:iaas_type] = iaas_type
-        end
+    def remove_excluded_pipeline_templates(excluded_pipeline, pipelines)
+      pipelines.delete_if do |pipeline_filepath|
+        name = File.basename(pipeline_filepath, ".yml.erb")
+        name.match(excluded_pipeline)
       end
     end
   end

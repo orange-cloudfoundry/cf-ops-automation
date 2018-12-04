@@ -33,11 +33,18 @@ then
     exit 1
 fi
 
+if [ -n "${EXCLUDE_PIPELINES}" ]
+then
+   echo "Excluding pipeline templates matching ${EXCLUDE_PIPELINES}"
+   PIPELINES_RESTRICTIONS="--exclude ${EXCLUDE_PIPELINES}"
+fi
+
+
 cp -r templates/. result-dir
 cp -r scripts-resource/. result-dir
 cp -rf secrets/. result-dir
 cd result-dir
-./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}" > >(tee generate-depls.log) 2> >(tee -a error.log >&2) # tee generate-depls.log
+./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}" $PIPELINES_RESTRICTIONS > >(tee generate-depls.log) 2> >(tee -a error.log >&2) # tee generate-depls.log
 if [ -s 'error.log' ]; then
     cat error.log
     exit 1
