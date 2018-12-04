@@ -17,7 +17,7 @@ describe PipelineGenerator do
     let(:depls) { "rspec_test_root_depl" }
     let(:paas_templates_path) { "paas_templates_path" }
     let(:secrets_path) { "secret/path" }
-    let(:input_pipeline) { "ppln" }
+    let(:input_pipelines) { [] }
     let(:git_submodule_path) { "git_submodule_path" }
     let(:rspec_iaas_type) { "rspec-iaas-type" }
     let(:options) do
@@ -25,7 +25,7 @@ describe PipelineGenerator do
         paas_templates_path: paas_templates_path,
         depls: depls,
         secrets_path: secrets_path,
-        input_pipelines: [input_pipeline],
+        input_pipelines: input_pipelines,
         iaas_type: rspec_iaas_type,
         git_submodule_path: git_submodule_path
       }
@@ -118,11 +118,12 @@ describe PipelineGenerator do
       expect(git_modules).to receive(:list).
         and_return(git_submodules)
       expect(TemplateProcessor).to receive(:new).
-        with(depls, options, erb_context).
+      #   with(depls, options, erb_context).
         and_return(template_processor)
 
       expect(template_processor).to receive(:process).
-        with(input_pipeline).
+        at_least(:once).
+        # with(input_pipelines).
         and_return("key" => "value")
 
       expect(pipeline_generator.execute).to be_truthy
@@ -140,6 +141,53 @@ describe PipelineGenerator do
 
       expect { pipeline_generator.display_warnings }.
         to output("#{warning1}\n#{warning2}\n").to_stdout
+    end
+  end
+end
+
+describe PipelineGenerator::PipelineTemplatesFiltering do
+  subject { described_class.new(options) }
+
+  let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: nil, exclude_pipelines: []) }
+  let(:pipeline_generator) { described_class.new(options) }
+  let(:expected_all_pipelines_templates) do
+    coa_current_path = File.absolute_path(File.join(File.dirname(__FILE__), '..', '..'))
+    Dir[File.join(coa_current_path, 'concourse', 'pipelines', 'template', '*.yml.erb')].map { |path| path.gsub(coa_current_path, '.') }
+  end
+
+  context "when no filter is active" do
+    let(:all_pipelines_templates) { subject.filter }
+
+    it 'does not filter any templates' do
+      expect(all_pipelines_templates).to match_array(expected_all_pipelines_templates)
+    end
+  end
+
+  context "when include filter is set" do
+    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: %w[bosh update dummy], exclude_pipelines: []) }
+    let(:include_templates) { subject.filter }
+    let(:expected_include_templates) { %w[./concourse/pipelines/template/bosh-pipeline.yml.erb ./concourse/pipelines/template/update-pipeline.yml.erb] }
+
+    it 'contains only filtered templates' do
+      expect(include_templates).to match_array(expected_include_templates)
+    end
+
+    it 'contains 2 elements' do
+      expect(include_templates.length).to eq(2)
+    end
+  end
+
+  context "when exclude filter is set" do
+    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: [], exclude_pipelines: %w[bosh update]) }
+    let(:include_templates) { subject.filter }
+    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh') || path.include?('update')}}
+
+    it 'contains only filtered templates' do
+      expect(include_templates).to match_array(expected_excluded_templates)
+    end
+
+    it 'contains 2 elements' do
+      expect(include_templates.length).to eq(expected_all_pipelines_templates.length - 2)
     end
   end
 end

@@ -18,7 +18,7 @@ describe 'generate-depls for news pipeline' do
     end
 
     context 'when valid' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i ./concourse/pipelines/template/news-pipeline.yml.erb" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i news" }
 
       stdout_str = stderr_str = ''
       before do

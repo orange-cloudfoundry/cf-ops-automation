@@ -27,3 +27,4 @@ run:
 params:
   ROOT_DEPLOYMENT:
   IAAS_TYPE: ((iaas-type))
+  EXCLUDE_PIPELINES:

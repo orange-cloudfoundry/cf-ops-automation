@@ -14,6 +14,7 @@ class CiDeployment
   #     target_name: concourse-ops
   #     pipelines:
   #       ops-depls-generated:
+  #         team: my-team
   #         config_file: concourse/pipelines/ops-depls-generated.yml
   #         vars_files:
   #           - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
@@ -23,7 +24,14 @@ class CiDeployment
   #         vars_files:
   #           - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
   #           - ops-depls/ops-depls-versions.yml
-  #
+  # or
+  # ci-deployment:
+  #   ops-depls:
+  #     target_name: concourse-ops
+  #     pipelines:
+  #       ops-depls-generated:
+  #         team: my-team
+  #       ops-depls-cf-apps-generated:
 
   def overview
     puts "Path CI deployment overview: #{base_path}"
@@ -37,11 +45,11 @@ class CiDeployment
   end
 
   def self.teams(overview)
-    overview.map { |_, root_depls| root_depls }
-      .map { |root_depls| root_depls['pipelines'] }
-      .inject([]) { |array, item| array + item.to_a }
-      .map { |_, pipeline_config| pipeline_config['team'] }
-      .compact
+    ci_deployment_details_per_root_depls = overview.map { |_, ci_deployment_details_for_root_depls| ci_deployment_details_for_root_depls }
+    pipelines_per_root_depls = ci_deployment_details_per_root_depls.map { |ci_deployment_details| ci_deployment_details['pipelines'] }
+    pipelines_and_pipeline_configs_2_tuple = pipelines_per_root_depls.inject([]) { |array, item| array + item.to_a }
+    defined_teams = pipelines_and_pipeline_configs_2_tuple.map { |_, pipeline_config| pipeline_config && pipeline_config['team'] }
+    defined_teams.compact
       .uniq
   end
 
@@ -70,35 +78,38 @@ class CiDeployment
     raise "#{deployment} - Invalid deployment: expected 'ci-deployment' key as yaml root" unless deployment && deployment['ci-deployment']
 
     begin
-      deployment['ci-deployment'].each do |deployment_name, deployment_details|
-        processes_ci_deployment_data(deployment_name, deployment_details, dir_basename)
+      deployment['ci-deployment'].each do |root_deployment_name, root_deployment_details|
+        processes_ci_deployment_data(root_deployment_name, root_deployment_details, dir_basename)
       end
     rescue RuntimeError => runtime_error
       raise "#{deployment_file}: #{runtime_error}"
     end
   end
 
-  def processes_ci_deployment_data(deployment_name, deployment_details, dir_basename)
-    raise 'missing keys: expecting keys target and pipelines' unless deployment_details
-    raise "Invalid deployment: expected <#{dir_basename}> - Found <#{deployment_name}>" if deployment_name != dir_basename
-    content[deployment_name] = deployment_details
+  def processes_ci_deployment_data(root_deployment_name, root_deployment_details, dir_basename)
+    raise 'missing keys: expecting keys target and pipelines' unless root_deployment_details
+    raise "Invalid deployment: expected <#{dir_basename}> - Found <#{root_deployment_name}>" if root_deployment_name != dir_basename
+    content[root_deployment_name] = root_deployment_details
 
-    raise 'No target defined: expecting a target_name' unless deployment_details['target_name']
-    raise 'No pipeline detected: expecting at least one pipeline' unless deployment_details['pipelines']
+    raise 'No target defined: expecting a target_name' unless root_deployment_details['target_name']
+    raise 'No pipeline detected: expecting at least one pipeline' unless root_deployment_details['pipelines']
 
-    processes_pipeline_data(deployment_details)
+    processes_pipeline_definitions(root_deployment_details)
   end
 
   # TODO: LP 07.05.18: Does this method do anything?
-  def processes_pipeline_data(deployment_details)
+  def processes_pipeline_definitions(deployment_details)
     deployment_details['pipelines'].each do |pipeline_name, pipeline_details|
-      raise 'missing keys: expecting keys vars_files and config_file (optional)' unless pipeline_details
-      raise 'missing key: vars_files. Expecting an array of at least one concourse var file' unless pipeline_details['vars_files']
-
-      unless pipeline_details['config_file']
+      next unless pipeline_details
+      unless pipeline_details_config_file?(pipeline_details)
         puts "Generating default value for key config_file in #{pipeline_name}"
         pipeline_details['config_file'] = "concourse/pipelines/#{pipeline_name}.yml"
       end
     end
+  end
+
+  def pipeline_details_config_file?(pipeline_details)
+    return false unless pipeline_details
+    pipeline_details.key?('config_file')
   end
 end

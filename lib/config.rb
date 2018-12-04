@@ -9,6 +9,7 @@ class Config
   DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-trusty-go_agent'.freeze
   CONFIG_DEFAULT_KEY = 'default'.freeze
   CONFIG_CONCOURSE_KEY = 'concourse'.freeze
+  CONFIG_STEMCELL_KEY = 'stemcell'.freeze
   CONFIG_PARALLEL_EXECUTION_LIMIT_KEY = 'parallel_execution_limit'.freeze
   DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT = 5
   attr_reader :loaded_config
@@ -27,9 +28,9 @@ class Config
         'stemcells' => true,
         'docker-images' => false
       },
-      'default' => {
-        'stemcell' => { 'name' => DEFAULT_STEMCELL },
-        'concourse' => { 'parallel_execution_limit' => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT }
+      CONFIG_DEFAULT_KEY => {
+        CONFIG_STEMCELL_KEY => { 'name' => DEFAULT_STEMCELL },
+        CONFIG_CONCOURSE_KEY => { CONFIG_PARALLEL_EXECUTION_LIMIT_KEY => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT }
       }
     }.deep_merge(@extended_config.default_config)
   end

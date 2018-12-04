@@ -22,7 +22,7 @@ describe 'generate-depls for cf-apps pipeline' do
     end
 
     context 'when generate-depls is executed' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i ./concourse/pipelines/template/cf-apps-pipeline.yml.erb" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i cf-apps" }
 
       stdout_str = stderr_str = ''
       before do
