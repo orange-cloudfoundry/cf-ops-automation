@@ -141,7 +141,7 @@ describe RootDeployment do
         it "ensures #{deployment_name} deployment is enabled" do
           deployment = root_deployment.extract_deployment(deployment_name, overview)
 
-          expect(deployment.enabled?).to be_truthy
+          expect(deployment).to be_enabled
         end
       }
 

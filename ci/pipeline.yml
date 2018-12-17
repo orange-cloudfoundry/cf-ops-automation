@@ -43,14 +43,14 @@ resources:
     branch: ((cf-ops-automation-git-branch))
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
-- name: ci-coa-it
-  type: git
-  source:
-    uri: ((cf-ops-automation-git-uri))
-    username: ((cf-ops-automation-git-username))
-    password: ((cf-ops-automation-git-password))
-    branch: ((cf-ops-automation-git-branch-it))
-    skip_ssl_verification: ((cf-ops-automation-git-insecure))
+#- name: ci-coa-it
+#  type: git
+#  source:
+#    uri: ((cf-ops-automation-git-uri))
+#    username: ((cf-ops-automation-git-username))
+#    password: ((cf-ops-automation-git-password))
+#    branch: ((cf-ops-automation-git-branch-it))
+#    skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
 - name: ci-master
   type: git
@@ -195,9 +195,11 @@ jobs:
     plan:
       - aggregate:
         - get: cf-ops-automation
-          resource: ci-coa-it
+          passed: [unit-tests]
+          resource: ci-develop
           trigger: true
         - get: cf-ops-automation-docker-image
+          passed: [unit-tests]
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image
@@ -245,10 +247,10 @@ jobs:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-          passed: [acceptance-tests]
+          passed: [acceptance-tests, integration-tests]
         - get: cf-ops-automation-docker-image
           trigger: true
-          passed: [acceptance-tests]
+          passed: [acceptance-tests, integration-tests]
 
       - task: generate-living-documentation
         config:
