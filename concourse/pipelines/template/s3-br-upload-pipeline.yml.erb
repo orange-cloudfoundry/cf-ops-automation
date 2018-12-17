@@ -8,9 +8,10 @@
     end
   end
 
-  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config, depls)
-  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config, depls)
-  concurent_group_counter = 0
+  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(depls).build
+  configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
+
+  enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
 %>
 
 ---
@@ -124,9 +125,7 @@ jobs:
       FLY_TEAM: <%= current_team || 'main' %>
 
 <% uniq_releases.sort.each do |release, info|  %>
-
-  <% current_serial_group = "concurrent-group-#{concurent_group_counter % parallel_execution_limit}" %>
-  <% concurent_group_counter += 1 %>
+  <% current_serial_group = configurer.serial_group_strategy.generate(release, info) %>
 - name: upload-current-<%= release %>
   serial_groups: [<%= release %><%= ",#{current_serial_group}" if enabled_parallel_execution_limit%>]
   on_failure:

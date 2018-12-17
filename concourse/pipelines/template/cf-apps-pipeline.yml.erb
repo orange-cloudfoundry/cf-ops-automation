@@ -1,9 +1,10 @@
 <%
   require './lib/pipeline_helpers'
 
-  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config, depls)
-  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config, depls)
-  concurent_group_counter = 0
+  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(depls).build
+  configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
+
+  enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
 %>
 ---
 resource_types:
@@ -110,8 +111,8 @@ jobs:
 <% end %>
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
-  <% current_serial_group = "concurrent-group-#{concurent_group_counter % parallel_execution_limit}" %>
-  <% concurent_group_counter += 1 %>
+  <% current_serial_group = configurer.serial_group_strategy.generate(app_name, cf_app_info) %>
+
 
 - name: cf-push-<%= app_name %>
 <% jobs["app-#{app_name[0]}*"] << "cf-push-#{app_name}" %>

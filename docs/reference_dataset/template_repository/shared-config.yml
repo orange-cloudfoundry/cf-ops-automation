@@ -8,8 +8,16 @@ default:
   stemcell:
     name: bosh-openstack-kvm-ubuntu-trusty-go_agent  # Default: bosh-openstack-kvm-ubuntu-trusty-go_agent
   concourse:
+    # You can limit job execution per pipeline, static jobs are not affected by this restriction. Only jobs that are
+    #  added or removed are limited. You can defined the maximum number of jobs executed in parallel.
     parallel_execution_limit: 5 # Default: -1, ie unlimited
-
+    # when parallel execution limit is active, you can choose the placement strategy used to group jobs.
+    #   - SerialGroupRoundRobinNamingStrategy: each job is dispatched to a dedicated pool using round-robin strategy. We
+    #           have a non deterministic allocation, but good repartition.
+    #   - SerialGroupMd5NamingStrategy: each job is dispatched to a dedicated pool using md5 hash and some computation.
+    #           we have a deterministic allocation, but repartition cannot be guarantied. Recommended for on-demand services
+    serial_group_naming_strategy: SerialGroupRoundRobinNamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
 #<root-deployment-name>: # override per root-deployment
 #  concourse:
 #    parallel_execution_limit: 10 # Default: -1, ie unlimited
+#    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy

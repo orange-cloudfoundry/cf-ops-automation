@@ -25,9 +25,10 @@
   offline_stemcells_enabled = config['offline-mode'] && config['offline-mode']['stemcells'] && true
   jobs = Hash.new {|h,k| h[k]=[]}
 
-  parallel_execution_limit = PipelineHelpers.parallel_execution_limit(config, depls)
-  enabled_parallel_execution_limit = PipelineHelpers.enabled_parallel_execution_limit?(config, depls)
-  concurent_group_counter = 0
+  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(depls).build
+  configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
+
+  enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
 %>
 
 ---
@@ -485,8 +486,8 @@ jobs:
               rebase: true
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
-  <% current_serial_group = "concurrent-group-#{concurent_group_counter % parallel_execution_limit}" %>
-  <% concurent_group_counter += 1 %>
+    <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
+
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   serial: true

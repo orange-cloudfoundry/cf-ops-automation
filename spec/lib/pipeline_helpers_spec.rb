@@ -47,49 +47,6 @@ describe PipelineHelpers do
     end
   end
 
-  describe '#parallel_execution_limit' do
-    let(:config) { Config.new.default_config }
-    let(:root_deployment_name) { 'my_root_deployment' }
-    let(:expected_default_value) { Config::DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT }
-    let(:parallel_execution_limit) { described_class.parallel_execution_limit(config, root_deployment_name) }
-
-    context 'when parallel execution limit is overridden per root_deployment' do
-      let(:expected_root_deployment_override_value) { 8 }
-      let(:config) do
-        override = { Config::CONFIG_DEFAULT_KEY => {
-          Config::CONFIG_CONCOURSE_KEY => { Config::CONFIG_PARALLEL_EXECUTION_LIMIT_KEY => 8 }
-        } }
-        Config.new.default_config.merge(override)
-      end
-
-      it 'generates a list of vars_files for concourse pipelines' do
-        expect(parallel_execution_limit).to eq(expected_root_deployment_override_value)
-      end
-    end
-
-    context 'when default value is used' do
-      let(:config) { Config.new.default_config }
-
-      it 'generates a list of vars_files for concourse pipelines' do
-        expect(parallel_execution_limit).to eq(expected_default_value)
-      end
-    end
-
-    context 'when parallel execution limit is disabled' do
-      let(:config) do
-        Config.new.default_config.reject { |key, value| key == Config::CONFIG_DEFAULT_KEY }
-      end
-      let(:expected_disabled_parallel_execution_limit) { PipelineHelpers::UNLIMITED_EXECUTION }
-
-      it 'generates a list of vars_files for concourse pipelines' do
-        expect(parallel_execution_limit).to eq(expected_disabled_parallel_execution_limit)
-      end
-    end
-  end
-
-  describe '#enabled_parallel_execution_limit?' do
-  end
-
   describe '#generate_vars_files' do
     let(:templates_dir) { Dir.mktmpdir }
     let(:config_dir) { Dir.mktmpdir }
