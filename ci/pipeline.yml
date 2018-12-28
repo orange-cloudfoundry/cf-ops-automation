@@ -11,7 +11,7 @@ resource_types:
       repository: jtarchie/pr
 
 resources:
-- name: failure-alert
+- name: slack-alert
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -101,7 +101,7 @@ jobs:
 
   - name: build-cached-image
     on_failure: &on_failure_alert
-      put: failure-alert
+      put: slack-alert
       params:
         channel: ((slack-channel))
         text: |
@@ -191,6 +191,8 @@ jobs:
               bundle exec cucumber
 
   - name: integration-tests
+    on_failure: *on_failure_alert
+    serial_groups: [integration]
     serial: true
     plan:
       - aggregate:
@@ -203,7 +205,7 @@ jobs:
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image
-        config:
+        config: &integration_tests_setup_pre_requisites_task_config
           platform: linux
           inputs:
           - name: cf-ops-automation
@@ -214,22 +216,25 @@ jobs:
             args:
             - -ce
             - |
+              echo "Setup pre-requisites"
               cp cf-ops-automation/ci/bootstrap_coa_env/inactive-steps-prereqs.yml  prereqs/inactive-steps-prereqs.yml
               cp cf-ops-automation/ci/bootstrap_coa_env/git-server-manifest-prereqs.yml  prereqs/git-server-manifest-prereqs.yml
               cp cf-ops-automation/ci/bootstrap_coa_env/pipeline-vars-prereqs.yml  prereqs/pipeline-vars-prereqs.yml
+              echo "  bot-github-access-token: ((cf-ops-automation-git-hub-token))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-webhook: ((slack-webhook))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-channel: ((slack-channel))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-proxy:" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-disable: ((slack-disable-it))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-proxy-https-tunnel:" >> prereqs/pipeline-vars-prereqs.yml
               printenv INTEGRATION_TEST_PREREQS > prereqs/integration-test-prereqs.yml
+        # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
 
       - task: upload-pipelines
         attempts: 1
         image: cf-ops-automation-docker-image
-        config:
+        config: &integration_tests_upload-pipelines_task_config
           platform: linux
           inputs:
           - name: cf-ops-automation
@@ -417,7 +422,7 @@ jobs:
 
   - name: PullRequests-build-cached-image
     on_failure: &PR_on_failure_alert
-      put: failure-alert
+      put: slack-alert
       params:
         channel: ((slack-channel))
         text: |
@@ -490,14 +495,61 @@ jobs:
         image: cf-ops-automation-docker-image
         timeout: 30m
         config: *acceptance_tests_config
-        on_success:
+        on_failure: &PR_coa_failure
           put: PR-develop
           params:
             path: cf-ops-automation
-            status: success
-        on_failure: *PR_failure
+            status: failure
+  - name: PullRequests-IntegrationTests
+    on_failure: *PR_on_failure_alert
+    serial_groups: [integration]
+    serial: true
+    plan:
+      - aggregate:
+        - get: cf-ops-automation-docker-image
+          passed: [PullRequests-UnitTests]
+          trigger: true
+        - get: cf-ops-automation
+          resource: PR-develop
+          trigger: true
+          version: every
+          passed: [PullRequests-UnitTests]
+      - task: setup-pre-requisites
+        attempts: 1
+        image: cf-ops-automation-docker-image
+        config: *integration_tests_setup_pre_requisites_task_config
+        on_failure: *PR_coa_failure
+        # it is not possible to include it as config param, otherwise we get an deserialization error
+        params:
+          INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
 
+      - task: upload-pipelines
+        attempts: 1
+        image: cf-ops-automation-docker-image
+        config: *integration_tests_upload-pipelines_task_config
+        on_failure: *PR_coa_failure
 
+  - name: PullRequests-Success
+    plan:
+      - aggregate:
+        - get: cf-ops-automation
+          resource: PR-develop
+          trigger: true
+          version: every
+          passed: [PullRequests-AcceptanceTests, PullRequests-IntegrationTests]
+      - put: PR-develop
+        params:
+          path: cf-ops-automation
+          status: success
+      - put: slack-alert
+        params:
+          channel: ((slack-channel))
+          text: |
+            $TEXT_FILE_CONTENT
+            Pull request successfully ran tests :<$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/>
+          text_file: cf-ops-automation/.git/url
+          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+          username: Concourse
   - name: run-tests-for-hotfix-branch
     plan:
     - aggregate:
@@ -579,3 +631,53 @@ jobs:
       params: {bump: patch, pre: rc}
     - put: version
       params: {file: version/version}
+
+groups:
+  - name: Overview
+    jobs:
+      - patch
+      - minor
+      - major
+      - build-cached-image
+      - unit-tests
+      - acceptance-tests
+      - integration-tests
+      - update-documentation
+      - merge-to-master
+      - ship-it
+      - merge-changelog-to-develop
+      - PullRequests-build-cached-image
+      - PullRequests-UnitTests
+      - PullRequests-AcceptanceTests
+      - PullRequests-IntegrationTests
+      - PullRequests-Success
+      - run-tests-for-hotfix-branch
+      - ship-hotfix
+
+  - name: Releases
+    jobs:
+      - patch
+      - minor
+      - major
+      - build-cached-image
+      - unit-tests
+      - acceptance-tests
+      - integration-tests
+      - update-documentation
+      - merge-to-master
+      - ship-it
+      - merge-changelog-to-develop
+
+  - name: Pull-Requests
+    jobs:
+      - PullRequests-build-cached-image
+      - PullRequests-UnitTests
+      - PullRequests-AcceptanceTests
+      - PullRequests-IntegrationTests
+      - PullRequests-Success
+
+  - name: Hotfixes
+    jobs:
+      - build-cached-image
+      - run-tests-for-hotfix-branch
+      - ship-hotfix
