@@ -33,12 +33,13 @@ module CoaEnvBootstrapper
     end
 
     def config
+      insecure = config_source["concourse_insecure"].nil? ? "true" : config_source["concourse_insecure"].to_s
       {
         "target"   => config_source["concourse_target"] || CONCOURSE_TARGET,
         "url"      => config_source["concourse_url"],
         "username" => config_source["concourse_username"],
         "password" => config_source["concourse_password"],
-        "insecure" => config_source["concourse_insecure"].to_s || "true",
+        "insecure" => insecure,
         "ca_cert"  => config_source["concourse_ca_cert"]
       }
     end

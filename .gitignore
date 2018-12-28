@@ -8,7 +8,6 @@
 bootstrap-generated/**/*-generated.yml
 
 /ci/private*.yml
-ci/bootstrap_coa_env/prereqs.yml
 bin/
 .bundle/
 out/
@@ -28,5 +27,7 @@ docs/reference_dataset/config_repository/shared/concourse-credentials.yml
 docs/reference_dataset/config_repository/shared/pipeline-credentials.yml
 
 
+ci/bootstrap_coa_env/prereqs.yml
 ci/bootstrap_coa_env/bosh-prereqs.yml
 ci/bootstrap_coa_env/concourse-prereqs.yml
+ci/bootstrap_coa_env/bucc/pipeline-vars-prereqs.yml
