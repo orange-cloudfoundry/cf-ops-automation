@@ -104,3 +104,33 @@ jobs:
       params:
         repository: paas-templates-features-reseted
         force: true
+
+- name: hard-reset-features-merged
+  serial_groups: [git]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+        - get: paas-templates-reference
+          params: { submodules: none }
+        - get: cf-ops-automation
+          params: { submodules: none }
+    - task: reset-wip
+      file: cf-ops-automation/concourse/tasks/git_hard_reset_wip/task.yml
+      input_mapping: {reference-resource: paas-templates-reference}
+      output_mapping: {updated-git-resource: paas-templates-features-hard-reseted}
+      params:
+        GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+        SKIP_SSL_VERIFICATION: true
+        GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
+
+    - put: features-or-wip-merged
+      get_params: {submodules: none}
+      params:
+        repository: paas-templates-features-hard-reseted
+        force: true
