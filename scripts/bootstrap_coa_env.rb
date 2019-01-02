@@ -20,8 +20,8 @@ prereqs_paths =
   else
     [
       "ci/bootstrap_coa_env/*-prereqs.yml",
-      "ci/bootstrap_coa_env/bucc/*-prereqs.yml",
-      "ci/bootstrap_coa_env/virtualbox/*-prereqs.yml" # NOTE: maybe make this an arg? make iaas an arg?
+      "ci/bootstrap_coa_env/virtualbox/*-prereqs.yml", # NOTE: maybe make this an arg? make iaas an arg?
+      "ci/bootstrap_coa_env/bucc/*-prereqs.yml"
     ]
   end
 
