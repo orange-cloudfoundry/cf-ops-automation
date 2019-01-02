@@ -204,9 +204,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
               type: git
               source:
                 uri: ((paas-templates-uri))
-                paths:
-                  - "#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}"
-                  - "#{root_deployment_name}/#{root_deployment_name}-versions.yml"
+                paths: ['#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}', '#{root_deployment_name}/#{root_deployment_name}-versions.yml']
                 branch: ((paas-templates-branch))
                 skip_ssl_verification: true
           YAML
@@ -221,9 +219,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
               type: git
               source:
                 uri: ((secrets-uri))
-                paths:
-                  - "#{root_deployment_name}/#{name}"
-                  - 'shared'
+                paths: ["#{root_deployment_name}/#{name}", 'shared']
                 branch: ((secrets-branch))
                 skip_ssl_verification: true
           YAML

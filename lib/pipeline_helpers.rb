@@ -28,6 +28,14 @@ module PipelineHelpers
       vars_files
     end
 
+    def git_resource_selected_paths(opts = {})
+      paths = opts[:defaults] || []
+      paths << '.gitmodules' if opts[:git_submodules]&.dig(opts[:depls], opts[:name])
+      paths += opts[:config].dig('resources', opts[:config_key], 'extended_scan_path') || []
+      joined_paths = paths.flatten.compact.join("', '")
+      "'#{joined_paths}'"
+    end
+
     private
 
     def generate_pipeline_credentials_filename(config_dir, pipeline_name)

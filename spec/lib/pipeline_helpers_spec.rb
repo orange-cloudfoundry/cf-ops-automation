@@ -4,8 +4,8 @@ require_relative '../../lib/config'
 require_relative '../../lib/directory_initializer'
 
 describe PipelineHelpers do
-  describe '#bosh_io_hosted?' do
-    let(:bosh_io_hosted?) { described_class.bosh_io_hosted?(info) }
+  describe '.bosh_io_hosted?' do
+    subject { described_class.bosh_io_hosted?(info) }
     let(:shield_overview) do
       deps_yaml = <<~YAML
         stemcells:
@@ -32,44 +32,55 @@ describe PipelineHelpers do
 
     context 'when a bosh release is hosted on bosh.io' do
       let(:info) { shield_overview['releases']['cf-routing-release'] }
-
-      it 'returns true' do
-        expect(bosh_io_hosted?).to be_truthy
-      end
+      it { is_expected.to be_truthy }
     end
 
     context 'when a bosh release is NOT hosted on bosh.io' do
       let(:info) {  shield_overview['releases']['my-boshrelease'] }
-
-      it 'returns false' do
-        expect(bosh_io_hosted?).to be_falsey
-      end
+      it { is_expected.to be_falsey }
     end
   end
 
-  describe '#generate_vars_files' do
+  describe '.generate_vars_files' do
     let(:templates_dir) { Dir.mktmpdir }
     let(:config_dir) { Dir.mktmpdir }
     let(:pipeline_name) { 'my-pipeline' }
     let(:root_deployment) { 'my_root_deployment' }
-    let(:setup_templates_dir) { DirectoryInitializer.new(root_deployment, config_dir, templates_dir).setup_templates! }
-    let(:setup_config_dir) { config_file_list.each { |filename| FileUtils.touch(File.join(config_dir, filename)) } }
     let(:config_file_list) { %w[credentials-a.yml credentials-my-pipeline.yml credentials-another-pipeline.yml xxx.yml credentials-b.yml] }
     let(:expected_vars_files) do
-      result = [File.join(config_dir, 'credentials-a.yml')]
-      result << File.join(config_dir, 'credentials-b.yml')
-      result << File.join(config_dir, 'credentials-my-pipeline.yml')
-      result << File.join(templates_dir, root_deployment, "#{root_deployment}-versions.yml")
-    end
-    let(:generate_vars_files) { described_class.generate_vars_files(templates_dir, config_dir, pipeline_name, root_deployment) }
-
-    before do
-      setup_templates_dir
-      setup_config_dir
+      [
+        [config_dir, 'credentials-a.yml'],
+        [config_dir, 'credentials-b.yml'],
+        [config_dir, 'credentials-my-pipeline.yml'],
+        [templates_dir, root_deployment, "#{root_deployment}-versions.yml"]
+      ].map { |paths| File.join(paths) }
     end
 
     it 'generates a list of vars_files for concourse pipelines' do
-      expect(generate_vars_files).to eq expected_vars_files
+      DirectoryInitializer.new(root_deployment, config_dir, templates_dir).setup_templates!
+      config_file_list.each { |filename| FileUtils.touch(File.join(config_dir, filename)) }
+
+      generated_vars_files = described_class.generate_vars_files(templates_dir, config_dir, pipeline_name, root_deployment)
+      expect(generated_vars_files).to eq expected_vars_files
+    end
+  end
+
+  describe '.git_resource_selected_paths' do
+    let(:depls) { "hello-world" }
+    let(:name) { "vault" }
+    let(:git_submodules) { { "hello-world" => { "vault" => "hello" } } }
+    let(:config) { { "resources" => { "templates" => { "extended_scan_path" => ["extended/scan/path", "even/more/*"] } } } }
+    let(:expected_paths) { "'addme', '.gitmodules', 'extended/scan/path', 'even/more/*'" }
+
+    it "returns a string of paths separated by commas" do
+      depls_selected_paths = described_class.git_resource_selected_paths(
+        depls: depls,
+        name: name,
+        git_submodules: git_submodules,
+        config: config,
+        config_key: 'templates',
+        defaults: ['addme'])
+      expect(depls_selected_paths).to eq(expected_paths)
     end
   end
 end

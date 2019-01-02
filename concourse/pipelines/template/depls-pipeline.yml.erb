@@ -132,14 +132,29 @@ resources:
 <% end %>
 <% end %>
 
-<% enabled_deployments.sort.each do |name, boshrelease| %>
-  <% ext_scan_path = boshrelease['resources']['secrets']['extended_scan_path'] if (boshrelease['resources'] && boshrelease['resources']['secrets'] && boshrelease['resources']['secrets']['extended_scan_path']) %>
-  <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
+<% enabled_deployments.sort.each do |name, boshrelease|
+  secrets_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: depls,
+    name: name,
+    git_submodules: git_submodules,
+    config: boshrelease,
+    config_key: 'secrets',
+    defaults: ["#{depls}/#{name}", "shared"])
+  paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: depls,
+    name: name,
+    git_modules: git_submodules,
+    config: boshrelease,
+    config_key: 'templates',
+    defaults: ["#{depls}/#{name}"]
+  )
+%>
+
 - name: secrets-<%= name %>
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["<%= depls %>/<%= name %>","shared"<%= ext_scan_path_value || '' %>]
+    paths: [<%= secrets_selected_paths %>]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -147,7 +162,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["<%= depls %>/<%= name %>"<%= ',.gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>]
+    paths: [<%= paas_templates_selected_paths %>]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 

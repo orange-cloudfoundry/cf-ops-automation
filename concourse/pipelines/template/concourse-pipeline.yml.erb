@@ -49,14 +49,28 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-<% enabled_concourse_deployments&.sort&.each do |name, concourse_config| %>
+<% enabled_concourse_deployments&.sort&.each do |name, concourse_config|
+  secrets_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: depls,
+    name: name,
+    git_submodules: git_submodules,
+    config: concourse_config,
+    config_key: 'secrets',
+    defaults: ["#{depls}/#{name}", "shared"])
+  paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: depls,
+    name: name,
+    git_submodules: git_submodules,
+    config: concourse_config,
+    config_key: 'secrets',
+    defaults: ["#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}", "#{depls}/#{depls}-versions.yml",])
+%>
+
 - name: secrets-<%= name %>
   type: git
   source:
     uri: ((secrets-uri))
-    <% ext_scan_path = concourse_config['resources']['secrets']['extended_scan_path'] if ( concourse_config['resources'] && concourse_config['resources']['secrets']['extended_scan_path'] ) %>
-    <% ext_scan_path_value = ",\"#{ext_scan_path.join('","')}\"" if ext_scan_path %>
-    paths: ["<%= "#{depls}/#{name}" %>","shared"<%= ext_scan_path_value || '' %>]
+    paths: [<%= secrets_selected_paths %>]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -64,10 +78,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths:
-      - "<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>"
-      - "<%= "#{depls}/#{depls}-versions.yml" %>"
-      <%= '- .gitmodules' if git_submodules[depls] && git_submodules[depls][name] %>
+    paths: [<%= paas_templates_selected_paths %>]
     # We trigger before pipeline-current-<paas-template> to update generated pipelines at first
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
@@ -76,15 +87,12 @@ resources:
 <% end %>
 
 jobs:
-
 <% if enabled_concourse_deployments.empty? %>
 - name: this-is-an-empty-pipeline
 <% else %>
 <% enabled_concourse_deployments&.sort&.each do |name, details| %>
-    <% current_serial_group = configurer.serial_group_strategy.generate(name, details) %>
-
-
-<% pipeline_name="#{depls}-#{name}" %>
+  <% current_serial_group = configurer.serial_group_strategy.generate(name, details) %>
+  <% pipeline_name = "#{depls}-#{name}" %>
 
 - name: deploy-concourse-<%= name %>-pipeline
   <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
