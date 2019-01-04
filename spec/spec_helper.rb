@@ -130,7 +130,7 @@ RSpec.configure do |config|
     $stderr = STDERR
   end
 
-  def fly(arg, env = {})
+  def fly_run(arg, env = {})
     target = 'cf-ops-automation'
     env_var = env.collect { |k, v| "#{k}=#{v}" }.join(' ')
     out, err, status = Open3.capture3("env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log")
@@ -139,7 +139,7 @@ RSpec.configure do |config|
   end
 
   def execute(cmd, env = {})
-    fly("execute #{cmd}", env)
+    fly_run("execute #{cmd}", env)
   end
 
   def docker_registry

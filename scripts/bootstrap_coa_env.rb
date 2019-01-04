@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/coa_env_bootstrapper/runner'
+require_relative '../lib/coa/env_bootstrapper/runner'
 
 # TODO: install bucc if not present and needed
 # Dir.chdir 'bin' do
@@ -28,4 +28,4 @@ prereqs_paths =
 relative_paths = Dir.glob(prereqs_paths)
 absolute_paths = relative_paths.map { |rp| File.absolute_path(rp) }
 
-CoaEnvBootstrapper::Runner.run_from_prereqs(absolute_paths)
+Coa::EnvBootstrapper::Runner.run_from_prereqs(absolute_paths)
