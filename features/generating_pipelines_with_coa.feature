@@ -10,13 +10,13 @@ Feature: Creating pipelines with the COA engine
   Scenario: Creating sample pipelines for 'Hello World' root deployment
     As a paas-template-user
     When I deploy "hello-world-root-depls"
-    And with the structures shown in "docs/reference_dataset/hello-world-root-depls.md"
-    Then the COA creates a set of deployment pipelines
+    And with the structures shown in "docs/reference_dataset" in the "hello-world-root-depls.md" readme
+    Then the COA creates a set of pipelines
     And generated pipelines are valid concourse pipelines
 
   Scenario: Creating a set of empty pipelines for 'another world' root deployment
     As a paas-template-user
     When I deploy "another-world-root-depls"
-    And with the structures shown in "docs/reference_dataset/another-world-root-depls.md"
-    Then the COA creates a set of deployment pipelines
+    And with the structures shown in "docs/reference_dataset" in the "another-world-root-depls.md" readme
+    Then the COA creates a set of pipelines
     And generated pipelines are valid concourse pipelines
