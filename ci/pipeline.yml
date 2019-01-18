@@ -10,7 +10,16 @@ resource_types:
     source:
       repository: jtarchie/pr
 
+  - name: meta
+    type: docker-image
+    source:
+      repository: swce/metadata-resource
+      tag: release-v0.0.3
+
 resources:
+- name: concourse-meta
+  type: meta
+
 - name: slack-alert
   type: slack-notification
   source:
@@ -127,6 +136,7 @@ jobs:
     serial: true
     plan:
     - aggregate:
+      - get: concourse-meta
       - get: cf-ops-automation-docker-image
         passed: [build-cached-image]
         trigger: true
@@ -141,6 +151,7 @@ jobs:
         platform: linux
         inputs:
         - name: cf-ops-automation
+        - name: concourse-meta
         outputs:
         - name: test-reports
         run:
@@ -149,16 +160,41 @@ jobs:
           args:
           - -ce
           - |
+            echo "Testing environment config:"
+            echo "---------------------------"
             echo "fly $(fly --version)"
             ruby --version
             bundle --version
+            bundle exec rspec --version
+            cc-test-reporter --version
+            echo "---------------------------"
+            echo "Setup Code Climate pre-requisites"
+            cd ../concourse-meta
+            BUILD_TEAM=$(if [ -f build-team-name ];then cat build-team-name;fi)
+            BUILD_PIPELINE=$(if [ -f build-pipeline-name ];then cat build-pipeline-name;fi)
+            BUILD_JOB=$(if [ -f build-job-name ];then cat build-job-name;fi)
+            BUILD_ID=$(if [ -f build-id ];then cat build-id;fi)
+            BUILD_NAME=$(if [ -f build-name ];then cat build-name;fi)
+            ATC_EXTERNAL_URL=$(if [ -f atc-external-url ];then cat atc-external-url;fi)
+            BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_NAME - $BUILD_ID")
+            cd -
+            export GIT_COMMIT_SHA=$(eval $GIT_SHA_CMD)
+            export GIT_BRANCH=$(eval $GIT_BRANCH_CMD)
+            export CI_NAME=${BUILD_INFO}
+            export CI_BUILD_ID=${BUILD_ID}
+            export CI_BUILD_URL=$ATC_EXTERNAL_URL/builds/${BUILD_ID}
+            echo "Running tests for $GIT_COMMIT_SHA@$GIT_BRANCH"
             fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
+            echo "Setup Code Climate coverage"
             cc-test-reporter before-build
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
+            echo "Sending coverage to Code Climate"
             cc-test-reporter after-build -d
         params:
           CC_TEST_REPORTER_ID: ((code-climate-test-reporter-id))
           COVERAGE: true
+          GIT_SHA_CMD: cat .git/ref
+          GIT_BRANCH_CMD: echo "((cf-ops-automation-git-branch))"
 
   - name: acceptance-tests
     on_failure: *on_failure_alert
@@ -458,6 +494,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
+        - get: concourse-meta
         - get: cf-ops-automation-docker-image
           passed: [PullRequests-build-cached-image]
           trigger: true
@@ -475,6 +512,9 @@ jobs:
         image: cf-ops-automation-docker-image
         timeout: 30m
         config: *unit_tests_config
+        params:
+          GIT_SHA_CMD: cat .git/head_sha
+          GIT_BRANCH_CMD: cat .git/branch
         on_failure: *PR_failure
 
   - name: PullRequests-AcceptanceTests
@@ -553,6 +593,7 @@ jobs:
   - name: run-tests-for-hotfix-branch
     plan:
     - aggregate:
+      - get: concourse-meta
       - get: cf-ops-automation-docker-image
         passed: [build-cached-image]
         trigger: true
@@ -563,6 +604,8 @@ jobs:
       attempts: 2
       image: cf-ops-automation-docker-image
       config: *unit_tests_config
+      params:
+        GIT_BRANCH_CMD: echo hotfix-branch
 
   - name: ship-hotfix
     serial: true
