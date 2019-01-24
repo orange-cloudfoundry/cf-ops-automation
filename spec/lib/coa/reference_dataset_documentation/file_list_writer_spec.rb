@@ -18,7 +18,7 @@ describe Coa::ReferenceDatasetDocumentation::FileListWriter do
     )
   end
 
-  describe "#write" do
+  describe "#perform" do
     let(:writer) { described_class.new(docs_config) }
 
     it "write a file list source with Unix's `find`" do
@@ -37,13 +37,34 @@ describe Coa::ReferenceDatasetDocumentation::FileListWriter do
       allow(writer).to receive(:`).with("find shared|sort").
         and_return(find_answer)
 
-      allow(writer).to receive(:add)
+      allow(writer).to receive(:write)
 
-      writer.write(config_repo_name: config_repository, template_repo_name: template_repository)
+      writer.perform(config_repo_name: config_repository, template_repo_name: template_repository)
 
-      expect(writer).to have_received(:`).with("find . -maxdepth 1|sort").twice
-      expect(writer).to have_received(:`).with("find #{root_deployment_name}|sort").twice
-      expect(writer).to have_received(:`).with("find shared|sort")
+      expect(writer).to have_received(:write).
+        with("## The config files", "").
+        with("### The root config files", "").
+        with("* [another-world-root-depls](/docs/reference_dataset/config_repo_name/another-world-root-depls)").
+        with("* [hello-world-root-depls](/docs/reference_dataset/config_repo_name/hello-world-root-depls)").
+        with("* [private-config.yml](/docs/reference_dataset/config_repo_name/private-config.yml)").
+        with("* [shared](/docs/reference_dataset/config_repo_name/shared)").
+        with("### The root_deployment_name files", "").
+        with("* [example-dir-1](/docs/reference_dataset/config_repo_name/example-dir-1)").
+        with("  * [example-file.yml](/docs/reference_dataset/config_repo_name/example-dir-1/example-file.yml)").
+        with("    * [subdir-example-file.yml](/docs/reference_dataset/config_repo_name/example-dir-1/subdir/subdir-example-file.yml)").
+        with("### The shared files", "").
+        with("* [example-dir-1](/docs/reference_dataset/shared/example-dir-1)").
+        with("  * [example-file.yml](/docs/reference_dataset/shared/example-dir-1/example-file.yml)").
+        with("    * [subdir-example-file.yml](/docs/reference_dataset/shared/example-dir-1/subdir/subdir-example-file.yml)").
+        with("## The template files", "").
+        with("### The root template files", "").
+        with("* [another-world-root-depls](/docs/reference_dataset/template_repo_name/another-world-root-depls)").
+        with("* [hello-world-root-depls](/docs/reference_dataset/template_repo_name/hello-world-root-depls)").
+        with("* [private-config.yml](/docs/reference_dataset/template_repo_name/private-config.yml)").
+        with("* [shared](/docs/reference_dataset/template_repo_name/shared)").
+        with("* [example-dir-1](/docs/reference_dataset/template_repo_name/example-dir-1)").
+        with("  * [example-file.yml](/docs/reference_dataset/template_repo_name/example-dir-1/example-file.yml)").
+        with("    * [subdir-example-file.yml](/docs/reference_dataset/template_repo_name/example-dir-1/subdir/subdir-example-file.yml)")
     end
   end
 end

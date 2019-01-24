@@ -1,10 +1,12 @@
 require_relative '../command_runner'
+require_relative '../coa_logger'
 
 module Coa
   module Utils
     module Bosh
       # This class serves as an interface to BOSH, mainly using its CLI.
       class Client
+        include Coa::Utils::CoaLogger
         attr_reader :config
 
         def initialize(config)

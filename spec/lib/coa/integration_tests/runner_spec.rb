@@ -1,30 +1,32 @@
 require 'spec_helper'
-require 'coa/env_bootstrapper/runner'
+require 'coa/env_bootstrapper/bootstrapper'
 require 'coa/integration_tests'
-require 'coa/utils/concourse/client'
+require 'coa/utils/concourse/concourse'
 
-describe Coa::IntegrationTests do
-  describe "#run" do
+describe Coa::IntegrationTests::Runner do
+  describe "#start" do
     let(:prereqs_cats) { ["inactive-steps", "concourse"] }
     let(:integration_tests) { described_class.new(prereqs_paths(prereqs_cats)) }
     let(:concourse) { integration_tests.concourse }
     let(:fly) { instance_double("Coa::Utils::Concourse::Fly") }
+    let(:bootstrapper) { instance_double("Coa::EnvBootstrapper::Bootstrapper") }
 
     before do
       allow(Coa::Utils::Concourse::Fly).to receive(:new).and_return(fly)
-      allow(Coa::Utils::Concourse::Client).to receive(:new).and_return(concourse)
+      allow(Coa::Utils::Concourse::Concourse).to receive(:new).and_return(concourse)
+      allow(Coa::EnvBootstrapper::Bootstrapper).to receive(:new).and_return(bootstrapper)
     end
 
     it "destroy existing pipelines, bootstrap the COA env and run/watch the pipelines" do
       allow(concourse).to receive(:destroy_pipelines)
-      allow(Coa::EnvBootstrapper::Runner).to receive(:run_from_prereqs)
-      allow(concourse).to receive(:run_and_watch_pipelines)
+      allow(bootstrapper).to receive(:perform)
+      allow(concourse).to receive(:unpause_and_watch_pipelines)
 
-      integration_tests.run
+      integration_tests.start
 
-      expect(concourse).to have_received(:destroy_pipelines).with(described_class::PIPELINES)
-      expect(Coa::EnvBootstrapper::Runner).to have_received(:run_from_prereqs).with(prereqs_paths(prereqs_cats))
-      expect(concourse).to have_received(:run_and_watch_pipelines).with(described_class::PIPELINES, 600)
+      expect(concourse).to have_received(:destroy_pipelines).with(Coa::IntegrationTests::Constants::PIPELINES)
+      expect(bootstrapper).to have_received(:perform)
+      expect(concourse).to have_received(:unpause_and_watch_pipelines).with(Coa::IntegrationTests::Constants::PIPELINES)
     end
   end
 

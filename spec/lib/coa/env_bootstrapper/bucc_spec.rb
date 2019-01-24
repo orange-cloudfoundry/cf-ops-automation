@@ -1,7 +1,10 @@
 require 'spec_helper'
+require 'coa/constants'
 require 'coa/env_bootstrapper/bucc'
 
 describe Coa::EnvBootstrapper::Bucc do
+  let(:cli_path) { "#{Coa::Constants::PROJECT_ROOT_DIR}/bin/bucc/bin/bucc" }
+
   describe '#deploy_transient_infra' do
     context "with no given bucc config" do
       let(:bucc) { described_class.new({}) }
@@ -21,7 +24,7 @@ describe Coa::EnvBootstrapper::Bucc do
         bucc.deploy_transient_infra
 
         expect(bucc).to have_received(:run_cmd).
-          with("#{bucc.bucc_cli_path} up --cpi virtualbox --verbose --lite --debug")
+          with("#{cli_path} up --cpi virtualbox --verbose --lite --debug")
       end
     end
 
@@ -49,7 +52,7 @@ describe Coa::EnvBootstrapper::Bucc do
 
       it "loads the result of the yaml" do
         allow(bucc).to receive(:run_cmd).
-          with("#{bucc.bucc_cli_path} vars", verbose: false).
+          with("#{cli_path} vars", verbose: false).
           and_return(bucc_var_answer)
 
         expect(bucc.vars).to eq(expected_answer)
@@ -61,19 +64,11 @@ describe Coa::EnvBootstrapper::Bucc do
 
       it "errors" do
         allow(bucc).to receive(:run_cmd).
-          with("#{bucc.bucc_cli_path} vars", verbose: false).and_return(bucc_var_answer)
+          with("#{cli_path} vars", verbose: false).and_return(bucc_var_answer)
 
         expect { bucc.vars }.
           to raise_error(Coa::EnvBootstrapper::BuccCommandError)
       end
-    end
-  end
-
-  describe '#concourse_target' do
-    let(:bucc) { described_class.new({}) }
-
-    it "returns 'bucc'" do
-      expect(bucc.concourse_target).to eq("bucc")
     end
   end
 end

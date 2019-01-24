@@ -11,7 +11,7 @@ module Coa
       end
     end
 
-    # Error raised when no EnvCreatorAdapater is found
+    # Error raised when no real EnvCreator is found
     class EnvCreatorAdapterNotImplementedError < StandardError; end
 
     # Error raised when the config for an active step is missing

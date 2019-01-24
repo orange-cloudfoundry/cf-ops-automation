@@ -6,10 +6,17 @@ module Coa
     # Manage interaction with a Bosh Director (stemcell upload, cloud config,
     # prerequisite deployment,etc..) during bootstrap
     class Bosh < Base
-      attr_reader :config_source
+      attr_reader :config
 
-      def initialize(config_source)
-        @config_source = config_source
+      def initialize(config)
+        @config = config
+      end
+
+      def prepare_environment(prereqs)
+        logger.log_and_puts :debug, 'Preparing BOSH environment'
+        upload_stemcell(prereqs.stemcell)              unless prereqs.inactive_step?("upload_stemcell")
+        update_cloud_config(prereqs.cloud_config)      unless prereqs.inactive_step?("update_cloud_config")
+        deploy_git_server(prereqs.git_server_manifest) unless prereqs.inactive_step?("deploy_git_server")
       end
 
       def upload_stemcell(stemcell_config)
@@ -57,10 +64,6 @@ module Coa
 
       def git_server_ip
         @git_server_ip ||= client.deployment_first_vm_ip("git-server")
-      end
-
-      def config
-        Coa::Utils::Bosh::Config.new(config_source)
       end
 
       def client

@@ -1,5 +1,6 @@
 require 'spec_helper'
-require 'coa/reference_dataset_documentation'
+require 'coa/reference_dataset_documentation/docs_config'
+require 'coa/reference_dataset_documentation/tree_writer'
 
 describe Coa::ReferenceDatasetDocumentation::TreeWriter do
   let(:tree_answer) { File.read(File.join(File.dirname(__FILE__), 'fixtures/tree_answer.txt')) }
@@ -18,7 +19,7 @@ describe Coa::ReferenceDatasetDocumentation::TreeWriter do
     )
   end
 
-  describe "#execute" do
+  describe "#perform" do
     let(:tree_writer) { described_class.new(docs_config) }
 
     it "write a file list source with Unix's `find`" do
@@ -32,17 +33,17 @@ describe Coa::ReferenceDatasetDocumentation::TreeWriter do
         and_yield
       allow(Dir).to receive(:exist?).and_return(true)
 
-      allow(tree_writer).to receive(:add)
+      allow(tree_writer).to receive(:write)
 
-      tree_writer.write
+      tree_writer.perform
 
-      expect(tree_writer).to have_received(:add).
+      expect(tree_writer).to have_received(:write).
         with("## The config repo", "", "### root level overview", "", "```bash", tree_root_level_answer, "```", "")
 
-      expect(tree_writer).to have_received(:add).
+      expect(tree_writer).to have_received(:write).
         with("### #{root_deployment_name} overview", "", "```bash", tree_answer, "```", "").twice
 
-      expect(tree_writer).to have_received(:add).
+      expect(tree_writer).to have_received(:write).
         with("## The template repo", "", "### root level overview", "", "```bash", tree_root_level_answer, "```", "")
    end
   end

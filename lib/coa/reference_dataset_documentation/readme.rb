@@ -1,5 +1,5 @@
 require_relative './file_list_writer'
-require_relative './pipeline_list_writer'
+require_relative './pipeline_docs_writer'
 require_relative './tree_writer'
 require_relative './utils_writer'
 
@@ -40,7 +40,7 @@ module Coa
       end
 
       def pipeline_list_writer
-        Coa::ReferenceDatasetDocumentation::PipelineListWriter.new(docs_config)
+        Coa::ReferenceDatasetDocumentation::PipelineDocsWriter.new(docs_config)
       end
     end
   end
