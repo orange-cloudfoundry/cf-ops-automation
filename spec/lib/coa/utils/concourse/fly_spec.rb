@@ -6,6 +6,7 @@ require 'coa/utils/command_runner'
 describe Coa::Utils::Concourse::Fly do
   let(:insecure_creds) { "true" }
   let(:target) { "rspec" }
+  let(:team) { "upload" }
   let(:creds) do
     Coa::Utils::Concourse::Config.new(
       "concourse_username" => "admin",
@@ -21,7 +22,7 @@ describe Coa::Utils::Concourse::Fly do
     context "without a provided ca_cert" do
       let(:insecure_creds) { "true" }
       let(:expected_cmd) do
-        "fly --target #{target} login --username #{creds.username} \
+        "fly --target #{target} login --team-name #{team} --username #{creds.username} \
 --password #{creds.password} --concourse-url #{creds.url} \
 --insecure && fly --target #{target} sync"
       end
@@ -30,10 +31,9 @@ describe Coa::Utils::Concourse::Fly do
         allow(Coa::Utils::CommandRunner).to receive(:new).and_return(runner)
         allow(runner).to receive(:execute)
 
-        described_class.login(target, creds)
+        described_class.login(target: target, creds: creds, team: team)
 
-        expect(Coa::Utils::CommandRunner).to have_received(:new).
-          with(expected_cmd, verbose: false)
+        expect(Coa::Utils::CommandRunner).to have_received(:new).with(expected_cmd)
         expect(runner).to have_received(:execute)
       end
     end
@@ -43,7 +43,7 @@ describe Coa::Utils::Concourse::Fly do
       let(:ca_cert) { instance_double("Tempfile") }
       let(:ca_cert_path) { "ca_cert_path" }
       let(:expected_cmd) do
-        "fly --target #{target} login --username #{creds.username} \
+        "fly --target #{target} login --team-name #{team} --username #{creds.username} \
 --password #{creds.password} --concourse-url #{creds.url} \
 --ca-cert ca_cert_path && fly --target #{target} sync"
       end
@@ -57,36 +57,35 @@ describe Coa::Utils::Concourse::Fly do
         allow(runner).to receive(:execute)
         allow(ca_cert).to receive(:unlink)
 
-        described_class.login(target, creds)
+        described_class.login(target: target, creds: creds, team: team)
 
         expect(Tempfile).to have_received(:new)
         expect(ca_cert).to have_received(:write).with("ca_cert")
         expect(ca_cert).to have_received(:close)
-        expect(Coa::Utils::CommandRunner).to have_received(:new).
-          with(expected_cmd, verbose: false)
+        expect(Coa::Utils::CommandRunner).to have_received(:new).with(expected_cmd)
         expect(runner).to have_received(:execute)
         expect(ca_cert).to have_received(:unlink)
       end
     end
 
-    describe "#destroy_pipelines" do
-      let(:pipelines) { { "p1" => { "j1" => {} }, "p2" => { "j1" => {} } } }
-      let(:expected_command) { "fly --target #{target} #{command}" }
-      let(:fly_client) { described_class.new(target, creds) }
+    describe "#destroy_pipeline" do
+      let(:pipeline) { "p1" }
+      let(:fly) { described_class.new(target: target, creds: creds) }
+
+      before do
+        allow(described_class).to receive(:login)
+      end
 
       it "destroy a list of given pipelines" do
-        allow(described_class).to receive(:login)
         allow(Coa::Utils::CommandRunner).to receive(:new).and_return(runner)
         allow(runner).to receive(:execute)
 
-        fly_client.destroy_pipelines(pipelines)
+        fly.destroy_pipeline(pipeline)
 
-        expect(described_class).to have_received(:login)
+        expect(described_class).to have_received(:login).
+          with(target: target, creds: creds, team: "main")
         expect(Coa::Utils::CommandRunner).to have_received(:new).once.
-          with("fly --target #{target} destroy-pipeline --pipeline p1 --non-interactive", {})
-        expect(Coa::Utils::CommandRunner).to have_received(:new).once.
-          with("fly --target #{target} destroy-pipeline --pipeline p2 --non-interactive", {})
-        expect(runner).to have_received(:execute).twice
+          with("fly --target #{target} destroy-pipeline --pipeline p1 --non-interactive")
       end
     end
   end

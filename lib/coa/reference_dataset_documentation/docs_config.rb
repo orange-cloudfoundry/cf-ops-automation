@@ -1,3 +1,6 @@
+require_relative './pipelines'
+require_relative './readme'
+
 module Coa
   module ReferenceDatasetDocumentation
     # This class holds the config to generate and validate documentation from

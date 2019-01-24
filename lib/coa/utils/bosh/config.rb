@@ -5,7 +5,7 @@ module Coa
       class Config
         attr_reader :ca_cert, :client, :client_secret, :environment, :target
 
-        def initialize(source)
+        def initialize(source = {})
           @ca_cert       = source["bosh_ca_cert"]
           @client        = source["bosh_client"]
           @client_secret = source["bosh_client_secret"]

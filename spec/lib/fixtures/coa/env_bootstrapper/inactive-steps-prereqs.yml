@@ -1,4 +1,2 @@
 inactive_steps:
 - "deploy_transient_infra"
-- "upload_stemcell"
-- "deploy_git_server"

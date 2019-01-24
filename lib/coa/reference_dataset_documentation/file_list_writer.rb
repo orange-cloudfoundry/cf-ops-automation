@@ -1,16 +1,17 @@
 require_relative './helpers/file_list_writer_helpers'
-require_relative './writer'
+require_relative './readme_author'
 require_relative '../constants'
 
 module Coa
   module ReferenceDatasetDocumentation
     # This class can write a list of configs and templates files for a given
     # root deployment.
-    class FileListWriter < Writer
+    class FileListWriter
       include Coa::Constants
       include Helpers::FileListWriterHelpers
+      include Coa::ReferenceDatasetDocumentation::ReadmeAuthor
 
-      def write(config_repo_name:, template_repo_name:)
+      def perform(config_repo_name:, template_repo_name:)
         write_config_file_list(config_repo_name)
         write_template_file_list(template_repo_name)
       end
@@ -30,14 +31,15 @@ module Coa
 
       def write_root_level_files_and_dirs(repo_path, repo_name, name)
         list = ""
+
         Dir.chdir(repo_path) do
           list = `find . -maxdepth 1|sort`
         end
 
-        add("## The #{name} files", "")
-        add("### The root #{name} files", "")
+        write("## The #{name} files", "")
+        write("### The root #{name} files", "")
         pretty_list(list, repo_name)
-        add ""
+        write ""
       end
 
       def write_file_list(repo_path, repo_name, root_deployment_name)
@@ -48,9 +50,9 @@ module Coa
           end
         end
 
-        add("### The #{root_deployment_name} files", "")
+        write("### The #{root_deployment_name} files", "")
         pretty_list(list, repo_name)
-        add ""
+        write ""
       end
 
       def pretty_list(list, repo_name)
@@ -60,7 +62,7 @@ module Coa
           new_list << pretty_filepath(line, repo_name)
         end
 
-        new_list.delete_if(&:empty?).each { |item| add(item) }
+        new_list.delete_if(&:empty?).each { |item| write(item) }
       end
     end
   end

@@ -1,10 +1,12 @@
-require_relative './writer'
+require_relative './readme_author'
 
 module Coa
   module ReferenceDatasetDocumentation
     # This class helps us writting the file list in form of a tree.
-    class TreeWriter < Writer
-      def write
+    class TreeWriter
+      include Coa::ReferenceDatasetDocumentation::ReadmeAuthor
+
+      def perform
         write_config_repo_tree
         write_template_repo_tree
       end
@@ -26,7 +28,7 @@ module Coa
           list = `tree --noreport -L 1`
         end
 
-        add("## The #{name} repo", "", "### root level overview", "", "```bash", list, "```", "")
+        write("## The #{name} repo", "", "### root level overview", "", "```bash", list, "```", "")
       end
 
       def write_repo_tree(repo_path, name)
@@ -40,7 +42,7 @@ module Coa
           end
         end
 
-        add("### #{root_deployment_name} overview", "", "```bash", list, "```", "")
+        write("### #{root_deployment_name} overview", "", "```bash", list, "```", "")
       end
     end
   end

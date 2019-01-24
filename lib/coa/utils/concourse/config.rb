@@ -18,6 +18,12 @@ module Coa
           @insecure = insecure
           @ca_cert  = source["concourse_ca_cert"]
         end
+
+        # @insecure is stored as a string because of the way Concourse used to
+        # work.
+        def insecure?
+          insecure == "true"
+        end
       end
     end
   end

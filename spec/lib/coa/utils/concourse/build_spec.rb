@@ -2,25 +2,30 @@ require 'spec_helper'
 require 'coa/utils/concourse'
 
 describe Coa::Utils::Concourse::Build do
-  let(:fly) { double("Coa::Utils::Concourse::Fly") }
+  let(:fly)      { instance_double("Coa::Utils::Concourse::Fly") }
+  let(:pipeline) { instance_double("Coa::Utils::Concourse::Pipeline", pause: true) }
+  let(:job)      { instance_double("Coa::Utils::Concourse::Job", fullname: "p1/j1", pipeline: pipeline ) }
 
-  describe '#watch_job' do
-    let(:full_job_name) { "p1/j1" }
-    before { allow(described_class).to receive(:sleep) }
+  before do
+    stub_const("#{described_class}::MAX_RETRIES", 2)
+    allow(build).to receive(:sleep)
+  end
+
+  describe '#watch'
+
+  describe '#follow_to_completion' do
+    let(:build) { described_class.new(job: job) }
 
     context "when the jobs has succeeded" do
       let(:build_response) { "34455  p1/j1  1  succeeded  2018-12-14@09:27:20+0000  n/a  17m33s+" }
 
       it "returns a build directly" do
-        allow(fly).to receive(:get_raw_job_builds).and_return(build_response)
+        allow(job).to receive(:raw_builds).and_return(build_response)
 
-        build = described_class.watch_job(full_job_name, 2, fly)
+        build.follow_to_completion
 
-        expect(build.name).to eq("1")
+        expect(job).to have_received(:raw_builds).once
         expect(build.status).to eq("succeeded")
-        expect(build.full_job_name).to eq("p1/j1")
-
-        expect(fly).to have_received(:get_raw_job_builds).with("p1/j1").once
       end
     end
 
@@ -28,30 +33,28 @@ describe Coa::Utils::Concourse::Build do
       let(:build_response) { "34455  p1/j1  1  started  2018-12-14@09:27:20+0000  n/a  17m33s+" }
 
       it "retries" do
-        allow(fly).to receive(:get_raw_job_builds).and_return(build_response)
+        allow(job).to receive(:raw_builds).and_return(build_response)
 
-        build = described_class.watch_job(full_job_name, 2, fly)
+        build.follow_to_completion
 
-        expect(build.name).to eq("1")
+        expect(job).to have_received(:raw_builds).twice
         expect(build.status).to eq("started")
-        expect(build.full_job_name).to eq("p1/j1")
-
-        expect(fly).to have_received(:get_raw_job_builds).with("p1/j1").twice
       end
     end
   end
 
   describe '#handle_result' do
-    let(:build) { described_class.new(name: 1, status: status, full_job_name: "p1/j1") }
-
     context "when a failure happened" do
       let(:status) { "errored" }
+      let(:build) { described_class.new(job: job, status: status) }
 
       context "when the failure is ignored"  do
         it "just logs the final status" do
           logger = build.logger
           allow(logger).to receive(:log_and_puts)
+          allow(pipeline).to receive(:pause)
 
+          #expect{ build.handle_result(true) }.to_not raise_error(SystemExit)
           build.handle_result(true)
 
           expect(logger).to have_received(:log_and_puts).once.
@@ -65,6 +68,7 @@ describe Coa::Utils::Concourse::Build do
         it "exits the program with an exit code 1" do
           logger = build.logger
           allow(logger).to receive(:log_and_puts)
+          allow(pipeline).to receive(:pause)
 
           expect{ build.handle_result(false) }.to raise_error(SystemExit)
 
@@ -76,12 +80,14 @@ describe Coa::Utils::Concourse::Build do
 
     context "when no failure happened" do
       let(:status) { "succeeded" }
+      let(:build) { described_class.new(job: job, status: status) }
 
       it "just logs the final status" do
         logger = build.logger
         allow(logger).to receive(:log_and_puts)
+        allow(pipeline).to receive(:pause)
 
-        build.handle_result(true)
+        expect{ build.handle_result(true) }.to_not raise_error(SystemExit)
 
         expect(logger).to have_received(:log_and_puts).once.
           with(:info, "Final status for job 'p1/j1': succeeded")

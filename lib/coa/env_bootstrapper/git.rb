@@ -13,11 +13,17 @@ module Coa
       CONCOURSE_CREDENTIALS_PATH = "#{SECRETS_REPO_DIR}/shared/concourse-credentials.yml".freeze
       BOSH_CA_CERTS_PATH         = "#{SECRETS_REPO_DIR}/shared/certs/internal_paas-ca/server-ca.crt".freeze
 
-      attr_reader :bosh, :prereqs
+      attr_reader :bosh
 
-      def initialize(bosh, prereqs)
+      def initialize(bosh)
         @bosh = bosh
-        @prereqs = prereqs
+      end
+
+      def prepare_environment(concourse_config, pipeline_vars)
+        logger.log_and_puts :debug, 'Preparing git environment'
+        push_templates_repo
+        push_secrets_repo(concourse_config, pipeline_vars)
+        push_cf_ops_automation
       end
 
       def push_templates_repo
@@ -30,9 +36,9 @@ module Coa
         end
       end
 
-      def push_secrets_repo(concourse_config)
-        write_concourse_credentials(concourse_config)
-        write_git_config
+      def push_secrets_repo(concourse_config, pipeline_vars)
+        write_concourse_credentials(concourse_config, pipeline_vars)
+        write_git_config(pipeline_vars)
         write_bosh_ca_cert_file
 
         init_and_push(SECRETS_REPO_DIR, "secrets")
@@ -114,11 +120,11 @@ module Coa
 
       # This method merges vars given in the prereqs with ones provided by env
       # that might depend on Concourse or BOSH.
-      def write_concourse_credentials(concourse_config)
+      def write_concourse_credentials(concourse_config, pipeline_vars)
         [CREDENTIALS_AUTO_INIT_PATH, CONCOURSE_CREDENTIALS_PATH].each do |path|
           File.open(path, 'w') do |file|
             generated_creds = generated_concouse_credentials(concourse_config)
-            crendentials_auto_init = generated_creds.merge(prereqs["pipeline-vars"].to_h)
+            crendentials_auto_init = generated_creds.merge(pipeline_vars)
             file.write crendentials_auto_init.to_yaml
           end
         end
@@ -130,11 +136,10 @@ module Coa
         end
       end
 
-      def write_git_config
-        pl_vars = prereqs["pipeline-vars"] || {}
+      def write_git_config(pipeline_vars)
         File.open(GIT_CONFIG_PATH, 'w') do |file|
           git_config = {
-            "cf-ops-automation-tag-filter" => pl_vars["cf-ops-automation-tag-filter"].to_s,
+            "cf-ops-automation-tag-filter" => pipeline_vars["cf-ops-automation-tag-filter"].to_s,
             "cf-ops-automation-uri"        => "git://#{server_ip}/cf-ops-automation"
           }
           file.write git_config.to_yaml

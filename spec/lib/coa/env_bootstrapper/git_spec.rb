@@ -26,13 +26,12 @@ shared_examples_for "an initiated and pushed repo" do |repo_path, repo_name|
       expect(runner).to receive(:execute)
     end
 
-    git.push_secrets_repo(concourse_config)
+    git.push_secrets_repo(concourse_config, pipeline_vars)
   end
 end
 
 describe Coa::EnvBootstrapper::Git do
   let(:server_ip) { "1.2.3.4" }
-  let(:prereqs) { {} }
   let(:bosh_ca_cert) { "ca cert" }
   let(:bosh_config) do
     Coa::Utils::Bosh::Config.new(
@@ -49,7 +48,7 @@ describe Coa::EnvBootstrapper::Git do
                     config: bosh_config,
                     client: Coa::Utils::Bosh::Client.new(bosh_config))
   end
-  let(:git) { described_class.new(bosh, prereqs) }
+  let(:git) { described_class.new(bosh) }
   let(:runner) { instance_double("Coa::Utils::CommandRunner") }
   describe '#push_secrets_repo' do
     let(:file) { instance_double("File") }
@@ -67,6 +66,7 @@ describe Coa::EnvBootstrapper::Git do
         "cf-ops-automation-uri" => "git://1.2.3.4/cf-ops-automation"
       }
     end
+    let(:pipeline_vars) { {} }
 
     before do
       allow(Coa::Utils::CommandRunner).to receive(:new).and_return(runner)
@@ -76,7 +76,7 @@ describe Coa::EnvBootstrapper::Git do
     end
 
     it "writes some config files and pushes the repo" do
-      git.push_secrets_repo(concourse_config)
+      git.push_secrets_repo(concourse_config, pipeline_vars)
 
       expect(File).to have_received(:open).with(credentials_auto_init_path, 'w').once
       expect(file).to have_received(:write).with(credentdials_auto_init).twice

@@ -1,9 +1,13 @@
 require 'spec_helper'
 require 'coa/reference_dataset_documentation/docs_config'
-require 'coa/reference_dataset_documentation/writer'
+require 'coa/reference_dataset_documentation/readme_author'
 
-describe Coa::ReferenceDatasetDocumentation::Writer do
-  describe "#add" do
+class DummyClass
+  include Coa::ReferenceDatasetDocumentation::ReadmeAuthor
+end
+
+describe Coa::ReferenceDatasetDocumentation::ReadmeAuthor do
+  describe "#write" do
     let(:root_deployment_name) { "hello-world-root-depls" }
     let(:config_repository) { "config_repo_name" }
     let(:template_repository) { "template_repo_name" }
@@ -16,7 +20,7 @@ describe Coa::ReferenceDatasetDocumentation::Writer do
         documentation_path: path
       )
     end
-    let(:writer) { described_class.new(docs_config) }
+    let(:writer) { DummyClass.new(docs_config) }
     let(:file) { StringIO.new }
     let(:input1) { "foo" }
     let(:input2) { "bar" }
@@ -27,7 +31,7 @@ describe Coa::ReferenceDatasetDocumentation::Writer do
       expect(file).to receive(:puts).with("#{input1}")
       expect(file).to receive(:puts).with("#{input2}")
 
-      writer.add(input1, input2)
+      writer.write(input1, input2)
     end
   end
 end

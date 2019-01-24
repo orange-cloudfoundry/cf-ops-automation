@@ -1,6 +1,6 @@
 module Coa
   # This module ease communication with 3rd party interfaces such as bosh,
-  # the shell, etc.
+  # the shell, etc. and shall containt close to no-COA specific code.
   module Utils
     require_relative './utils/bosh'
     require_relative './utils/coa_logger'

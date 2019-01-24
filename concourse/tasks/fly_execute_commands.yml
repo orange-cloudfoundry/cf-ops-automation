@@ -46,8 +46,8 @@ run:
       eval "$PREFIX $command" 2>&1 | tee -a flight-report/flight-report.txt
     done
     IFS=$old_IFS     # rétablissement du séparateur de champ par défaut
+    echo "Flight execution report:"
     cat flight-report/flight-report.txt
-
 params:
   ATC_EXTERNAL_URL:
   FLY_USERNAME:

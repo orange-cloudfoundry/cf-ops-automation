@@ -1,4 +1,4 @@
-pipeline-vars:
+pipeline_vars:
   slack-webhook: https://example.slack.com/webhook
   slack-channel: channel
   slack-disable-it: true

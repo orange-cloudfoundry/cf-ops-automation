@@ -18,6 +18,5 @@ prereqs_paths =
 relative_paths = Dir.glob(prereqs_paths)
 absolute_paths = relative_paths.map { |path| File.absolute_path(path) }
 
-tests = Coa::IntegrationTests.new(absolute_paths)
-
-tests.run
+tests = Coa::IntegrationTests::Runner.new(absolute_paths)
+tests.start

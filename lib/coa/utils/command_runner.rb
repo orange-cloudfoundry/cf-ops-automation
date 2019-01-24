@@ -3,32 +3,30 @@ require 'tempfile'
 
 require_relative './coa_logger'
 
-# This class can execute system commands, more or less verbose, potential while
-# loading a profile. Will raise an error if the comand fails unless told
-# otherwise.
 module Coa
   module Utils
+    # This class can execute system commands, more or less verbose, potential
+    # while loading a profile. Will raise an error if the comand fails unless
+    # told otherwise.
     class CommandRunner
       include Coa::Utils::CoaLogger
 
       attr_reader :command, :fail_silently, :profile, :verbose
 
       def self.run_cmd(command, options = {})
-        logger.info "pumpetup"
         new(command, options).execute
       end
 
       def initialize(command, options = {})
         @command       = command
-        @fail_silently = !!options[:fail_silently]
+        @fail_silently = options[:fail_silently] == true
         @profile       = options[:profile].to_s
-        @verbose       = !!options[:verbose]
       end
 
       def execute
         write_header
         stdout, stderr, status = execute_command
-        determine_success(stdout, stderr, status)
+        log_or_raise(stdout, stderr, status)
         stdout
       ensure
         profile && profile_tempfile&.unlink
@@ -37,7 +35,7 @@ module Coa
       private
 
       def write_header
-        verbose ? write_verbose_header : logger.debug("Running: `#{command}`")
+        logger.debug("Running: `#{command}`")
       end
 
       def execute_command
@@ -62,28 +60,8 @@ module Coa
           end
       end
 
-      def write_verbose_header
-        suffix = fail_silently ? "while ignoring errors." : ""
-        logger.log_and_puts :info, "Running: `#{executed_command}` #{suffix}"
-      end
-
-      def determine_success(stdout, stderr, status)
-        if status.success?
-          print_success(stdout) if verbose
-        elsif fail_silently
-          print_ignored_error(stdout, stderr) if verbose
-        else
-          print_and_raise_error(stdout, stderr)
-        end
-      end
-
-      def print_success(stdout)
-        message = stdout.strip.empty? ? "Command `#{command}` ran successfully with no output" : "Command ran successfully with the following output:\n#{stdout}"
-        logger.log_and_puts :info, message
-      end
-
-      def print_ignored_error(stdout, stderr)
-        logger.log_and_puts :info, "Command `#{command}` errored, but continuing:\nstderr:\n#{stderr}\nstdout:\n#{stdout}"
+      def log_or_raise(stdout, stderr, status)
+        print_and_raise_error(stdout, stderr) unless status.success? || fail_silently
       end
 
       def print_and_raise_error(stdout, stderr)

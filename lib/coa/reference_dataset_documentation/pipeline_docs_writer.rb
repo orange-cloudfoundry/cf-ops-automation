@@ -1,24 +1,19 @@
-require_relative './writer'
+require_relative './readme_author'
 
 module Coa
   module ReferenceDatasetDocumentation
     # This class can write a list of credentials per pipeline and a list of
     # pipeline per credentials.
-    class PipelineListWriter < Writer
-      attr_reader :pipelines
+    class PipelineDocsWriter
+      include Coa::ReferenceDatasetDocumentation::ReadmeAuthor
 
-      def initialize(docs_config)
-        super(docs_config)
-        @pipelines = docs_config.pipelines
-      end
-
-      def write
+      def perform
         write_credentials_pipeline_list
         write_pipelines_credential_list
       end
 
       def write_credentials_pipeline_list
-        add "## List of pipelines in which credentials appear for #{root_deployment_name}", ""
+        write "## List of pipelines in which credentials appear for #{root_deployment_name}", ""
 
         credentials_pipeline_list.sort.each do |credential, pipelines|
           write_credential_pipeline_list(credential, pipelines)
@@ -26,7 +21,7 @@ module Coa
       end
 
       def write_pipelines_credential_list
-        add "## Required pipeline credentials for #{root_deployment_name}", ""
+        write "## Required pipeline credentials for #{root_deployment_name}", ""
 
         pipelines_credential_list.sort.each do |pipeline_name, pipe_creds|
           write_pipeline_credential_list(pipeline_name, pipe_creds)
@@ -36,21 +31,21 @@ module Coa
       private
 
       def write_pipeline_credential_list(pipeline_name, pipe_creds)
-        add("### #{pipeline_name}", "")
+        write("### #{pipeline_name}", "")
 
         if pipe_creds.empty?
-          add("No credentials required", "")
+          write("No credentials required", "")
         else
-          pipe_creds.sort.each { |cred| add("* #{cred}") }
-          add ""
+          pipe_creds.sort.each { |cred| write("* #{cred}") }
+          write ""
         end
       end
 
       def write_credential_pipeline_list(credential, pipelines)
-        add("### #{credential}", "")
+        write("### #{credential}", "")
 
-        pipelines.uniq.sort.each { |pipeline| add("* #{pipeline}") }
-        add ""
+        pipelines.uniq.sort.each { |pipeline| write("* #{pipeline}") }
+        write ""
       end
 
       def pipelines_credential_list

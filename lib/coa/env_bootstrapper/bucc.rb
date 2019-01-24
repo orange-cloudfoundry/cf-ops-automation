@@ -18,18 +18,14 @@ module Coa
       # NOTE: the presence of a state.json file in the bucc repo leads bucc
       # to believe that the VM is up even when it's not.
       def deploy_transient_infra
-        run_cmd "#{bucc_cli_path} up --cpi #{prereqs['cpi']} \
-#{prereqs['cpi_specific_options']} --lite --debug"
-      end
-
-      def in_use?
-        prereqs == {}
+        logger.log_and_puts :debug, 'Deploying transient infra with bucc'
+        run_cmd "#{cli_path} up --cpi #{prereqs['cpi']} #{prereqs['cpi_specific_options']} --lite --debug"
       end
 
       def vars
         @vars ||=
           begin
-            command_result = run_cmd("#{bucc_cli_path} vars", verbose: false)
+            command_result = run_cmd("#{cli_path} vars", verbose: false)
             YAML.safe_load(command_result)
           rescue ::Errno::ENOENT => error
             raise BuccCommandError, "You may be missing bucc in your $PATH. Error:\n#{error.message}"
@@ -38,16 +34,10 @@ module Coa
           end
       end
 
-      def bucc_cli_path
+      private
+
+      def cli_path
         "#{PROJECT_ROOT_DIR}/bin/bucc/bin/bucc"
-      end
-
-      def concourse_target
-        "bucc"
-      end
-
-      def display_concourse_login_information
-        run_cmd "#{bucc_cli_path} info"
       end
     end
   end
