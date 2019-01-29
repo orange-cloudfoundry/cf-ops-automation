@@ -72,7 +72,7 @@ resources:
 - name: ((stemcell-main-name))
   type: bosh-io-stemcell
   source:
-    name: ((stemcell-name-prefix))((stemcell-main-name))
+    name: ((stemcell-main-name))
 - name: secrets-bosh-deployment-sample
   type: git
   source:
@@ -94,7 +94,7 @@ resources:
     client: ((bosh-username))
     client_secret: "((bosh-password))"
     deployment: bosh-deployment-sample
-    ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDFDCCAfygAwIBAgIRAJhACeUupTq0v90nAyb+vUowDQYJKoZIhvcNAQELBQAw\nMzEMMAoGA1UEBhMDVVNBMRYwFAYDVQQKEw1DbG91ZCBGb3VuZHJ5MQswCQYDVQQD\nEwJjYTAeFw0xODA3MTEwOTE4MjZaFw0xOTA3MTEwOTE4MjZaMDMxDDAKBgNVBAYT\nA1VTQTEWMBQGA1UEChMNQ2xvdWQgRm91bmRyeTELMAkGA1UEAxMCY2EwggEiMA0G\nCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDMlqBlpRz8h1nnqGm1rdOTRZO+yddM\nl4YwvDf9hpPVm0gqFrmIlcGFVTZ6+PbU9x8kklx+BwmB9dA2D1Vo1VMz7VQPsGu4\n1pEmSLpaxz86LshW8JjCDauMblFIm+baB0o5MmukJzZzqdQv4kn2s5+57fVUQz33\nk20T1mahuA0INzbHwO4vX1WGteInTH3GsDLOyVGSMTrpuUAUZgfU8IR019BzgaiA\nYIBRU//VRv68PesQFtOXxOcM9V0BiTrs3yGRWGevvcfqP/6EI6qA+b+AJi/IhxbR\nO+fxo58lUIRw0OrmmoEDuuHO6kCCe590YLU5wAttvp8baahLFrsEBTIJAgMBAAGj\nIzAhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEB\nCwUAA4IBAQDGvUob4v0Mm2MIpE0IAbEa0oDCGiF99PhYHZwrvpdQjr/iVHd/7i+y\nI7q4YFswRGj5oGj5zRjW9bFVKB6DJsyBD0NpcLTy7VEewkT8mwd2GmZkmRWFQYcA\n2RUhIFGpYSI+g7ed6ZuPX2P4+92mxURHElTAuRTrrw5vqUVsebZO49tuvyXqmghP\nAyKvSQanegmNviGdkHTWKPyD3nP2Ms0lBgGZxFfhlN4sPTWHxfEpud4xLX/AhW6X\n8QS3GQ4QwevfKnUekbciU7CASVCymAKupFAxjksyz8xmHvalXe83HK+G7AmsYkEl\nYowS7B+zXRNZHGoagYkRSBeaSKlIpZXF\n-----END CERTIFICATE-----\n"
+    ca_cert: 
 - name: concourse-target
   type: concourse-pipeline
   source:
@@ -102,6 +102,15 @@ resources:
     insecure: ((concourse-hello-world-root-depls-insecure))
     teams:
     - name: main
+      username: ((concourse-hello-world-root-depls-username))
+      password: "((concourse-hello-world-root-depls-password))"
+    - name: main
+      username: ((concourse-hello-world-root-depls-username))
+      password: "((concourse-hello-world-root-depls-password))"
+    - name: currently-disabled
+      username: ((concourse-hello-world-root-depls-username))
+      password: "((concourse-hello-world-root-depls-password))"
+    - name: upload
       username: ((concourse-hello-world-root-depls-username))
       password: "((concourse-hello-world-root-depls-password))"
 - name: paas-templates-wip
@@ -147,6 +156,7 @@ resources:
   source:
     user: cloudfoundry-community
     repository: vault-boshrelease
+    access_token: ((bot-github-access-token))
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -491,11 +501,11 @@ jobs:
       # source_file: bosh-generated-config/bosh_config.json
       stemcells:
       - ((stemcell-main-name))/stemcell.tgz
-      releases:
-      - bosh-openstack-cpi-release/release.tgz
-      - nginx/release.tgz
-      - ntp/release.tgz
-      - vault/release.tgz
+      releases: 
+      - "bosh-openstack-cpi-release/*.tgz"
+      - "nginx/*.tgz"
+      - "ntp/*.tgz"
+      - "vault/*.tgz"
       ops_files:
       - ops-and-vars-files/operators/*
       vars_files:
@@ -761,8 +771,48 @@ jobs:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
       - name: hello-world-root-depls-cf-apps-generated
-        team: main
+        team: currently-disabled
         config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-update-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-update-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-bosh-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-bosh-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-s3-br-upload-generated
+        team: upload
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-s3-br-upload-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-s3-stemcell-upload-generated
+        team: upload
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-s3-stemcell-upload-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-concourse-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-concourse-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-wip/hello-world-root-depls/hello-world-root-depls-versions.yml

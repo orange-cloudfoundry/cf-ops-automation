@@ -66,6 +66,7 @@ resources:
   source:
     user: cloudfoundry-community
     repository: vault-boshrelease
+    access_token: ((bot-github-access-token))
 jobs:
 #      - get: bosh-stemcell
 #        version: { version: ((stemcell-version)) }

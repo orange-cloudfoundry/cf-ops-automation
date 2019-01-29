@@ -84,6 +84,7 @@ jobs:
     params:
       ROOT_DEPLOYMENT: hello-world-root-depls
       IAAS_TYPE: ((iaas-type))
+      EXCLUDE_PIPELINES: depls
   - task: copy-and-filter-generated-pipeline
     input_mapping: {templates: paas-templates-hello-world-root-depls,config: secrets-hello-world-root-depls-for-pipeline}
     config:
@@ -102,7 +103,7 @@ jobs:
         args:
         - -ec
         - |
-          ruby -ryaml -rfileutils -e 'depls = ENV["ROOT_DEPLOYMENT"]; ci_overview_file = File.join("config",depls ,"ci-deployment-overview.yml"); raise "ERROR - Missing file : #{ci_overview_file}" unless File.exist?(ci_overview_file); ci_overview=YAML.load_file(ci_overview_file);ci_overview["ci-deployment"][depls]["pipelines"].each { |pipeline_name,pipeline_details| team = pipeline_details["team"] || "main"; pipeline_dest_dir = File.join("selected-pipelines", team, depls);FileUtils.mkdir_p(pipeline_dest_dir); pipeline_filename = File.join("concourse-generated-pipeline","concourse","pipelines","#{pipeline_name}.yml"); FileUtils.cp(pipeline_filename, pipeline_dest_dir)}'
+          ruby -ryaml -rfileutils -e 'depls = ENV["ROOT_DEPLOYMENT"]; ci_overview_file = File.join("config",depls ,"ci-deployment-overview.yml"); raise "ERROR - Missing file : #{ci_overview_file}" unless File.exist?(ci_overview_file); ci_overview=YAML.load_file(ci_overview_file);ci_overview["ci-deployment"][depls]["pipelines"].each { |pipeline_name,pipeline_details| team = (pipeline_details && pipeline_details["team"]) || "main"; pipeline_dest_dir = File.join("selected-pipelines", team, depls);FileUtils.mkdir_p(pipeline_dest_dir); pipeline_filename = File.join("concourse-generated-pipeline","concourse","pipelines","#{pipeline_name}.yml"); FileUtils.cp(pipeline_filename, pipeline_dest_dir) if File.exist?(pipeline_filename)}'
           echo "Filtering pipelines:"
           ruby -ryaml -rfileutils -e 'Dir[File.join("selected-pipelines","**","*.yml")].each { |file_path| file_content = YAML.load_file(file_path); if file_content["jobs"]&.fetch(0)&.fetch("name") == "this-is-an-empty-pipeline"; puts " deleting empty pipeline: #{file_path}";FileUtils.rm(file_path);else puts " keeping #{file_path}";end}'
     params:

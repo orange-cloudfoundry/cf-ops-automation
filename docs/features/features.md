@@ -8,9 +8,6 @@ Feature: Cf application deployment support
 
   Scenario: a deployment, or a part, is done using a concourse pipeline
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/cf_app_deployment_environment_variable_available.feature:10:in `But needs documentation'
 
 Feature: Creating pipelines with the COA engine
   As a paas-template user,
@@ -24,15 +21,15 @@ Feature: Creating pipelines with the COA engine
   Scenario: Creating sample pipelines for 'Hello World' root deployment
     As a paas-template-user
     When I deploy "hello-world-root-depls"
-    And with the structures shown in "docs/reference_dataset/hello-world-root-depls.md"
-    Then the COA creates a set of deployment pipelines
+    And with the structures shown in "docs/reference_dataset" in the "hello-world-root-depls.md" readme
+    Then the COA creates a set of pipelines
     And generated pipelines are valid concourse pipelines
 
   Scenario: Creating a set of empty pipelines for 'another world' root deployment
     As a paas-template-user
     When I deploy "another-world-root-depls"
-    And with the structures shown in "docs/reference_dataset/another-world-root-depls.md"
-    Then the COA creates a set of deployment pipelines
+    And with the structures shown in "docs/reference_dataset" in the "another-world-root-depls.md" readme
+    Then the COA creates a set of pipelines
     And generated pipelines are valid concourse pipelines
 
 Feature: Iaas specific support
@@ -45,15 +42,9 @@ Feature: Iaas specific support
 
   Scenario: Terraform iaas specific
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/iaas_specific_support.feature:10:in `But needs documentation'
 
   Scenario: Bosh iaas specific
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/iaas_specific_support.feature:13:in `But needs documentation'
 
 Feature: Multi deployer support
   In order to create a deployment targeting multiple deployer (ie: bosh, terraform, concourse-pipeline, etc...)
@@ -65,21 +56,12 @@ Feature: Multi deployer support
 
   Scenario: a deployment, or a part,  is done using Bosh
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/multi_deployer_support.feature:10:in `But needs documentation'
 
   Scenario: a deployment, or a part, is done using Terraform
     But NYI
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:51:in `"NYI"'
-      features/multi_deployer_support.feature:13:in `But NYI'
 
   Scenario: a deployment, or a part, is done using a concourse pipeline
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/multi_deployer_support.feature:16:in `But needs documentation'
 
 Feature: Offline support
   In order to support internet lost
@@ -91,21 +73,12 @@ Feature: Offline support
 
   Scenario: Bosh release offline
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/offline_support.feature:10:in `But needs documentation'
 
   Scenario: Private Docker registry
     But NYI
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:51:in `"NYI"'
-      features/offline_support.feature:13:in `But NYI'
 
   Scenario: Bosh stemcells are retrieved from S3
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/offline_support.feature:16:in `But needs documentation'
 
 Feature: Terraform support for root deployment
   In order to share a terraform across a root deployment
@@ -117,10 +90,14 @@ Feature: Terraform support for root deployment
 
   Scenario: a deployment, or a part, is done using a concourse pipeline
     But needs documentation
-      TODO (Cucumber::Pending)
-      ./features/step_definitions/pipeline_generation.rb:55:in `"needs documentation"'
-      features/terraform_support_for_root_deployment.feature:10:in `But needs documentation'
 
-12 scenarios (10 pending, 2 passed)
-32 steps (10 pending, 22 passed)
-0m6.650s
+12 scenarios (10 undefined, 2 passed)
+32 steps (10 skipped, 10 undefined, 12 passed)
+0m5.978s
+
+You can implement step definitions for undefined steps with these snippets:
+
+Given("Hello world generated pipelines from reference_dataset") do
+  pending # Write code here that turns the phrase above into concrete actions
+end
+

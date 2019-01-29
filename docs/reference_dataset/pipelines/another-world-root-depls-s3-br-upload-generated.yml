@@ -35,7 +35,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -70,3 +70,45 @@ jobs:
       FLY_USERNAME: ((concourse-another-world-root-depls-username))
       FLY_PASSWORD: "((concourse-another-world-root-depls-password))"
       FLY_TEAM: main
+- name: retrigger-all-uploads
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+  - task: generate-another-world-root-depls-pipeline
+    output_mapping: {result-dir: trigger-another-world-root-depls-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+      params:
+        BUILD_PIPELINE_NAME: another-world-root-depls-s3-br-upload-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: trigger-another-world-root-depls-plan}
+    output_mapping: {flight-report: concourse-another-world-root-depls-trigger-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-another-world-root-depls-target))
+      FLY_USERNAME: ((concourse-another-world-root-depls-username))
+      FLY_PASSWORD: ((concourse-another-world-root-depls-password))
+      FLY_TEAM: upload
+groups:
+- name: Another-world-root-depls
+  jobs:
+  - init-concourse-boshrelease-for-another-world-root-depls
+  - retrigger-all-uploads

@@ -104,7 +104,7 @@ resources:
     client: ((bosh-username))
     client_secret: "((bosh-password))"
     deployment: bosh-deployment-sample
-    ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDFDCCAfygAwIBAgIRAJhACeUupTq0v90nAyb+vUowDQYJKoZIhvcNAQELBQAw\nMzEMMAoGA1UEBhMDVVNBMRYwFAYDVQQKEw1DbG91ZCBGb3VuZHJ5MQswCQYDVQQD\nEwJjYTAeFw0xODA3MTEwOTE4MjZaFw0xOTA3MTEwOTE4MjZaMDMxDDAKBgNVBAYT\nA1VTQTEWMBQGA1UEChMNQ2xvdWQgRm91bmRyeTELMAkGA1UEAxMCY2EwggEiMA0G\nCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQDMlqBlpRz8h1nnqGm1rdOTRZO+yddM\nl4YwvDf9hpPVm0gqFrmIlcGFVTZ6+PbU9x8kklx+BwmB9dA2D1Vo1VMz7VQPsGu4\n1pEmSLpaxz86LshW8JjCDauMblFIm+baB0o5MmukJzZzqdQv4kn2s5+57fVUQz33\nk20T1mahuA0INzbHwO4vX1WGteInTH3GsDLOyVGSMTrpuUAUZgfU8IR019BzgaiA\nYIBRU//VRv68PesQFtOXxOcM9V0BiTrs3yGRWGevvcfqP/6EI6qA+b+AJi/IhxbR\nO+fxo58lUIRw0OrmmoEDuuHO6kCCe590YLU5wAttvp8baahLFrsEBTIJAgMBAAGj\nIzAhMA4GA1UdDwEB/wQEAwIBBjAPBgNVHRMBAf8EBTADAQH/MA0GCSqGSIb3DQEB\nCwUAA4IBAQDGvUob4v0Mm2MIpE0IAbEa0oDCGiF99PhYHZwrvpdQjr/iVHd/7i+y\nI7q4YFswRGj5oGj5zRjW9bFVKB6DJsyBD0NpcLTy7VEewkT8mwd2GmZkmRWFQYcA\n2RUhIFGpYSI+g7ed6ZuPX2P4+92mxURHElTAuRTrrw5vqUVsebZO49tuvyXqmghP\nAyKvSQanegmNviGdkHTWKPyD3nP2Ms0lBgGZxFfhlN4sPTWHxfEpud4xLX/AhW6X\n8QS3GQ4QwevfKnUekbciU7CASVCymAKupFAxjksyz8xmHvalXe83HK+G7AmsYkEl\nYowS7B+zXRNZHGoagYkRSBeaSKlIpZXF\n-----END CERTIFICATE-----\n"
+    ca_cert: 
 - name: secrets-hello-world-root-depls-trigger
   type: git
   source:
@@ -142,6 +142,7 @@ resources:
   source:
     user: cloudfoundry-community
     repository: vault-boshrelease
+    access_token: ((bot-github-access-token))
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -476,11 +477,11 @@ jobs:
       # source_file: bosh-generated-config/bosh_config.json
       stemcells:
       - ((stemcell-main-name))/stemcell.tgz
-      releases:
-      - bosh-openstack-cpi-release/release.tgz
-      - nginx/release.tgz
-      - ntp/release.tgz
-      - vault/release.tgz
+      releases: 
+      - "bosh-openstack-cpi-release/*.tgz"
+      - "nginx/*.tgz"
+      - "ntp/*.tgz"
+      - "vault/*.tgz"
       ops_files:
       - ops-and-vars-files/operators/*
       vars_files:

@@ -24,6 +24,15 @@ resources:
     - name: main
       username: ((concourse-hello-world-root-depls-username))
       password: "((concourse-hello-world-root-depls-password))"
+    - name: main
+      username: ((concourse-hello-world-root-depls-username))
+      password: "((concourse-hello-world-root-depls-password))"
+    - name: currently-disabled
+      username: ((concourse-hello-world-root-depls-username))
+      password: "((concourse-hello-world-root-depls-password))"
+    - name: upload
+      username: ((concourse-hello-world-root-depls-username))
+      password: "((concourse-hello-world-root-depls-password))"
 - name: secrets-full
   type: git
   source:
@@ -94,8 +103,48 @@ jobs:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - secrets-full/shared/concourse-credentials.yml
       - name: hello-world-root-depls-cf-apps-generated
-        team: main
+        team: currently-disabled
         config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-update-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-update-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-bosh-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-bosh-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-s3-br-upload-generated
+        team: upload
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-s3-br-upload-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-s3-stemcell-upload-generated
+        team: upload
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-s3-stemcell-upload-generated.yml
+        vars_files:
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml
+        # trick to manage <depls>-versions.yml (not included in secrets)
+        - secrets-full/shared/concourse-credentials.yml
+      - name: hello-world-root-depls-concourse-generated
+        team: main
+        config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-concourse-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - paas-templates-full/hello-world-root-depls/hello-world-root-depls-versions.yml

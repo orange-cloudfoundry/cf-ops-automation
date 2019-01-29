@@ -1,6 +1,37 @@
 # Change Log
 
-## [v3.2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.2.2) (2018-11-26)
+## [v3.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.3.0) (2019-01-29)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.2.2...v3.3.0)
+
+**Implemented enhancements:**
+
+- add a retrigger all job on \*-depls-s3-br-upload-generated pipelines [\#202](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/202)
+- UX: Include update-pipeline-ops-depls-generated job in tf group  [\#18](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/18)
+- Rename check-terraform-cf-consistency  [\#11](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/11)
+
+**Fixed bugs:**
+
+- Parallel execution limit seems to generate deadlocks in some cases [\#216](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/216)
+
+**Closed issues:**
+
+- Error during git put tasks leads to data loss \(eg tfstate changes\) [\#232](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/232)
+- Allow users to provide a GitHub access token for the "github-release" concourse resource type. [\#219](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/219)
+- reset-merged-wip-features job doesn't apply the configuration from GIT [\#218](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/218)
+- bootstrap failed to dynamically create vars\_files list for \*-update-pipeline  [\#213](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/213)
+- multiple concurrent executions of bosh errands [\#196](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/196)
+
+**Merged pull requests:**
+
+- Reorganize libs [\#227](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/227)
+- logger\(\*\): fix the logger so that it works for class methods. [\#226](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/226)
+- pipelines\(br-upload\): add a retrigger-all-uploads task [\#225](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/225)
+- 81 add ops interpolation example [\#224](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/224)
+- pipeline\(sync-feature-branches\): add hard reset job [\#222](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/222)
+- WIP: rework serial\_groups allocation [\#217](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/217)
+- Fix bootstrap failure on update-pipeline [\#214](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/214)
+
+## [v3.2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.2.2) (2018-11-23)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.2.0...v3.2.2)
 
 **Fixed bugs:**
@@ -53,10 +84,12 @@
 
 **Merged pull requests:**
 
+- 220 github-release resource type [\#221](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/221)
 - pipeline\(depls\): fix invalid bosh-errand-resource [\#200](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/200)
 - Document source of docker image used for terraform [\#198](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/198)
 - bosh config server / credhub variables fingerprint [\#194](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/194)
 - depls\(utils\) change bosh cancel all tasks vars to bosh cl1 v1 [\#193](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/193)
+- This features extend the existing tests by making use of the refence dataset [\#190](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/190)
 
 ## [v3.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.0.0) (2018-08-09)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.2.0...v3.0.0)

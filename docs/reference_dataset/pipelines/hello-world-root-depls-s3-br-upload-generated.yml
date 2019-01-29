@@ -76,7 +76,7 @@ resources:
   source:
     user: cloudfoundry-community
     repository: vault-boshrelease
-    access_token: ((github-access-token)) # this is neeed to avoid getting limited by GitHub. See https://github.com/concourse/github-release-resource/blob/master/README.md#github-releases-resource
+    access_token: ((bot-github-access-token))
 - name: vault-s3
   type: s3
   source:
@@ -93,7 +93,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -131,14 +131,55 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
-      FLY_TEAM: main
+      FLY_TEAM: upload
+- name: retrigger-all-uploads
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - aggregate:
+    - get: cf-ops-automation
+      params: { submodules: none}
+  - task: generate-hello-world-root-depls-pipeline
+    output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: concourse/busyboxplus, tag: "git"}
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-bosh-openstack-cpi-release" >> result-dir/flight-plan
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-nginx" >> result-dir/flight-plan
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-ntp" >> result-dir/flight-plan
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-vault" >> result-dir/flight-plan
+      params:
+        BUILD_PIPELINE_NAME: hello-world-root-depls-s3-br-upload-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: trigger-hello-world-root-depls-plan}
+    output_mapping: {flight-report: concourse-hello-world-root-depls-trigger-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
+      FLY_USERNAME: ((concourse-hello-world-root-depls-username))
+      FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
+      FLY_TEAM: upload
 - name: upload-current-bosh-openstack-cpi-release
   serial_groups: [bosh-openstack-cpi-release,concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -183,7 +224,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -228,7 +269,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -273,7 +314,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -318,7 +359,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -363,7 +404,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -408,7 +449,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -453,7 +494,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -492,3 +533,30 @@ jobs:
       params:
         file: vault/*.tgz
         acl: public-read
+groups:
+- name: Hello-world-root-depls
+  jobs:
+  - init-concourse-boshrelease-for-hello-world-root-depls
+  - retrigger-all-uploads
+  - upload-current-bosh-openstack-cpi-release
+  - upload-latest-bosh-openstack-cpi-release
+  - upload-current-nginx
+  - upload-latest-nginx
+  - upload-current-ntp
+  - upload-latest-ntp
+  - upload-current-vault
+  - upload-latest-vault
+- name: "n*"
+  jobs:
+  - upload-current-nginx
+  - upload-latest-nginx
+  - upload-current-ntp
+  - upload-latest-ntp
+- name: "v*"
+  jobs:
+  - upload-current-vault
+  - upload-latest-vault
+- name: "b*"
+  jobs:
+  - upload-current-bosh-openstack-cpi-release
+  - upload-latest-bosh-openstack-cpi-release
