@@ -87,27 +87,61 @@ describe PipelineHelpers do
   describe '.git_resource_loaded_submodules' do
     let(:depls) { "hello-world" }
     let(:name) { "vault" }
-    let(:all_submodules) do
-      {
-        "shared" => {
-          "submoduleA" => ["shared/submoduleA"],
-          "submoduleB" => ["shared/submoduleB"]
-        },
-        "shared2" => { "submoduleC" => ["shared2/submoduleC"] },
-        "shared3" => { "submoduleD" => ["shared3/submoduleD"]}
-      }
+
+    context "when submodules and observed paths and/or the deployment have files/paths in common" do
+      let(:all_submodules) do
+        {
+          "shared" => {
+            "submoduleA" => ["shared/submoduleA"],
+            "submoduleB" => ["shared/submoduleB"]
+          },
+          "shared2" => { "submoduleC" => ["shared2/submoduleC"] },
+          "shared3" => { "submoduleD" => ["shared3/submoduleD"]},
+          "hello-world" => {
+            "vault" => ["hello-world/vault"]
+          }
+        }
+      end
+
+      let(:observed_paths) { ["shared/submoduleA/ntp-operators.yml", "shared2"] }
+
+      it "returns the common submodules and the " do
+        loaded_submodules = described_class.git_resource_loaded_submodules(
+          depls: depls,
+          name: name,
+          loaded_submodules: all_submodules,
+          observed_paths: observed_paths
+        )
+
+        expect(loaded_submodules).to eq(["hello-world/vault", "shared/submoduleA", "shared2/submoduleC"])
+      end
     end
-    let(:observed_paths) { ["shared/submoduleA/ntp-operators.yml", "shared2"] }
 
-    it "loaded submodules that are (indirectly) listed in :observed_path" do
-      loaded_submodules = described_class.git_resource_loaded_submodules(
-        depls: depls,
-        name: name,
-        loaded_submodules: all_submodules,
-        observed_paths: observed_paths
-      )
+    context "when submodules and observed paths and/or the deployment do not have files/paths in common" do
+      let(:observed_paths) { ["shared4"] }
+      let(:all_submodules) do
+        {
+          "shared" => {
+            "submoduleA" => ["shared/submoduleA"],
+            "submoduleB" => ["shared/submoduleB"]
+          },
+          "shared2" => { "submoduleC" => ["shared2/submoduleC"] },
+          "shared3" => { "submoduleD" => ["shared3/submoduleD"]},
+          "hello-world" => {
+            "cassandra" => ["hello-world/vault"]
+          }
+        }
+      end
 
-      expect(loaded_submodules).to eq(["shared/submoduleA", "shared2/submoduleC"])
+      it "returns 'none'" do
+        loaded_submodules = described_class.git_resource_loaded_submodules(
+          depls: depls,
+          name: name,
+          loaded_submodules: all_submodules,
+          observed_paths: observed_paths
+        )
+        expect(loaded_submodules).to eq("none")
+      end
     end
   end
 end
