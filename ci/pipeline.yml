@@ -202,12 +202,12 @@ jobs:
     plan:
       - aggregate:
         - get: cf-ops-automation-docker-image
-          passed: [unit-tests]
+          passed: [unit-tests, integration-tests]
           trigger: true
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-          passed: [unit-tests]
+          passed: [unit-tests, integration-tests]
       - task: run-acceptance-tests
         attempts: 2
         image: cf-ops-automation-docker-image
@@ -233,11 +233,10 @@ jobs:
     plan:
       - aggregate:
         - get: cf-ops-automation
-          passed: [unit-tests]
           resource: ci-develop
           trigger: true
         - get: cf-ops-automation-docker-image
-          passed: [unit-tests]
+          passed: [build-cached-image]
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image
@@ -268,7 +267,7 @@ jobs:
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
 
       - task: upload-pipelines
-        attempts: 1
+        attempts: 2
         image: cf-ops-automation-docker-image
         config: &integration_tests_upload-pipelines_task_config
           platform: linux
@@ -288,10 +287,10 @@ jobs:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-          passed: [acceptance-tests, integration-tests]
+          passed: [acceptance-tests]
         - get: cf-ops-automation-docker-image
           trigger: true
-          passed: [acceptance-tests, integration-tests]
+          passed: [acceptance-tests]
 
       - task: generate-living-documentation
         config:
@@ -547,13 +546,13 @@ jobs:
     plan:
       - aggregate:
         - get: cf-ops-automation-docker-image
-          passed: [PullRequests-UnitTests]
+          passed: [PullRequests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
           resource: PR-develop
           trigger: true
           version: every
-          passed: [PullRequests-UnitTests]
+          passed: [PullRequests-build-cached-image]
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image
