@@ -43,8 +43,9 @@ module PipelineHelpers
       all_submodules = loaded_submodules.values.map(&:values).flatten.uniq
       shared_paths = find_shared_paths(all_submodules, observed_paths)
       observed_submodules.push(*shared_paths)
+      clean_observed_submodules = observed_submodules.flatten.compact.uniq
 
-      observed_submodules.empty? ? "none" : observed_submodules.uniq
+      clean_observed_submodules.empty? ? "none" : clean_observed_submodules
     end
 
     private
