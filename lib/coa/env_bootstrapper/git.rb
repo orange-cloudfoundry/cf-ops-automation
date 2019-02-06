@@ -21,6 +21,7 @@ module Coa
       end
 
       def push_templates_repo
+        logger.log_and_puts :info, "Creating templates repo"
         init_and_push(TEMPLATES_REPO_DIR, "paas-templates")
 
         Dir.chdir TEMPLATES_REPO_DIR do
@@ -31,6 +32,8 @@ module Coa
       end
 
       def push_secrets_repo(concourse_config)
+        logger.log_and_puts :info, "Creating secrets repo"
+
         write_concourse_credentials(concourse_config)
         write_git_config
         write_bosh_ca_cert_file
@@ -39,6 +42,7 @@ module Coa
       end
 
       def push_cf_ops_automation
+        logger.log_and_puts :info, "Creating cf_ops_automation repo"
         Dir.chdir PROJECT_ROOT_DIR do
           remote_name = SecureRandom.hex
           branch_name = SecureRandom.hex
@@ -76,17 +80,28 @@ module Coa
 
       def init_and_push(repo_path, repo_name)
         coa_submodule_path = "shared-files/cf-ops-automation-reference-dataset-submodule-sample"
+        git_commit_message_file = ".git/coa_commit"
         Dir.chdir repo_path do
+          latest_coa_commit_detail = run_cmd "git log -1"
           submodule_commit_reference = templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
           run_cmd "git init ."
           run_cmd "git config --local user.email 'coa_env_bootstrapper@example.com'"
           run_cmd "git config --local user.name 'Fake User For COA Bootstrapper Pipeline'"
+          File.open(git_commit_message_file, 'w') { |file| file.write "Original COA commit:\n";file.write latest_coa_commit_detail }
           run_cmd "git remote remove origin" if remote_exists?("origin")
           run_cmd "git remote add origin git://#{server_ip}/#{repo_name}"
           create_git_submodule_from_templates_repo(coa_submodule_path, repo_path, submodule_commit_reference)
-          run_cmd "git add -A && git commit -m 'Commit'", fail_silently: true
+          run_cmd "git add -A && git commit --file #{git_commit_message_file}", fail_silently: true
           run_cmd "git checkout master"
           bosh_sourced_cmd "git push origin master --force" # not working with virtualbox? `bucc routes`
+        end
+      end
+
+      def cleanup_templates_coa_git_info(repo_path)
+        return unless repo_path == TEMPLATES_REPO_DIR
+        Dir.chdir repo_path do
+          run_cmd "rm -rf .git"
+          run_cmd "rm -f .gitmodules"
         end
       end
 
