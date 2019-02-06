@@ -51,6 +51,7 @@ module Coa
         file.write(manifest.to_yaml)
         file.close
         client.deploy("git-server", file.path)
+        logger.log_and_puts :info, "git-server is available at #{git_server_ip}"
       ensure
         file&.unlink
       end
