@@ -114,7 +114,7 @@ jobs:
       params:
         channel: ((slack-channel))
         text: |
-          Failed to run <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
+          Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
           https://github.com/orange-cloudfoundry/cf-ops-automation/commit/$TEXT_FILE_CONTENT
         text_file: cf-ops-automation/.git/ref
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
@@ -265,6 +265,7 @@ jobs:
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
+
 
       - task: upload-pipelines
         attempts: 2
@@ -462,7 +463,7 @@ jobs:
         channel: ((slack-channel))
         text: |
           $TEXT_FILE_CONTENT
-          Failed to run <$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
+          Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
         text_file: cf-ops-automation/.git/url
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
@@ -585,7 +586,7 @@ jobs:
           channel: ((slack-channel))
           text: |
             $TEXT_FILE_CONTENT
-            Pull request successfully ran tests :<$ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/>
+            Pull request successfully ran tests :<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/>
           text_file: cf-ops-automation/.git/url
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
