@@ -7,6 +7,7 @@ require_relative 'extended_config'
 # an extended configuration (based on environment variables)
 class Config
   DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-trusty-go_agent'.freeze
+  DEFAULT_STEMCELL_PREFIX = 'bosh'.freeze
   CONFIG_DEFAULT_KEY = 'default'.freeze
   CONFIG_CONCOURSE_KEY = 'concourse'.freeze
   CONFIG_STEMCELL_KEY = 'stemcell'.freeze

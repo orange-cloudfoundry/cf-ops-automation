@@ -1,3 +1,4 @@
+---
 cf-app:
   generic-app:
     cf_api_url: https://my-cloudfroundry.org

@@ -6,5 +6,6 @@ module Coa
     require_relative './utils/coa_logger'
     require_relative './utils/command_runner'
     require_relative './utils/concourse'
+    require_relative './utils/cf'
   end
 end

@@ -6,11 +6,11 @@ module Coa
     # This class represents the config given by the user at the time of creation
     # of the environment by the bootstrapper.
     class Prereqs
-      CONFIGS_LIST = %(bosh bucc concourse cloud_config git_server_manifest inactive_steps pipeline_vars stemcell).freeze
+      CONFIGS_LIST = %(bosh bucc concourse cloud_config git_server_manifest inactive_steps pipeline_vars stemcell cf).freeze
 
       include Coa::Utils::CoaLogger
 
-      attr_reader :bosh, :bucc, :concourse, :cloud_config, :git_server_manifest, :inactive_steps, :pipeline_vars, :stemcell
+      attr_reader :bosh, :bucc, :concourse, :cloud_config, :git_server_manifest, :inactive_steps, :pipeline_vars, :stemcell, :cf
 
       def initialize(prereqs_config = {})
         @bosh                = prereqs_config["bosh"]
@@ -21,6 +21,7 @@ module Coa
         @inactive_steps      = prereqs_config["inactive_steps"] || []
         @pipeline_vars       = prereqs_config["pipeline_vars"] || {}
         @stemcell            = prereqs_config["stemcell"] || {}
+        @cf                  = prereqs_config["cf"] || {}
       end
 
       def self.new_from_paths(prereqs_paths)
@@ -43,7 +44,8 @@ module Coa
           bosh:                bosh,
           git_server_manifest: git_server_manifest,
           concourse:           concourse,
-          pipeline_vars:       pipeline_vars
+          pipeline_vars:       pipeline_vars,
+          cf:                  cf
         }
       end
     end

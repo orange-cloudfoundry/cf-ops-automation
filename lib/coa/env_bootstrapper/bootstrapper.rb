@@ -2,6 +2,7 @@ require 'tmpdir'
 
 require_relative './base'
 require_relative './bosh'
+require_relative './cf'
 require_relative './concourse'
 require_relative './env_creator'
 require_relative './git'
@@ -28,6 +29,7 @@ module Coa
       def perform
         env_creator.deploy_transient_infra unless inactive_step?("deploy_transient_infra")
         bosh.prepare_environment(prereqs)
+        cf.prepare_environment(prereqs)
         git.prepare_environment(concourse.config, pipeline_vars)
 
         return if inactive_step?("run_pipelines")
@@ -57,6 +59,10 @@ module Coa
         config_source = prereqs.bosh || env_creator.vars
         bosh_config = Coa::Utils::Bosh::Config.new(config_source)
         Coa::EnvBootstrapper::Bosh.new(bosh_config)
+      end
+
+      def cf
+        Coa::EnvBootstrapper::Cf.new({})
       end
 
       def git

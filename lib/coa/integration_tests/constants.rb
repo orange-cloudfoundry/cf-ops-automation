@@ -37,10 +37,10 @@ module Coa
             "save-deployed-pipelines"  => {}
           }
         },
-        "hello-world-root-depls-init-generated" => {
+        "hello-world-root-depls-cf-apps-generated" => {
           "team" => "main",
           "jobs" => {
-            "update-pipeline-hello-world-root-depls" => {}
+            "cf-push-generic-app" => {}
           }
         },
         "hello-world-root-depls-bosh-generated" => {
@@ -56,6 +56,12 @@ module Coa
             "recreate-all"                                                       => { "trigger" => true },
             "recreate-bosh-deployment-sample"                                    => {},
             "cancel-all-bosh-tasks"                                              => { "trigger" => true }
+          }
+        },
+        "hello-world-root-depls-init-generated" => {
+          "team" => "main",
+          "jobs" => {
+            "update-pipeline-hello-world-root-depls" => {}
           }
         },
         "hello-world-root-depls-generated" => {
@@ -100,14 +106,8 @@ module Coa
         "hello-world-root-depls-s3-stemcell-upload-generated" => {
           "team" => "upload",
           "jobs" => {
-            "init-concourse-stemcells-for-hello-world-root-depls"    => { "trigger" => true },
+            "init-concourse-stemcells-for-hello-world-root-depls" => { "trigger" => true },
             "upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent" => { "pause" => true }
-          }
-        },
-        "hello-world-root-depls-cf-apps-generated" => {
-          "team" => "main",
-          "jobs" => {
-            "cf-push-generic-app" => { "pause" => true }
           }
         }
       }.freeze
