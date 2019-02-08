@@ -41,12 +41,14 @@ describe Coa::EnvBootstrapper::Bootstrapper do
   describe '#perform' do
     let(:generated_concourse_credentials) { { "secret-uri" => "generated" } }
     let(:bosh) { Coa::EnvBootstrapper::Bosh.new({}) }
+    let(:cf) { Coa::EnvBootstrapper::Cf.new({}) }
     let(:git) { Coa::EnvBootstrapper::Git.new(bosh) }
     let(:concourse) { Coa::EnvBootstrapper::Concourse.new({}) }
     let(:env_creator) { Coa::EnvBootstrapper::EnvCreator.new() }
     let(:git_server_ip) { "1.1.1.1" }
 
     before do
+      allow(bs).to       receive(:cf).and_return(cf)
       allow(bs).to       receive(:bosh).and_return(bosh)
       allow(bs).to       receive(:git).and_return(git)
       allow(bs).to       receive(:concourse).and_return(concourse)
@@ -61,12 +63,14 @@ describe Coa::EnvBootstrapper::Bootstrapper do
       it "executes all steps" do
         allow(env_creator).to receive(:deploy_transient_infra)
         allow(bosh).to        receive(:prepare_environment)
+        allow(cf).to        receive(:prepare_environment)
         allow(git).to         receive(:prepare_environment)
         allow(concourse).to   receive(:run_pipelines)
 
         bs.perform
 
         expect(env_creator).to have_received(:deploy_transient_infra)
+        expect(cf).to        have_received(:prepare_environment)
         expect(bosh).to        have_received(:prepare_environment)
         expect(git).to         have_received(:prepare_environment)
         expect(concourse).to   have_received(:run_pipelines).
@@ -86,6 +90,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
 
       it "ignores the deactivated steps" do
         allow(env_creator).to receive(:deploy_transient_infra)
+        allow(cf).to          receive(:prepare_environment)
         allow(bosh).to        receive(:prepare_environment)
         allow(git).to         receive(:prepare_environment)
         allow(concourse).to   receive(:run_pipelines)
@@ -94,6 +99,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
 
         expect(env_creator).not_to have_received(:deploy_transient_infra)
         expect(bosh).to            have_received(:prepare_environment)
+        expect(cf).to            have_received(:prepare_environment)
         expect(git).to             have_received(:prepare_environment)
         expect(concourse).to       have_received(:run_pipelines)
       end
