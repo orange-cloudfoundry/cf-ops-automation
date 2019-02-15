@@ -65,6 +65,7 @@ jobs:
 <% pipeline_name="#{depls}-update-generated" %>
 
 - name: update-pipeline-<%= depls %>
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -129,6 +130,7 @@ jobs:
       COMMIT_MESSAGE: "Generated pipelines update for <%= depls %>"
       OLD_DIR: "coa/pipelines/generated"
   - put: secrets-writer
+    attempts: 2
     params:
       repository: generated-pipelines
       rebase: true
