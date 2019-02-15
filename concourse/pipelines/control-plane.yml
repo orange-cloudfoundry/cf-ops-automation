@@ -189,12 +189,14 @@ jobs:
       passed: [on-git-commit]
     - get: config-resource
       resource: secrets-generated-pipelines
+      attempts: 2
       params: { submodules: none}
       trigger: true
 #      version: every
       passed: [on-git-commit]
     - get: templates-resource
       resource: paas-templates-versions
+      attempts: 2
       params: { submodules: none}
       trigger: true
 #      version: every
@@ -217,6 +219,7 @@ jobs:
   - task: generate-concourse-pipeline-config
     file: cf-ops-automation/concourse/tasks/generate_concourse_pipeline_config/task.yml
   - put: fe-int-micro
+    attempts: 3
     params:
       pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
 
@@ -239,6 +242,7 @@ jobs:
       passed: [on-git-commit]
   - put: paas-templates-scanned
     get_params: {submodules: none}
+    attempts: 2
     params:
       repository: paas-templates-full
       force: true
