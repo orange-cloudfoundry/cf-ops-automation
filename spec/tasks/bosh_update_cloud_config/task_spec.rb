@@ -10,9 +10,11 @@ describe 'bosh_update_cloud_config task' do
       @secrets = Dir.mktmpdir
 
       FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-vars.yml'))
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '01-my-custom-cloud-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '02-my-custom-cloud-operators.yml'))
       FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-vars.yml'))
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '01-my-custom-runtime-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '02-my-custom-runtime-operators.yml'))
 
       fly_cli_environment = {
         'BOSH_TARGET' => 'https://dummy-bosh',
@@ -38,12 +40,12 @@ describe 'bosh_update_cloud_config task' do
       expect(@output).to include('targeting https://dummy-bosh')
     end
 
-    it 'selects only config operators' do
-      expect(@output).to include('Operators detected: <-o ./config-manifest/my-custom-cloud-operators.yml >')
+    it 'selects only config operators sorted in alphabetical order' do
+      expect(@output).to include('Operators detected: < -o ./config-manifest/01-my-custom-cloud-operators.yml -o ./config-manifest/02-my-custom-cloud-operators.yml>')
     end
 
     it 'selects only config vars' do
-      expect(@output).to include('Vars files detected: <-l ./config-manifest/my-custom-cloud-vars.yml >')
+      expect(@output).to include('Vars files detected: < -l ./config-manifest/my-custom-cloud-vars.yml>')
     end
 
     it 'displays an error message' do
