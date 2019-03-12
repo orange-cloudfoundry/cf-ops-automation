@@ -73,7 +73,7 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-- name: fe-int-micro
+- name: concourse-micro
   type: concourse-pipeline
   source:
     target: ((concourse-micro-depls-target))
@@ -105,7 +105,7 @@ jobs:
       params: { submodules: none}
     - get: secrets-writer
       params: { submodules: none}
-    - get: fe-int-micro
+    - get: concourse-micro
       trigger: true
 #      version: every #not sure we need to trigger on each change
   - task: list-pipelines
@@ -115,14 +115,14 @@ jobs:
         type: docker-image
         source: {repository: concourse/busyboxplus, tag: "git"}
       inputs:
-      - name: fe-int-micro
+      - name: concourse-micro
       run:
         path: sh
         args:
         - -ec
         - |
-          ls -lrt fe-int-micro
-          ls -lrt fe-int-micro|wc -l
+          ls -lrt concourse-micro
+          ls -lrt concourse-micro|wc -l
   - task: sort-pipelines
     config:
       platform: linux
@@ -130,7 +130,7 @@ jobs:
         type: docker-image
         source: {repository: ruby, tag: 2.3.5}
       inputs:
-      - name: fe-int-micro
+      - name: concourse-micro
       outputs:
       - name: sorted-pipelines
       run:
@@ -138,7 +138,7 @@ jobs:
         args:
           - -ec
           - |
-            cp -p fe-int-micro/*.yml sorted-pipelines/
+            cp -p concourse-micro/*.yml sorted-pipelines/
             cd sorted-pipelines
             ruby -ryaml -e 'Dir["*.yml"].each { |yaml_file| puts "processing #{yaml_file}"; yaml = YAML.load_file(yaml_file); yaml["resources"] = yaml["resources"]&.sort_by { |x| x["name"]}; yaml["resource_types"] = yaml["resource_types"]&.sort_by { |x| x["name"]}; puts "rewriting #{yaml_file}"; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) } }'
 
@@ -218,7 +218,7 @@ jobs:
           du -a config-resource/coa/pipelines/generated|wc -l
   - task: generate-concourse-pipeline-config
     file: cf-ops-automation/concourse/tasks/generate_concourse_pipeline_config/task.yml
-  - put: fe-int-micro
+  - put: concourse-micro
     attempts: 3
     params:
       pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
@@ -294,7 +294,7 @@ jobs:
             cd ${DEST_DIR}
             rm -rfv *
             git add .
-            git commit -m"Reset COA generated pipelines"
+            git commit -m"Reset COA generated pipelines" --allow-empty
           fi
       params:
         GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
