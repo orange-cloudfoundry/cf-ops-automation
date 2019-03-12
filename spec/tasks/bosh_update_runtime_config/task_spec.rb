@@ -8,10 +8,12 @@ describe 'bosh_update_runtime_config task' do
       @config_manifest = Dir.mktmpdir
       @secrets = Dir.mktmpdir
 
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-config-vars.yml'))
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-config-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, 'my-custom-cloud-vars.yml'))
+      FileUtils.touch(File.join(@config_manifest, '01-my-custom-cloud-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '02-my-custom-cloud-operators.yml'))
       FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-vars.yml'))
-      FileUtils.touch(File.join(@config_manifest, 'my-custom-runtime-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '01-my-custom-runtime-operators.yml'))
+      FileUtils.touch(File.join(@config_manifest, '02-my-custom-runtime-operators.yml'))
 
       @output = execute('-c concourse/tasks/bosh_update_runtime_config.yml ' \
         '-i scripts-resource=. ' \
@@ -36,12 +38,12 @@ describe 'bosh_update_runtime_config task' do
       expect(@output).to include("no address for dummy-bosh")
     end
 
-    it 'selects only runtime operators' do
-      expect(@output).to include('Operators detected: <-o ./config-manifest/my-custom-runtime-operators.yml >')
+    it 'selects only runtime operators sorted in alphabetical order' do
+      expect(@output).to include('Operators detected: < -o ./config-manifest/01-my-custom-runtime-operators.yml -o ./config-manifest/02-my-custom-runtime-operators.yml>')
     end
 
     it 'selects only runtime vars' do
-      expect(@output).to include('Vars files detected: <-l ./config-manifest/my-custom-runtime-vars.yml >')
+      expect(@output).to include('Vars files detected: < -l ./config-manifest/my-custom-runtime-vars.yml>')
     end
   end
 

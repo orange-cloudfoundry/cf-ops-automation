@@ -18,11 +18,11 @@ VARS_FILES=""
 OPS_FILES=""
 
 for a_vars_file in $(ls ./config-manifest/*${VARS_FILES_SUFFIX}); do
-    VARS_FILES="-l ${a_vars_file} ${VARS_FILES}"
+    VARS_FILES="${VARS_FILES} -l ${a_vars_file}"
 done
 
 for an_ops_file in $(ls ./config-manifest/*${OPS_FILES_SUFFIX}); do
-    OPS_FILES="-o ${an_ops_file} ${OPS_FILES}"
+    OPS_FILES="${OPS_FILES} -o ${an_ops_file}"
 done
 
 echo "Operators detected: <${OPS_FILES}>"
