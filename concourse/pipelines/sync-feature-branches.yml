@@ -59,10 +59,12 @@ jobs:
   plan:
     - aggregate:
       - get: paas-templates-features
+        attempts: 2
         params: { submodules: none }
         trigger: true
         version: every
     - put: features-or-wip-merged
+      attempts: 2
       get_params: {submodules: none }
       params:
         repository: paas-templates-features
@@ -101,6 +103,7 @@ jobs:
 
     - put: features-or-wip-merged
       get_params: {submodules: none}
+      attempts: 2
       params:
         repository: paas-templates-features-reseted
         force: true
