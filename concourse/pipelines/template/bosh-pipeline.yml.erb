@@ -651,6 +651,7 @@ jobs:
       manifest-dir: final-release-manifest
       secrets: secrets-<%= name %>
       scripts-resource: cf-ops-automation
+    output_mapping: { result-dir: interpolated-manifest }
     file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
     params:
        VARS_FILES_SUFFIX: "*/*vars.yml"
@@ -659,6 +660,21 @@ jobs:
   <% end %>
   - put: <%= name %>-deployment
     attempts: 2
+    on_failure:
+      do:
+        - task: update-<%= name %>-files
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: interpolated-manifest}
+          output_mapping: {updated-git-resource: failed-<%= name %>-secrets}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: <%= depls %>/<%= name %>/<%= name %>-last-deployment-failure.yml
+            NEW_FILE: "interpolated-<%= name %>.yml"
+            COMMIT_MESSAGE: "Failed to deploy <%= name %> manifest - [skip ci]"
+        - put: secrets-full-writer
+          get_params: {submodules: none}
+          params:
+            repository: failed-<%= name %>-secrets
+            rebase: true
     params:
       manifest: final-release-manifest/<%= name %>.yml
       # source_file: bosh-generated-config/bosh_config.json
@@ -682,6 +698,8 @@ jobs:
       - ops-and-vars-files/vars/*
   <% end %>
       cleanup: true
+
+
   - task: bosh-variables
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= name %>}
     output_mapping: {result-dir: bosh-variables-result}
