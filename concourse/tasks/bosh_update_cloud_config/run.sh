@@ -37,4 +37,5 @@ diff $OLD_CONFIG config-manifest/cloud-config.yml || true
 bosh -n int ${VARS_FILES} ${OPS_FILES} config-manifest/cloud-config.yml
 
 bosh -n update-cloud-config ${VARS_FILES} ${OPS_FILES} config-manifest/cloud-config.yml
+bosh -n cloud-config > deployed-config/cloud-config.yml
 

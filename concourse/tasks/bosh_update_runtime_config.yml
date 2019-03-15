@@ -22,7 +22,8 @@ inputs:
   - name: config-manifest
   - name: secrets
   - name: scripts-resource
-
+outputs:
+  - name: deployed-config
 run:
   path: scripts-resource/concourse/tasks/bosh_update_runtime_config/run.sh
 params:

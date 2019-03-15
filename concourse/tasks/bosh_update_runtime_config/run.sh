@@ -38,4 +38,5 @@ diff $OLD_CONFIG config-manifest/runtime-config.yml || true
 bosh -n int ${VARS_FILES} ${OPS_FILES} config-manifest/runtime-config.yml
 
 bosh -n update-runtime-config ${VARS_FILES} ${OPS_FILES} config-manifest/runtime-config.yml
+bosh -n runtime-config > deployed-config/runtime-config.yml
 
