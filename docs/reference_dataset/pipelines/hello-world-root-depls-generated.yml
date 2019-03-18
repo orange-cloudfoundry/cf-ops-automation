@@ -77,14 +77,14 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["hello-world-root-depls/bosh-deployment-sample","shared"]
+    paths: ["hello-world-root-depls/bosh-deployment-sample", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-bosh-deployment-sample
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["hello-world-root-depls/bosh-deployment-sample"]
+    paths: ["hello-world-root-depls/bosh-deployment-sample", "shared-files"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: bosh-deployment-sample-deployment
@@ -105,9 +105,6 @@ resources:
       username: ((concourse-hello-world-root-depls-username))
       password: "((concourse-hello-world-root-depls-password))"
     - name: main
-      username: ((concourse-hello-world-root-depls-username))
-      password: "((concourse-hello-world-root-depls-password))"
-    - name: currently-disabled
       username: ((concourse-hello-world-root-depls-username))
       password: "((concourse-hello-world-root-depls-password))"
     - name: upload
@@ -139,10 +136,6 @@ resources:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
-- name: bosh-openstack-cpi-release
-  type: bosh-io-release
-  source:
-    repository: cloudfoundry-incubator/bosh-openstack-cpi-release
 - name: nginx
   type: bosh-io-release
   source:
@@ -163,7 +156,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -185,7 +178,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -212,7 +205,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -238,7 +231,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -247,10 +240,10 @@ jobs:
     - aggregate:
       - get: secrets-hello-world-root-depls-limited
         params: { submodules: none}
-#        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+        passed: [update-pipeline-hello-world-root-depls-generated]
       - get: paas-templates-hello-world-root-depls
         params: { submodules: none}
-#        <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+        passed: [update-pipeline-hello-world-root-depls-generated]
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [update-pipeline-hello-world-root-depls-generated]
@@ -271,7 +264,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -280,11 +273,11 @@ jobs:
     - get: secrets-hello-world-root-depls-limited
       params: { submodules: none}
       trigger: true
-#      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+      passed: [update-pipeline-hello-world-root-depls-generated]
     - get: paas-templates-hello-world-root-depls
       params: { submodules: none}
       trigger: true
-#      <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
+      passed: [update-pipeline-hello-world-root-depls-generated]
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
@@ -325,7 +318,7 @@ jobs:
             put: failure-alert
             params:
               channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
@@ -356,7 +349,7 @@ jobs:
             put: failure-alert
             params:
               channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
@@ -372,7 +365,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -387,10 +380,6 @@ jobs:
       params: { submodules: none}
       passed: [update-pipeline-hello-world-root-depls-generated]
       trigger: true
-    - get: bosh-openstack-cpi-release
-      version: { version: "((bosh-openstack-cpi-release-version))" }
-      trigger: true
-      attempts: 2
     - get: nginx
       version: { version: "((nginx-version))" }
       trigger: true
@@ -409,7 +398,7 @@ jobs:
 #     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
     - get: paas-templates-bosh-deployment-sample
       trigger: true
-      params: { submodules: none}
+      params: { submodules: none }
 #     <!--passed: [update-pipeline-hello-world-root-depls-generated]-->
   - task: generate-bosh-deployment-sample-manifest
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-bosh-deployment-sample, additional-resource: paas-templates-bosh-deployment-sample}
@@ -502,7 +491,6 @@ jobs:
       stemcells:
       - ((stemcell-main-name))/stemcell.tgz
       releases: 
-      - "bosh-openstack-cpi-release/*.tgz"
       - "nginx/*.tgz"
       - "ntp/*.tgz"
       - "vault/*.tgz"
@@ -554,7 +542,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -593,7 +581,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   serial_groups: [recreate]
@@ -614,7 +602,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   serial_groups: [recreate]
@@ -664,7 +652,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -694,7 +682,6 @@ jobs:
         args:
         - -ec
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-cpi-release --from version:((bosh-openstack-cpi-release-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" | tee -a result-dir/flight-plan
@@ -715,7 +702,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -771,7 +758,7 @@ jobs:
         # trick to manage <depls>-versions.yml (not included in secrets)
         - secrets-hello-world-root-depls-trigger/shared/concourse-credentials.yml
       - name: hello-world-root-depls-cf-apps-generated
-        team: currently-disabled
+        team: main
         config_file: concourse-hello-world-root-depls-pipeline/concourse/pipelines/hello-world-root-depls-cf-apps-generated.yml
         vars_files:
         # trick to manage <depls>-versions.yml (not included in secrets)
@@ -851,7 +838,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -894,7 +881,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -945,7 +932,7 @@ jobs:
         put: failure-alert
         params:
           channel: ((slack-channel))
-          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
       on_success:

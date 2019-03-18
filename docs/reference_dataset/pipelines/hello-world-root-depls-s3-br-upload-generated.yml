@@ -29,20 +29,6 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
-- name: bosh-openstack-cpi-release
-  type: bosh-io-release
-  source:
-    repository: cloudfoundry-incubator/bosh-openstack-cpi-release
-- name: bosh-openstack-cpi-release-s3
-  type: s3
-  source:
-    bucket: ((s3-br-bucket))
-    region_name: ((s3-br-region-name))
-    regexp: cloudfoundry-incubator/bosh-openstack-cpi-release-(.*).tgz
-    access_key_id: ((s3-br-access-key-id))
-    secret_access_key: ((s3-br-secret-key))
-    endpoint: ((s3-br-endpoint))
-    skip_ssl_verification: ((s3-br-skip-ssl-verification))
 - name: nginx
   type: bosh-io-release
   source:
@@ -117,7 +103,6 @@ jobs:
         args:
         - -exc
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-cpi-release --from version:((bosh-openstack-cpi-release-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" >> result-dir/flight-plan
@@ -158,7 +143,6 @@ jobs:
         args:
         - -exc
         - |
-          echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-bosh-openstack-cpi-release" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-nginx" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-ntp" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-vault" >> result-dir/flight-plan
@@ -173,98 +157,8 @@ jobs:
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
       FLY_TEAM: upload
-- name: upload-current-bosh-openstack-cpi-release
-  serial_groups: [bosh-openstack-cpi-release,concurrent-group-0]
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-    - aggregate:
-      - get: bosh-openstack-cpi-release
-        attempts: 2
-        version: { version: "((bosh-openstack-cpi-release-version))" }
-        trigger: true
-        params: {tarball: true}
-      - get: cf-ops-automation
-        params: { submodules: none}
-        attempts: 2
-        passed: [ init-concourse-boshrelease-for-hello-world-root-depls ]
-    - task: generate-bosh-openstack-cpi-release-name
-      input_mapping: {release: bosh-openstack-cpi-release}
-      output_mapping: {result-dir: bosh-openstack-cpi-release}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
-        inputs:
-          - name: release
-        outputs:
-          - name: result-dir
-        run:
-          path: sh
-          args:
-          - -exc
-          - |
-            VERSION=$(cat release/version)
-            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
-        params:
-          RELEASE_PREFIX: bosh-openstack-cpi-release
-    - put: bosh-openstack-cpi-release-s3
-      params:
-        file: bosh-openstack-cpi-release/*.tgz
-        acl: public-read
-- name: upload-latest-bosh-openstack-cpi-release
-  serial_groups: [bosh-openstack-cpi-release,concurrent-group-0]
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-    - aggregate:
-      - get: bosh-openstack-cpi-release
-        attempts: 2
-        version: every
-        trigger: true
-        params: {tarball: true}
-      - get: cf-ops-automation
-        params: { submodules: none}
-        attempts: 2
-        passed: [ upload-current-bosh-openstack-cpi-release ]
-    - task: generate-bosh-openstack-cpi-release-name
-      input_mapping: {release: bosh-openstack-cpi-release}
-      output_mapping: {result-dir: bosh-openstack-cpi-release}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
-        inputs:
-          - name: release
-        outputs:
-          - name: result-dir
-        run:
-          path: sh
-          args:
-          - -exc
-          - |
-            VERSION=$(cat release/version)
-            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
-        params:
-          RELEASE_PREFIX: bosh-openstack-cpi-release
-    - put: bosh-openstack-cpi-release-s3
-      params:
-        file: bosh-openstack-cpi-release/*.tgz
-        acl: public-read
 - name: upload-current-nginx
-  serial_groups: [nginx,concurrent-group-1]
+  serial_groups: [nginx,concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
@@ -309,7 +203,7 @@ jobs:
         file: nginx/*.tgz
         acl: public-read
 - name: upload-latest-nginx
-  serial_groups: [nginx,concurrent-group-1]
+  serial_groups: [nginx,concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
@@ -354,7 +248,7 @@ jobs:
         file: nginx/*.tgz
         acl: public-read
 - name: upload-current-ntp
-  serial_groups: [ntp,concurrent-group-2]
+  serial_groups: [ntp,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -399,7 +293,7 @@ jobs:
         file: ntp/*.tgz
         acl: public-read
 - name: upload-latest-ntp
-  serial_groups: [ntp,concurrent-group-2]
+  serial_groups: [ntp,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -444,7 +338,7 @@ jobs:
         file: ntp/*.tgz
         acl: public-read
 - name: upload-current-vault
-  serial_groups: [vault,concurrent-group-3]
+  serial_groups: [vault,concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -489,7 +383,7 @@ jobs:
         file: vault/*.tgz
         acl: public-read
 - name: upload-latest-vault
-  serial_groups: [vault,concurrent-group-3]
+  serial_groups: [vault,concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -538,8 +432,6 @@ groups:
   jobs:
   - init-concourse-boshrelease-for-hello-world-root-depls
   - retrigger-all-uploads
-  - upload-current-bosh-openstack-cpi-release
-  - upload-latest-bosh-openstack-cpi-release
   - upload-current-nginx
   - upload-latest-nginx
   - upload-current-ntp
@@ -548,15 +440,11 @@ groups:
   - upload-latest-vault
 - name: "n*"
   jobs:
-  - upload-current-nginx
-  - upload-latest-nginx
   - upload-current-ntp
   - upload-latest-ntp
+  - upload-current-nginx
+  - upload-latest-nginx
 - name: "v*"
   jobs:
   - upload-current-vault
   - upload-latest-vault
-- name: "b*"
-  jobs:
-  - upload-current-bosh-openstack-cpi-release
-  - upload-latest-bosh-openstack-cpi-release

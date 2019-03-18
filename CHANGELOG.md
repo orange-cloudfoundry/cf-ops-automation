@@ -1,6 +1,34 @@
 # Change Log
 
-## [v3.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.3.0) (2019-01-29)
+## [v3.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.4.0) (2019-03-18)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.3.0...v3.4.0)
+
+**Implemented enhancements:**
+
+- Record bosh deployment manifest including ops files interpolation [\#242](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/242)
+- git submodule of a deployment model are not pulled in the on-demand-pipeline context   [\#195](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/195)
+- Dump generated manifest on bosh deploy failures [\#2](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/2)
+
+**Fixed bugs:**
+
+- committed generated cloud-config.yml and runtime-config.yml are incomplete [\#246](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/246)
+- runtime-config operators are not applied in alphabetic order [\#244](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/244)
+- fe-int default value is not generic [\#243](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/243)
+
+**Closed issues:**
+
+- Issue with the "github-release" concourse resource type tagged versions. [\#220](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/220)
+- 1st class support for private bosh releases [\#81](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/81)
+
+**Merged pull requests:**
+
+- pipeline\(bosh\): improvements [\#247](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/247)
+- tasks\(bosh\_update\_\[cloud|runtime\]\_config: fix operator alphabetical order when applied [\#245](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/245)
+- hardening pipeline retries [\#241](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/241)
+- pipelines\(submodules\): fix  [\#237](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/237)
+- 108 add covered pipelines [\#236](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/236)
+
+## [v3.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.3.0) (2019-01-22)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.2.2...v3.3.0)
 
 **Implemented enhancements:**
@@ -84,6 +112,7 @@
 
 **Merged pull requests:**
 
+- Load submodules from the PaaS Template repo in the BOSH pipeline [\#230](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/230)
 - 220 github-release resource type [\#221](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/221)
 - pipeline\(depls\): fix invalid bosh-errand-resource [\#200](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/200)
 - Document source of docker image used for terraform [\#198](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/198)

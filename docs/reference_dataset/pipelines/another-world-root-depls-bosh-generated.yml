@@ -85,7 +85,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -108,7 +108,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -138,7 +138,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
@@ -171,6 +171,7 @@ jobs:
       - task: update-cloud-config-for-another-world-root-depls
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited}
+        output_mapping: {deployed-config: deployed-cloud-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
         params:
            BOSH_TARGET: ((bosh-target))
@@ -179,7 +180,7 @@ jobs:
            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
           output_mapping: {updated-git-resource: updated-cloud-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
@@ -190,7 +191,7 @@ jobs:
             put: failure-alert
             params:
               channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
@@ -202,6 +203,7 @@ jobs:
       - task: update-runtime-config-for-another-world-root-depls
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited}
+        output_mapping: {deployed-config: deployed-runtime-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
         params:
            BOSH_TARGET: ((bosh-target))
@@ -210,7 +212,7 @@ jobs:
            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
           output_mapping: {updated-git-resource: updated-runtime-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
@@ -221,7 +223,7 @@ jobs:
             put: failure-alert
             params:
               channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
           on_success:
@@ -235,7 +237,7 @@ jobs:
     put: failure-alert
     params:
       channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/main/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   serial_groups: [recreate]
