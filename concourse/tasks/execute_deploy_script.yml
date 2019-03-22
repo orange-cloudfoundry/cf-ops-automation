@@ -28,7 +28,7 @@ outputs:
 run:
   path: /bin/bash
   args:
-  - -exc
+  - -ec
   - |
     cp -r scripts-resource/. run-resource
     cp -r templates/. run-resource
