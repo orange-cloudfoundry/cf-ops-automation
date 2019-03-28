@@ -215,10 +215,11 @@ jobs:
   <% if PipelineHelpers.bosh_io_hosted?(info) %>
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
   <% else %>
-            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${TARGET_VERSION}.tgz
   <% end %>
         params:
           RELEASE_PREFIX: <%= release %>
+          TARGET_VERSION: ((<%= release %>-version))
     - put: <%= release %>-s3
       params:
         file: <%= release %>/*.tgz
@@ -271,6 +272,7 @@ jobs:
 
         params:
           RELEASE_PREFIX: <%= release %>
+          TARGET_VERSION: ((<%= release %>-version))
     - put: <%= release %>-s3
       params:
         file: <%= release %>/*.tgz
@@ -284,7 +286,7 @@ groups:
   - <%= job %>
 <% end %>
 
-<% uniq_releases.keys.group_by {|name| name[0] }.each do |first_letter, releases| %>
+<% uniq_releases.keys.sort.group_by {|name| name[0] }.each do |first_letter, releases| %>
 - name: "<%= first_letter %>*"
   jobs:
   <% releases.each do |release| %>
