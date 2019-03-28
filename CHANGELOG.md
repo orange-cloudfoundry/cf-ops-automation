@@ -1,23 +1,35 @@
 # Change Log
 
-## [v3.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.4.0) (2019-03-18)
+## [v3.4.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.4.1) (2019-03-28)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.4.0...v3.4.1)
+
+**Implemented enhancements:**
+
+- Dump generated manifest on bosh deploy failures [\#2](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/2)
+
+**Fixed bugs:**
+
+- committed generated cloud-config.yml and runtime-config.yml are incomplete [\#246](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/246)
+
+**Closed issues:**
+
+- Issue with the "github-release" concourse resource type tagged versions. [\#220](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/220)
+
+## [v3.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.4.0) (2019-03-15)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.3.0...v3.4.0)
 
 **Implemented enhancements:**
 
 - Record bosh deployment manifest including ops files interpolation [\#242](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/242)
 - git submodule of a deployment model are not pulled in the on-demand-pipeline context   [\#195](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/195)
-- Dump generated manifest on bosh deploy failures [\#2](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/2)
 
 **Fixed bugs:**
 
-- committed generated cloud-config.yml and runtime-config.yml are incomplete [\#246](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/246)
 - runtime-config operators are not applied in alphabetic order [\#244](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/244)
 - fe-int default value is not generic [\#243](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/243)
 
 **Closed issues:**
 
-- Issue with the "github-release" concourse resource type tagged versions. [\#220](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/220)
 - 1st class support for private bosh releases [\#81](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/81)
 
 **Merged pull requests:**

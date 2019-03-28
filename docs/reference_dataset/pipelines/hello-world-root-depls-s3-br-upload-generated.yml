@@ -198,6 +198,7 @@ jobs:
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: nginx
+          TARGET_VERSION: ((nginx-version))
     - put: nginx-s3
       params:
         file: nginx/*.tgz
@@ -243,6 +244,7 @@ jobs:
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: nginx
+          TARGET_VERSION: ((nginx-version))
     - put: nginx-s3
       params:
         file: nginx/*.tgz
@@ -288,6 +290,7 @@ jobs:
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: ntp
+          TARGET_VERSION: ((ntp-version))
     - put: ntp-s3
       params:
         file: ntp/*.tgz
@@ -333,6 +336,7 @@ jobs:
             cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: ntp
+          TARGET_VERSION: ((ntp-version))
     - put: ntp-s3
       params:
         file: ntp/*.tgz
@@ -375,9 +379,10 @@ jobs:
           - -exc
           - |
             VERSION=$(cat release/version)
-            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+            cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${TARGET_VERSION}.tgz
         params:
           RELEASE_PREFIX: vault
+          TARGET_VERSION: ((vault-version))
     - put: vault-s3
       params:
         file: vault/*.tgz
@@ -423,6 +428,7 @@ jobs:
             cp release/${RELEASE_PREFIX}-${VERSION}.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: vault
+          TARGET_VERSION: ((vault-version))
     - put: vault-s3
       params:
         file: vault/*.tgz
@@ -440,10 +446,10 @@ groups:
   - upload-latest-vault
 - name: "n*"
   jobs:
-  - upload-current-ntp
-  - upload-latest-ntp
   - upload-current-nginx
   - upload-latest-nginx
+  - upload-current-ntp
+  - upload-latest-ntp
 - name: "v*"
   jobs:
   - upload-current-vault
