@@ -184,6 +184,7 @@ jobs:
           cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
       params:
         RELEASE_PREFIX: ntp_boshrelease
+        TARGET_VERSION: "((ntp_boshrelease-version))"
   - put: ntp_boshrelease-s3
     params:
       file: ntp_boshrelease/*.tgz
@@ -238,6 +239,7 @@ jobs:
           cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
       params:
         RELEASE_PREFIX: ntp_boshrelease
+        TARGET_VERSION: "((ntp_boshrelease-version))"
   - put: ntp_boshrelease-s3
     params:
       file: ntp_boshrelease/*.tgz
