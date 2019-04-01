@@ -880,7 +880,7 @@ jobs:
             - -c
             - |
               source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-              bosh -n recreate
+              bosh -n recreate --fix
     params:
        BOSH_TARGET: ((bosh-target))
        BOSH_CLIENT: ((bosh-username))
