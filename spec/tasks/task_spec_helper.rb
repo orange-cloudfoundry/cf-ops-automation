@@ -17,6 +17,18 @@ class TaskSpecHelper
   end
 
   def self.ruby_image_version
-    '2.3.5-slim'
+    '2.5.5'
+  end
+
+  def self.ruby_slim_image_version
+    ruby_image_version + '-slim'
+  end
+
+  def self.terraform_image
+    'orangecloudfoundry/terraform'
+  end
+
+  def self.terraform_image_version
+    'c1f95e84451a6f9935254d85624a128611ccc9d9'
   end
 end

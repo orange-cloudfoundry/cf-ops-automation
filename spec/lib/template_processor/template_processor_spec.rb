@@ -151,7 +151,7 @@ describe TemplateProcessor do
             -name= slack-notification
             jobs:
                 - name: "not good or <%= my_item %>"
-                                    TEST
+          TEST
         end
         let(:expected_yaml_file) do
           <<~TEST
@@ -160,7 +160,7 @@ describe TemplateProcessor do
             -name= slack-notification
             jobs:
                 - name: "not good or good"
-                                   TEST
+          TEST
         end
 
         # before do

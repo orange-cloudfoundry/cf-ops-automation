@@ -16,7 +16,7 @@ platform: linux
 image_resource:
   type: docker-image
 #  source: {repository: orangecloudfoundry/orange-cf-bosh-cli, tag: 2.0.3}
-  source: {repository: ruby, tag: 2.3.1}
+  source: {repository: ruby, tag: 2.5.5}
 
 inputs:
 - name: scripts-resource
