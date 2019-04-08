@@ -6,6 +6,7 @@ image_resource:
 inputs:
   - name: scripts-resource
   - name: credentials-resource
+    optional: true
   - name: additional-resource
 outputs:
   - name: generated-files
