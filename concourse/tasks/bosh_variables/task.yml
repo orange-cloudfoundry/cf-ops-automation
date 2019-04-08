@@ -8,6 +8,7 @@ image_resource:
 inputs:
   - name: scripts-resource
   - name: secrets # required for certificates injection
+    optional: true
 outputs:
   - name: result-dir
 run:
