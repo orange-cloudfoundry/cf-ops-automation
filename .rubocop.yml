@@ -1,5 +1,6 @@
 # This is the configuration used to check the rubocop source code.
-require: rubocop-rspec
+require:
+  - rubocop-rspec
 
 AllCops:
   Exclude:
@@ -7,7 +8,7 @@ AllCops:
     - 'spec/fixtures/**/*'
     - 'spec/lib/fixtures/**/*'
     - 'bin/**/*'
-  TargetRubyVersion: 2.3
+  TargetRubyVersion: 2.5
 
 Style/Encoding:
   Enabled: true

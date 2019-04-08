@@ -85,9 +85,6 @@ resources:
     - name: upload
       username: ((concourse-micro-depls-username))
       password: "((concourse-micro-depls-password))"
-    - name: currently-disabled
-      username: ((concourse-micro-depls-username))
-      password: "((concourse-micro-depls-password))"
 jobs:
 - name: save-deployed-pipelines
   serial: true
@@ -128,7 +125,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.3.5}
+        source: {repository: ruby, tag: 2.5.5}
       inputs:
       - name: concourse-micro
       outputs:
