@@ -48,7 +48,7 @@ module Coa
         Dir.chdir PROJECT_ROOT_DIR do
           remote_name = SecureRandom.hex
           branch_name = SecureRandom.hex
-          current_branch_name = run_cmd "git branch -q | grep '*' | cut -d ' ' -f2"
+          current_branch_name = run_cmd "git log -1 --oneline| cut -d ' ' -f1"
 
           begin
             run_cmd "git remote add #{remote_name} git://#{server_ip}/cf-ops-automation"

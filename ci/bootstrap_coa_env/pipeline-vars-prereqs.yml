@@ -15,5 +15,5 @@ pipeline_vars:
   s3-stemcell-skip-ssl-verification: false
   stemcell-name-prefix: ""
   stemcell-main-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
-  stemcell-version: "3541.10"
-  bosh-openstack-cpi-release-version: "37"
+  stemcell-version: "3586.25"
+  bosh-openstack-cpi-release-version: "39"
