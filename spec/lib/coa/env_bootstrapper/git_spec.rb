@@ -104,7 +104,7 @@ describe Coa::EnvBootstrapper::Git do
     it "creates a random remote name for the git server ip and a random branch name and then push on master from it" do
       expect(Dir).to receive(:chdir).with(described_class::PROJECT_ROOT_DIR).and_yield
       commands = [
-        ["git branch -q | grep '*' | cut -d ' ' -f2", {}],
+        ["git log -1 --oneline| cut -d ' ' -f1", {}],
         ["git remote add random git://1.2.3.4/cf-ops-automation", {}],
         ["git checkout -b random", {}],
         ["git push random random:master --force", { profile: profile }],
