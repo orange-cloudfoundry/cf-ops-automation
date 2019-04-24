@@ -328,16 +328,6 @@ In `deployment-dependencies.yml`, it is possible to:
             extented_scan_path: ["ops-depls/cloudfoundry", "...."]
 ```
 
-* choose a bosh cli version. By default, bosh cli v2 is used unless v1 specified in cli_version
-
-``` yaml
-        deployment:
-          bosh-deployment: # or micro-bosh:
-            cli_version: v1
-            releases:
-                ...
-```
-
 Following is a `deployment-dependencies.yml` sample (should be placed in the boshrelease deployment dir):
 
 ```yaml
