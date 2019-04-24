@@ -98,7 +98,7 @@ jobs:
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-generated.yml
         vars_files:
           - paas-templates-full/simple-depls/simple-depls-versions.yml
-          - secrets-full/simple-depls/ntp/ntp-credentials.yml
+          - secrets-full/simple-depls/ntp-with-scan/ntp-credentials.yml
       - name: simple-depls-cf-apps-generated
         team: custom-team-name
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-cf-apps-generated.yml

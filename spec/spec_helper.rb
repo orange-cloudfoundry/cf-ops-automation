@@ -122,8 +122,8 @@ RSpec.configure do |config|
   config.tty = true
 
   config.before do
-    # $stdout = StringIO.new
-    # $stderr = StringIO.new
+    $stdout = StringIO.new
+    $stderr = StringIO.new
   end
   config.after(:all) do
     $stdout = STDOUT

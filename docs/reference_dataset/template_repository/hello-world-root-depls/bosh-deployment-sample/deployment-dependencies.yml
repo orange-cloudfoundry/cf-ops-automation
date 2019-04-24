@@ -3,20 +3,23 @@ deployment:
   bosh-deployment: # prior to COA 2.2, this tag must be named like the deployment (here bosh-deployment-sample),
                    # after COA 2.2, it is possible to use 'bosh-deployment' key
     resources:
-      secrets: {}
       templates:
-        extended_scan_path: ["shared-files"]
+        extended_scan_path: ["shared-files"] # list additional path on templates repository required by this deployment. This may contains submodule - Optional - Default: []
 
+      secrets:
         # DEPRECATED: this deployment depends on another secrets deployment, so it also have to scan change onto the other one
         # As bosh 2 deployment does not require the manifest to interact, you should use bosh link, instead !
         # extended_scan_path: ["hello-world-root-depls/pipeline-sample"]
 
-     # bosh-release required. Don't set version here, set it in paas-template/<depls>-versions.yml
+        local_deployment_scan: false # Enable when `secrets.yml`, 'meta.yml' or any files in deployment secrets directory are required - Default: false
+        local_deployment_trigger: true # Enable when a change in deployment secrets directory should trigger as build. This parameter is ignored when `local_deployment_scan`is `false`  - Default: true
+
+    # bosh-release required. Don't set version here, set it in paas-template/<depls>-versions.yml
     releases:
       #ngnix should be defined here but as sample it is defined in deployment-dependencies-<IAAS_TYPE>.yml
       ntp:
         base_location: https://bosh.io/d/github.com/
         repository: cloudfoundry-community/ntp-release
       vault:
-        base_location: http://github.com/
+        base_location: http://github.com/ # COA can use boshrelease published on github if a tgz is available
         repository: cloudfoundry-community/vault-boshrelease

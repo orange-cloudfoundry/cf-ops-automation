@@ -92,32 +92,80 @@ resources:
     endpoint: ((s3-stemcell-endpoint))
     skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
 
-- name: secrets-ntp
+- name: secrets-ntp-with-scan
   type: git
   source:
     uri: ((secrets-uri))
     paths:
-    - "simple-depls/ntp"
+    - "simple-depls/ntp-with-scan"
     - "shared"
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
-- name: paas-templates-ntp
+- name: paas-templates-ntp-with-scan
   type: git
   source:
     uri: ((paas-templates-uri))
     paths:
-    - "simple-depls/ntp"
+    - "simple-depls/ntp-with-scan"
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 
-- name: ntp-deployment
+- name: ntp-with-scan-deployment
   type: bosh-deployment-v2
   source:
     target: ((bosh-target))
     client: ((bosh-username))
     client_secret: ((bosh-password))
-    deployment: ntp
+    deployment: ntp-with-scan
+    ca_cert: |
+      -----BEGIN CERTIFICATE-----
+      MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
+      GRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB
+      MB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk
+      ARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD
+      QTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU
+      RjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2
+      rbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0
+      47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB
+      8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre
+      1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb
+      EQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD
+      VR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL
+      7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq
+      G3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9
+      7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z
+      i1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7
+      X0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM
+      tdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2
+      -----END CERTIFICATE-----
+
+- name: secrets-zookeeper-without-scan
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths:
+      - "simple-depls/zookeeper-without-scan"
+      - "shared"
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-zookeeper-without-scan
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths:
+      - "simple-depls/zookeeper-without-scan"
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+
+- name: zookeeper-without-scan-deployment
+  type: bosh-deployment-v2
+  source:
+    target: ((bosh-target))
+    client: ((bosh-username))
+    client_secret: "((bosh-password))"
+    deployment: zookeeper-without-scan
     ca_cert: |
       -----BEGIN CERTIFICATE-----
       MIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB
@@ -189,6 +237,11 @@ resources:
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
+
+- name: zookeeper_boshrelease
+  type: bosh-io-release
+  source:
+    repository: cppforlife/zookeeper-release
 
 jobs:
 - name: cancel-all-bosh-tasks
@@ -359,7 +412,7 @@ jobs:
               repository: updated-runtime-config
               rebase: true
 
-- name: deploy-ntp
+- name: deploy-ntp-with-scan
   serial: true
   serial_groups: [concurrent-group-0]
   on_failure:
@@ -389,46 +442,46 @@ jobs:
         trigger: true
         attempts: 2
       
-      - get: secrets-ntp
+      - get: secrets-ntp-with-scan
         params: { submodules: none}
         trigger: true
-      - get: paas-templates-ntp
+      - get: paas-templates-ntp-with-scan
         trigger: true
         
         params: { submodules: none}
-    - task: generate-ntp-manifest
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-ntp, additional-resource: paas-templates-ntp}
+    - task: generate-ntp-with-scan-manifest
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-ntp-with-scan, additional-resource: paas-templates-ntp-with-scan}
       output_mapping: {generated-files: release-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
-        SPRUCE_FILE_BASE_PATH: credentials-resource/simple-depls/ntp/
-        YML_TEMPLATE_DIR: additional-resource/simple-depls/ntp/template
+        SPRUCE_FILE_BASE_PATH: credentials-resource/simple-depls/ntp-with-scan/
+        YML_TEMPLATE_DIR: additional-resource/simple-depls/ntp-with-scan/template
         YML_FILES: |
-            ./credentials-resource/simple-depls/ntp/secrets/meta.yml
-            ./credentials-resource/simple-depls/ntp/secrets/secrets.yml
+            ./credentials-resource/simple-depls/ntp-with-scan/secrets/meta.yml
+            ./credentials-resource/simple-depls/ntp-with-scan/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
-        CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp/template
+        CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp-with-scan/template
         IAAS_TYPE: ((iaas-type))
-    - task: execute-ntp-spiff-pre-bosh-deploy
-      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp, credentials-resource: secrets-ntp, additional-resource: release-manifest}
+    - task: execute-ntp-with-scan-spiff-pre-bosh-deploy
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp-with-scan, credentials-resource: secrets-ntp-with-scan, additional-resource: release-manifest}
       output_mapping: {generated-files: pre-bosh-deploy-resource}
       file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
-        SECRETS_DIR: credentials-resource/simple-depls/ntp
-    - task: copy-ntp-required-files
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp-with-scan/template
+        SECRETS_DIR: credentials-resource/simple-depls/ntp-with-scan
+    - task: copy-ntp-with-scan-required-files
       input_mapping:
         scripts-resource: cf-ops-automation
-        template-resource: paas-templates-ntp
-        credentials-resource: secrets-ntp
+        template-resource: paas-templates-ntp-with-scan
+        credentials-resource: secrets-ntp-with-scan
         additional-resource: pre-bosh-deploy-resource
       output_mapping:
         generated-files: final-release-manifest
       file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
       params:
-        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
-        SECRETS_DIR: credentials-resource/simple-depls/ntp
-        MANIFEST_NAME: ntp.yml
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp-with-scan/template
+        SECRETS_DIR: credentials-resource/simple-depls/ntp-with-scan
+        MANIFEST_NAME: ntp-with-scan.yml
     - task: convert-bosh-dns-to-ip
       output_mapping: {result-dir: bosh-generated-config}
       config:
@@ -474,21 +527,21 @@ jobs:
             find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
             echo '---' > result-dir/operators/0-empty-operators.yml
             echo '---' > result-dir/vars/0-empty-vars.yml
-    - task: display-ntp-manifest
+    - task: display-ntp-with-scan-manifest
       input_mapping:
         bosh-inputs: ops-and-vars-files
         manifest-dir: final-release-manifest
-        secrets: secrets-ntp
+        secrets: secrets-ntp-with-scan
         scripts-resource: cf-ops-automation
       file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
       params:
         VARS_FILES_SUFFIX: "*/*vars.yml"
         OPS_FILES_SUFFIX: "*/*operators.yml"
-        BOSH_YAML_FILE: ntp.yml
-    - put: ntp-deployment
+        BOSH_YAML_FILE: ntp-with-scan.yml
+    - put: ntp-with-scan-deployment
       attempts: 2
       params:
-        manifest: final-release-manifest/ntp.yml
+        manifest: final-release-manifest/ntp-with-scan.yml
 #        source_file: bosh-generated-config/bosh_config.json
         
         stemcells:
@@ -504,45 +557,232 @@ jobs:
     - task: bosh-variables
       input_mapping:
         scripts-resource: cf-ops-automation
-        secrets: secrets-ntp
+        secrets: secrets-ntp-with-scan
       output_mapping:
         result-dir: bosh-variables-result
       file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
       params:
-        BOSH_DEPLOYMENT: ntp
+        BOSH_DEPLOYMENT: ntp-with-scan
         BOSH_TARGET: "((bosh-target))"
         BOSH_CLIENT: "((bosh-username))"
         BOSH_CLIENT_SECRET: "((bosh-password))"
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-    - task: update-ntp-fingerprints-file
+    - task: update-ntp-with-scan-fingerprints-file
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: bosh-variables-result}
-      output_mapping: {updated-git-resource: updated-ntp-fingerprints-secrets}
+      output_mapping: {updated-git-resource: updated-ntp-with-scan-fingerprints-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
-        OLD_FILE: simple-depls/ntp/ntp-fingerprints.json
+        OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan-fingerprints.json
         NEW_FILE: "credential_fingerprints.json"
-        COMMIT_MESSAGE: "ntp variable fingerprints auto update - [skip ci]"
+        COMMIT_MESSAGE: "ntp-with-scan variable fingerprints auto update - [skip ci]"
 
-    - task: update-ntp-files
-      input_mapping: {reference-resource: updated-ntp-fingerprints-secrets, generated-resource: ntp-deployment}
-      output_mapping: {updated-git-resource: updated-ntp-secrets}
+    - task: update-ntp-with-scan-files
+      input_mapping: {reference-resource: updated-ntp-with-scan-fingerprints-secrets, generated-resource: ntp-with-scan-deployment}
+      output_mapping: {updated-git-resource: updated-ntp-with-scan-secrets}
       file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
       params:
-        OLD_FILE: simple-depls/ntp/ntp.yml
+        OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan.yml
         NEW_FILE: "manifest.yml"
-        COMMIT_MESSAGE: "ntp generated manifest auto update - [skip ci]"
+        COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update - [skip ci]"
     - put: secrets-full-writer
       get_params: {submodules: none}
       params:
-        repository: updated-ntp-secrets
+        repository: updated-ntp-with-scan-secrets
         rebase: true
-    - task: execute-ntp-post-bosh-deploy
-      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp, credentials-resource: secrets-ntp, additional-resource: final-release-manifest}
+    - task: execute-ntp-with-scan-post-bosh-deploy
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-ntp-with-scan, credentials-resource: secrets-ntp-with-scan, additional-resource: final-release-manifest}
       output_mapping: {generated-files: post-deploy-result}
       file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
       params:
-        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp/template
-        SECRETS_DIR: credentials-resource/simple-depls/ntp
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp-with-scan/template
+        SECRETS_DIR: credentials-resource/simple-depls/ntp-with-scan
+
+
+- name: deploy-zookeeper-without-scan
+  serial: true
+  serial_groups: [concurrent-group-1]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - aggregate:
+        - get: secrets-full-writer
+          params: { submodules: none}
+        - get: ((stemcell-main-name))
+          version: { path: "((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" }
+          trigger: true
+          attempts: 2
+        - get: cf-ops-automation
+          params: { submodules: none}
+          passed: [update-pipeline-simple-depls-generated]
+          trigger: true
+
+        - get: zookeeper_boshrelease
+
+          version: { version: ((zookeeper_boshrelease-version)) }
+
+          trigger: true
+          attempts: 2
+
+        - get: secrets-zookeeper-without-scan
+          params: { submodules: none}
+          trigger: true
+        - get: paas-templates-zookeeper-without-scan
+          trigger: true
+
+          params: { submodules: none}
+    - task: generate-zookeeper-without-scan-manifest
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-zookeeper-without-scan, additional-resource: paas-templates-zookeeper-without-scan}
+      output_mapping: {generated-files: release-manifest}
+      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      params:
+        SPRUCE_FILE_BASE_PATH: credentials-resource/simple-depls/zookeeper-without-scan/
+        YML_TEMPLATE_DIR: additional-resource/simple-depls/zookeeper-without-scan/template
+        YML_FILES: |
+          ./credentials-resource/simple-depls/zookeeper-without-scan/secrets/meta.yml
+          ./credentials-resource/simple-depls/zookeeper-without-scan/secrets/secrets.yml
+          ./credentials-resource/shared/secrets.yml
+        CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/zookeeper-without-scan/template
+        IAAS_TYPE: ((iaas-type))
+    - task: execute-zookeeper-without-scan-spiff-pre-bosh-deploy
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-zookeeper-without-scan, credentials-resource: secrets-zookeeper-without-scan, additional-resource: release-manifest}
+      output_mapping: {generated-files: pre-bosh-deploy-resource}
+      file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/zookeeper-without-scan/template
+        SECRETS_DIR: credentials-resource/simple-depls/zookeeper-without-scan
+    - task: copy-zookeeper-without-scan-required-files
+      input_mapping:
+        scripts-resource: cf-ops-automation
+        template-resource: paas-templates-zookeeper-without-scan
+        credentials-resource: secrets-zookeeper-without-scan
+        additional-resource: pre-bosh-deploy-resource
+      output_mapping:
+        generated-files: final-release-manifest
+      file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/zookeeper-without-scan/template
+        SECRETS_DIR: credentials-resource/simple-depls/zookeeper-without-scan
+        MANIFEST_NAME: zookeeper-without-scan.yml
+    - task: convert-bosh-dns-to-ip
+      output_mapping: {result-dir: bosh-generated-config}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+            - -exc
+            - |
+              export DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_TARGET%%:25555}
+              export DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|tail -n2|grep Address|cut -d':' -f2)
+              export DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
+              export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
+              echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
+        params:
+          BOSH_TARGET: ((bosh-target))
+
+    - task: generate-empty-ops-and-vars-files
+      # this task is required as long as all deployments still don't use ops/vars files
+      output_mapping: {result-dir: ops-and-vars-files}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source: {repository: concourse/busyboxplus, tag: "git"}
+        inputs:
+          - name: final-release-manifest
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+            - -exc
+            - |
+              mkdir -p result-dir/operators
+              mkdir -p result-dir/vars
+              find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
+              find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+              echo '---' > result-dir/operators/0-empty-operators.yml
+              echo '---' > result-dir/vars/0-empty-vars.yml
+    - task: display-zookeeper-without-scan-manifest
+      input_mapping:
+        bosh-inputs: ops-and-vars-files
+        manifest-dir: final-release-manifest
+        secrets: secrets-zookeeper-without-scan
+        scripts-resource: cf-ops-automation
+      file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
+      params:
+        VARS_FILES_SUFFIX: "*/*vars.yml"
+        OPS_FILES_SUFFIX: "*/*operators.yml"
+        BOSH_YAML_FILE: zookeeper-without-scan.yml
+    - put: zookeeper-without-scan-deployment
+      attempts: 2
+      params:
+        manifest: final-release-manifest/zookeeper-without-scan.yml
+        #        source_file: bosh-generated-config/bosh_config.json
+
+        stemcells:
+          - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+        releases:
+
+          - zookeeper_boshrelease/*.tgz
+        ops_files:
+          - ops-and-vars-files/operators/*
+        vars_files:
+          - ops-and-vars-files/vars/*
+        cleanup: true
+    - task: bosh-variables
+      input_mapping:
+        scripts-resource: cf-ops-automation
+        secrets: secrets-zookeeper-without-scan
+      output_mapping:
+        result-dir: bosh-variables-result
+      file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
+      params:
+        BOSH_DEPLOYMENT: zookeeper-without-scan
+        BOSH_TARGET: "((bosh-target))"
+        BOSH_CLIENT: "((bosh-username))"
+        BOSH_CLIENT_SECRET: "((bosh-password))"
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+    - task: update-zookeeper-without-scan-fingerprints-file
+      input_mapping: {reference-resource: secrets-full-writer, generated-resource: bosh-variables-result}
+      output_mapping: {updated-git-resource: updated-zookeeper-without-scan-fingerprints-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan-fingerprints.json
+        NEW_FILE: "credential_fingerprints.json"
+        COMMIT_MESSAGE: "zookeeper-without-scan variable fingerprints auto update - [skip ci]"
+
+    - task: update-zookeeper-without-scan-files
+      input_mapping: {reference-resource: updated-zookeeper-without-scan-fingerprints-secrets, generated-resource: zookeeper-without-scan-deployment}
+      output_mapping: {updated-git-resource: updated-zookeeper-without-scan-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan.yml
+        NEW_FILE: "manifest.yml"
+        COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update - [skip ci]"
+    - put: secrets-full-writer
+      get_params: {submodules: none}
+      params:
+        repository: updated-zookeeper-without-scan-secrets
+        rebase: true
+    - task: execute-zookeeper-without-scan-post-bosh-deploy
+      input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-zookeeper-without-scan, credentials-resource: secrets-zookeeper-without-scan, additional-resource: final-release-manifest}
+      output_mapping: {generated-files: post-deploy-result}
+      file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+      params:
+        CUSTOM_SCRIPT_DIR: template-resource/simple-depls/zookeeper-without-scan/template
+        SECRETS_DIR: credentials-resource/simple-depls/zookeeper-without-scan
+
 
 
 - name: retrigger-all-jobs
@@ -573,7 +813,9 @@ jobs:
           args:
           - -exc
           - |
-            echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-ntp" >> result-dir/flight-plan
+            echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-ntp-with-scan" >> result-dir/flight-plan
+            echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-zookeeper-without-scan" >> result-dir/flight-plan
+
         params:
           BUILD_PIPELINE_NAME: simple-depls-generated
     - task: fly-into-concourse
@@ -606,7 +848,7 @@ jobs:
          params: { submodules: none}
          passed: [update-pipeline-simple-depls-generated]
 
-- name: recreate-ntp
+- name: recreate-ntp-with-scan
   serial: true
   on_failure:
     put: failure-alert
@@ -630,7 +872,7 @@ jobs:
          params: { submodules: none}
          passed: [recreate-all]
 
-    - task: bosh-recreate-ntp
+    - task: bosh-recreate-ntp-with-scan
       input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
       config:
           platform: linux
@@ -657,7 +899,60 @@ jobs:
         BOSH_CLIENT: ((bosh-username))
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-        BOSH_DEPLOYMENT: ntp
+        BOSH_DEPLOYMENT: ntp-with-scan
+
+- name: recreate-zookeeper-without-scan
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  serial_groups: [recreate]
+  plan:
+    - aggregate:
+        - get: secrets-simple-depls-limited
+          params: { submodules: none}
+          passed: [recreate-all]
+          trigger: true
+        - get: paas-templates-simple-depls
+          params: { submodules: none}
+          passed: [recreate-all]
+          trigger: true
+        - get: cf-ops-automation
+          params: { submodules: none}
+          passed: [recreate-all]
+
+    - task: bosh-recreate-zookeeper-without-scan
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: governmentpaas/bosh-cli-v2
+            tag: c88f3e0b03558c987693fad3f180d9052b77342c
+        inputs:
+          - name: scripts-resource
+          - name: secrets
+        outputs:
+          - name: run-resource
+        run:
+          path: bash
+          args:
+            - -e
+            - -c
+            - |
+              source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
+              bosh -n recreate
+      params:
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        BOSH_DEPLOYMENT: zookeeper-without-scan
 
 
 - name: init-concourse-boshrelease-and-stemcell-for-simple-depls
@@ -698,6 +993,7 @@ jobs:
         - -ec
         - |
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/zookeeper_boshrelease --from version:((zookeeper_boshrelease-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-generated
@@ -761,7 +1057,7 @@ jobs:
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-generated.yml
         vars_files:
           - paas-templates-wip/simple-depls/simple-depls-versions.yml
-          - secrets-simple-depls-trigger/simple-depls/ntp/ntp-credentials.yml
+          - secrets-simple-depls-trigger/simple-depls/ntp-with-scan/ntp-credentials.yml
       - name: simple-depls-cf-apps-generated
         team: custom-team-name
         config_file: concourse-simple-depls-pipeline/concourse/pipelines/simple-depls-cf-apps-generated.yml
@@ -808,23 +1104,27 @@ groups:
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-simple-depls
-    - deploy-ntp
+    - deploy-ntp-with-scan
+    - deploy-zookeeper-without-scan
     - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-simple-depls
     - recreate-all
-    - recreate-ntp
+    - recreate-ntp-with-scan
+    - recreate-zookeeper-without-scan
     - retrigger-all-jobs
     - update-pipeline-simple-depls-generated
 
 - name: Deploy-n*
   jobs:
-    - deploy-ntp
-   
+      - deploy-ntp-with-scan
+- name: Deploy-z*
+  jobs:
+    - deploy-zookeeper-without-scan
 - name: Recreate
   jobs:
     - recreate-all
-    - recreate-ntp
-   
+    - recreate-ntp-with-scan
+    - recreate-zookeeper-without-scan
 - name: Utils
   jobs:
     - cancel-all-bosh-tasks

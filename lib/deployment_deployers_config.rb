@@ -27,6 +27,7 @@ class DeploymentDeployersConfig
     load_concourse_config(deployment_details)
     load_kubernetes_config(deployment_details)
     raise "Inconsistency detected: deployment <#{@deployment_name}> is marked as active, but no #{DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config found at #{@public_base_location}" if deployment_details.empty?
+
     create_and_enable_deployment(deployment_details)
   end
 
@@ -43,6 +44,7 @@ class DeploymentDeployersConfig
 
     @deployment_factory&.load_file_with_iaas(dependency_filename)&.each do |deployment|
       raise "#{@private_base_location} - Invalid deployment: expected <#{@deployment_name}> - Found <#{deployment.name}>" if deployment.name != @deployment_name
+
       deployment_details.merge! deployment.details
     end
     deployment_details['bosh-deployment'] = activate if exist_bosh_config_dir?

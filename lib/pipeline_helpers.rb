@@ -7,6 +7,7 @@ module PipelineHelpers
   require_relative './pipeline_helpers/serial_group_naming_strategy'
   require_relative './pipeline_helpers/serial_group_md5_naming_strategy'
   require_relative './pipeline_helpers/serial_group_round_robin_naming_strategy'
+  require_relative './pipeline_helpers/deployment_details'
 
   TERRAFORM_CONFIG_DIRNAME_KEY = 'terraform_config'.freeze
   UNLIMITED_EXECUTION = -1

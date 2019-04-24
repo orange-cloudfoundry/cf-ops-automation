@@ -1,5 +1,5 @@
 ---
-name: ntp
+name: ntp-with-scan
 director_uuid: (( grab secrets.bosh.bosh_micro_uuid ))
 
 releases:
