@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'tmpdir'
 require_relative 'test_helper'
 
-describe 'generate-depls for depls pipeline' do
+describe 'generate-depls for bosh pipeline' do
   ci_path = Dir.pwd
   test_path = File.join(ci_path, '/spec/scripts/generate-depls')
   fixture_path = File.join(test_path, '/fixtures')
@@ -12,8 +12,8 @@ describe 'generate-depls for depls pipeline' do
   let(:secrets_path) { "#{fixture_path}/secrets" }
   let(:depls_name) { 'simple-depls' }
   let(:iaas_type) { 'my-custom-iaas' }
-  let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i depls" }
-  let(:pipeline) { TestHelper.load_generated_pipeline(output_path, "#{depls_name}-generated.yml") }
+  let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i bosh" }
+  let(:pipeline) { TestHelper.load_generated_pipeline(output_path, "#{depls_name}-bosh-generated.yml") }
   let(:cleanup) { FileUtils.rm_rf(output_path) unless output_path.nil? }
 
   context 'when a simple deployment is used' do
@@ -22,7 +22,7 @@ describe 'generate-depls for depls pipeline' do
     end
 
     context 'when generate-depls is executed' do
-      let(:pipeline) { TestHelper.load_generated_pipeline(output_path, 'simple-depls-generated.yml') }
+      let(:pipeline) { TestHelper.load_generated_pipeline(output_path, 'simple-depls-bosh-generated.yml') }
 
       before do
         TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
@@ -33,21 +33,21 @@ describe 'generate-depls for depls pipeline' do
         expect(@stderr_str).to eq('')
       end
 
-      it 'processes only depls-pipeline template' do
-        expect(@stdout_str).to include('processing ./concourse/pipelines/template/depls-pipeline.yml.erb').and \
+      it 'processes only bosh-pipeline template' do
+        expect(@stdout_str).to include('processing ./concourse/pipelines/template/bosh-pipeline.yml.erb').and \
           include('1 concourse pipeline templates were processed')
       end
 
       it 'generates deployment using bosh cli v2, by default' do
-        expect(pipeline['resources'].select{|resource| resource['name'] == 'ntp-with-scan-deployment'}.first).to include({'type'=>'bosh-deployment-v2'})
+        expect(pipeline['resources'].select { |resource| resource['name'] == 'ntp-with-scan-deployment' }.first).to include({ 'type' => 'bosh-deployment-v2' })
       end
 
       it 'generates on-failure on each job' do
-        expect(pipeline['jobs'].select{|jobs| !jobs['on_failure']}).to be_empty
+        expect(pipeline['jobs'].reject { |jobs| jobs['on_failure'] }).to be_empty
       end
 
       context 'when a generated reference depls pipeline file is used' do
-        it_behaves_like 'pipeline checker', 'simple-depls-generated.yml', 'simple-depls-ref.yml'
+        it_behaves_like 'pipeline checker', 'simple-depls-bosh-generated.yml', 'simple-depls-bosh-ref.yml'
       end
     end
 
@@ -125,7 +125,7 @@ describe 'generate-depls for depls pipeline' do
     end
 
     context 'when a minimal delete depls pipeline is generated' do
-      it_behaves_like 'pipeline checker', 'delete-depls-generated.yml', 'delete-depls-ref.yml'
+      it_behaves_like 'pipeline checker', 'delete-depls-bosh-generated.yml', 'delete-depls-bosh-ref.yml'
     end
 
     it 'generates on-failure on each job' do

@@ -1,0 +1,10 @@
+---
+deployment:
+  bosh-deployment:
+    resources:
+      secrets:
+        local_deployment_scan: true
+    releases:
+      ntp_boshrelease:
+        base_location: https://bosh.io/d/github.com/
+        repository: cloudfoundry-community/ntp-release

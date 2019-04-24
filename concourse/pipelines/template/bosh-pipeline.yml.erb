@@ -33,12 +33,6 @@
 
 ---
 resource_types:
-- name: bosh-deployment
-  type: docker-image
-  source:
-    repository: concourse/bosh-deployment-resource
-    tag: latest  # use latest as no other tag available
-
 - name: slack-notification
   type: docker-image
   source:
@@ -160,6 +154,8 @@ resources:
     config_key: 'templates',
     defaults: ["#{depls}/#{name}"])
 %>
+<% deployment_details = PipelineHelpers::DeploymentDetails.new(boshrelease) %>
+<% if deployment_details.local_deployment_secrets_scan? %>
 - name: secrets-<%= name %>
   type: git
   source:
@@ -167,7 +163,7 @@ resources:
     paths: <%= secrets_selected_paths %>
     branch: ((secrets-branch))
     skip_ssl_verification: true
-
+<% end %>
 - name: paas-templates-<%= name %>
   type: git
   source:
@@ -185,7 +181,7 @@ resources:
     deployment: <%= name %>
     ca_cert: <%= bosh_cert[depls]&.dump %>
 
-  <% if boshrelease['errands'] && boshrelease['errands'].any? %>
+  <% if deployment_details.errands? %>
 - name: errand-<%= name %>
   type: bosh-errand
   source:
@@ -473,7 +469,7 @@ jobs:
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
 <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
-
+<% deployment_details = PipelineHelpers::DeploymentDetails.new(boshrelease) %>
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   serial: true
@@ -501,7 +497,7 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-  <% boshrelease['releases']&.sort&.each do |release, info| %>
+  <% deployment_details.releases.each do |release, info| %>
     - get: <%= release %>
     <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
       version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
@@ -515,9 +511,11 @@ jobs:
       trigger: true
       attempts: 2
   <% end %>
+  <% if deployment_details.local_deployment_secrets_scan? %>
     - get: secrets-<%= name %>
       params: { submodules: none}
-      trigger: true
+      trigger: <%= deployment_details.local_deployment_secrets_trigger? %>
+  <% end %>
     - get: paas-templates-<%= name %>
       trigger: true
       params:
@@ -539,7 +537,10 @@ jobs:
   %>
         submodules: <%= submodules %>
   - task: generate-<%= name %>-manifest
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-templates-<%= name %>}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      additional-resource: paas-templates-<%= name %>
     output_mapping: {generated-files: release-manifest}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -552,14 +553,22 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
       IAAS_TYPE: ((iaas-type))
   - task: execute-<%= name %>-spiff-pre-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: release-manifest}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      template-resource: paas-templates-<%= name %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      additional-resource: release-manifest
     output_mapping: {generated-files: pre-bosh-deploy-resource}
     file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
       SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
   - task: copy-<%= name %>-required-files
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: pre-bosh-deploy-resource}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      template-resource: paas-templates-<%= name %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      additional-resource: pre-bosh-deploy-resource
     output_mapping: {generated-files: final-release-manifest}
     file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
     params:
@@ -614,7 +623,7 @@ jobs:
     input_mapping:
       bosh-inputs: ops-and-vars-files
       manifest-dir: final-release-manifest
-      secrets: secrets-<%= name %>
+      secrets: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
       scripts-resource: cf-ops-automation
     output_mapping: { result-dir: interpolated-manifest }
     file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
@@ -649,7 +658,7 @@ jobs:
       - ((stemcell-main-name))/stemcell.tgz
       <% end %>
       releases: <%= '[]' if boshrelease['releases']&.empty? %>
-  <% boshrelease['releases']&.sort&.each do |release, info| %>
+  <% deployment_details.releases.each do |release, info| %>
       - "<%= release %>/*.tgz"
   <% end %>
       ops_files:
@@ -660,7 +669,7 @@ jobs:
 
 
   - task: bosh-variables
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= name %>}
+    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
     output_mapping: {result-dir: bosh-variables-result}
     file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
     params:
@@ -691,14 +700,18 @@ jobs:
       repository: updated-<%= name %>-secrets
       rebase: true
   - task: execute-<%= name %>-post-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-release-manifest}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      template-resource: paas-templates-<%= name %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      additional-resource: final-release-manifest
     output_mapping: {generated-files: post-deploy-result}
     file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/<%= depls %>/<%= name %>/template
       SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
 
-  <% if boshrelease['errands'] && boshrelease['errands'].any? %>
+  <% if deployment_details.errands? %>
 - name: run-errand-<%= name %>
     <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}" %>
   serial: true
@@ -711,15 +724,15 @@ jobs:
       username: Concourse
   plan:
   - aggregate:
-    - get: secrets-<%= name %>
+    - get: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
       params: { submodules: none}
-      trigger: true
+      trigger: <%= deployment_details.local_deployment_secrets_trigger? %>
       passed: [deploy-<%= name %>]
     - get: paas-templates-<%= name %>
       params: { submodules: none}
       trigger: true
       passed: [deploy-<%= name %>]
-    <% boshrelease['errands'].each do |errand_name, errand_info| %>
+    <% deployment_details.errands.each do |errand_name, errand_info| %>
   - put: errand-<%= name %>
     params:
       name: <%= errand_name %>
