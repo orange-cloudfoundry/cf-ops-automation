@@ -17,11 +17,17 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 
 - name: new-version-alert
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 
 - name: paas-templates-full
   type: git

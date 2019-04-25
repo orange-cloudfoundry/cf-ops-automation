@@ -147,6 +147,9 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
             type: slack-notification
             source:
               url: ((slack-webhook))
+              proxy: ((slack-proxy))
+              proxy_https_tunnel: ((slack-proxy-https-tunnel))
+              disable: ((slack-disable))
         YAML
         YAML.safe_load my_yaml
       end
