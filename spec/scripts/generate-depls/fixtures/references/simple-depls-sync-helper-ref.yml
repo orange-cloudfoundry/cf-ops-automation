@@ -24,6 +24,9 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 
 - name: anonymized-secrets
   type: git
