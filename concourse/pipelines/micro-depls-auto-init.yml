@@ -3,7 +3,7 @@ resource_types:
 - name: concourse-pipeline
   type: docker-image
   source:
-    repository: concourse/concourse-pipeline-resource
+    repository: ((docker-registry-url))concourse/concourse-pipeline-resource
     tag: 3
 #    repository: orangeopensource/concourse-pipeline-resource
 #    tag: latest
@@ -11,7 +11,7 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
 #    repository: orangecloudfoundry/slack-notification-resource
 
 resources:
@@ -144,7 +144,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5-slim}
+        source: {repository: "((docker-registry-url))ruby", tag: 2.5.5-slim}
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -234,7 +234,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5-slim}
+        source: {repository: "((docker-registry-url))ruby", tag: 2.5.5-slim}
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -340,7 +340,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5-slim}
+        source: {repository: "((docker-registry-url))ruby", tag: 2.5.5-slim}
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -426,7 +426,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5-slim}
+        source: {repository: "((docker-registry-url))ruby", tag: 2.5.5-slim}
       inputs:
         - name: scripts-resource
         - name: secrets

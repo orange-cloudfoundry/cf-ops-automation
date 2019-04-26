@@ -3,32 +3,32 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: "((docker-registry-url))cfcommunity/slack-notification-resource"
       tag: v1.4.2
   - name: cron-resource
     type: docker-image
     source:
-      repository: cftoolsmiths/cron-resource
+      repository: "((docker-registry-url))cftoolsmiths/cron-resource"
       # use latest as no other recent tag available
   - name: concourse-pipeline
     type: docker-image
     source:
-      repository: concourse/concourse-pipeline-resource
+      repository: "((docker-registry-url))concourse/concourse-pipeline-resource"
       tag: 3
   - name: bosh-deployment-v2
     type: docker-image
     source:
-      repository: cloudfoundry/bosh-deployment-resource
+      repository: "((docker-registry-url))cloudfoundry/bosh-deployment-resource"
       tag: v2.12.0
   - name: bosh-errand
     type: docker-image
     source:
-      repository: cfcommunity/bosh2-errand-resource
+      repository: "((docker-registry-url))cfcommunity/bosh2-errand-resource"
       tag: v0.1.2
   - name: meta
     type: docker-image
     source:
-      repository: swce/metadata-resource
+      repository: "((docker-registry-url))swce/metadata-resource"
       tag: release-v0.0.3
 resources:
   - name: concourse-meta
@@ -376,7 +376,7 @@ jobs:
           platform: linux
           image_resource:
             type: docker-image
-            source: {repository: concourse/busyboxplus, tag: "git"}
+            source: { repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
           outputs:
             - name: result-dir
           run:
@@ -398,7 +398,7 @@ jobs:
           platform: linux
           image_resource:
             type: docker-image
-            source: {repository: concourse/busyboxplus, tag: "git"}
+            source: { repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
           inputs:
             - name: final-release-manifest
           outputs:
@@ -583,7 +583,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: concourse/busyboxplus
+            repository: "((docker-registry-url))concourse/busyboxplus"
             tag: git
         outputs:
         - name: result-dir
@@ -607,7 +607,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: concourse/busyboxplus
+            repository: "((docker-registry-url))concourse/busyboxplus"
             tag: git
         inputs:
         - name: final-release-manifest
@@ -747,7 +747,7 @@ jobs:
           platform: linux
           image_resource:
             type: docker-image
-            source: {repository: concourse/busyboxplus, tag: "git"}
+            source: { repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
           outputs:
             - name: result-dir
           run:
@@ -814,7 +814,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli-v2
+              repository: "((docker-registry-url))governmentpaas/bosh-cli-v2"
               tag: c88f3e0b03558c987693fad3f180d9052b77342c
           inputs:
             - name: scripts-resource
@@ -865,7 +865,7 @@ jobs:
           image_resource:
             type: docker-image
             source:
-              repository: governmentpaas/bosh-cli-v2
+              repository: "((docker-registry-url))governmentpaas/bosh-cli-v2"
               tag: c88f3e0b03558c987693fad3f180d9052b77342c
           inputs:
             - name: scripts-resource
@@ -914,7 +914,7 @@ jobs:
           platform: linux
           image_resource:
             type: docker-image
-            source: {repository: concourse/busyboxplus, tag: "git"}
+            source: { repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
           outputs:
             - name: result-dir
           run:

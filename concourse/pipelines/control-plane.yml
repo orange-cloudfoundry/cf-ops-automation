@@ -3,17 +3,17 @@ resource_types:
   - name: concourse-pipeline
     type: docker-image
     source:
-      repository: concourse/concourse-pipeline-resource
+      repository: ((docker-registry-url))concourse/concourse-pipeline-resource
       tag: 3
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
   - name: meta
     type: docker-image
     source:
-      repository: swce/metadata-resource
+      repository: ((docker-registry-url))swce/metadata-resource
       tag: release-v0.0.3
 resources:
 - name: concourse-meta
@@ -110,7 +110,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
       inputs:
       - name: concourse-micro
       run:
@@ -125,7 +125,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source: {repository: "((docker-registry-url))ruby", tag: 2.5.5}
       inputs:
       - name: concourse-micro
       outputs:
@@ -203,7 +203,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
       inputs:
       - name: config-resource
       run:
@@ -271,7 +271,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
       inputs:
       - name: secrets-writer
       outputs:

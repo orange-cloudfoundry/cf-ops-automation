@@ -11,7 +11,7 @@ describe 'static concourse pipelines spec' do
     Dir.glob(pipelines_dir + '**/*.yml') + Dir.glob(pipelines_references_fixture + '*.yml') + Dir.glob(pipelines_references_dataset + '*.yml')
   end
 
-  context 'resource_type exists' do
+   context 'resource_type exists' do
     let(:resource_types) do
       result = []
       puts "list: #{pipeline_files}"
@@ -27,7 +27,8 @@ describe 'static concourse pipelines spec' do
       resource_types.each do |resource_type|
         puts "processing resource #{resource_type}"
         resource_type_name = resource_type['name']
-        docker_image = resource_type['source']['repository'].to_s
+        docker_image_raw = resource_type['source']['repository'].to_s
+        docker_image = docker_image_raw.delete_prefix(DOCKER_REGISTRY_PREFIX)
         docker_image = "library/#{docker_image}" unless docker_image.include?('/')
         docker_image_tag = resource_type['source']['tag'] || 'latest'
         name = "#{docker_image}:#{docker_image_tag}"
@@ -79,8 +80,13 @@ describe 'static concourse pipelines spec' do
         puts "processing file #{pipeline_filename}"
         pipeline = YAML.load_file(pipeline_filename)
         image_resources = pipeline['jobs']&.flat_map { |job| job['plan'] }&.compact&.flat_map { |config| config['config'] }&.compact&.flat_map { |image_resource| image_resource['image_resource'] }
-        sources = image_resources&.map { |job| job['source'] }
-        result.concat(sources.uniq) if sources
+        source = image_resources&.map { |job| job['source'] }
+        source&.flat_map do |s|
+          repo = s["repository"].delete_prefix(DOCKER_REGISTRY_PREFIX)
+          s["repository"] = repo
+          s
+        end
+        result.concat(source.uniq) if source
       end
       result.uniq
     end
@@ -88,7 +94,8 @@ describe 'static concourse pipelines spec' do
       images = []
       image_resources.each do |image_resource|
         puts "processing task config #{image_resource}"
-        docker_image = image_resource['repository'].to_s
+        docker_image_raw = image_resource['repository'].to_s
+        docker_image = docker_image_raw.delete_prefix(DOCKER_REGISTRY_PREFIX)
         docker_image = "library/#{docker_image}" unless docker_image.include?('/')
         docker_image_tag = image_resource['tag'] || 'latest'
         name = "#{docker_image}:#{docker_image_tag}"

@@ -76,12 +76,12 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       - name: slack-notification
         type: docker-image
         source:
-          repository: cfcommunity/slack-notification-resource
+          repository: ((docker-registry-url))cfcommunity/slack-notification-resource
           tag: v1.4.2
       - name: concourse-pipeline
         type: docker-image
         source:
-          repository: concourse/concourse-pipeline-resource
+          repository: ((docker-registry-url))concourse/concourse-pipeline-resource
           tag: 3
     YAML
     YAML.safe_load(resource_types_yaml)

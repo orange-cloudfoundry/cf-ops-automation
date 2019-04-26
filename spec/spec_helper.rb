@@ -145,4 +145,7 @@ RSpec.configure do |config|
   def docker_registry
     DockerRegistry2.connect
   end
+
+  DOCKER_REGISTRY_PREFIX = "((docker-registry-url))"
+
 end

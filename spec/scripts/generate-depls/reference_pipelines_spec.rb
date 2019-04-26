@@ -21,7 +21,8 @@ describe 'reference concourse pipelines spec' do
       resource_types.each do |resource_type|
         puts "processing resource #{resource_type}"
         resource_type_name = resource_type['name']
-        docker_image = resource_type['source']['repository'].to_s
+        docker_image_raw = resource_type['source']['repository'].to_s
+        docker_image = docker_image_raw.delete_prefix(DOCKER_REGISTRY_PREFIX)
         docker_image = "library/#{docker_image}" unless docker_image.include?('/')
         docker_image_tag = resource_type['source']['tag'] || 'latest'
         name = "#{docker_image}:#{docker_image_tag}"
