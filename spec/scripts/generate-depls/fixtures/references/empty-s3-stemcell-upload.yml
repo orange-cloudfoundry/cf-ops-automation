@@ -3,12 +3,12 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: "((docker-registry-url))cfcommunity/slack-notification-resource"
     tag: v1.4.2
 - name: cron-resource
   type: docker-image
   source:
-    repository: cftoolsmiths/cron-resource
+    repository: "((docker-registry-url))cftoolsmiths/cron-resource"
 resources:
 - name: weekday-morning
   type: cron-resource
@@ -55,7 +55,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: concourse/busyboxplus
+          repository: "((docker-registry-url))concourse/busyboxplus"
           tag: git
       outputs:
       - name: result-dir

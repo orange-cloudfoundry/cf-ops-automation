@@ -17,3 +17,4 @@ pipeline_vars:
   stemcell-main-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
   stemcell-version: "3586.25"
   bosh-openstack-cpi-release-version: "39"
+  docker-registry-url: ""

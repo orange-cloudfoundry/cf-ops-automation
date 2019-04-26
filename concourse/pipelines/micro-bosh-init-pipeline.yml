@@ -3,12 +3,12 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
 
   - name: cron-resource
     type: docker-image
     source:
-      repository: cftoolsmiths/cron-resource
+      repository: ((docker-registry-url))cftoolsmiths/cron-resource
 
 resources:
 
@@ -89,7 +89,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: orangecloudfoundry/terraform, tag: c1f95e84451a6f9935254d85624a128611ccc9d9}
+          source: {repository: "((docker-registry-url))orangecloudfoundry/terraform", tag: c1f95e84451a6f9935254d85624a128611ccc9d9}
         inputs:
           - name: spec-resource
           - name: terraform-tfvars
@@ -143,7 +143,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5-slim}
+          source: {repository: "((docker-registry-url))ruby", tag: 2.5.5-slim}
         inputs:
           - name: scripts-resource
           - name: state-file-resource
@@ -185,7 +185,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: alpine, tag: "3.5"}
+          source: {repository: "((docker-registry-url))alpine", tag: "3.5"}
         inputs:
           - name: reference-resource
           - name: generated-resource

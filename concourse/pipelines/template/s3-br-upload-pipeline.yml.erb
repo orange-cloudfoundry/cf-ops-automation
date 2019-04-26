@@ -19,13 +19,13 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
 
   - name: cron-resource
     type: docker-image
     source:
-      repository: cftoolsmiths/cron-resource
+      repository: ((docker-registry-url))cftoolsmiths/cron-resource
       # use latest as no other recent tag available
 
 resources:
@@ -102,7 +102,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:
@@ -147,7 +149,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:
@@ -204,7 +208,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
@@ -256,7 +262,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
