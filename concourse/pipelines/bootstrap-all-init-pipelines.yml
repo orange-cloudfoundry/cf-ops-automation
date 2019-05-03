@@ -185,7 +185,7 @@ jobs:
           fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
           PIPELINE_FILE_PATH="cf-ops-automation/concourse/pipelines/control-plane.yml"
           echo "set pipeline ${PIPELINE_FILE_PATH}"
-          fly -t main set-pipeline -p control-plane -c ${PIPELINE_FILE_PATH} -l secrets-full/coa/config/credentials-auto-init.yml -l secrets-full/coa/config/credentials-git-config.yml -l secrets-full/coa/config/credentials-slack-config.yml -n
+          fly -t main set-pipeline -p control-plane -c ${PIPELINE_FILE_PATH} -l secrets-full/coa/config/credentials-auto-init.yml -l secrets-full/coa/config/credentials-git-config.yml -l secrets-full/coa/config/credentials-slack-config.yml -l secrets-full/coa/config/credentials-docker-registry.yml -n
       params:
         ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
         FLY_USERNAME: ((concourse-micro-depls-username))
