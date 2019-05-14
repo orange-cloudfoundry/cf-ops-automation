@@ -273,12 +273,31 @@ jobs:
         config: &integration_tests_upload-pipelines_task_config
           platform: linux
           inputs:
-          - name: cf-ops-automation
-          - name: prereqs
+            - name: cf-ops-automation
+            - name: prereqs
+          outputs:
+            - name: coa-logs
           run:
-            path: ./cf-ops-automation/scripts/run_integration_tests.rb
+            path: /bin/bash
+            args:
+              - -ce
+              - |
+                ./cf-ops-automation/scripts/run_integration_tests.rb
+                if [ -f ./coa-logs/stdout.log ];then
+                  cat ./coa-logs/stdout.log
+                fi
           params:
             PREREQS_PATHS_RAW: "./prereqs/*.yml"
+            COA_LOG_PATH: "../../../../coa-logs"
+        on_failure:
+          task: dump-coa-log-file
+          image: cf-ops-automation-docker-image
+          config:
+            platform: linux
+            inputs:
+              - name: coa-logs
+            run:
+              path: cat ./coa-logs/stdout.log
 
   - name: update-documentation
     on_failure: *on_failure_alert
