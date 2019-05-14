@@ -11,8 +11,9 @@ module Coa
       # This module lets us write class method the the CoaLogger module.
       module ClassMethods
         def logger
-          default_path = File.join(File.dirname(__FILE__), '..', '..', '..', 'log')
-          log_filename = File.join(ENV.fetch('COA_LOG_PATH', default_path), "stdout.log")
+          current_dir =  File.dirname(__FILE__)
+          default_path = File.join('..', '..', '..', 'log')
+          log_filename = File.join(current_dir, ENV.fetch('COA_LOG_PATH', default_path), "stdout.log")
           Logger.new(log_filename)
         end
       end
