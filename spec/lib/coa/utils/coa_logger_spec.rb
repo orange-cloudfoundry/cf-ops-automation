@@ -2,7 +2,7 @@ require 'rspec'
 require 'coa/utils/coa_logger'
 
 describe Coa::Utils::CoaLogger do
-  context 'when condition' do
+  context 'when custom log path is provided' do
     let(:logger_tmpdir) { Dir.mktmpdir('coa_logger_') }
     let(:log_filepath) { logger_tmpdir }
     let(:coa_logger) { Class.new { include Coa::Utils::CoaLogger }.logger }
@@ -10,7 +10,7 @@ describe Coa::Utils::CoaLogger do
     let(:coa_root_dir) { File.absolute_path(File.join(current_file_dir, '..', '..', '..', '..')) }
     let(:coa_logger_dir) { File.join(coa_root_dir, 'lib', 'coa', 'utils') }
 
-    it 'succeeds' do
+    it 'creates log file at this path' do
       allow(ENV).to receive(:fetch).with("COA_LOG_PATH", coa_logger_dir + "/../../../log").and_return(log_filepath)
       coa_logger.log_and_puts :info, 'my info message'
 
