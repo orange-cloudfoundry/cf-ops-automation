@@ -16,7 +16,7 @@ shared_examples_for "an initiated and pushed repo" do |repo_path, repo_name|
       ["git config --local user.email 'coa_env_bootstrapper@example.com'", {}],
       ["git config --local user.name 'Fake User For COA Bootstrapper Pipeline'", {}],
       ["git remote add origin git://1.2.3.4/#{repo_name}", {}],
-      ["git add -A && git commit -m 'Commit'", fail_silently: true],
+      ["git add -A && git commit -m 'Commit from origin'", fail_silently: true],
       ["git checkout master", {}],
       ["git push origin master --force", { profile: profile }]
     ]
@@ -105,9 +105,9 @@ describe Coa::EnvBootstrapper::Git do
       expect(Dir).to receive(:chdir).with(described_class::PROJECT_ROOT_DIR).and_yield
       commands = [
         ["git log -1 --oneline| cut -d ' ' -f1", {}],
-        ["git remote add random git://1.2.3.4/cf-ops-automation", {}],
-        ["git checkout -b random", {}],
-        ["git push random random:master --force", { profile: profile }],
+        ["git remote add remote-random git://1.2.3.4/cf-ops-automation", {}],
+        ["git checkout -b br-random", {}],
+        ["git push remote-random br-random:master --force", { profile: profile }],
         ["git checkout ", {}],
         ["git branch", { profile: profile }],
         ["git remote", { profile: profile }]
