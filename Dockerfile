@@ -3,8 +3,8 @@ FROM ruby:2.5.5
 ARG CONCOURSE_VERSION
 ARG CONCOURSE_SHA
 
-RUN apt update && \
- apt install tree vim
+RUN apt-get update && \
+ apt-get -y install tree vim
 
 # install cf-ops-automation Gemfile
 RUN gem update --system
