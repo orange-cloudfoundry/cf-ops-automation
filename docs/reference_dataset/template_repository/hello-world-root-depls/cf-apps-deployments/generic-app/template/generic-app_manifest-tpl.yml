@@ -2,3 +2,22 @@ name: generic-app
 instances: (( grab secrets.generic-app.instances ))
 path: .
 
+memory: (( grab secrets.an_undefined_key_in_secrets_yml || an_undefined_yml_key.fallback.value || "64M" )) # as no values are defined, spruce will use the 64M default value
+
+# By default, spruce home dir is in the configuration repo, in the deployment directory
+#  (ie: credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/)
+disk_quota: (( file "spruce-file-sample-from-secrets.txt" ))
+
+# To reference spruce-generated files use the path : "../../../../generated-files"
+# To access paas-templates directory, it is possible to use one of the following:
+#   - direct reference, quite similar, like  "../../../../additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template"
+
+#### Below a NOT RECOMMENDED and subject to change option. See https://github.com/orange-cloudfoundry/cf-ops-automation/issues/259
+#   - use a variable see sample with timeout and path_to_my_file $CUSTOM_SCRIPT_DIR: (( grab $CUSTOM_SCRIPT_DIR )), in this sample, CUSTOM_SCRIPT_DIR=additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
+secrets: # you may define temporary keys in this section, that will be pruned upon spruce invocation, ie won't endup in spruce-generated files
+  path_to_my_file: ((concat "../../../../" $CUSTOM_SCRIPT_DIR "/spruce-file-sample-from-templates.txt" ))
+
+timeout: (( file secrets.path_to_my_file ))
+
+
+
