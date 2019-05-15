@@ -12,7 +12,7 @@ stemcells:
 
 instance_groups:
 - name: nginx
-  instances: (( grab secrets.nginx.instances ))
+  instances: (( grab secrets.nginx.instances )) # For complex sample of spruce usage, please see docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/generic-app_manifest-tpl.yml
   azs: [z1]
   vm_type: default
   persistent_disk: 0
