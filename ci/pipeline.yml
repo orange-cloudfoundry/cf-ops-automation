@@ -297,8 +297,15 @@ jobs:
             inputs:
               - name: coa-logs
             run:
-              path: cat ./coa-logs/stdout.log
-
+              path: /bin/bash
+              args:
+                - -ce
+                - |
+                  if [ -f ./coa-logs/stdout.log ];then
+                    cat ./coa-logs/stdout.log
+                  else
+                    echo "Sorry, no logfile found :-("
+                  fi
   - name: update-documentation
     on_failure: *on_failure_alert
     serial: true
