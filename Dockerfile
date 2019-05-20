@@ -1,7 +1,7 @@
 FROM ruby:2.5.5
 
-ARG CONCOURSE_VERSION=3.14.1
-ARG CONCOURSE_SHA=aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
+ARG CONCOURSE_VERSION=5.3.0
+ARG CONCOURSE_SHA=d9b93f792b5ed77d785f192da9710d5da788d042a52f352e52e310f32a9f8e87
 
 RUN apt-get update && \
  apt-get -y install tree vim
@@ -14,10 +14,13 @@ COPY Gemfile.lock /usr/local/Gemfile.lock
 RUN cd /usr/local && bundle install
 
 # install fly-cli
-ARG FLY_DOWNLOAD_URL="https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly_linux_amd64"
+ARG FLY_DOWNLOAD_URL="https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly-${CONCOURSE_VERSION}-linux-amd64.tgz"
 RUN echo "Prepare FLY downloading at $FLY_DOWNLOAD_URL"
-RUN curl -sfL "$FLY_DOWNLOAD_URL" -o /usr/local/bin/fly \
-  && [ ${CONCOURSE_SHA} = $(shasum -a 256 /usr/local/bin/fly | cut -d' ' -f1) ] \
+RUN curl -sfL "$FLY_DOWNLOAD_URL" -o /tmp/fly.tgz \
+  && [ ${CONCOURSE_SHA} = $(sha256sum /tmp/fly.tgz | cut -d' ' -f1) ] \
+  && cd /tmp \
+  && tar xzvf /tmp/fly.tgz \
+  && mv /tmp/fly /usr/local/bin/fly \
   && chmod +x /usr/local/bin/fly
 
 RUN curl -sfL "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64" > /usr/local/bin/cc-test-reporter \
