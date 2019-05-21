@@ -264,7 +264,7 @@ jobs:
 
       - task: upload-pipelines
         attempts: 2
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-develop
         config: &integration_tests_upload-pipelines_task_config
           platform: linux
           inputs:
