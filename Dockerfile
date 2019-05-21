@@ -2,6 +2,7 @@ FROM ruby:2.5.5
 
 ARG CONCOURSE_VERSION=3.14.1
 ARG CONCOURSE_SHA=aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
+
 RUN apt-get update && \
  apt-get -y install tree vim
 
@@ -13,7 +14,9 @@ COPY Gemfile.lock /usr/local/Gemfile.lock
 RUN cd /usr/local && bundle install
 
 # install fly-cli
-RUN curl -sfL "https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly_linux_amd64" -o /usr/local/bin/fly \
+ARG FLY_DOWNLOAD_URL="https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly_linux_amd64"
+RUN echo "Prepare FLY downloading at $FLY_DOWNLOAD_URL"
+RUN curl -sfL "$FLY_DOWNLOAD_URL" -o /usr/local/bin/fly \
   && [ ${CONCOURSE_SHA} = $(shasum -a 256 /usr/local/bin/fly | cut -d' ' -f1) ] \
   && chmod +x /usr/local/bin/fly
 

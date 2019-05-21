@@ -25,7 +25,15 @@ resources:
   source:
     url: ((slack-webhook))
 
-- name: cf-ops-automation-docker-image
+- name: cf-ops-automation-docker-image-develop
+  type: docker-image
+  source:
+    repository: orangecloudfoundry/cf-ops-automation
+    username: ((dockerhub-username))
+    password: ((dockerhub-password))
+    tag: develop-latest
+
+- name: cf-ops-automation-docker-image-PR
   type: docker-image
   source:
     repository: orangecloudfoundry/cf-ops-automation
@@ -51,15 +59,6 @@ resources:
     password: ((cf-ops-automation-git-password))
     branch: ((cf-ops-automation-git-branch))
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
-
-#- name: ci-coa-it
-#  type: git
-#  source:
-#    uri: ((cf-ops-automation-git-uri))
-#    username: ((cf-ops-automation-git-username))
-#    password: ((cf-ops-automation-git-password))
-#    branch: ((cf-ops-automation-git-branch-it))
-#    skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
 - name: ci-master
   type: git
@@ -124,20 +123,16 @@ jobs:
       resource: ci-develop
     - get: cf-ops-automation-dependencies
       trigger: true
-    - put: cf-ops-automation-docker-image
+    - put: cf-ops-automation-docker-image-develop
       params:
         build: cf-ops-automation-dependencies
-        build_args: &docker_build_args
-          CONCOURSE_VERSION: 3.14.1
-          CONCOURSE_SHA: aeb91f5d464b71de44decbd34c6696325c14d4f569c76c1171c124e2a773b02e
-
   - name: unit-tests
     on_failure: *on_failure_alert
     serial: true
     plan:
     - aggregate:
       - get: concourse-meta
-      - get: cf-ops-automation-docker-image
+      - get: cf-ops-automation-docker-image-develop
         passed: [build-cached-image]
         trigger: true
       - get: cf-ops-automation
@@ -145,7 +140,7 @@ jobs:
         trigger: true
     - task: run-tests
       attempts: 2
-      image: cf-ops-automation-docker-image
+      image: cf-ops-automation-docker-image-develop
       timeout: 30m
       config: &unit_tests_config
         platform: linux
@@ -201,7 +196,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-develop
           passed: [unit-tests, integration-tests]
           trigger: true
         - get: cf-ops-automation
@@ -210,7 +205,7 @@ jobs:
           passed: [unit-tests, integration-tests]
       - task: run-acceptance-tests
         attempts: 2
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-develop
         timeout: 30m
         config: &acceptance_tests_config
           platform: linux
@@ -235,11 +230,11 @@ jobs:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-develop
           passed: [build-cached-image]
       - task: setup-pre-requisites
         attempts: 1
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-develop
         config: &integration_tests_setup_pre_requisites_task_config
           platform: linux
           inputs:
@@ -291,7 +286,7 @@ jobs:
             COA_LOG_PATH: "../../../../coa-logs"
         on_failure:
           task: dump-coa-log-file
-          image: cf-ops-automation-docker-image
+          image: cf-ops-automation-docker-image-develop
           config:
             platform: linux
             inputs:
@@ -315,7 +310,7 @@ jobs:
           resource: ci-develop
           trigger: true
           passed: [acceptance-tests]
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-develop
           trigger: true
           passed: [acceptance-tests]
 
@@ -369,7 +364,7 @@ jobs:
           resource: ci-develop
           trigger: true
           passed: [update-documentation]
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-develop
           passed: [update-documentation]
       - put: ci-master
         params:
@@ -386,7 +381,7 @@ jobs:
         - get: cf-ops-automation
           resource: ci-master
           passed: [merge-to-master]
-#        - get: cf-ops-automation-docker-image
+#        - get: cf-ops-automation-docker-image-develop
 #          passed: [merge-to-master]
       - task: generate-changelog
         config:
@@ -503,12 +498,11 @@ jobs:
           path: PR-develop
           status: pending
 
-      - put: cf-ops-automation-docker-image
+      - put: cf-ops-automation-docker-image-PR
         params:
           build: PR-develop
           tag: PR-develop/.git/id
           tag_prefix: PR-
-          build_args: *docker_build_args
         on_failure: &PR_failure
           put: PR-develop
           params:
@@ -521,7 +515,7 @@ jobs:
     plan:
       - aggregate:
         - get: concourse-meta
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
@@ -535,7 +529,7 @@ jobs:
           status: pending
       - task: test-pr
         attempts: 2
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-PR
         timeout: 30m
         config: *unit_tests_config
         params:
@@ -548,7 +542,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-UnitTests]
           trigger: true
         - get: cf-ops-automation
@@ -558,7 +552,7 @@ jobs:
           passed: [PullRequests-UnitTests]
       - task: acceptance-test-pr
         attempts: 2
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-PR
         timeout: 30m
         config: *acceptance_tests_config
         on_failure: &PR_coa_failure
@@ -572,7 +566,7 @@ jobs:
     serial: true
     plan:
       - aggregate:
-        - get: cf-ops-automation-docker-image
+        - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
@@ -582,7 +576,7 @@ jobs:
           passed: [PullRequests-build-cached-image]
       - task: setup-pre-requisites
         attempts: 1
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-PR
         config: *integration_tests_setup_pre_requisites_task_config
         on_failure: *PR_coa_failure
         # it is not possible to include it as config param, otherwise we get an deserialization error
@@ -591,7 +585,7 @@ jobs:
 
       - task: upload-pipelines
         attempts: 1
-        image: cf-ops-automation-docker-image
+        image: cf-ops-automation-docker-image-PR
         config: *integration_tests_upload-pipelines_task_config
         on_failure: *PR_coa_failure
 
@@ -620,7 +614,7 @@ jobs:
     plan:
     - aggregate:
       - get: concourse-meta
-      - get: cf-ops-automation-docker-image
+      - get: cf-ops-automation-docker-image-develop
         passed: [build-cached-image]
         trigger: true
       - get: cf-ops-automation
@@ -628,7 +622,7 @@ jobs:
         trigger: true
     - task: run-tests
       attempts: 2
-      image: cf-ops-automation-docker-image
+      image: cf-ops-automation-docker-image-develop
       config: *unit_tests_config
       params:
         GIT_BRANCH_CMD: echo hotfix-branch
