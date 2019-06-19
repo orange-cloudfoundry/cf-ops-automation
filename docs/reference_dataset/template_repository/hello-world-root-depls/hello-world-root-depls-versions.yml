@@ -6,8 +6,5 @@ stemcell-version: "3586.25"
 nginx-version: "1.13.12"
 ntp-version: "4.2.8p11"
 bosh-openstack-cpi-release-version: "37"
-vault-version:
-  id: 15900572
-  tag: v1.1.3
-  timestamp: "2019-03-04T17:05:11Z"
+vault-version: "v1.1.3"
 cf-ops-automation-reference-dataset-submodule-sample-version: "0.0.1"
