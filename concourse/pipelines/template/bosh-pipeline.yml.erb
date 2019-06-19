@@ -234,7 +234,7 @@ resources:
     user: <%= info['repository'].split('/').first %>
     repository: <%= info['repository'].split('/').last %>
     access_token: ((bot-github-access-token))
-  version: ((<%= release %>-version))
+#  version: tag:( (<%#= release %>-version) )
     <% end %>
   <% end %>
 <% end %>
@@ -490,7 +490,7 @@ jobs:
       <% if PipelineHelpers.bosh_io_hosted?(info) %>
       version: { version: ((<%= release %>-version)) }
       <% else %>
-      # <%= release %>-version is pinned, see resource declaration
+      # <%= release %>-version is pinned, see resource declaration. This is disabled for now...
       <% end %>
     <% end %>
       trigger: true
