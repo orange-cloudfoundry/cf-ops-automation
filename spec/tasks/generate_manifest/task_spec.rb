@@ -241,7 +241,7 @@ describe 'generate_manifest task' do
     end
 
     it 'successes' do
-      expect(@output).to end_with("succeeded\n")
+      expect(@output).to match("\nsucceeded\n")
     end
   end
 end

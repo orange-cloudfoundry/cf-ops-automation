@@ -234,7 +234,7 @@ resources:
     user: <%= info['repository'].split('/').first %>
     repository: <%= info['repository'].split('/').last %>
     access_token: ((bot-github-access-token))
-#  version: tag:( (<%#= release %>-version) )
+#  version: tag:( (<%#= release %>-version) ) # FIXME https://github.com/concourse/concourse/issues/3990
     <% end %>
   <% end %>
 <% end %>

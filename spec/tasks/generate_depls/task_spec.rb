@@ -56,7 +56,7 @@ describe 'generate_depls task' do
     end
 
     it 'runs successfully' do
-      expect(@output).to end_with("succeeded\n")
+      expect(@output).to match("\nsucceeded\n")
     end
   end
 
@@ -102,7 +102,7 @@ describe 'generate_depls task' do
     end
 
     it 'runs fail' do
-      expect(@output).to end_with("failed\n")
+      expect(@output).to match("\nfailed\n")
     end
   end
 
@@ -127,7 +127,7 @@ describe 'generate_depls task' do
     end
 
     it 'fails' do
-      expect(@output).to end_with("failed\n")
+      expect(@output).to match("\nfailed\n")
     end
 
     it 'contains error messages' do

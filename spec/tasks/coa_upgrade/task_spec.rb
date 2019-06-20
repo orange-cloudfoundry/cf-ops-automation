@@ -72,7 +72,7 @@ describe 'COA upgrade task' do
     end
 
     it 'runs successfully' do
-      expect(@output).to end_with("succeeded\n")
+      expect(@output).to match("\nsucceeded\n")
     end
   end
 
@@ -87,7 +87,7 @@ describe 'COA upgrade task' do
     end
 
     it 'runs successfully' do
-      expect(@output).to end_with("succeeded\n")
+      expect(@output).to match("\nsucceeded\n")
     end
   end
 
@@ -102,7 +102,7 @@ describe 'COA upgrade task' do
     end
 
     it 'runs successfully' do
-      expect(@output).to end_with("succeeded\n")
+      expect(@output).to match("\nsucceeded\n")
     end
   end
 end
