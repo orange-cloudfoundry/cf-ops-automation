@@ -69,8 +69,9 @@ describe 'generate_concourse_pipeline_config task' do
     end
 
     it 'success' do
-      expect(@output).to end_with("succeeded\n")
+      expect(@output).to match("\nsucceeded\n")
     end
+
 
     it 'generates a pipeline definition file' do
       expect(File).to exist(pipelines_definitions_file)
