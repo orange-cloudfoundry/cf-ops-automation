@@ -143,7 +143,7 @@ RSpec.configure do |config|
   end
 
   def docker_registry
-    DockerRegistry2.connect('https://registry.hub.docker.com', open_timeout: 15, read_timeout: 20)
+    DockerRegistry2.connect('https://registry.hub.docker.com', open_timeout: 30, read_timeout: 30)
 
 
   end
