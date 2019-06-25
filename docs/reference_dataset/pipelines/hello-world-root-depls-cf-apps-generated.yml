@@ -4,13 +4,16 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
 resources:
 - name: failure-alert
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 - name: secrets-full
   type: git
   source:
@@ -65,7 +68,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
         outputs:
           - name: result-dir
         run:

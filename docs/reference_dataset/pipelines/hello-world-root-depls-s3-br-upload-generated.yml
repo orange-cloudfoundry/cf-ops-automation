@@ -4,12 +4,12 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
   - name: cron-resource
     type: docker-image
     source:
-      repository: cftoolsmiths/cron-resource
+      repository: ((docker-registry-url))cftoolsmiths/cron-resource
       # use latest as no other recent tag available
 resources:
 - name: weekday-morning
@@ -22,6 +22,9 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 - name: cf-ops-automation
   type: git
   source:
@@ -95,7 +98,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:
@@ -135,7 +140,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:
@@ -184,7 +191,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
@@ -230,7 +239,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
@@ -276,7 +287,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
@@ -322,7 +335,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
@@ -368,7 +383,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:
@@ -414,7 +431,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: concourse/busyboxplus, tag: "git"}
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
         inputs:
           - name: release
         outputs:

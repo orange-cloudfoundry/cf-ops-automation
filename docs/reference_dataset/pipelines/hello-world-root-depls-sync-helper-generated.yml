@@ -3,12 +3,12 @@ resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
   - name: cron-resource
     type: docker-image
     source:
-      repository: cftoolsmiths/cron-resource
+      repository: ((docker-registry-url))cftoolsmiths/cron-resource
       # use latest as no other recent tag available
 resources:
 - name: at-nine
@@ -21,6 +21,9 @@ resources:
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 - name: anonymized-secrets
   type: git
   source:
@@ -74,7 +77,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -121,7 +126,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -140,7 +147,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5}
+          source:
+              repository: ((docker-registry-url))ruby
+              tag: 2.5.5
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -173,7 +182,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -192,7 +203,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5}
+          source:
+              repository: ((docker-registry-url))ruby
+              tag: 2.5.5
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -225,7 +238,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -244,7 +259,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5}
+          source:
+              repository: ((docker-registry-url))ruby
+              tag: 2.5.5
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -277,7 +294,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -296,7 +315,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5}
+          source:
+              repository: ((docker-registry-url))ruby
+              tag: 2.5.5
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -329,7 +350,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -348,7 +371,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5}
+          source:
+              repository: ((docker-registry-url))ruby
+              tag: 2.5.5
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -381,7 +406,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: ruby, tag: 2.5.5}
+        source:
+            repository: ((docker-registry-url))ruby
+            tag: 2.5.5
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -400,7 +427,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: ruby, tag: 2.5.5}
+          source:
+              repository: ((docker-registry-url))ruby
+              tag: 2.5.5
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare

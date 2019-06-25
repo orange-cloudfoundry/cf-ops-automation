@@ -1,5 +1,26 @@
 # Change Log
 
+## [v3.5.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.5.0) (2019-06-25)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.4.1...v3.5.0)
+
+**Implemented enhancements:**
+
+- recreate pipelines should use --fix flag to deal with connectivity errors [\#250](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/250)
+
+**Closed issues:**
+
+- Document & test relative paths for spruce file inclusion [\#255](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/255)
+- Partial private docker registry support [\#254](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/254)
+- Optional secrets scan to reduce git workload [\#248](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/248)
+- Support proxy for slack-notification [\#148](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/148)
+
+**Merged pull requests:**
+
+- doc\(reference-dataset\): document spruce file usage [\#258](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/258)
+- pipeline\(\*\): support proxy for slack-notification [\#253](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/253)
+- Optional secrets scans Fixes and supports a private docker registry [\#252](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/252)
+- Bosh recreate fix [\#251](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/251)
+
 ## [v3.4.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.4.1) (2019-03-28)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.4.0...v3.4.1)
 

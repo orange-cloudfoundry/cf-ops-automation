@@ -1,40 +1,35 @@
 
 ---
 resource_types:
-- name: bosh-deployment
-  type: docker-image
-  source:
-    repository: concourse/bosh-deployment-resource
-    tag: latest  # use latest as no other tag available
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
 - name: cron-resource
   type: docker-image
   source:
-    repository: cftoolsmiths/cron-resource
+    repository: ((docker-registry-url))cftoolsmiths/cron-resource
     # use latest as no other recent tag available
 - name: concourse-pipeline
   type: docker-image
   source:
-    repository: concourse/concourse-pipeline-resource
+    repository: ((docker-registry-url))concourse/concourse-pipeline-resource
     tag: 3
 - name: bosh-deployment-v2
   type: docker-image
   source:
-    repository: cloudfoundry/bosh-deployment-resource
+    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 - name: bosh-errand
   type: docker-image
   source:
-    repository: cfcommunity/bosh2-errand-resource
+    repository: ((docker-registry-url))cfcommunity/bosh2-errand-resource
     tag: v0.1.2
 - name: meta
   type: docker-image
   source:
-    repository: swce/metadata-resource
+    repository: ((docker-registry-url))swce/metadata-resource
     tag: release-v0.0.3
 resources:
 - name: concourse-meta

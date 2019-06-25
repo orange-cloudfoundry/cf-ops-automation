@@ -4,18 +4,21 @@ resource_types:
   - name: concourse-pipeline
     type: docker-image
     source:
-      repository: concourse/concourse-pipeline-resource
+      repository: ((docker-registry-url))concourse/concourse-pipeline-resource
       tag: 3
   - name: slack-notification
     type: docker-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
 resources:
 - name: failure-alert
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 - name: concourse-for-hello-world-root-depls
   type: concourse-pipeline
   source:

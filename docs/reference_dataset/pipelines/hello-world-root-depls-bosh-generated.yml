@@ -1,40 +1,35 @@
 
 ---
 resource_types:
-- name: bosh-deployment
-  type: docker-image
-  source:
-    repository: concourse/bosh-deployment-resource
-    tag: latest  # use latest as no other tag available
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
 - name: cron-resource
   type: docker-image
   source:
-    repository: cftoolsmiths/cron-resource
+    repository: ((docker-registry-url))cftoolsmiths/cron-resource
     # use latest as no other recent tag available
 - name: concourse-pipeline
   type: docker-image
   source:
-    repository: concourse/concourse-pipeline-resource
+    repository: ((docker-registry-url))concourse/concourse-pipeline-resource
     tag: 3
 - name: bosh-deployment-v2
   type: docker-image
   source:
-    repository: cloudfoundry/bosh-deployment-resource
+    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 - name: bosh-errand
   type: docker-image
   source:
-    repository: cfcommunity/bosh2-errand-resource
+    repository: ((docker-registry-url))cfcommunity/bosh2-errand-resource
     tag: v0.1.2
 - name: meta
   type: docker-image
   source:
-    repository: swce/metadata-resource
+    repository: ((docker-registry-url))swce/metadata-resource
     tag: release-v0.0.3
 resources:
 - name: concourse-meta
@@ -83,13 +78,6 @@ resources:
   type: bosh-io-stemcell
   source:
     name: ((stemcell-name-prefix))((stemcell-main-name))
-- name: secrets-bosh-deployment-sample
-  type: git
-  source:
-    uri: ((secrets-uri))
-    paths: ["hello-world-root-depls/bosh-deployment-sample", "shared"]
-    branch: ((secrets-branch))
-    skip_ssl_verification: true
 - name: paas-templates-bosh-deployment-sample
   type: git
   source:
@@ -375,15 +363,15 @@ jobs:
       version: { tag: "((vault-version))" }
       trigger: true
       attempts: 2
-    - get: secrets-bosh-deployment-sample
-      params: { submodules: none}
-      trigger: true
     - get: paas-templates-bosh-deployment-sample
       trigger: true
       params:
         submodules: none
   - task: generate-bosh-deployment-sample-manifest
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-bosh-deployment-sample, additional-resource: paas-templates-bosh-deployment-sample}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      credentials-resource: secrets-full-writer
+      additional-resource: paas-templates-bosh-deployment-sample
     output_mapping: {generated-files: release-manifest}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
     params:
@@ -396,14 +384,22 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/bosh-deployment-sample/template
       IAAS_TYPE: ((iaas-type))
   - task: execute-bosh-deployment-sample-spiff-pre-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: release-manifest}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      template-resource: paas-templates-bosh-deployment-sample
+      credentials-resource: secrets-full-writer
+      additional-resource: release-manifest
     output_mapping: {generated-files: pre-bosh-deploy-resource}
     file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
       SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
   - task: copy-bosh-deployment-sample-required-files
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: pre-bosh-deploy-resource}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      template-resource: paas-templates-bosh-deployment-sample
+      credentials-resource: secrets-full-writer
+      additional-resource: pre-bosh-deploy-resource
     output_mapping: {generated-files: final-release-manifest}
     file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
     params:
@@ -416,7 +412,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:
@@ -438,7 +436,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       inputs:
         - name: final-release-manifest
       outputs:
@@ -458,7 +458,7 @@ jobs:
     input_mapping:
       bosh-inputs: ops-and-vars-files
       manifest-dir: final-release-manifest
-      secrets: secrets-bosh-deployment-sample
+      secrets: secrets-full-writer
       scripts-resource: cf-ops-automation
     output_mapping: { result-dir: interpolated-manifest }
     file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
@@ -498,7 +498,7 @@ jobs:
       - ops-and-vars-files/vars/*
       cleanup: true
   - task: bosh-variables
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-bosh-deployment-sample}
+    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
     output_mapping: {result-dir: bosh-variables-result}
     file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
     params:
@@ -529,7 +529,11 @@ jobs:
       repository: updated-bosh-deployment-sample-secrets
       rebase: true
   - task: execute-bosh-deployment-sample-post-bosh-deploy
-    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-bosh-deployment-sample, credentials-resource: secrets-bosh-deployment-sample, additional-resource: final-release-manifest}
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      template-resource: paas-templates-bosh-deployment-sample
+      credentials-resource: secrets-full-writer
+      additional-resource: final-release-manifest
     output_mapping: {generated-files: post-deploy-result}
     file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
     params:
@@ -555,7 +559,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:
@@ -621,7 +627,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: governmentpaas/bosh-cli-v2
+            repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
             tag: c88f3e0b03558c987693fad3f180d9052b77342c
         inputs:
           - name: scripts-resource
@@ -635,7 +641,7 @@ jobs:
             - -c
             - |
               source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-              bosh -n recreate
+              bosh -n recreate --fix
     params:
        BOSH_TARGET: ((bosh-target))
        BOSH_CLIENT: ((bosh-username))
@@ -669,7 +675,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       outputs:
         - name: result-dir
       run:

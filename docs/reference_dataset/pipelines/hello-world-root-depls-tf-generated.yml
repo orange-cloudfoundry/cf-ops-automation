@@ -3,13 +3,16 @@ resource_types:
 - name: slack-notification
   type: docker-image
   source:
-    repository: cfcommunity/slack-notification-resource
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
 resources:
 - name: failure-alert
   type: slack-notification
   source:
     url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
 # Scan the whole subdeployment from its root, not only the secret part
 - name: secrets-hello-world-root-depls
   type: git
