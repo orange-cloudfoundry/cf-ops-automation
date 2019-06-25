@@ -73,14 +73,104 @@ jobs:
         repository: paas-templates-features
         rebase: true
       on_failure:
-        put: failure-alert
-        params:
-          channel: ((slack-channel))
-          text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
+        do:
+          - task: display-conficts
+            config:
+              image_resource:
+                type: docker-image
+                source: {repository: concourse/busyboxplus, tag: "git"}
+              platform: linux
+              inputs:
+                - name: paas-templates-features
+              outputs:
+                - name: slack-message
+              run:
+                path: /bin/ash
+                args:
+                  - -ce
+                  - |
+                    #ls -l paas-templates-features/.git
+                    echo "HEAD: "
+                    cat paas-templates-features/.git/HEAD
+                    echo "Short ref: "
+                    cat paas-templates-features/.git/short_ref
+                    echo "Committer"
+                    cat paas-templates-features/.git/committer
+                    echo
+                    cd paas-templates-features
+                    git --no-pager log --oneline -10
+                    git --no-pager log --oneline -10 > ../slack-message/git-diff
+          - put: failure-alert
+            params:
+              channel: ((slack-channel))
+              text: |
+                Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+                ```
+                $TEXT_FILE_CONTENT
+                ```
+              text_file: slack-message/git-diff
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
 
-- name: reset-merged-wip-features
+- name: check-feature-branches-for-conflicts
+  plan:
+    - aggregate:
+        - get: paas-templates-reference
+          params: { submodules: none }
+        - get: paas-templates-features
+          params: { submodules: none }
+          trigger: true
+        - get: cf-ops-automation
+          params: { submodules: none }
+    - task: reset-wip
+      file: cf-ops-automation/concourse/tasks/git_reset_wip.yml
+      input_mapping: {reference-resource: paas-templates-reference}
+      output_mapping: {updated-git-resource: paas-templates-features-reseted}
+      params:
+        GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+        SKIP_SSL_VERIFICATION: true
+        GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
+      on_failure:
+        do:
+          - task: display-conficts
+            config:
+              image_resource:
+                type: docker-image
+                source: {repository: concourse/busyboxplus, tag: "git"}
+              platform: linux
+              inputs:
+                - name: paas-templates-features-reseted
+                - name: paas-templates-features
+              outputs:
+                - name: slack-message
+              run:
+                path: /bin/ash
+                args:
+                  - -ce
+                  - |
+                    # ls -l paas-templates-features/.git
+                    echo "HEAD: "
+                    cat paas-templates-features/.git/HEAD
+                    echo "Short ref: "
+                    cat paas-templates-features/.git/short_ref
+                    echo "Committer"
+                    cat paas-templates-features/.git/committer
+                    cd paas-templates-features-reseted
+                    git --no-pager diff --diff-filter=U --exit-code
+                    git --no-pager diff --diff-filter=U --exit-code > ../slack-message/git-diff
+          - put: failure-alert
+            params:
+              channel: ((slack-channel))
+              text: |
+                Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+                ```
+                $TEXT_FILE_CONTENT
+                ```
+              text_file: slack-message/git-diff
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+
+- name: apply-merged-wip-features-reset
   serial_groups: [git]
   on_failure:
     put: failure-alert
@@ -93,6 +183,7 @@ jobs:
     - aggregate:
       - get: paas-templates-reference
         params: { submodules: none }
+        passed: [check-feature-branches-for-conflicts]
       - get: cf-ops-automation
         params: { submodules: none }
     - task: reset-wip
