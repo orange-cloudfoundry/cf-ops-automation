@@ -232,6 +232,7 @@ jobs:
           trigger: true
         - get: cf-ops-automation-docker-image-develop
           passed: [build-cached-image]
+          trigger: true
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image-develop
