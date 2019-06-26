@@ -162,12 +162,22 @@ jobs:
        VARS_FILES_SUFFIX: vars.yml
        OPS_FILES_SUFFIX:  operators.yml
        BOSH_YAML_FILE: <%= name %>.yml
-  - put: concourse-for-<%= depls %>
+  - task: generate-concourse-pipeline-config
+    input_mapping:
+      config-resource: secrets-<%=name %>
+      pipeline-path: final-<%= name %>-pipeline
+    file: cf-ops-automation/concourse/tasks/generate_single_concourse_pipeline_config/task.yml
     params:
-      pipelines:
-      - name: <%= pipeline_name %>
-        team: <%= 'main' %>
-        config_file: final-<%= name %>-pipeline/interpolated-<%= name %>.yml
+      PIPELINE_TEAM: main
+      PIPELINE_NAME: <%= name %>
+      PIPELINE_NAME_PREFIX: <%= depls %>-
+      CONFIG_PATH: config-resource/coa/config
+      OUTPUT_CONFIG_PATH: secrets-<%=name %>/coa/config
+      OUTPUT_PIPELINE_PATH: final-<%= name %>-pipeline
+  - put: concourse-for-<%= depls %>
+    attempts: 3
+    params:
+      pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
   - task: execute-<%= name %>-post-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: final-<%= name %>-pipeline}
     output_mapping: {generated-files: post-deploy-result}

@@ -1,4 +1,5 @@
 pipeline_vars:
+  coa-config-key: value-from-coa-config
   slack-webhook: https://example.slack.com/webhook
   slack-channel: channel
   slack-disable-it: true

@@ -85,8 +85,6 @@ class ConcoursePipelineResourceConfigGenerator
     raise error_message unless error_message.empty?
   end
 
-  private
-
   def filter_credentials_file(file_path)
     File.basename(file_path).include?('pipeline') || File.basename(file_path).include?('generated')
   end
