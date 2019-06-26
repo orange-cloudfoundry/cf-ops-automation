@@ -112,3 +112,7 @@ jobs:
         file: (( concat "result-dir/" secrets.release-name "-*.tgz" ))
         acl: public-read
 
+- name: validate-secrets-injection-((coa-config-key))
+  plan:
+    - get: (( grab secrets.release-name ))
+      trigger: true

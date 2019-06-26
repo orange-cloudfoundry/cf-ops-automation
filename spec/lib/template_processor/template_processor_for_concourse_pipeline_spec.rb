@@ -198,6 +198,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         expect(generated_resources).to include(*expected_failure_alert)
       end
     end
+
     context 'when dynamic resources are valid' do
       let(:expected_paas_templates_resources) do
         my_yaml = ''
@@ -270,6 +271,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         tasks << "copy-#{name}-required-files"
         tasks << "execute-#{name}-post-deploy"
         tasks << 'bosh-interpolate-pipeline-with-ops-and-vars-files'
+        tasks << 'generate-concourse-pipeline-config'
         tasks << 'concourse-for-my-root-depls'
       end
       tasks
@@ -388,18 +390,40 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
     end
 
     context 'when generating bosh-interpolate task'
-    context 'when generating concourse task' do
+    context 'when generating concourse config task' do
       let(:expected_concourse_tasks) do
         my_yaml = ''
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
-            #{root_deployment_name}-#{name}:
-             - put: concourse-for-#{root_deployment_name}
-               params:
-                 pipelines:
-                 - name: #{root_deployment_name}-#{name}
-                   team: main
-                   config_file: final-#{name}-pipeline/interpolated-#{name}.yml
+            #{name}:
+              PIPELINE_TEAM: main
+              PIPELINE_NAME: #{name}
+              PIPELINE_NAME_PREFIX: #{root_deployment_name}-
+              CONFIG_PATH: config-resource/coa/config
+              OUTPUT_CONFIG_PATH: secrets-#{name}/coa/config
+              OUTPUT_PIPELINE_PATH: final-#{name}-pipeline
+          YAML
+        end
+        YAML.safe_load my_yaml
+      end
+
+      it 'is valid' do
+        generated_concourse_tasks = deploy_concourse_tasks.flat_map { |task| { task['params']['PIPELINE_NAME'] => task['params'] } if task['task']&.start_with?('generate-concourse-pipeline-config') }
+          .compact
+          .inject({}) { |memo, task| memo.merge task }
+        expect(generated_concourse_tasks).to match(expected_concourse_tasks)
+      end
+    end
+
+    context 'when generating concourse set-pipeline task' do
+      let(:expected_concourse_tasks) do
+        my_yaml = ''
+        concourse_active_deployments.each_key do
+          my_yaml += <<~YAML
+            - put: concourse-for-#{root_deployment_name}
+              attempts: 3
+              params:
+                pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
           YAML
         end
         YAML.safe_load my_yaml
@@ -407,9 +431,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
 
       it 'is valid' do
         # generated_concourse_tasks = deploy_concourse_tasks.select { |task| task['put']&.start_with?('concourse-for-') }
-        generated_concourse_tasks = deploy_concourse_tasks.flat_map { |task| { task['params']['pipelines'].first['name'] => [task] } if task['put']&.start_with?('concourse-for-') }
-          .compact
-          .inject({}) { |memo, task| memo.merge task }
+        generated_concourse_tasks = deploy_concourse_tasks.flat_map { |task| task if task['put']&.start_with?('concourse-for-') }.compact
         expect(generated_concourse_tasks).to match(expected_concourse_tasks)
       end
     end

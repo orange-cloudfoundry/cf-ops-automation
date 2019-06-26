@@ -91,7 +91,8 @@ module Coa
         "hello-world-root-depls-pipeline-sample" => {
           "team" => "main",
           "jobs" => {
-            "upload-latest-vault-boshrelease-to-s3" => { "pause" => true }
+            "upload-latest-vault-boshrelease-to-s3" => { "pause" => true },
+            "validate-secrets-injection-value-from-coa-config" => {}
           }
         },
         "hello-world-root-depls-s3-br-upload-generated" => {
