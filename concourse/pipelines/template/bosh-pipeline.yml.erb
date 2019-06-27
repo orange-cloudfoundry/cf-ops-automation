@@ -39,12 +39,6 @@ resource_types:
     repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
 
-- name: cron-resource
-  type: docker-image
-  source:
-    repository: ((docker-registry-url))cftoolsmiths/cron-resource
-    # use latest as no other recent tag available
-
 - name: concourse-pipeline
   type: docker-image
   source:
@@ -72,13 +66,6 @@ resource_types:
 resources:
 - name: concourse-meta
   type: meta
-
-- name: at-noon
-  type: cron-resource
-  source:
-    expression: "15 12 * * 1-5"
-    location: "Europe/Paris"
-    fire_immediately: true
 
 - name: failure-alert
   type: slack-notification
@@ -339,13 +326,13 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - get: at-noon
-      trigger: true
     - aggregate:
       - get: secrets-<%= depls %>-limited
         params: { submodules: none}
+        trigger: true
       - get: paas-templates-<%= depls %>
         params: { submodules: none}
+        trigger: true
       - get: cf-ops-automation
         params: { submodules: none}
 
