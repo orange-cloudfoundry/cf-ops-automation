@@ -69,7 +69,7 @@ describe 'static concourse pipelines spec' do
        { "repository" => "orangecloudfoundry/orange-cf-bosh-cli" },
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_slim_image_version },
        { "repository" => TaskSpecHelper.terraform_image, "tag" => TaskSpecHelper.terraform_image_version },
-       { "repository" => "alpine", "tag" => "3.5" },
+       { "repository" => "alpine", "tag" => "3.9" },
        { "repository" => "governmentpaas/curl-ssl" },
        { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version }]
     end
