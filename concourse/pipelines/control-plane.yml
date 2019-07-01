@@ -125,7 +125,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: "((docker-registry-url))ruby", tag: 2.5.5}
+        source: {repository: "((docker-registry-url))ruby", tag: 2.6.3}
       inputs:
       - name: concourse-micro
       outputs:

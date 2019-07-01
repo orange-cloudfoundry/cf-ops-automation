@@ -172,7 +172,7 @@ DEPENDENCIES
   simplecov (>= 0.16.1)
 
 RUBY VERSION
-   ruby 2.5.5p157
+   ruby 2.6.3p62
 
 BUNDLED WITH
    2.0.1

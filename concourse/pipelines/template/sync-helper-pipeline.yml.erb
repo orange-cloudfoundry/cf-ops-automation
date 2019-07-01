@@ -91,7 +91,7 @@ jobs:
         type: docker-image
         source:
             repository: ((docker-registry-url))ruby
-            tag: 2.5.5
+            tag: 2.6.3
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -142,7 +142,7 @@ jobs:
         type: docker-image
         source:
             repository: ((docker-registry-url))ruby
-            tag: 2.5.5
+            tag: 2.6.3
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
@@ -163,7 +163,7 @@ jobs:
           type: docker-image
           source:
               repository: ((docker-registry-url))ruby
-              tag: 2.5.5
+              tag: 2.6.3
         inputs:
           - name: anonymized-secrets
           - name: anonymized-secrets-compare
@@ -204,7 +204,7 @@ jobs:
         type: docker-image
         source:
             repository: ((docker-registry-url))ruby
-            tag: 2.5.5
+            tag: 2.6.3
       inputs:
         - name: anonymized-secrets
         - name: anonymized-secrets-compare
