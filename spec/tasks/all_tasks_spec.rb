@@ -4,8 +4,8 @@ require 'yaml'
 require_relative './task_spec_helper'
 
 describe 'all tasks' do
-
-  context 'Pre-requisite' do
+  # FIXME enable when network issue on COA_CI@FE are fixed
+  xcontext 'Pre-requisite' do
     let(:tasks_dir) { 'concourse/tasks/'}
     let(:tasks) { Dir.glob(tasks_dir + '**/*.yml') }
     let(:docker_images_with_task) do
