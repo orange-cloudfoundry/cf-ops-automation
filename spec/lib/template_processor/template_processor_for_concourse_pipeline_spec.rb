@@ -513,10 +513,10 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
   context 'when deploy-concourse job triggering is correct' do
     let(:deploy_concourse_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('deploy-concourse-') } }
     let(:deploy_concourse_plans) { deploy_concourse_jobs.flat_map { |job| job['plan'] } }
-    let(:deploy_concourse_aggregate) { deploy_concourse_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
-    let(:concourse_trigger_secrets) { deploy_concourse_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-    let(:concourse_trigger_paas_templates) { deploy_concourse_aggregate.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
-    let(:concourse_trigger_other_resources) { deploy_concourse_aggregate.select { |task| !task['get'].start_with?('secrets-') && !task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+    let(:deploy_concourse_in_parallel) { deploy_concourse_plans.flat_map { |tasks| tasks['in_parallel'] }.compact }
+    let(:concourse_trigger_secrets) { deploy_concourse_in_parallel.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+    let(:concourse_trigger_paas_templates) { deploy_concourse_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+    let(:concourse_trigger_other_resources) { deploy_concourse_in_parallel.select { |task| !task['get'].start_with?('secrets-') && !task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
 
     it 'triggers on secrets update' do
       expect(concourse_trigger_secrets.uniq).to match([true])

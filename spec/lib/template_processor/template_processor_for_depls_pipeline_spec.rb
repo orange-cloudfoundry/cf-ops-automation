@@ -304,7 +304,7 @@ describe 'DeplsPipelineTemplateProcessing' do
 
       it 'generates s3 version using path on get' do
         boshrelease_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-          .flat_map { |plan| plan['aggregate'] }
+          .flat_map { |plan| plan['in_parallel'] }
           .compact
           .select { |resource| expected_boshreleases.key?(resource['get']) }
           .flat_map { |resource| { resource['get'] => resource['version']['path'] } }
@@ -360,7 +360,7 @@ describe 'DeplsPipelineTemplateProcessing' do
 
       it 'generates bosh_io version using path on get' do
         stemcell_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-          .flat_map { |plan| plan['aggregate'] }
+          .flat_map { |plan| plan['in_parallel'] }
           .compact
           .select { |resource| resource['get'] == '((stemcell-main-name))' }
           .flat_map { |resource| resource['version']['version'] }
@@ -491,14 +491,14 @@ describe 'DeplsPipelineTemplateProcessing' do
     context 'when validating terraform triggering' do
       let(:check_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('check-terraform-consistency') } }
       let(:check_terraform_plans) { check_terraform_jobs.flat_map { |job| job['plan'] } }
-      let(:check_terraform_aggregate) { check_terraform_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
-      let(:check_terraform_secrets_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:check_terraform_paas_templates_triggering) { check_terraform_aggregate.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+      let(:check_terraform_in_parallel) { check_terraform_plans.flat_map { |tasks| tasks['in_parallel'] }.compact }
+      let(:check_terraform_secrets_triggering) { check_terraform_in_parallel.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:check_terraform_paas_templates_triggering) { check_terraform_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
       let(:enforce_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('approve-and-enforce-terraform-consistency') } }
       let(:enforce_terraform_plans) { enforce_terraform_jobs.flat_map { |job| job['plan'] } }
-      let(:enforce_terraform_aggregate) { enforce_terraform_plans.flat_map { |tasks| tasks['aggregate'] }.compact }
-      let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_aggregate.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_in_parallel) { enforce_terraform_plans.flat_map { |tasks| tasks['in_parallel'] }.compact }
+      let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_in_parallel.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
       let(:all_ci_deployments) { enable_root_deployment_terraform }
 
       it 'triggers check-consistency automatically on each commit on secrets' do
