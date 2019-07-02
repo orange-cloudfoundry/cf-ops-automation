@@ -185,7 +185,7 @@ describe 'DeplsPipelineTemplateProcessing' do
     context 'when an errand job is defined' do
       let(:expected_shield_errand) do
         my_shield_errand_yaml = <<~YAML
-          - aggregate:
+          - in_parallel:
             - get: secrets-shield-expe
               params: { submodules: none}
               trigger: true

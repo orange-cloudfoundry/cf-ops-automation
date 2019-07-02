@@ -41,7 +41,7 @@ jobs:
 
   - name: bootstrap_coa_env
     plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation-docker-image
         passed: [build-cached-image]
         trigger: true

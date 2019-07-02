@@ -91,7 +91,7 @@ resources:
 jobs:
 - name: auto-update-auto-init
   plan:
-  - aggregate:
+  - in_parallel:
     - get: depls
       params: { submodules: none}
       trigger: true
@@ -127,7 +127,7 @@ jobs:
 
 - name: update-pipeline-master-depls-generated
   plan:
-  - aggregate:
+  - in_parallel:
     - get: depls
       params: { submodules: none}
       trigger: true
@@ -217,7 +217,7 @@ jobs:
 
 - name: update-pipeline-ops-depls-generated
   plan:
-  - aggregate:
+  - in_parallel:
     - get: depls
       params: { submodules: none}
       passed: [auto-update-auto-init]
@@ -323,7 +323,7 @@ jobs:
 
 - name: update-pipeline-expe-depls-generated
   plan:
-  - aggregate:
+  - in_parallel:
     - get: depls
       params: { submodules: none}
       passed: [auto-update-auto-init]
@@ -409,7 +409,7 @@ jobs:
 
 - name: update-pipeline-micro-depls-generated
   plan:
-  - aggregate:
+  - in_parallel:
     - get: depls
       params: { submodules: none}
       trigger: true

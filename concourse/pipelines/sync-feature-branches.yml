@@ -60,7 +60,7 @@ jobs:
 - name: update-merged-wip-features
   serial_groups: [git]
   plan:
-    - aggregate:
+    - in_parallel:
       - get: paas-templates-features
         attempts: 2
         params: { submodules: none }
@@ -114,7 +114,7 @@ jobs:
 
 - name: check-feature-branches-for-conflicts
   plan:
-    - aggregate:
+    - in_parallel:
         - get: paas-templates-reference
           params: { submodules: none }
         - get: paas-templates-features
@@ -180,7 +180,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: paas-templates-reference
         params: { submodules: none }
         passed: [check-feature-branches-for-conflicts]
@@ -212,7 +212,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
         - get: paas-templates-reference
           params: { submodules: none }
         - get: cf-ops-automation

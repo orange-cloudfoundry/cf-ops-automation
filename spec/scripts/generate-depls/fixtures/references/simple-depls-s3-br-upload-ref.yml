@@ -69,7 +69,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params:
         submodules: none
@@ -117,7 +117,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params:
         submodules: none
@@ -165,7 +165,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: ntp_boshrelease
       attempts: 2
       version:
@@ -221,7 +221,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: ntp_boshrelease
       attempts: 2
       version: every
@@ -276,7 +276,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
         - get: zookeeper_boshrelease
           attempts: 2
           version:
@@ -332,7 +332,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
         - get: zookeeper_boshrelease
           attempts: 2
           version: every

@@ -88,7 +88,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params:
         submodules: none
@@ -115,7 +115,7 @@ jobs:
   plan:
     - get: at-noon
       trigger: true
-    - aggregate:
+    - in_parallel:
       - get: secrets-dummy-depls-limited
         params: { submodules: none}
       - get: paas-templates-dummy-depls
@@ -169,7 +169,7 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/dummy-depls/template
         IAAS_TYPE: ((iaas-type))
 
-    - aggregate:
+    - in_parallel:
       - task: update-cloud-config-for-dummy-depls
         attempts: 2
         input_mapping:
@@ -248,7 +248,7 @@ jobs:
       username: Concourse
   serial_groups: [recreate]
   plan:
-    - aggregate:
+    - in_parallel:
        - get: secrets-dummy-depls-limited
          params: { submodules: none}
        - get: paas-templates-dummy-depls

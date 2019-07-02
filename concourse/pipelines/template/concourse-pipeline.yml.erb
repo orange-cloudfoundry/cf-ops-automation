@@ -108,7 +108,7 @@ jobs:
         ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: paas-templates-<%= name %>
       <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
       params: { submodules: <%= current_git_submodule || 'none' %>}

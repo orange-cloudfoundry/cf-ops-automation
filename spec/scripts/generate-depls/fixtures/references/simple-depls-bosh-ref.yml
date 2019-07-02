@@ -146,7 +146,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: cf-ops-automation
             params: { submodules: none }
           - get : secrets-simple-depls-limited
@@ -169,7 +169,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: secrets-simple-depls-limited
             params: { submodules: none}
             trigger: true
@@ -224,7 +224,7 @@ jobs:
             ./credentials-resource/shared/secrets.yml
           CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/template
           IAAS_TYPE: ((iaas-type))
-      - aggregate:
+      - in_parallel:
           - task: update-cloud-config-for-simple-depls
             attempts: 2
             input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
@@ -300,7 +300,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: concourse-meta
           - get: secrets-full-writer
             params: { submodules: none}
@@ -500,7 +500,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-    - aggregate:
+    - in_parallel:
       - get: concourse-meta
       - get: secrets-full-writer
         params:
@@ -724,7 +724,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: cf-ops-automation
             params: { submodules: none}
           - get: secrets-simple-depls-trigger
@@ -765,7 +765,7 @@ jobs:
         username: Concourse
     serial_groups: [recreate]
     plan:
-      - aggregate:
+      - in_parallel:
           - get: secrets-simple-depls-limited
             params: { submodules: none}
           - get: paas-templates-simple-depls
@@ -783,7 +783,7 @@ jobs:
         username: Concourse
     serial_groups: [recreate]
     plan:
-      - aggregate:
+      - in_parallel:
           - get: secrets-simple-depls-limited
             params: { submodules: none}
             passed: [recreate-all]
@@ -834,7 +834,7 @@ jobs:
         username: Concourse
     serial_groups: [recreate]
     plan:
-      - aggregate:
+      - in_parallel:
           - get: secrets-simple-depls-limited
             params: { submodules: none}
             passed: [recreate-all]
@@ -884,7 +884,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: cf-ops-automation
             params: { submodules: none}
             attempts: 2

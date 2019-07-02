@@ -78,7 +78,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation
         params: { submodules: none}
       - get: secrets-full
@@ -129,7 +129,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: secrets-<%= app_name %>
         params: { submodules: none}
         trigger: true

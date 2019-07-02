@@ -291,7 +291,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none }
     - get : secrets-<%=depls %>-limited
@@ -316,7 +316,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
@@ -344,7 +344,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [delete-deployments-review]
@@ -375,7 +375,7 @@ jobs:
   plan:
     - get: at-noon
       trigger: true
-    - aggregate:
+    - in_parallel:
       - get: secrets-<%= depls %>-limited
         params: { submodules: none}
         <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
@@ -437,7 +437,7 @@ jobs:
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/template
         IAAS_TYPE: ((iaas-type))
 
-    - aggregate:
+    - in_parallel:
       - task: update-cloud-config-for-<%= depls %>
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-limited}
@@ -519,7 +519,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: secrets-full-writer
       params: { submodules: none}
     - get: ((stemcell-main-name))
@@ -757,7 +757,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: secrets-<%= name %>
       params: { submodules: none}
       trigger: true
@@ -785,7 +785,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
     - get: secrets-<%= depls %>-trigger
@@ -831,7 +831,7 @@ jobs:
       username: Concourse
   serial_groups: [recreate]
   plan:
-  - aggregate:
+  - in_parallel:
      - get: secrets-<%= depls %>-limited
        params: { submodules: none}
        <%= "passed: [update-pipeline-#{depls}-generated]" if all_ci_deployments.any? %>
@@ -855,7 +855,7 @@ jobs:
       username: Concourse
   serial_groups: [recreate]
   plan:
-  - aggregate:
+  - in_parallel:
      - get: secrets-<%= depls %>-limited
        params: { submodules: none}
        passed: [recreate-all]
@@ -909,7 +909,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
@@ -976,7 +976,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: secrets-full-writer
       params: { submodules: none}
     - get: paas-templates-<%= depls %>
@@ -1067,7 +1067,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [update-pipeline-<%= depls %>-generated]
@@ -1112,7 +1112,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: secrets-full-writer
       params: { submodules: none}
     - get: cf-ops-automation

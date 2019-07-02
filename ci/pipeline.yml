@@ -108,6 +108,7 @@ resources:
 jobs:
 
   - name: build-cached-image
+    serial: true
     on_failure: &on_failure_alert
       put: slack-alert
       params:
@@ -124,13 +125,14 @@ jobs:
     - get: cf-ops-automation-dependencies
       trigger: true
     - put: cf-ops-automation-docker-image-develop
+      attempts: 3
       params:
         build: cf-ops-automation-dependencies
   - name: unit-tests
     on_failure: *on_failure_alert
     serial: true
     plan:
-    - aggregate:
+    - in_parallel:
       - get: concourse-meta
       - get: cf-ops-automation-docker-image-develop
         passed: [build-cached-image]
@@ -195,7 +197,7 @@ jobs:
     on_failure: *on_failure_alert
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation-docker-image-develop
           passed: [unit-tests, integration-tests]
           trigger: true
@@ -226,7 +228,7 @@ jobs:
     serial_groups: [integration]
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
@@ -306,7 +308,7 @@ jobs:
     on_failure: *on_failure_alert
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
@@ -359,7 +361,7 @@ jobs:
     on_failure: *on_failure_alert
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: ci-master
         - get: cf-ops-automation
           resource: ci-develop
@@ -376,7 +378,7 @@ jobs:
     serial: true
     serial_groups: [version]
     plan:
-      - aggregate:
+      - in_parallel:
         - get: version
           params: {bump: final}
         - get: cf-ops-automation
@@ -468,7 +470,7 @@ jobs:
     on_failure: *on_failure_alert
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation
           resource: ci-master
           trigger: true
@@ -514,7 +516,7 @@ jobs:
     on_failure: *PR_on_failure_alert
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: concourse-meta
         - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-build-cached-image]
@@ -542,7 +544,7 @@ jobs:
     on_failure: *PR_on_failure_alert
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-UnitTests]
           trigger: true
@@ -566,7 +568,7 @@ jobs:
     serial_groups: [integration]
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-build-cached-image]
           trigger: true
@@ -592,7 +594,7 @@ jobs:
 
   - name: PullRequests-Success
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation
           resource: PR-develop
           trigger: true
@@ -613,7 +615,7 @@ jobs:
           username: Concourse
   - name: run-tests-for-hotfix-branch
     plan:
-    - aggregate:
+    - in_parallel:
       - get: concourse-meta
       - get: cf-ops-automation-docker-image-develop
         passed: [build-cached-image]
@@ -631,7 +633,7 @@ jobs:
   - name: ship-hotfix
     serial: true
     plan:
-      - aggregate:
+      - in_parallel:
         - get: cf-ops-automation
           resource: hotfix-branch
           passed: [run-tests-for-hotfix-branch]

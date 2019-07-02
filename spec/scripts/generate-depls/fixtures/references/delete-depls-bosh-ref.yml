@@ -85,7 +85,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: cf-ops-automation
             params: { submodules: none }
           - get : secrets-delete-depls-limited
@@ -107,7 +107,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: cf-ops-automation
             params: { submodules: none}
             trigger: true
@@ -131,7 +131,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: cf-ops-automation
             params: { submodules: none}
             passed: [delete-deployments-review]
@@ -157,7 +157,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - aggregate:
+      - in_parallel:
           - get: secrets-delete-depls-limited
             params: { submodules: none}
             trigger: true
@@ -212,7 +212,7 @@ jobs:
             ./credentials-resource/shared/secrets.yml
           CUSTOM_SCRIPT_DIR: additional-resource/delete-depls/template
           IAAS_TYPE: ((iaas-type))
-      - aggregate:
+      - in_parallel:
           - task: update-cloud-config-for-delete-depls
             attempts: 2
             input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-delete-depls-limited}
@@ -287,7 +287,7 @@ jobs:
         username: Concourse
     serial_groups: [recreate]
     plan:
-      - aggregate:
+      - in_parallel:
           - get: secrets-delete-depls-limited
             params: { submodules: none}
           - get: paas-templates-delete-depls
