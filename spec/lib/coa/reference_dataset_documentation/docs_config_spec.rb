@@ -46,5 +46,14 @@ describe Coa::ReferenceDatasetDocumentation::DocsConfig do
       expect(FileUtils).to have_received(:rm_rf).
         with([dummy_generated_pipeline])
     end
+
+    context "when directory does not exist" do
+      let(:unknown_pipelines_output_dir) { File.join('tmp', 'unknown_dir') }
+
+      it "uses rm_rf to delete the pipeline output directory" do
+        expect {described_class.cleanup_generated_pipelines(unknown_pipelines_output_dir)}
+            .to raise_error(Errno::ENOENT, "No such file or directory - #{unknown_pipelines_output_dir}")
+      end
+    end
   end
 end

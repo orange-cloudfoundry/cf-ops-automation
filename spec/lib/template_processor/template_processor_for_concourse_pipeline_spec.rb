@@ -484,7 +484,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
   #
   #   it 'generates s3 version using path on get' do
   #     boshrelease_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-  #                                                         .flat_map { |plan| plan['aggregate'] }
+  #                                                         .flat_map { |plan| plan['in_parallel'] }
   #                                                         .compact
   #                                                         .select { |resource| expected_boshreleases.keys.include?(resource['get']) }
   #                                                         .flat_map { |resource| { resource['get'] => resource['version']['path'] } }

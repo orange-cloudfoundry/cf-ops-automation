@@ -6,4 +6,4 @@ puts 'Before running COA tests, we remove all generated pipelines from output_di
 puts '_____________________'
 
 Coa::ReferenceDatasetDocumentation::DocsConfig.
-  cleanup_generated_pipelines(File.join(Coa::Constants::REFERENCE_DATASET_PATH, 'docs/reference_dataset'))
+  cleanup_generated_pipelines(Coa::Constants::REFERENCE_DATASET_PATH)

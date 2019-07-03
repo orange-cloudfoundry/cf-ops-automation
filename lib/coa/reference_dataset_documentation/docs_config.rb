@@ -45,12 +45,14 @@ module Coa
       end
 
       def cleanup_generated_pipelines
+        puts "deleting #{generated_pipeline_list}";
         FileUtils.rm_rf(generated_pipeline_list)
       end
 
       def self.cleanup_generated_pipelines(dir)
         pattern = "#{dir}/pipelines/*-generated.yml"
         generated_pipeline_list = Dir.glob(pattern)
+        raise Errno::ENOENT, "#{dir}" unless Dir.exist?(dir)
         FileUtils.rm_rf(generated_pipeline_list)
       end
     end
