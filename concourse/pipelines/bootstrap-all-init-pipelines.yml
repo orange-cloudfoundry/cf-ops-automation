@@ -82,6 +82,83 @@ jobs:
       params: { submodules: none}
       passed: [ bootstrap-pipelines ]
       trigger: true
+  - task: get-pipeline-teams
+    input_mapping: {secrets: secrets-full}
+    output_mapping: {ci-deployment-overview: concourse-teams}
+    file: cf-ops-automation/concourse/tasks/list_used_ci_team/task.yml
+  - task: generate-team-operator
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: "((docker-registry-url))ruby", tag: 2.6.3}
+      inputs:
+        - name: concourse-teams
+      outputs:
+        - name: concourse-pipeline-resource-team-operator
+      run:
+        path: /bin/bash
+        args:
+          - -ec
+          - |
+            cat << EOF >generate_team_operator.rb
+            require 'yaml'
+
+            fly_username = ENV['FLY_USERNAME']
+            fly_password = ENV['FLY_PASSWORD']
+            OPERATOR_FILENAME = 'team-operators.yml'
+            operator_file = File.join('concourse-pipeline-resource-team-operator', OPERATOR_FILENAME)
+            team_filepath = File.join('concourse-teams',"teams.yml")
+            teams_list = YAML.load_file(team_filepath)
+            teams_list << "main"
+            teams_list.sort!
+            content =  "- type: replace\n"
+            content += "  path: /resources/name=concourse-micro/source/teams\n"
+            content += "  value:\n"
+            teams_list.each do |team_name|
+              content += "  - name: #{team_name}\n"
+              content += "    username: #{fly_username}\n"
+              content += "    password: \"#{fly_username}\"\n"
+            end
+            File.open(operator_file, 'w') { |file| file.write content }
+            EOF
+            cat generate_team_operator.rb
+            ruby generate_team_operator.rb
+            cat concourse-pipeline-resource-team-operator/*.yml
+      params:
+        FLY_USERNAME: ((concourse-micro-depls-username))
+        FLY_PASSWORD: "((concourse-micro-depls-password))"
+        CONTROL_PLANE_FILE_PATH: "cf-ops-automation/concourse/pipelines/control-plane.yml"
+  - task: get-original-control-plane-pipeline
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source: {repository: "((docker-registry-url))alpine", tag: 3.9}
+      inputs:
+        - name: cf-ops-automation
+      outputs:
+        - name: manifest-dir
+      run:
+        path: /bin/sh
+        args:
+          - -ec
+          - |
+            cp -v ${PIPELINE_FILE_PATH} manifest-dir
+      params:
+        PIPELINE_FILE_PATH: "cf-ops-automation/concourse/pipelines/control-plane.yml"
+  - task: amend-control-plane-with-team
+    input_mapping:
+      bosh-inputs: concourse-pipeline-resource-team-operator
+      manifest-dir: manifest-dir
+      scripts-resource: cf-ops-automation
+      secrets: secrets-full
+    output_mapping: {result-dir: final-control-plane-pipeline}
+    file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
+    params:
+      VARS_FILES_SUFFIX: vars.yml
+      OPS_FILES_SUFFIX:  operators.yml
+      BOSH_YAML_FILE: control-plane.yml
   - task: set-control-plane-pipeline
     config:
       platform: linux
@@ -89,7 +166,7 @@ jobs:
         type: docker-image
         source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
       inputs:
-        - name: cf-ops-automation
+        - name: final-control-plane-pipeline
         - name: secrets-full
       outputs:
         - name: initialized-flight-plan
@@ -109,13 +186,13 @@ jobs:
           chmod +x $FLY;
 
           fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
-          PIPELINE_FILE_PATH="cf-ops-automation/concourse/pipelines/control-plane.yml"
           echo "set pipeline ${PIPELINE_FILE_PATH}"
           fly -t main set-pipeline -p control-plane -c ${PIPELINE_FILE_PATH} -l secrets-full/coa/config/credentials-auto-init.yml -l secrets-full/coa/config/credentials-git-config.yml -l secrets-full/coa/config/credentials-slack-config.yml -l secrets-full/coa/config/credentials-docker-registry.yml -n
       params:
         ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
         FLY_USERNAME: ((concourse-micro-depls-username))
         FLY_PASSWORD: "((concourse-micro-depls-password))"
+        PIPELINE_FILE_PATH: "final-control-plane-pipeline/interpolated-control-plane.yml"
 
 - name: reload-this-pipeline-from-git
   on_failure:

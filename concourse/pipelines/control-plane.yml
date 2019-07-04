@@ -82,9 +82,6 @@ resources:
     - name: main
       username: ((concourse-micro-depls-username))
       password: "((concourse-micro-depls-password))"
-    - name: upload
-      username: ((concourse-micro-depls-username))
-      password: "((concourse-micro-depls-password))"
 jobs:
 - name: save-deployed-pipelines
   serial: true
