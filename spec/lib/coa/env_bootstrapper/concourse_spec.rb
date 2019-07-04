@@ -59,14 +59,11 @@ describe Coa::EnvBootstrapper::Concourse do
   describe '#start_pipeline' do
     it "runs the `fly unpause-pipelines` command" do
       allow(client).to receive(:unpause_pipeline)
-      allow(client).to receive(:trigger_job)
 
       concourse.start_pipeline
 
       expect(client).to have_received(:unpause_pipeline)
         .with(name: "bootstrap-all-init-pipelines")
-      expect(client).to have_received(:trigger_job).
-        with(name: "bootstrap-init-pipelines", pipeline_name: "bootstrap-all-init-pipelines")
     end
   end
 
@@ -80,7 +77,6 @@ describe Coa::EnvBootstrapper::Concourse do
     it "returns a hash using the provided creds" do
       allow(bs).to receive(:set_pipelines)
       allow(bs.client).to receive(:unpause_pipeline)
-      allow(bs.client).to receive(:trigger_job)
 
       bs.run_pipelines(
         inactive_steps:        [],
@@ -92,8 +88,6 @@ describe Coa::EnvBootstrapper::Concourse do
       expect(bs).to have_received(:set_pipelines).with(pipeline_vars, bosh_config, git_server_ip)
       expect(bs.client).to have_received(:unpause_pipeline).
         with(name: "bootstrap-all-init-pipelines")
-      expect(bs.client).to have_received(:trigger_job).
-        with(name: "bootstrap-init-pipelines", pipeline_name: "bootstrap-all-init-pipelines")
     end
   end
 end

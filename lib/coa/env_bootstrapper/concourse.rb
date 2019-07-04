@@ -32,7 +32,6 @@ module Coa
 
       def start_pipeline
         client.unpause_pipeline(name: "bootstrap-all-init-pipelines")
-        client.trigger_job(name: "bootstrap-init-pipelines", pipeline_name: "bootstrap-all-init-pipelines")
       end
 
       def client
