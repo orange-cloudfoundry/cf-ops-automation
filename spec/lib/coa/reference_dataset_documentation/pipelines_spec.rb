@@ -35,7 +35,7 @@ describe Coa::ReferenceDatasetDocumentation::Pipelines do
   end
 
   describe "#are_present?" do
-    let(:pipeline_templates) { ["depls-pipeline.yml.erb", "foo-pipeline.yml.erb"] }
+    let(:pipeline_templates) { ["bosh-pipeline.yml.erb", "foo-pipeline.yml.erb"] }
     let(:pipelines) { described_class.new(docs_config) }
 
     context "when generated pipelines form the concourse templates are there" do

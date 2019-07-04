@@ -59,7 +59,7 @@ module Coa
 
         Dir[pattern].map do |file|
           filename = File.basename(file)
-          basename = filename == "depls-pipeline.yml.erb" ? "" : filename.gsub('-pipeline.yml.erb', '-')
+          basename = filename.gsub('-pipeline.yml.erb', '-')
           "#{root_deployment_name}-#{basename}generated"
         end
       end
