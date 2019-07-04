@@ -38,13 +38,6 @@ resource_types:
   source:
     repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
-
-- name: concourse-pipeline
-  type: docker-image
-  source:
-    repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-    tag: 3
-
 - name: bosh-deployment-v2
   type: docker-image
   source:
@@ -182,7 +175,7 @@ resources:
   <% end %>
 <% end %>
 
-<% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments.any? %>
+<% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments&.any? %>
 - name: secrets-<%=depls %>-trigger
   type: git
   source:
@@ -916,7 +909,7 @@ jobs:
       FLY_PASSWORD: "((concourse-<%= depls %>-password))"
 <% end %>
 
-<% if all_ci_deployments.any? %>
+<% if all_ci_deployments&.any? %>
   <% if all_ci_deployments[depls][PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY] %>
     <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][#{PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY}][state_file_path] or delete terraform-config key." if terraform_config_path.nil? %>
 - name: check-terraform-consistency

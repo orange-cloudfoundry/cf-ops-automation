@@ -13,7 +13,7 @@ resource_types:
       # use latest as no other recent tag available
 
 resources:
-<% if all_ci_deployments.any? %>
+<% if all_ci_deployments&.any? %>
 - name: at-nine
   type: cron-resource
   source:
@@ -60,7 +60,7 @@ resources:
 <% end %>
 
 jobs:
-<% if all_ci_deployments.any? %>
+<% if all_ci_deployments&.any? %>
 - name: anonymize-secrets-value
   on_failure:
     put: failure-alert
@@ -227,7 +227,7 @@ jobs:
 - name: this-is-an-empty-pipeline
 <% end %>
 
-<% if all_ci_deployments.any? %>
+<% if all_ci_deployments&.any? %>
 groups:
 - name: diff-overview
   jobs:

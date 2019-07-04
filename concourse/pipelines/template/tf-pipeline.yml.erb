@@ -7,7 +7,7 @@ resource_types:
     tag: v1.4.2
 
 resources:
-<% if all_ci_deployments.any? && all_ci_deployments[depls]['terraform_config'] %>
+<% if all_ci_deployments&.any? && all_ci_deployments[depls]['terraform_config'] %>
 - name: failure-alert
   type: slack-notification
   source:
