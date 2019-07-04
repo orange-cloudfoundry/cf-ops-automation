@@ -18,7 +18,6 @@ module Coa
             "bootstrap-pipelines"        => { "trigger" => true },
             "create-teams"               => {},
             "bootstrap-control-plane"    => {},
-            "bootstrap-init-pipelines"   => {},
             "bootstrap-update-pipelines" => {}
           }
         },
@@ -55,30 +54,6 @@ module Coa
             "approve-and-enforce-terraform-consistency"                          => { "trigger" => true },
             "recreate-all"                                                       => { "trigger" => true },
             "recreate-bosh-deployment-sample"                                    => {},
-            "cancel-all-bosh-tasks"                                              => { "trigger" => true }
-          }
-        },
-        "hello-world-root-depls-init-generated" => {
-          "team" => "main",
-          "jobs" => {
-            "update-pipeline-hello-world-root-depls" => {}
-          }
-        },
-        "hello-world-root-depls-generated" => {
-          "team" => "main",
-          "jobs" => {
-            "cloud-config-and-runtime-config-for-hello-world-root-depls"         => { "pause" => true },
-            "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
-            "update-pipeline-hello-world-root-depls-generated"                   => {},
-            "execute-deploy-script"                                              => {},
-            "check-terraform-consistency"                                        => {},
-            "delete-deployments-review"                                          => {},
-            "deploy-bosh-deployment-sample"                                      => {},
-            "recreate-all"                                                       => { "trigger" => true },
-            "recreate-bosh-deployment-sample"                                    => {},
-            "approve-and-enforce-terraform-consistency"                          => { "trigger" => true },
-            "approve-and-delete-disabled-deployments"                            => { "trigger" => true },
-            "retrigger-all-jobs"                                                 => { "trigger" => true },
             "cancel-all-bosh-tasks"                                              => { "trigger" => true }
           }
         },

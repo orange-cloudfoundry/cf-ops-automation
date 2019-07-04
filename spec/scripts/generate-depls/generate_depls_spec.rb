@@ -64,7 +64,7 @@ describe 'generate-depls' do
 
     context 'when only a pipeline is selected' do
       let(:depls_name) { 'dummy-depls' }
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i depls --no-dump" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i bosh --no-dump" }
 
       stdout_str, stderr_str, = ''
       before do
@@ -77,7 +77,7 @@ describe 'generate-depls' do
       end
 
       it 'only one pipeline template is processed' do
-        expect(stdout_str).to include('1 concourse pipeline templates were processed').and include('processing ./concourse/pipelines/template/depls-pipeline.yml.erb')
+        expect(stdout_str).to include('1 concourse pipeline templates were processed').and include('processing ./concourse/pipelines/template/bosh-pipeline.yml.erb')
       end
 
     end
@@ -137,14 +137,6 @@ describe 'generate-depls' do
 
       context 'when cf-apps pipeline is empty' do
         it_behaves_like 'pipeline checker', 'dummy-depls-cf-apps-generated.yml', 'empty-cf-apps.yml'
-      end
-
-      context 'when depls pipeline is empty' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-generated.yml', 'empty-depls.yml'
-      end
-
-      context 'when init pipeline is empty' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-init-generated.yml', 'empty-init.yml'
       end
 
       context 'when news pipeline is empty' do
