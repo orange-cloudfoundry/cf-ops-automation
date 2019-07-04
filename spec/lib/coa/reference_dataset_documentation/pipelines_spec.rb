@@ -45,7 +45,7 @@ describe Coa::ReferenceDatasetDocumentation::Pipelines do
           and_return(pipeline_templates)
 
         expect(File).to receive(:exist?).
-          with("#{output_dir}/pipelines/#{root_deployment_name}-generated.yml").
+          with("#{output_dir}/pipelines/#{root_deployment_name}-bosh-generated.yml").
           and_return(true)
 
         expect(File).to receive(:exist?).
@@ -62,7 +62,7 @@ describe Coa::ReferenceDatasetDocumentation::Pipelines do
             and_return(pipeline_templates)
 
           expect(File).to receive(:exist?).
-            with("#{output_dir}/pipelines/#{root_deployment_name}-generated.yml").
+            with("#{output_dir}/pipelines/#{root_deployment_name}-bosh-generated.yml").
             and_return(false)
 
           expect(File).not_to receive(:exist?).
