@@ -110,7 +110,6 @@ jobs:
             operator_file = File.join('concourse-pipeline-resource-team-operator', OPERATOR_FILENAME)
             team_filepath = File.join('concourse-teams',"teams.yml")
             teams_list = YAML.load_file(team_filepath)
-            teams_list << "main"
             teams_list.sort!
             content =  "- type: replace\n"
             content += "  path: /resources/name=concourse-micro/source/teams\n"
@@ -118,7 +117,7 @@ jobs:
             teams_list.each do |team_name|
               content += "  - name: #{team_name}\n"
               content += "    username: #{fly_username}\n"
-              content += "    password: \"#{fly_username}\"\n"
+              content += "    password: \"#{fly_password}\"\n"
             end
             File.open(operator_file, 'w') { |file| file.write content }
             EOF
