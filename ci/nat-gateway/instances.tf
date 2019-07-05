@@ -1,6 +1,6 @@
 #--- Nat Gateway Instance
 resource "template_file" "tf-install-natgw" {
-  template = "${file("install-natgw.sh")}"
+  template = "${file("${path.module}/install-natgw.sh")}"
   vars {
     vpc_coa_cidr    = "${var.vpc_coa_cidr}"
     natgw_private_ip = "${var.natgw_private_ip}"
