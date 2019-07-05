@@ -7,7 +7,7 @@ ci-deployment:
     pipelines:
       hello-world-root-depls-cf-apps-generated: {}
       hello-world-root-depls-update-generated: {}
-      hello-world-root-depls-bosh-generated: {}
+      hello-world-root-depls-bosh-generated:
         team: main
         vars_files:
           - hello-world-root-depls/hello-world-root-depls-versions.yml
