@@ -6,6 +6,7 @@ variable "region" {}
 variable "auth_url" {}
 variable "openstack_username" {}
 variable "openstack_password" {}
+variable "net_id" {}
 
 
 #--- VPC COA
