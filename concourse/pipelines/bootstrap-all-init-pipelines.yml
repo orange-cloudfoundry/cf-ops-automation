@@ -110,9 +110,12 @@ jobs:
             operator_file = File.join('concourse-pipeline-resource-team-operator', OPERATOR_FILENAME)
             team_filepath = File.join('concourse-teams',"teams.yml")
             teams_list = YAML.load_file(team_filepath)
-            teams_list.sort!
-            content =  "- type: replace\n"
+            teams_list << 'main' # ensure main team always exists
+            teams_list.uniq.sort! # ensure only one main team exists
+            content =  "- type: remove\n"
             content += "  path: /resources/name=concourse-micro/source/teams\n"
+            content +=  "- type: replace\n"
+            content += "  path: /resources/name=concourse-micro/source/teams?\n"
             content += "  value:\n"
             teams_list.each do |team_name|
               content += "  - name: #{team_name}\n"

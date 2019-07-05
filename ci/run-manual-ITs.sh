@@ -3,9 +3,9 @@
 #!/usr/bin/env bash
 set -e
 
-export FLY_TARGET=fe-int-concourse
+export FLY_TARGET=coa-fe-c5
 export SKIP_TRIGGER=true
-export FLY_CMD=fly-5.2
+export FLY_CMD=fly
 
 FLY_CMD=${FLY_CMD:=fly}
 FLY_TARGET=${FLY_TARGET:=fe-int}
