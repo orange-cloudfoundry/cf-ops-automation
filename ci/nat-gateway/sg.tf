@@ -10,3 +10,9 @@ resource "openstack_networking_secgroup_v2" "bootstrap-sg" {
   region      = "${var.region}"
 }
 
+
+resource "openstack_networking_secgroup_v2" "coa-sg" {
+  name        = "coa-sg"
+  description = "Bootstrap security group for bosh instances"
+  region      = "${var.region}"
+}
