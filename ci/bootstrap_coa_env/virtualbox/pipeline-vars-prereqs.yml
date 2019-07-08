@@ -19,3 +19,5 @@ pipeline_vars:
   secrets-branch: master
   paas-templates-branch: master
   cf-ops-automation-branch: master
+  concourse-ldap-admin-groups: my-ldap-group
+  concourse-cf-admin-groups: my-cf-org

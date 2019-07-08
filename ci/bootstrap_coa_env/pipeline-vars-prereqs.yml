@@ -19,3 +19,5 @@ pipeline_vars:
   stemcell-version: "3586.25"
   bosh-openstack-cpi-release-version: "39"
   docker-registry-url: ""
+  concourse-ldap-admin-groups: my-ldap-group
+  concourse-cf-admin-groups: my-cf-org

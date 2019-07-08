@@ -1,0 +1,3 @@
+pipeline_vars:
+  concourse-ldap-admin-groups: my-ldap-group
+  concourse-cf-admin-groups: my-cf-org

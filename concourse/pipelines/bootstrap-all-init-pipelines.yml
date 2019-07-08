@@ -324,14 +324,22 @@ jobs:
           echo "Dump teams.yml content:"
           cat concourse-teams/teams.yml
           echo "=== end: dump ==="
+          for cf_org in ${CF_ORGS_AUTHENTICATION}; do
+            CF_ORGS="${CF_ORGS} --cf-org=\"${cf_org}\""
+          done
+          for ldap_group in ${LDAP_GROUPS_AUTHENTICATION}; do
+            LDAP_GROUPS="${LDAP_GROUPS} --ldap-group=\"${ldap_group}\""
+          done
           for team_name in $(cat concourse-teams/teams.yml|tail -n +2|cut -c3-); do
-            echo "set-team -n $team_name --local-user=\"$FLY_USERNAME\" --ldap-group=\"${LDAP_GROUP_AUTHENTICATION}\" --cf-org=\"${CF_ORG_AUTHENTICATION}\" --non-interactive"  >> ${DEST_DIR}/flight-plan
+            echo "set-team -n $team_name --local-user=\"$FLY_USERNAME\" ${LDAP_GROUPS} ${CF_ORGS} --non-interactive"  >> ${DEST_DIR}/flight-plan
           done
       params:
         FLY_USERNAME: ((concourse-micro-depls-username))
         FLY_PASSWORD: "((concourse-micro-depls-password))"
-        LDAP_GROUP_AUTHENTICATION: admin #FIXME this should not be hardcoded
-        CF_ORG_AUTHENTICATION: system_domain #FIXME this should not be hardcoded
+        LDAP_GROUPS_AUTHENTICATION: ((concourse-ldap-admin-groups))
+        CF_ORGS_AUTHENTICATION: ((concourse-cf-admin-groups))
+
+
   - task: fly-into-concourse
     input_mapping: {fly-cmd: initialized-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}
