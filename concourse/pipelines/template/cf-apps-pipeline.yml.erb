@@ -5,6 +5,8 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
+
+  current_team = CiDeployment.team(all_ci_deployments, depls, "#{depls}-cf-apps-generated")
 %>
 ---
 resource_types:
@@ -110,7 +112,7 @@ jobs:
         ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
         FLY_USERNAME: ((concourse-<%= depls %>-username))
         FLY_PASSWORD: ((concourse-<%= depls %>-password))
-
+        FLY_TEAM: <%= current_team || 'main' %>
 <% end %>
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>

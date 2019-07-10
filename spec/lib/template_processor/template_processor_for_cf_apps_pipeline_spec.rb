@@ -3,11 +3,13 @@ require 'fileutils'
 require 'tmpdir'
 require 'template_processor'
 require 'ci_deployment'
+require_relative 'test_fixtures'
 
 describe 'CfAppsPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
   let(:processor_context) do
     { depls: root_deployment_name,
+      all_ci_deployments: all_ci_deployments,
       all_cf_apps: all_cf_apps,
       config: loaded_config }
   end
@@ -47,7 +49,18 @@ describe 'CfAppsPipelineTemplateProcessing' do
     YAML
     YAML.safe_load(cf_apps_yaml)
   end
-  let(:all_ci_deployments) { {} }
+  let(:custom_team) { 'my-custom-team' }
+  let(:all_ci_deployments) do
+    ci_deployments_yaml = <<~YAML
+          #{root_deployment_name}:
+            target_name: my-concourse-name
+            pipelines:
+              #{root_deployment_name}-bosh-generated:
+              #{root_deployment_name}-cf-apps-generated:
+                team: #{custom_team}
+    YAML
+    YAML.safe_load ci_deployments_yaml
+  end
   let(:loaded_config) do
     my_config_yaml = <<~YAML
       offline-mode:
@@ -111,6 +124,12 @@ describe 'CfAppsPipelineTemplateProcessing' do
     before { @processed_template = subject.process(@pipelines_dir + '/*') }
 
     context 'with minimal config' do
+      let(:fly_into_concourse_context) do
+        { depls: root_deployment_name,
+          team: custom_team }
+      end
+      let(:expected_fly_into_concourse) { Coa::TestFixtures.expand_task_params_template('fly-into-concourse', fly_into_concourse_context) }
+
       it 'processes only one template' do
         expect(@processed_template.length).to eq(1)
       end
@@ -144,6 +163,18 @@ describe 'CfAppsPipelineTemplateProcessing' do
 
         cf_push_params.each do |task_params|
           expect(task_params).to include('CF_API_URL', 'CF_ORG', 'CF_SPACE', 'CF_USERNAME', 'CF_PASSWORD')
+        end
+      end
+
+
+      it 'generates retrigger all' do
+        fly_into_concourse_params = generated_pipeline['jobs']
+                                        .flat_map { |job| job['plan'] }
+                                        .select { |step| step['task'] && step['task'].start_with?("fly-into-concourse")  }
+                                        .flat_map { |step| step['params'] }
+
+        fly_into_concourse_params.each do |task_params|
+          expect(task_params).to match(expected_fly_into_concourse)
         end
       end
     end

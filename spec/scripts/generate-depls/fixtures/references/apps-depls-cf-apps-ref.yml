@@ -103,8 +103,7 @@ jobs:
         ATC_EXTERNAL_URL: ((concourse-apps-depls-target))
         FLY_USERNAME: ((concourse-apps-depls-username))
         FLY_PASSWORD:  ((concourse-apps-depls-password))
-
-
+        FLY_TEAM: main
 
 - name: cf-push-test-app
   serial: true

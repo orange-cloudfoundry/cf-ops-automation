@@ -6,6 +6,8 @@ require 'template_processor'
 require 'ci_deployment'
 require 'deployment_deployers_config'
 require 'pipeline_generator'
+require_relative 'test_fixtures'
+
 
 describe 'BoshPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
@@ -381,10 +383,20 @@ describe 'BoshPipelineTemplateProcessing' do
             target_name: my-concourse-name
             pipelines:
               #{root_deployment_name}-bosh-generated:
+                team: #{custom_team}
               #{root_deployment_name}-cf-apps-generated:
         YAML
         YAML.safe_load ci_deployments_yaml
       end
+      let(:custom_team) { 'my-custom-team' }
+      let(:fly_into_concourse_context) do
+        { depls: root_deployment_name,
+          team: custom_team }
+      end
+      let(:expected_fly_into_concourse) {
+        Coa::TestFixtures.expand_task_params_template('fly-into-concourse', fly_into_concourse_context)
+      }
+
 
       it 'generates all resource_types' do
         expect(generated_pipeline['resource_types']).to match_array(expected_resource_types)
@@ -395,6 +407,17 @@ describe 'BoshPipelineTemplateProcessing' do
           item['jobs'].sort!
         end
         expect(generated_pipeline['groups']).to match_array(groups)
+      end
+
+      it 'generates retrigger all and init boshrelease version' do
+        fly_into_concourse_params = generated_pipeline['jobs']
+                                        .flat_map { |job| job['plan'] }
+                                        .select { |step| step['task'] && step['task'].start_with?("fly-into-concourse")  }
+                                        .flat_map { |step| step['params'] }
+
+        fly_into_concourse_params.each do |task_params|
+          expect(task_params).to match(expected_fly_into_concourse)
+        end
       end
     end
 

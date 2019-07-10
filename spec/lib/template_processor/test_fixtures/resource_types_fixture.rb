@@ -1,7 +1,5 @@
 module Coa
   module TestFixtures
-    require 'yaml'
-
     RESOURCE_TYPES = YAML.safe_load <<~YAML
       slack-notification:
         name: slack-notification
