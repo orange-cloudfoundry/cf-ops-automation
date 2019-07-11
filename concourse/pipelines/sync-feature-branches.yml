@@ -146,7 +146,7 @@ jobs:
               run:
                 path: /bin/ash
                 args:
-                  - -ce
+                  - -c
                   - |
                     # ls -l paas-templates-features/.git
                     echo "HEAD: "
