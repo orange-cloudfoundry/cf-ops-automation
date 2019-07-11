@@ -9,10 +9,20 @@ describe 'generate_depls task' do
 
   context 'when environment variables are valid' do
     let(:static_pipelines) { Dir["#{@root_dir}/concourse/pipelines/*.yml"] }
+    let(:static_pipeline_names) { static_pipelines.map { |filename| File.basename(filename) } }
     let(:template_pipelines_dir_content) { Dir["#{@root_dir}/concourse/pipelines/template/*.erb"] }
     let(:template_pipelines) { template_pipelines_dir_content.map { |filename| File.basename(filename) } }
     let(:expected_pipelines) { static_pipelines.concat(templated_pipelines).sort }
-    let(:generated_pipeline_filenames) { Dir["#{@result_dir}/concourse/pipelines/*.yml"] }
+    let(:root_deployment) { 'hello-world-root-depls' }
+    let(:output_pipeline_filenames) { Dir["#{@result_dir}/concourse/pipelines/*.yml"] }
+    let(:generated_pipeline_filenames) { output_pipeline_filenames.filter { |filename| File.basename(filename).start_with?(root_deployment) } }
+    let(:copied_pipeline_filenames) { output_pipeline_filenames.reject { |filename| File.basename(filename).start_with?(root_deployment) } }
+    let(:expected_generated_pipelines) do
+      template_pipelines.map do |name|
+        new_name = name.gsub('-pipeline.yml.erb', '-generated.yml')
+        root_deployment + '-' + new_name
+      end
+    end
 
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
@@ -50,30 +60,31 @@ describe 'generate_depls task' do
     end
 
     it 'generates expected pipelines' do
-      execution_log = File.read(generate_depls_logfile)
-      processed_pipeline_templates = execution_log.scan(/^processing ..concourse.pipelines.template.(.*\w+)/).flatten
-      expect(processed_pipeline_templates).to match_array(template_pipelines)
+      generated_pipelines = generated_pipeline_filenames.filter { |filename| File.size?(filename) }
+        .map { |filename| File.basename filename }
+      expect(generated_pipelines).to match_array(expected_generated_pipelines)
     end
 
-    it 'runs successfully' do
-      expect(@output).to match("\nsucceeded\n")
+    it 'copies static pipelines' do
+      copied_static_pipelines = copied_pipeline_filenames.filter { |filename| File.size?(filename) }
+        .map { |filename| File.basename filename }
+      expect(copied_static_pipelines).to match_array(static_pipeline_names)
     end
   end
 
   context 'when pipelines generation fails' do
-
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
-      reference_dataset = File.join(@root_dir, 'docs','reference_dataset')
+      reference_dataset = File.join(@root_dir, 'docs', 'reference_dataset')
       reference_dataset_template = File.join(reference_dataset, 'template_repository')
       reference_dataset_secrets = File.join(reference_dataset, 'config_repository')
-      @templates_dir =  Dir.mktmpdir
+      @templates_dir = Dir.mktmpdir
       @secrets_dir = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
 
       FileUtils.cp_r(File.join(reference_dataset_template, '.'), @templates_dir)
       FileUtils.cp_r(File.join(reference_dataset_secrets, '.'), @secrets_dir)
-      FileUtils.cp_r(File.join(@secrets_dir,'hello-world-root-depls/bosh-deployment-sample'), File.join(@secrets_dir,'hello-world-root-depls/secrets-only-depls'))
+      FileUtils.cp_r(File.join(@secrets_dir, 'hello-world-root-depls/bosh-deployment-sample'), File.join(@secrets_dir, 'hello-world-root-depls/secrets-only-depls'))
 
       @output = execute('-c concourse/tasks/generate_depls/task.yml ' \
         '-i scripts-resource=. ' \
@@ -107,9 +118,8 @@ describe 'generate_depls task' do
   end
 
   context 'when environment variables are missing' do
-
     before(:context) do
-      @templates_dir =  Dir.mktmpdir
+      @templates_dir = Dir.mktmpdir
       @secrets_dir = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
       @output = execute('-c concourse/tasks/generate_depls/task.yml ' \
@@ -134,7 +144,7 @@ describe 'generate_depls task' do
       missing_vars = @output.scan(/^ERROR: missing environment variable:.*\w+/)
 
       expect(missing_vars).to include('ERROR: missing environment variable: ROOT_DEPLOYMENT').and \
-          include('ERROR: missing environment variable: IAAS_TYPE')
+        include('ERROR: missing environment variable: IAAS_TYPE')
     end
   end
 end
