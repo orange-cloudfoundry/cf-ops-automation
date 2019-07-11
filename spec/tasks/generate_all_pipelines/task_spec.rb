@@ -6,8 +6,14 @@ require_relative '../task_spec_helper'
 describe 'generate-all-manifest task' do
   context 'when environment variables are valid' do
     let(:template_pipelines_dir_content) { Dir["#{@root_dir}/concourse/pipelines/template/*.erb"] }
-    let(:expected_pipelines) { template_pipelines_dir_content.map { |filename| File.basename(filename) } }
-
+    let(:template_pipelines) { template_pipelines_dir_content.map { |filename| File.basename(filename) } }
+    let(:generated_pipeline_filenames) { Dir["#{@result_dir}/pipelines/*.yml"] }
+    let(:expected_generated_pipelines) do
+      template_pipelines.map do |name|
+        new_name = name.gsub('-pipeline.yml.erb', '-generated.yml')
+        'hello-world-root-depls' + '-' + new_name
+      end
+    end
 
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
@@ -36,13 +42,11 @@ describe 'generate-all-manifest task' do
     end
 
     it 'generates expected pipelines' do
-      generated_pipeline_filenames = @output.scan(/^processing ..concourse.pipelines.template.(.*\w+)/).flatten
-      expect(generated_pipeline_filenames).to match_array(expected_pipelines)
+      generated_pipelines = generated_pipeline_filenames.filter { |filename| File.size?(filename) }
+                                .map { |filename| File.basename filename }
+      expect(generated_pipelines).to match_array(expected_generated_pipelines)
     end
 
-    it 'runs successfully' do
-      expect(@output).to match("\nsucceeded\n")
-    end
   end
 
   context 'Pre-requisite' do
