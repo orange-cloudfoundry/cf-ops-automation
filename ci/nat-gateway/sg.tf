@@ -1,18 +1,11 @@
-resource "openstack_networking_secgroup_v2" "tf-default-sg" {
-  name        = "tf-default-sg"
-  description = "Default security group for bosh instances"
-  region      = "${var.region}"
+data "openstack_networking_secgroup_v2" "secgroup" {
+  name = "tf-default-sg"
 }
 
-resource "openstack_networking_secgroup_v2" "bootstrap-sg" {
-  name        = "bootstrap-sg"
-  description = "Bootstrap security group for bosh instances"
-  region      = "${var.region}"
+data "openstack_networking_secgroup_v2" "secgroup" {
+  name = "bootstrap-sg"
 }
 
-
-resource "openstack_networking_secgroup_v2" "coa-sg" {
-  name        = "coa-sg"
-  description = "Bootstrap security group for bosh instances"
-  region      = "${var.region}"
+data "openstack_networking_secgroup_v2" "secgroup" {
+ name = "coa-sg"
 }
