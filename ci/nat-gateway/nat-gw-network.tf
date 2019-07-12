@@ -25,14 +25,16 @@ resource "openstack_networking_router_route_v2" "tf_router_route_natgw" {
   next_hop         = "${var.natgw_private_ip}"
 }
 
+
 resource "openstack_networking_port_v2" "tf-natgw-port" {
   network_id         = "${openstack_networking_network_v2.tf_net_natgw.id}"
-  security_group_ids = ["${openstack_networking_secgroup_v2.tf-default-sg.id}"]
+  security_group_ids = ["${data.openstack_networking_secgroup_v2.tf-default-sg.id}"]
   admin_state_up     = "true"
   fixed_ip           = {
     subnet_id        = "${openstack_networking_subnet_v2.tf_subnet_natgw.id}"
     ip_address       = "${var.natgw_private_ip}"
   }
   allowed_address_pairs = [{"ip_address" = "1.1.1.1/0"}]
-  depends_on = [openstack_networking_secgroup_v2.tf-default-sg]
+  depends_on = [data.openstack_networking_secgroup_v2.tf-default-sg]
 }
+
