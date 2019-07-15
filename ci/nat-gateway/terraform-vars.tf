@@ -31,7 +31,7 @@ variable "default_key_name" {}
 #--- Instances
 variable "public_image_id" {
   description = "#--- Ubuntu public image id"
-  default     = "d9bd237a-c298-47a7-aca8-3664e3debb44"
+  default     = "cab2f9bb-9dfd-483b-ba61-7d40b2ac2a04"
 }
 
 variable "az" {}

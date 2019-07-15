@@ -1,17 +1,19 @@
 #--- Nat Gateway Network
-resource "openstack_networking_network_v2" "tf_net_natgw" {
+data "openstack_networking_network_v2" "tf_net_natgw" {
   name           = "tf_net_natgw"
-  admin_state_up = "true"
 }
 
-resource "openstack_networking_subnet_v2" "tf_subnet_natgw" {
-  name            = "tf_subnet_natgw"
-  network_id      = "${openstack_networking_network_v2.tf_net_natgw.id}"
-  cidr            = "${var.natgw_cidr}"
-  dns_nameservers = "${var.dns_list}"
-  ip_version      = 4
-}
+//resource "openstack_networking_subnet_v2" "tf_subnet_natgw" {
+//  name            = "tf_subnet_natgw"
+//  network_id      = "${openstack_networking_network_v2.tf_net_natgw.id}"
+//  cidr            = "${var.natgw_cidr}"
+//  dns_nameservers = "${var.dns_list}"
+//  ip_version      = 4
+//}
 
+data "openstack_networking_subnet_v2" "tf_subnet_natgw" {
+  name  =
+}
 resource "openstack_networking_router_interface_v2" "tf_router_interface_natgw" {
   region    = "${var.region}"
   router_id = "${var.net_id}"
