@@ -38,7 +38,7 @@ ADDITIONAL_RESSOURCE=${ADDITIONAL_RESSOURCE:-additional-resource}
 
 CF_MANIFEST=${CF_MANIFEST:-manifest.yml}
 
-
+cf --version
 
 API_OPTIONS="--skip-ssl-validation"
 

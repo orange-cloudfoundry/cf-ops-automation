@@ -7,6 +7,7 @@ COMMON_SCRIPT_DIR=${COMMON_SCRIPT_DIR:-scripts-resource/scripts}
 SECRETS_DIR=${SECRETS_DIR:-credentials-resource}
 
 cp -r additional-resource/. $OUTPUT_DIR/
+cf --version
 
 if [ -n "$CUSTOM_SCRIPT_DIR" ]; then
  if [ -f "$CUSTOM_SCRIPT_DIR/post-deploy.sh" ]; then
