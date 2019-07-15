@@ -4,12 +4,32 @@ class TaskSpecHelper
     File.absolute_path(relative_path)
   end
 
+  def self.governmentpaas_default_image_version
+    '7a7678281e1f152183c7359546912df68f298664'
+  end
+
   def self.bosh_cli_v2_image
     'governmentpaas/bosh-cli-v2'
   end
 
   def self.bosh_cli_v2_image_version
-    'c88f3e0b03558c987693fad3f180d9052b77342c'
+    self.governmentpaas_default_image_version
+  end
+
+  def self.cf_cli_image
+    'governmentpaas/cf-cli'
+  end
+
+  def self.cf_cli_image_version
+    self.governmentpaas_default_image_version
+  end
+
+  def self.spruce_image
+    'governmentpaas/spruce'
+  end
+
+  def self.spruce_image_version
+    self.governmentpaas_default_image_version
   end
 
   def self.ruby_image

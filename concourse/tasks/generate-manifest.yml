@@ -2,7 +2,9 @@
 platform: linux
 image_resource:
   type: docker-image
-  source: {repository: governmentpaas/spruce}
+  source:
+    repository: governmentpaas/spruce
+    tag: 7a7678281e1f152183c7359546912df68f298664
 inputs:
   - name: scripts-resource
   - name: credentials-resource

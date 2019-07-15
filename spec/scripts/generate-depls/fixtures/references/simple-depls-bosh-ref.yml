@@ -799,7 +799,7 @@ jobs:
             type: docker-image
             source:
               repository: "((docker-registry-url))governmentpaas/bosh-cli-v2"
-              tag: c88f3e0b03558c987693fad3f180d9052b77342c
+              tag: 7a7678281e1f152183c7359546912df68f298664
           inputs:
             - name: scripts-resource
             - name: secrets
@@ -850,7 +850,7 @@ jobs:
             type: docker-image
             source:
               repository: "((docker-registry-url))governmentpaas/bosh-cli-v2"
-              tag: c88f3e0b03558c987693fad3f180d9052b77342c
+              tag: 7a7678281e1f152183c7359546912df68f298664
           inputs:
             - name: scripts-resource
             - name: secrets

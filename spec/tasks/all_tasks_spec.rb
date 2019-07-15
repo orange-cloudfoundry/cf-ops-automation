@@ -4,8 +4,7 @@ require 'yaml'
 require_relative './task_spec_helper'
 
 describe 'all tasks' do
-  # FIXME enable when network issue on COA_CI@FE are fixed
-  xcontext 'Pre-requisite' do
+  context 'Pre-requisite' do
     let(:tasks_dir) { 'concourse/tasks/'}
     let(:tasks) { Dir.glob(tasks_dir + '**/*.yml') }
     let(:docker_images_with_task) do
@@ -34,8 +33,8 @@ describe 'all tasks' do
         "concourse/buildroot:curl",
         "concourse/busyboxplus:git",
         TaskSpecHelper.bosh_cli_v2_image + ':' + TaskSpecHelper.bosh_cli_v2_image_version,
-        "governmentpaas/cf-cli:latest",
-        "governmentpaas/spruce:latest",
+        TaskSpecHelper.cf_cli_image + ':' + TaskSpecHelper.cf_cli_image_version,
+        TaskSpecHelper.spruce_image + ':' + TaskSpecHelper.spruce_image_version,
         "library/ruby:" + TaskSpecHelper.ruby_image_version,
         "library/ruby:" + TaskSpecHelper.ruby_slim_image_version,
         "orangecloudfoundry/cf-ops-automation:latest",
@@ -48,12 +47,13 @@ describe 'all tasks' do
       expect(tasks).not_to be_empty
     end
 
-    it 'x' do
+    it 'ensures tasks' do
       puts docker_images_with_task.keys.sort
       expect(docker_images_with_task.keys).to match_array(expected_task_images)
     end
 
-    it 'uses an existing image on docker hub'do
+    # FIXME enable when network issue on COA_CI@FE are fixed
+    xit 'uses an existing image on docker hub'do
       docker_images_with_task.each do |image, files|
         puts "processing image #{image}"
         parsed_image = image.split(':')
