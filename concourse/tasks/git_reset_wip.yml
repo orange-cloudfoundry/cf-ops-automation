@@ -28,6 +28,7 @@ run:
     set -o pipefail
     git config --global user.email "$GIT_USER_EMAIL"
     git config --global user.name "$GIT_USER_NAME"
+    git config --global merge.renamelimit "$GIT_MERGE_RENAMELIMIT"
 
     FINAL_RELEASE_REPO=updated-git-resource
 
@@ -94,4 +95,5 @@ params:
     GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
     GIT_CHECKOUT_BRANCH: develop
     SKIP_SSL_VERIFICATION:
+    GIT_MERGE_RENAMELIMIT: 10000
 

@@ -7,6 +7,7 @@ set -e
 
 git config --global user.email "$GIT_USER_EMAIL"
 git config --global user.name "$GIT_USER_NAME"
+git config --global merge.renamelimit "$GIT_MERGE_RENAMELIMIT"
 
 FINAL_RELEASE_REPO=updated-git-resource
 

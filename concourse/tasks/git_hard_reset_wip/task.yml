@@ -32,3 +32,4 @@ params:
     GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
     GIT_CHECKOUT_BRANCH: develop
     SKIP_SSL_VERIFICATION:
+    GIT_MERGE_RENAMELIMIT: 10000
