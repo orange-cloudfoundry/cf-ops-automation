@@ -3,6 +3,11 @@ data "openstack_networking_network_v2" "tf_net_natgw" {
   name           = "tf_net_natgw"
 }
 
+data "openstack_networking_subnet_v2" "coa" {
+  name = "subnet_1"
+}
+
+
 //resource "openstack_networking_subnet_v2" "tf_subnet_natgw" {
 //  name            = "tf_subnet_natgw"
 //  network_id      = "${openstack_networking_network_v2.tf_net_natgw.id}"
