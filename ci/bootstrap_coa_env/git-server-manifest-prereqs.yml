@@ -22,7 +22,7 @@ git_server_manifest:
     - name: concourse-bucc
   stemcells:
   - alias: default
-    os: ubuntu-trusty
+    os: ubuntu-xenial
     version: latest
   update:
     canaries: 1
