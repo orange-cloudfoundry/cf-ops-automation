@@ -59,7 +59,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: at-nine
       trigger: true
     - get: cf-ops-automation
@@ -114,7 +114,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate :
+  - in_parallel:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true
@@ -170,7 +170,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate :
+  - in_parallel:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true
@@ -226,7 +226,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate :
+  - in_parallel:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true
@@ -282,7 +282,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate :
+  - in_parallel:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true
@@ -338,7 +338,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate :
+  - in_parallel:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true
@@ -394,7 +394,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate :
+  - in_parallel:
     - get: anonymized-secrets
       passed: [anonymize-secrets-value]
       trigger: true

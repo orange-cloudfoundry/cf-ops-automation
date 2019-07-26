@@ -31,17 +31,17 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
-- name: bosh-openstack-kvm-ubuntu-trusty-go_agent
+- name: bosh-openstack-kvm-ubuntu-xenial-go_agent
   type: bosh-io-stemcell
   source:
-    name: bosh-openstack-kvm-ubuntu-trusty-go_agent
-- name: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
+    name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+- name: bosh-openstack-kvm-ubuntu-xenial-go_agent-s3
   type: s3
   source:
     bucket: ((s3-stemcell-bucket))
     region_name: ((s3-stemcell-region-name))
     # customization is required to remove bosh prefix in stemcell name
-    regexp: bosh-openstack-kvm-ubuntu-trusty-go_agent/bosh-stemcell-(.*)-openstack-kvm-ubuntu-trusty-go_agent.tgz
+    regexp: bosh-openstack-kvm-ubuntu-xenial-go_agent/bosh-stemcell-(.*)-openstack-kvm-ubuntu-xenial-go_agent.tgz
     access_key_id: ((s3-stemcell-access-key-id))
     secret_access_key: ((s3-stemcell-secret-key))
     endpoint: ((s3-stemcell-endpoint))
@@ -56,7 +56,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
@@ -78,7 +78,7 @@ jobs:
         args:
         - -exc
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-kvm-ubuntu-trusty-go_agent --from version:((stemcell-version))" >> result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/bosh-openstack-kvm-ubuntu-xenial-go_agent --from version:((stemcell-version))" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: hello-world-root-depls-s3-stemcell-upload-generated
   - task: fly-into-concourse
@@ -90,7 +90,7 @@ jobs:
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
       FLY_TEAM: upload
-- name: upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent
+- name: upload-current-bosh-openstack-kvm-ubuntu-xenial-go_agent
   on_failure:
     put: failure-alert
     params:
@@ -99,8 +99,8 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
-      - get: bosh-openstack-kvm-ubuntu-trusty-go_agent
+    - in_parallel:
+      - get: bosh-openstack-kvm-ubuntu-xenial-go_agent
         attempts: 2
         version: {version: ((stemcell-version))}
         trigger: true
@@ -109,11 +109,11 @@ jobs:
         params: { submodules: none}
         attempts: 2
         passed: [ init-concourse-stemcells-for-hello-world-root-depls ]
-    - put: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
+    - put: bosh-openstack-kvm-ubuntu-xenial-go_agent-s3
       params:
-        file: bosh-openstack-kvm-ubuntu-trusty-go_agent/*.tgz
+        file: bosh-openstack-kvm-ubuntu-xenial-go_agent/*.tgz
         acl: public-read
-- name: upload-lastest-bosh-openstack-kvm-ubuntu-trusty-go_agent
+- name: upload-lastest-bosh-openstack-kvm-ubuntu-xenial-go_agent
   on_failure:
     put: failure-alert
     params:
@@ -122,8 +122,8 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
-      - get: bosh-openstack-kvm-ubuntu-trusty-go_agent
+    - in_parallel:
+      - get: bosh-openstack-kvm-ubuntu-xenial-go_agent
         attempts: 2
         version: every
         trigger: true
@@ -131,8 +131,8 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         attempts: 2
-        passed: [ upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent ]
-    - put: bosh-openstack-kvm-ubuntu-trusty-go_agent-s3
+        passed: [ upload-current-bosh-openstack-kvm-ubuntu-xenial-go_agent ]
+    - put: bosh-openstack-kvm-ubuntu-xenial-go_agent-s3
       params:
-        file: bosh-openstack-kvm-ubuntu-trusty-go_agent/*.tgz
+        file: bosh-openstack-kvm-ubuntu-xenial-go_agent/*.tgz
         acl: public-read

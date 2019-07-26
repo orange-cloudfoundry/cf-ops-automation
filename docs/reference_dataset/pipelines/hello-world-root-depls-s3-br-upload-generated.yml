@@ -86,7 +86,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
@@ -131,7 +131,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
   - task: generate-hello-world-root-depls-pipeline
@@ -174,7 +174,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: nginx
         attempts: 2
         version: { version: "((nginx-version))" }
@@ -222,7 +222,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: nginx
         attempts: 2
         version: every
@@ -270,7 +270,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: ntp
         attempts: 2
         version: { version: "((ntp-version))" }
@@ -318,7 +318,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: ntp
         attempts: 2
         version: every
@@ -366,7 +366,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: vault
         attempts: 2
         version: { tag: "((vault-version))" }
@@ -414,7 +414,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: vault
         attempts: 2
         version: every

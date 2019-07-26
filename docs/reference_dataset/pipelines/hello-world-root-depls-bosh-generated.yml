@@ -6,16 +6,6 @@ resource_types:
   source:
     repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
-- name: cron-resource
-  type: docker-image
-  source:
-    repository: ((docker-registry-url))cftoolsmiths/cron-resource
-    # use latest as no other recent tag available
-- name: concourse-pipeline
-  type: docker-image
-  source:
-    repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-    tag: 3
 - name: bosh-deployment-v2
   type: docker-image
   source:
@@ -34,12 +24,6 @@ resource_types:
 resources:
 - name: concourse-meta
   type: meta
-- name: at-noon
-  type: cron-resource
-  source:
-    expression: "15 12 * * 1-5"
-    location: "Europe/Paris"
-    fire_immediately: true
 - name: failure-alert
   type: slack-notification
   source:
@@ -78,6 +62,7 @@ resources:
   type: bosh-io-stemcell
   source:
     name: ((stemcell-name-prefix))((stemcell-main-name))
+  version: { version: "((stemcell-version))" }
 - name: paas-templates-bosh-deployment-sample
   type: git
   source:
@@ -127,6 +112,7 @@ resources:
     user: cloudfoundry-community
     repository: vault-boshrelease
     access_token: ((bot-github-access-token))
+#  version: tag:( (-version) ) # FIXME https://github.com/concourse/concourse/issues/3990
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -137,7 +123,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none }
     - get : secrets-hello-world-root-depls-limited
@@ -159,7 +145,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation
         params: { submodules: none}
         trigger: true
@@ -183,7 +169,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation
         params: { submodules: none}
         passed: [delete-deployments-review]
@@ -209,13 +195,13 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - get: at-noon
-      trigger: true
-    - aggregate:
+    - in_parallel:
       - get: secrets-hello-world-root-depls-limited
         params: { submodules: none}
+        trigger: true
       - get: paas-templates-hello-world-root-depls
         params: { submodules: none}
+        trigger: true
       - get: cf-ops-automation
         params: { submodules: none}
     - task: run-deploy.sh
@@ -264,7 +250,7 @@ jobs:
             ./credentials-resource/shared/secrets.yml
         CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/template
         IAAS_TYPE: ((iaas-type))
-    - aggregate:
+    - in_parallel:
       - task: update-cloud-config-for-hello-world-root-depls
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
@@ -340,27 +326,26 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}
     - get: ((stemcell-main-name))
-      version: { version: "((stemcell-version))" }
       trigger: true
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
     - get: nginx
-      version: { version: "((nginx-version))" }
+      version: { version: ((nginx-version)) }
       trigger: true
       attempts: 2
     - get: ntp
-      version: { version: "((ntp-version))" }
+      version: { version: ((ntp-version)) }
       trigger: true
       attempts: 2
     - get: vault
-      version: { tag: "((vault-version))" }
+      # vault-version is pinned, see resource declaration. This is disabled for now...
       trigger: true
       attempts: 2
     - get: paas-templates-bosh-deployment-sample
@@ -548,7 +533,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
     - get: secrets-hello-world-root-depls-trigger
@@ -580,6 +565,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
+      FLY_TEAM: main
 - name: recreate-all
   on_failure:
     put: failure-alert
@@ -590,7 +576,7 @@ jobs:
       username: Concourse
   serial_groups: [recreate]
   plan:
-  - aggregate:
+  - in_parallel:
      - get: secrets-hello-world-root-depls-limited
        params: { submodules: none}
      - get: paas-templates-hello-world-root-depls
@@ -608,7 +594,7 @@ jobs:
       username: Concourse
   serial_groups: [recreate]
   plan:
-  - aggregate:
+  - in_parallel:
      - get: secrets-hello-world-root-depls-limited
        params: { submodules: none}
        passed: [recreate-all]
@@ -628,7 +614,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
-            tag: c88f3e0b03558c987693fad3f180d9052b77342c
+            tag: 7a7678281e1f152183c7359546912df68f298664
         inputs:
           - name: scripts-resource
           - name: secrets
@@ -657,7 +643,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
       attempts: 2
@@ -699,6 +685,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
+      FLY_TEAM: main
 - name: check-terraform-consistency
   serial: true
   serial_groups: [terraform]
@@ -710,7 +697,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
@@ -751,7 +738,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}

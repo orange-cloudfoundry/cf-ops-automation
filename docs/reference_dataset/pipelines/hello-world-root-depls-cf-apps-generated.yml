@@ -57,7 +57,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: cf-ops-automation
         params: { submodules: none}
       - get: secrets-full
@@ -87,6 +87,7 @@ jobs:
         ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
         FLY_USERNAME: ((concourse-hello-world-root-depls-username))
         FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
+        FLY_TEAM: main
 - name: cf-push-generic-app
   serial: true
   serial_groups: [concurrent-group-0]
@@ -98,7 +99,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - aggregate:
+    - in_parallel:
       - get: secrets-generic-app
         params: { submodules: none}
         trigger: true

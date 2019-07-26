@@ -5,7 +5,7 @@ resource_types:
     type: docker-image
     source:
       repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-      tag: 3
+      tag: 2.1.1
   - name: slack-notification
     type: docker-image
     source:
@@ -62,7 +62,7 @@ jobs:
         ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: paas-templates-pipeline-sample
       params: { submodules: none}
       attempts: 2
@@ -114,12 +114,22 @@ jobs:
        VARS_FILES_SUFFIX: vars.yml
        OPS_FILES_SUFFIX:  operators.yml
        BOSH_YAML_FILE: pipeline-sample.yml
-  - put: concourse-for-hello-world-root-depls
+  - task: generate-concourse-pipeline-config
+    input_mapping:
+      config-resource: secrets-pipeline-sample
+      pipeline-path: final-pipeline-sample-pipeline
+    file: cf-ops-automation/concourse/tasks/generate_single_concourse_pipeline_config/task.yml
     params:
-      pipelines:
-      - name: hello-world-root-depls-pipeline-sample
-        team: main
-        config_file: final-pipeline-sample-pipeline/interpolated-pipeline-sample.yml
+      PIPELINE_TEAM: main
+      PIPELINE_NAME: pipeline-sample
+      PIPELINE_NAME_PREFIX: hello-world-root-depls-
+      CONFIG_PATH: config-resource/coa/config
+      OUTPUT_CONFIG_PATH: secrets-pipeline-sample/coa/config
+      OUTPUT_PIPELINE_PATH: final-pipeline-sample-pipeline
+  - put: concourse-for-hello-world-root-depls
+    attempts: 3
+    params:
+      pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
   - task: execute-pipeline-sample-post-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-pipeline-sample, credentials-resource: secrets-pipeline-sample, additional-resource: final-pipeline-sample-pipeline}
     output_mapping: {generated-files: post-deploy-result}

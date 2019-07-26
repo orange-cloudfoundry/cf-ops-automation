@@ -1,10 +1,5 @@
 ---
 resource_types:
-  - name: concourse-pipeline
-    type: docker-image
-    source:
-      repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-      tag: 3
   - name: slack-notification
     type: docker-image
     source:
@@ -64,7 +59,7 @@ jobs:
         ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       username: Concourse
   plan:
-  - aggregate:
+  - in_parallel:
     - get: concourse-meta
     - get: paas-templates-hello-world-root-depls
       params: { submodules: none}
@@ -106,9 +101,39 @@ jobs:
         args:
         - -ec
         - |
-          ruby -ryaml -rfileutils -e 'depls = ENV["ROOT_DEPLOYMENT"]; ci_overview_file = File.join("config",depls ,"ci-deployment-overview.yml"); raise "ERROR - Missing file : #{ci_overview_file}" unless File.exist?(ci_overview_file); ci_overview=YAML.load_file(ci_overview_file);ci_overview["ci-deployment"][depls]["pipelines"].each { |pipeline_name,pipeline_details| team = (pipeline_details && pipeline_details["team"]) || "main"; pipeline_dest_dir = File.join("selected-pipelines", team, depls);FileUtils.mkdir_p(pipeline_dest_dir); pipeline_filename = File.join("concourse-generated-pipeline","concourse","pipelines","#{pipeline_name}.yml"); FileUtils.cp(pipeline_filename, pipeline_dest_dir) if File.exist?(pipeline_filename)}'
+          du -a concourse-generated-pipeline/concourse/pipelines
+          cat << EOF >copy_pipelines.rb
+          require 'fileutils'
+          require 'yaml'
+          root_deployment = ENV["ROOT_DEPLOYMENT"]
+          ci_overview_file = File.join("config",root_deployment ,"ci-deployment-overview.yml")
+          raise "ERROR - Missing file : #{ci_overview_file}" unless File.exist?(ci_overview_file)
+          ci_overview=YAML.load_file(ci_overview_file)
+          ci_overview["ci-deployment"][root_deployment]["pipelines"].each do |pipeline_name,pipeline_details|
+            puts "Processing #{pipeline_name} with ${pipeline_details}"
+            team = (pipeline_details && pipeline_details["team"]) || "main"
+            pipeline_dest_dir = File.join("selected-pipelines", team, root_deployment)
+            FileUtils.mkdir_p(pipeline_dest_dir)
+            pipeline_filename = File.join("concourse-generated-pipeline","concourse","pipelines","#{pipeline_name}.yml")
+            FileUtils.cp(pipeline_filename, pipeline_dest_dir) if File.exist?(pipeline_filename)
+          end
+          EOF
+          ruby copy_pipelines.rb
           echo "Filtering pipelines:"
-          ruby -ryaml -rfileutils -e 'Dir[File.join("selected-pipelines","**","*.yml")].each { |file_path| file_content = YAML.load_file(file_path); if file_content["jobs"]&.fetch(0)&.fetch("name") == "this-is-an-empty-pipeline"; puts " deleting empty pipeline: #{file_path}";FileUtils.rm(file_path);else puts " keeping #{file_path}";end}'
+          cat << EOF >filter_pipelines.rb
+          require 'fileutils'
+          require 'yaml'
+          Dir[File.join("selected-pipelines","**","*.yml")].each do |file_path|
+            file_content = YAML.load_file(file_path)
+            if file_content["jobs"]&.fetch(0)&.fetch("name") == "this-is-an-empty-pipeline"
+             puts " deleting empty pipeline: #{file_path}";
+             FileUtils.rm(file_path)
+            else
+             puts " keeping #{file_path}"
+            end
+          end
+          EOF
+          ruby filter_pipelines.rb
     params:
       ROOT_DEPLOYMENT: hello-world-root-depls
   - task: update-git-generated-pipelines
