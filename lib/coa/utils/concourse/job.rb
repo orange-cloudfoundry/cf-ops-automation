@@ -33,6 +33,10 @@ module Coa
           config["ignore-failure"] == true
         end
 
+        def watch
+          fly.watch_job(fullname)
+        end
+
         def pause
           fly.pause_job(fullname)
         end

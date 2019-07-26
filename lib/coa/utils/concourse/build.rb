@@ -30,15 +30,16 @@ module Coa
             update_status
             sleep 1
             break if finished?
+
             retries += 1
           end
         end
 
         def handle_result(ignore_failure)
           log_final_status(ignore_failure)
-
           return unless unexpectedly_failed?(ignore_failure)
 
+          logger.log_and_puts(:info, job.watch)
           job.pipeline.pause
           logger.log_and_puts(:error, "The build has failed.")
           exit 1

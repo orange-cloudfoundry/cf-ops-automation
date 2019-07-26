@@ -30,6 +30,10 @@ module Coa
           run "pause-job --job #{job}"
         end
 
+        def watch_job(job)
+          run "watch --job #{job}"
+        end
+
         def get_raw_job_builds(full_job_name)
           run "builds --job #{full_job_name}"
         end
