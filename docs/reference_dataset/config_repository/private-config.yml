@@ -6,7 +6,7 @@
 #
 #default:
 #  stemcell:
-#    name: bosh-openstack-kvm-ubuntu-trusty-go_agent  # Default: bosh-openstack-kvm-ubuntu-trusty-go_agent
+#    name: bosh-openstack-kvm-ubuntu-xenial-go_agent  # Default: bosh-openstack-kvm-ubuntu-xenial-go_agent
 #  concourse:
 #    parallel_execution_limit: 5 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
