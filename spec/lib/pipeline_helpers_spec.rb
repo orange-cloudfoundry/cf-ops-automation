@@ -9,7 +9,7 @@ describe PipelineHelpers do
     let(:shield_overview) do
       deps_yaml = <<~YAML
         stemcells:
-        bosh-openstack-kvm-ubuntu-trusty-go_agent:
+        bosh-openstack-kvm-ubuntu-xenial-go_agent:
         releases:
           cf-routing-release:
             base_location: https://bosh.io/d/github.com/

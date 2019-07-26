@@ -33,7 +33,7 @@ describe RootDeployment do
   let(:deployment_factory) do
     DeploymentFactory.new(
      root_deployment_name,
-     { 'stemcell-name'=> 'bosh-openstack-kvm-ubuntu-trusty-go_agent', 'stemcell-version' => 12 }
+     { 'stemcell-name'=> 'bosh-openstack-kvm-ubuntu-xenial-go_agent', 'stemcell-version' => 12 }
     )
   end
 

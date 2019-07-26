@@ -28,7 +28,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
           status: disabled
       shield-expe:
           stemcells:
-          bosh-openstack-kvm-ubuntu-trusty-go_agent:
+          bosh-openstack-kvm-ubuntu-xenial-go_agent:
           releases:
             cf-routing-release:
               base_location: https://bosh.io/d/github.com/
@@ -39,7 +39,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
           status: enabled
       bui:
           stemcells:
-          bosh-openstack-kvm-ubuntu-trusty-go_agent:
+          bosh-openstack-kvm-ubuntu-xenial-go_agent:
           releases:
             route-registrar-boshrelease:
               base_location: https://bosh.io/d/github.com/

@@ -14,7 +14,7 @@ pipeline_vars:
   s3-stemcell-endpoint: https://s3.amazonaws.com
   s3-stemcell-skip-ssl-verification: false
   stemcell-name-prefix: ""
-  stemcell-main-name: bosh-openstack-kvm-ubuntu-trusty-go_agent
-  stemcell-version: "3586.25"
+  stemcell-main-name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+  stemcell-version: "456.1"
   bosh-openstack-cpi-release-version: "39"
   docker-registry-url: ""

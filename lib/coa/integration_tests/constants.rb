@@ -83,7 +83,7 @@ module Coa
           "team" => "upload",
           "jobs" => {
             "init-concourse-stemcells-for-hello-world-root-depls" => { "trigger" => true },
-            "upload-current-bosh-openstack-kvm-ubuntu-trusty-go_agent" => { "pause" => true }
+            "upload-current-bosh-openstack-kvm-ubuntu-xenial-go_agent" => { "pause" => true }
           }
         }
       }.freeze

@@ -17,7 +17,7 @@ describe Config do
       'default' => {
         'iaas' => 'my_custom_iaas',
         'stemcell' => {
-          'name' => 'bosh-openstack-kvm-ubuntu-trusty-go_agent'
+          'name' => 'bosh-openstack-kvm-ubuntu-xenial-go_agent'
         },
         'concourse' => {
           'parallel_execution_limit' => 5
