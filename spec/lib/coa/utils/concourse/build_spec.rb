@@ -69,6 +69,7 @@ describe Coa::Utils::Concourse::Build do
           logger = build.logger
           allow(logger).to receive(:log_and_puts)
           allow(pipeline).to receive(:pause)
+          allow(job).to receive(:watch)
 
           expect{ build.handle_result(false) }.to raise_error(SystemExit)
 
