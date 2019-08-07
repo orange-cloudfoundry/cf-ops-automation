@@ -49,6 +49,6 @@ class TaskSpecHelper
   end
 
   def self.terraform_image_version
-    'c1f95e84451a6f9935254d85624a128611ccc9d9'
+    '8fa84b3fe7e7789769dd103f3d6abfef09a771fd'
   end
 end

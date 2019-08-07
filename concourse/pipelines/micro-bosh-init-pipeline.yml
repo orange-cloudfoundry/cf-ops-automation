@@ -89,7 +89,7 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: "((docker-registry-url))orangecloudfoundry/terraform", tag: c1f95e84451a6f9935254d85624a128611ccc9d9}
+          source: {repository: "((docker-registry-url))orangecloudfoundry/terraform", tag: 8fa84b3fe7e7789769dd103f3d6abfef09a771fd}
         inputs:
           - name: spec-resource
           - name: terraform-tfvars

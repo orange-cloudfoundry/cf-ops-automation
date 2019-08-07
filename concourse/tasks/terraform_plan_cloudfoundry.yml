@@ -17,7 +17,7 @@ platform: linux
 image_resource:
   type: docker-image
   # Maintained in https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools
-  source: {repository: orangecloudfoundry/terraform, tag: c1f95e84451a6f9935254d85624a128611ccc9d9}
+  source: {repository: orangecloudfoundry/terraform, tag: 8fa84b3fe7e7789769dd103f3d6abfef09a771fd}
 
 inputs:
   - name: secret-state-resource
