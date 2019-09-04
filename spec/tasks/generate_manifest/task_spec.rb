@@ -244,4 +244,31 @@ describe 'generate_manifest task' do
       expect(@output).to match("\nsucceeded\n")
     end
   end
+  context 'when a link is broken' do
+    after(:context) do
+      FileUtils.rm_rf @generated_files
+    end
+
+    before(:context) do
+      @generated_files = Dir.mktmpdir
+      @additional_resource = Dir.mktmpdir
+      @additional_resource_reference = 'spec/tasks/generate_manifest/additional-resource'
+      FileUtils.cp_r(@additional_resource_reference + '/.', @additional_resource)
+      File.symlink('../dummy_symlink', File.join(@additional_resource_reference,"a_symlink"))
+      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+        '-i scripts-resource=. ' \
+        '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
+        "-i additional-resource=#{@additional_resource} " \
+        "-o generated-files=#{@generated_files} ",
+                        'IAAS_TYPE' => '',
+                        'YML_TEMPLATE_DIR' => '',
+                        'SPRUCE_FILE_BASE_PATH' => '',
+                        'YML_FILES' => '',
+                        'SUFFIX' => '')
+    end
+
+    it 'displays an error message' do
+      expect(@output).to include("cp: can't stat")
+    end
+  end
 end
