@@ -85,6 +85,7 @@ module Coa
         Dir.chdir repo_path do
           submodule_commit_reference = templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
           reference_commit = run_cmd "git log -1 --oneline", fail_silently: true
+          reference_commit.gsub('[skip ci]', '')
           run_cmd "git init ."
           run_cmd "git config --local user.email 'coa_env_bootstrapper@example.com'"
           run_cmd "git config --local user.name 'Fake User For COA Bootstrapper Pipeline'"
