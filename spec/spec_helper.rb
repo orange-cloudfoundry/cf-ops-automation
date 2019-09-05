@@ -131,11 +131,23 @@ RSpec.configure do |config|
     $stderr = STDERR
   end
 
+  class FlyExecuteError < StandardError
+    attr_reader :out, :err, :status
+
+    def initialize(msg, stdout_snapshot, stderr_snapshot, status)
+      @out = stdout_snapshot
+      @err = stderr_snapshot
+      @status = status
+      super(msg)
+    end
+  end
+
   def fly_run(arg, env = {})
     target = 'cf-ops-automation'
     env_var = env.collect { |k, v| "#{k}=#{v}" }.join(' ')
-    out, err, status = Open3.capture3("env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log")
-    raise "Failed: env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log\n #{err unless err.empty? } " if !status.success? or !err.empty? #err =~ /error: websocket: bad handshake/
+    out, err, status = Open3.capture3("bash -o pipefail -c \"env #{env_var} fly --target #{target} #{arg}| tee /tmp/fly.log\"")
+    raise FlyExecuteError.new("Failed: env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log\n  #{err unless err.empty? }", out, err, status) if !status.success? or !err.empty? #err =~ /error: websocket: bad handshake/
+
     out
   end
 
@@ -150,5 +162,4 @@ RSpec.configure do |config|
   end
 
   DOCKER_REGISTRY_PREFIX = "((docker-registry-url))".freeze
-
 end

@@ -25,6 +25,10 @@ describe 'bosh_delete_plan task' do
       '-i scripts-resource=. ' \
       "-i secrets=#{@secrets} " \
       "-o delete-result-dir=#{@delete_result_dir} ")
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -43,6 +47,10 @@ describe 'bosh_delete_plan task' do
 
     it 'generates a non empty file' do
       expect(File.read(error_log)).not_to be_empty
+    end
+
+    it 'returns with exit status 3' do
+      expect(@fly_status.exitstatus).to eq(3)
     end
   end
 

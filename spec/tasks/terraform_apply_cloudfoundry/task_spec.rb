@@ -35,6 +35,10 @@ describe 'terraform_apply_cloudfoundry task' do
                         'SPEC_PATH' => 'non-empty-spec-path',
                         'IAAS_SPEC_PATH' => 'non-empty-iaas-spec-path',
                         'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -54,10 +58,16 @@ describe 'terraform_apply_cloudfoundry task' do
       expect(File).to exist(File.join(@generated_files, 'terraform.tfvars'))
     end
 
+    it 'returns with exit status 1 but it is expected' do
+      expect(@fly_status.exitstatus).to eq(1)
+    end
+
+    it 'ignores spec-resource error' do
+      expect(@output).to include("find: spec-resource/non-empty-spec-path: No such file or directory")
+    end
   end
 
   context 'when specs are only in spec-resource' do
-
     before(:context) do
       @generated_files = Dir.mktmpdir
       @spec_applied = Dir.mktmpdir

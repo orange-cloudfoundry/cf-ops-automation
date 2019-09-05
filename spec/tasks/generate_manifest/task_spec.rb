@@ -50,6 +50,10 @@ describe 'generate_manifest task' do
                         'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
                         'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
                         'SUFFIX' => '')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -96,6 +100,10 @@ describe 'generate_manifest task' do
                           'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
                           'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
                           'SUFFIX' => '')
+      rescue FlyExecuteError => e
+        @output = e.out
+        @fly_error = e.err
+        @fly_status = e.status
       end
 
       after(:context) do
@@ -105,6 +113,10 @@ describe 'generate_manifest task' do
       it 'display an error message' do
         expect(@output).to include('secrets.undefined_key').and \
           include('could not be found in the datastructure')
+      end
+
+      it 'returns with exit status 2' do
+        expect(@fly_status.exitstatus).to eq(2)
       end
     end
 
@@ -121,6 +133,7 @@ describe 'generate_manifest task' do
                           'SUFFIX' => '',
                           'CUSTOM_SCRIPT_DIR' => 'additional-resource/a-root-depls')
       end
+
       after(:context) do
         FileUtils.rm_rf @generated_files
       end
@@ -247,28 +260,40 @@ describe 'generate_manifest task' do
   context 'when a link is broken' do
     after(:context) do
       FileUtils.rm_rf @generated_files
+      a_symlink = File.join(@additional_resource_reference,"a-symlink-operators.yml")
+      File.unlink(a_symlink) if File.symlink?(a_symlink)
     end
 
     before(:context) do
       @generated_files = Dir.mktmpdir
       @additional_resource = Dir.mktmpdir
       @additional_resource_reference = 'spec/tasks/generate_manifest/additional-resource'
+      a_symlink = File.join(@additional_resource_reference,"a-symlink-operators.yml")
+      File.symlink('../dummy_symlink', a_symlink) unless File.symlink?(a_symlink)
       FileUtils.cp_r(@additional_resource_reference + '/.', @additional_resource)
-      File.symlink('../dummy_symlink', File.join(@additional_resource_reference,"a_symlink"))
+
       @output = execute('-c concourse/tasks/generate-manifest.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         "-i additional-resource=#{@additional_resource} " \
         "-o generated-files=#{@generated_files} ",
                         'IAAS_TYPE' => '',
-                        'YML_TEMPLATE_DIR' => '',
+                        'YML_TEMPLATE_DIR' => 'additional-resource',
                         'SPRUCE_FILE_BASE_PATH' => '',
                         'YML_FILES' => '',
                         'SUFFIX' => '')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     it 'displays an error message' do
       expect(@output).to include("cp: can't stat")
+    end
+
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 end

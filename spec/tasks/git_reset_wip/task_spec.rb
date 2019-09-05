@@ -7,14 +7,14 @@ require 'tmpdir'
 describe 'git_reset_wip task' do
   before(:context) do
     @git_test_reference_repo = 'https://github.com/orange-cloudfoundry/cf-ops-automation-git-reset-wip-it'
-    dest_dir = 'spec/tasks/git_reset_wip/reference-resource'
-    FileUtils.rm_rf dest_dir if Dir.exist? dest_dir
-    out, err, status = Open3.capture3("git clone #{@git_test_reference_repo} #{dest_dir}")
+    @reference_repo_dir = 'spec/tasks/git_reset_wip/reference-resource'
+    FileUtils.rm_rf @reference_repo_dir if Dir.exist? @reference_repo_dir
+    out, err, status = Open3.capture3("git clone #{@git_test_reference_repo} #{@reference_repo_dir}")
     expect(err).to eq("Cloning into 'spec/tasks/git_reset_wip/reference-resource'...\n")
   end
 
   after(:context) do
-    FileUtils.rm_rf @git_test_reference_repo
+    FileUtils.rm_rf @reference_repo_dir
   end
 
   context 'when executed with develop as base branch' do
@@ -25,7 +25,7 @@ describe 'git_reset_wip task' do
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
                         'SKIP_SSL_VERIFICATION' => 'true',
-                        'GIT_BRANCH_FILTER' => '"WIP-* wip-* feature-* Feature-*"')
+                        'GIT_BRANCH_FILTER' => '\"WIP-* wip-* feature-* Feature-*\"')
     end
 
     after(:context) do

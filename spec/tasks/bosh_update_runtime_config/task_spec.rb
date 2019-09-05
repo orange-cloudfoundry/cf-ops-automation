@@ -23,6 +23,10 @@ describe 'bosh_update_runtime_config task' do
         'BOSH_CLIENT' => 'aUser',
         'BOSH_CLIENT_SECRET' => 'aPassword',
         'BOSH_CA_CERT' => 'secrets/dummy' )
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -44,6 +48,10 @@ describe 'bosh_update_runtime_config task' do
 
     it 'selects only runtime vars' do
       expect(@output).to include('Vars files detected: < -l ./config-manifest/my-custom-runtime-vars.yml>')
+    end
+
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 

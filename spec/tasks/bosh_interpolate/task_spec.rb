@@ -17,6 +17,10 @@ describe 'bosh_interpolate task' do
         "-i bosh-inputs=#{@bosh_inputs} " \
         "-i manifest-dir=#{@manifest_dir} " \
         "-o result-dir=#{@result_dir} ")
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -28,6 +32,10 @@ describe 'bosh_interpolate task' do
 
     it 'displays an error message' do
       expect(@output).to include('ERROR: missing environment variable: BOSH_YAML_FILE')
+    end
+
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 

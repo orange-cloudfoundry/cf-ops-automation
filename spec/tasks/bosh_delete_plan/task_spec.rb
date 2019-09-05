@@ -44,7 +44,7 @@ describe 'bosh_delete_plan task' do
       @output = execute('-c concourse/tasks/bosh_delete_plan/task.yml ' \
         '-i scripts-resource=. ' \
         "-o deployments-to-delete=#{@deployments_to_delete} ",
-            'DEPLOYMENTS_TO_DELETE' => '"hello-world-deployment another-world-deployment"')
+            'DEPLOYMENTS_TO_DELETE' => '\"hello-world-deployment another-world-deployment\"')
     end
 
     after(:context) do

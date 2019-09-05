@@ -42,6 +42,10 @@ describe 'bosh_variables task' do
         "-i secrets=#{@secrets_dir} " \
         "-o result-dir=#{@result_dir} ",
                         fly_cli_environment)
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -62,6 +66,9 @@ describe 'bosh_variables task' do
       expect(File).to exist(File.join(@result_dir,'error.log'))
     end
 
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
+    end
   end
 
   context 'when pre-requisites are valid' do

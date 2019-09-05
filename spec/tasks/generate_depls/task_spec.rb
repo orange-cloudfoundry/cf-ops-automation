@@ -93,6 +93,10 @@ describe 'generate_depls task' do
         "-o result-dir=#{@result_dir} ",
                         'ROOT_DEPLOYMENT' => 'hello-world-root-depls',
                         'IAAS_TYPE' => 'task-iaas')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -112,8 +116,8 @@ describe 'generate_depls task' do
       expect(error_log).to include(expected_log_message)
     end
 
-    it 'runs fail' do
-      expect(@output).to match("\nfailed\n")
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 
@@ -128,6 +132,10 @@ describe 'generate_depls task' do
         "-i secrets=#{@secrets_dir} " \
         "-o result-dir=#{@result_dir} ",
                         'IAAS_TYPE' => '')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -136,9 +144,6 @@ describe 'generate_depls task' do
       FileUtils.rm_rf @result_dir
     end
 
-    it 'fails' do
-      expect(@output).to match("\nfailed\n")
-    end
 
     it 'contains error messages' do
       missing_vars = @output.scan(/^ERROR: missing environment variable:.*\w+/)

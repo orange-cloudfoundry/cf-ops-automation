@@ -45,6 +45,10 @@ describe 'COA upgrade task' do
   context 'when upgrade version is not defined' do
     before(:context) do
       @output = execute(@fly_upgrade_cmd)
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     it 'generates files in config dir' do
@@ -58,6 +62,10 @@ describe 'COA upgrade task' do
     it 'contains error messages' do
       error_message = @output.scan(/No migration scripts found at/)
       expect(error_message).not_to be_empty
+    end
+
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 

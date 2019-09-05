@@ -28,7 +28,10 @@ describe 'bosh_update_cloud_config task' do
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@config_manifest} ", \
         fly_cli_environment )
-
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
@@ -50,6 +53,10 @@ describe 'bosh_update_cloud_config task' do
 
     it 'displays an error message' do
       expect(@output).to include("no address for dummy-bosh")
+    end
+
+    it 'returns with exit status 1' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 
