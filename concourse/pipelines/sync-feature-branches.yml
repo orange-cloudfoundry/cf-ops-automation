@@ -98,8 +98,8 @@ jobs:
                     cat paas-templates-features/.git/committer
                     echo
                     cd paas-templates-features
-                    git --no-pager log --oneline -10
-                    git --no-pager log --oneline -10 > ../slack-message/git-diff
+                    git --no-pager log -15 --pretty="tformat:%h %s / %an - %ar"
+                    git --no-pager log -15 --pretty="tformat:%h %s / %an - %ar" > ../slack-message/git-diff
           - put: failure-alert
             params:
               channel: ((slack-channel))
