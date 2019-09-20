@@ -37,5 +37,5 @@ echo "Vars files detected: <${VARS_FILES}>"
 INTERPOLATED_FILE="interpolated-${BOSH_YAML_FILE}"
 bosh -n int ${VARS_FILES} ${OPS_FILES} "manifest-dir/${BOSH_YAML_FILE}" > "result-dir/${INTERPOLATED_FILE}"
 
-echo "Generated manifest:"
+echo "Generated manifest ${INTERPOLATED_FILE} (from ${BOSH_YAML_FILE}):"
 cat "result-dir/${INTERPOLATED_FILE}"
