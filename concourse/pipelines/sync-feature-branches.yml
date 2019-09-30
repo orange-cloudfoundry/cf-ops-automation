@@ -202,6 +202,25 @@ jobs:
         repository: paas-templates-features-reseted
         force: true
 
+
+- name: check-all-feature-branches-are-rebased
+  plan:
+    - in_parallel:
+        - get: paas-templates-reference
+          passed: [apply-merged-wip-features-reset]
+          trigger: true
+          params: { submodules: none }
+        - get: cf-ops-automation
+          params: { submodules: none }
+    - task: list-outdated-branches
+      input_mapping: {reference-resource: paas-templates-reference}
+      output_mapping: {updated-git-resource: paas-templates-features-reseted}
+      file: cf-ops-automation/concourse/tasks/git_rebase_status/task.yml
+      params:
+        GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+        SKIP_SSL_VERIFICATION: true
+
+
 - name: hard-reset-features-merged
   serial_groups: [git]
   on_failure:
@@ -231,3 +250,21 @@ jobs:
       params:
         repository: paas-templates-features-hard-reseted
         force: true
+
+
+- name: check-all-feature-branches-are-rebased-hard-reset
+  plan:
+    - in_parallel:
+        - get: paas-templates-reference
+          passed: [hard-reset-features-merged]
+          trigger: true
+          params: { submodules: none }
+        - get: cf-ops-automation
+          params: { submodules: none }
+    - task: list-outdated-branches
+      input_mapping: {reference-resource: paas-templates-reference}
+      output_mapping: {updated-git-resource: paas-templates-features-reseted}
+      file: cf-ops-automation/concourse/tasks/git_rebase_status/task.yml
+      params:
+        GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+        SKIP_SSL_VERIFICATION: true
