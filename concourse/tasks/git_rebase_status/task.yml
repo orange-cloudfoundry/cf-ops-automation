@@ -11,24 +11,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-config:
-  platform: linux
-  image_resource:
-    type: docker-image
-    source: {repository: concourse/busyboxplus, tag: "git"}
-  inputs:
-    - name: reference-resource
-    - name: cf-ops-automation
-  outputs:
-    - name: result
-  run:
-    path: sh
-    args:
-      - -c
-      - cf-ops-automation/concourse/tasks/git_rebase_status/run.sh
-  params:
-    GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
-    GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
-    SKIP_SSL_VERIFICATION: true
-    GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+platform: linux
+image_resource:
+  type: docker-image
+  source: {repository: concourse/busyboxplus, tag: "git"}
+inputs:
+  - name: reference-resource
+  - name: cf-ops-automation
+outputs:
+  - name: result
+run:
+  path: sh
+  args:
+    - -c
+    - cf-ops-automation/concourse/tasks/git_rebase_status/run.sh
+params:
+  GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+  GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+  SKIP_SSL_VERIFICATION: true
+  GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
