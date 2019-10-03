@@ -84,6 +84,8 @@ resources:
       password: "((concourse-micro-depls-password))"
 jobs:
 - name: save-deployed-pipelines
+  build_log_retention:
+    builds: 30
   serial: true
   on_failure: &failure_alert
     put: failure-alert
@@ -149,6 +151,8 @@ jobs:
       rebase: true
 
 - name: on-git-commit
+  build_log_retention:
+    builds: 30
   serial: true
   on_failure:
     put: failure-alert
@@ -174,6 +178,8 @@ jobs:
       trigger: true
 
 - name: load-generated-pipelines
+  build_log_retention:
+    builds: 30
   serial: true
   on_failure: *failure_alert
   plan:
@@ -218,6 +224,8 @@ jobs:
       pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
 
 - name: push-changes
+  build_log_retention:
+    builds: 30
   serial: true
   on_failure: *failure_alert
   plan:
@@ -242,6 +250,8 @@ jobs:
       force: true
 
 - name: detect-paas-templates-scanned-changes
+  build_log_retention:
+    builds: 30
   plan:
     - get: paas-templates-scanned
       params: { submodules: none}
