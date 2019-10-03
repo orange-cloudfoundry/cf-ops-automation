@@ -15,7 +15,7 @@ OUTDATED_BRANCHES_FILE=$(echo $PWD/result/outdated-branches.log)
 
 cd reference-resource || exit 1
 URI=$(git remote get-url origin)
-reference_head=$(cat .git/HEAD)
+reference_head=$(git log -1 --oneline --format=%H)
 cd ..
 
 git clone "${URI}" "${FINAL_RELEASE_REPO}" --mirror
