@@ -58,6 +58,8 @@ resources:
 jobs:
 
 - name: update-merged-wip-features
+  build_log_retention:
+    builds: 30
   serial_groups: [git]
   plan:
     - in_parallel:
@@ -113,6 +115,8 @@ jobs:
               username: Concourse
 
 - name: check-feature-branches-for-conflicts
+  build_log_retention:
+    builds: 30
   plan:
     - in_parallel:
         - get: paas-templates-reference
@@ -171,6 +175,8 @@ jobs:
               username: Concourse
 
 - name: apply-merged-wip-features-reset
+  build_log_retention:
+    builds: 30
   serial_groups: [git]
   on_failure:
     put: failure-alert
@@ -204,12 +210,16 @@ jobs:
 
 
 - name: check-all-feature-branches-are-rebased
+  build_log_retention:
+    builds: 30
   plan:
     - in_parallel:
         - get: paas-templates-reference
-          passed: [apply-merged-wip-features-reset]
-          trigger: true
           params: { submodules: none }
+        - get: features-or-wip-merged
+          passed: [apply-merged-wip-features-reset]
+          params: { submodules: none }
+          trigger: true
         - get: cf-ops-automation
           params: { submodules: none }
     - task: list-outdated-branches
@@ -222,6 +232,8 @@ jobs:
 
 
 - name: hard-reset-features-merged
+  build_log_retention:
+    builds: 30
   serial_groups: [git]
   on_failure:
     put: failure-alert
@@ -253,9 +265,13 @@ jobs:
 
 
 - name: check-all-feature-branches-are-rebased-hard-reset
+  build_log_retention:
+    builds: 30
   plan:
     - in_parallel:
         - get: paas-templates-reference
+          params: { submodules: none }
+        - get: features-or-wip-merged
           passed: [hard-reset-features-merged]
           trigger: true
           params: { submodules: none }
