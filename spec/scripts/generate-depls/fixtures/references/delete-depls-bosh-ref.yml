@@ -47,7 +47,7 @@ resources:
     type: git
     source:
       uri: ((paas-templates-uri))
-      paths: ["shared-config.yml", "delete-depls/template"]
+      paths: ["shared-config.yml", "meta-inf.yml", "delete-depls/template"]
       branch: pipeline-current-((paas-templates-branch))
       skip_ssl_verification: true
   - name: cf-ops-automation

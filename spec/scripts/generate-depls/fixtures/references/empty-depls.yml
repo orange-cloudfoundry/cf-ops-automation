@@ -66,7 +66,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml","dummy-depls/template"]
+    paths: ["shared-config.yml", "meta-inf.yml","dummy-depls/template"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 

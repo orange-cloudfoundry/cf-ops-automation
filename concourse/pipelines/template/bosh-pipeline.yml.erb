@@ -89,7 +89,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "<%= depls %>/template"<%= terraform_config_path_value || '' %>]
+    paths: ["shared-config.yml", "meta-inf.yml", "<%= depls %>/template"<%= terraform_config_path_value || '' %>]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 
