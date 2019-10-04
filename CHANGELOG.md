@@ -1,5 +1,15 @@
 # Change Log
 
+## [v4.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.0.3) (2019-10-04)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.2...v4.0.3)
+
+**Fixed bugs:**
+
+- broken link in bosh deployment template operators silently ignored [\#273](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/273)
+
+## [v4.0.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.0.2) (2019-08-07)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.0...v4.0.2)
+
 ## [v4.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.0.0) (2019-07-29)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v3.6.0...v4.0.0)
 
@@ -7,10 +17,6 @@
 
 - Custom teams cannot be used anymore [\#215](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/215)
 - control-plane/save-deployed-pipelines: excessive job triggering  [\#206](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/206)
-
-**Closed issues:**
-
-- Support Concourse v4.x/v5.x \(expected perf improvements\) [\#178](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/178)
 
 **Merged pull requests:**
 
@@ -186,7 +192,6 @@
 - bosh config server / credhub variables fingerprint [\#194](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/194)
 - depls\(utils\) change bosh cancel all tasks vars to bosh cl1 v1 [\#193](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/193)
 - This features extend the existing tests by making use of the refence dataset [\#190](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/190)
-- Online stemcells support [\#169](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/169)
 
 ## [v3.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.0.0) (2018-08-09)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v2.2.0...v3.0.0)
@@ -199,7 +204,6 @@
 **Closed issues:**
 
 - Terraform helm support [\#180](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/180)
-- Find and apply global solution to print password in yaml files [\#145](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/145)
 - provide automated non-attended COA env bootstrap [\#113](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/113)
 
 **Merged pull requests:**
@@ -222,11 +226,13 @@
 
 **Closed issues:**
 
+- Support Concourse v4.x/v5.x \(expected perf improvements\) [\#178](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/178)
 - Reset git to a previous commit [\#173](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/173)
 - terraform plan phase should not be recurrent daily, but triggered by secrets update [\#156](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/156)
 - add terraform azure support [\#153](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/153)
 - Regression: IAAS\_SPEC\_PATH is missing in Concourse pipelines  [\#151](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/151)
 - Remove consistency check on deployment-dependencies.yml\#deployment.\<dep\_name\> [\#150](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/150)
+- Find and apply global solution to print password in yaml files [\#145](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/145)
 - Setup a reference dataset [\#111](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/111)
 - Add living user documentation generated from tests [\#107](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/107)
 
@@ -236,6 +242,7 @@
 - support iaas-type for deployement-dependencies [\#175](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/175)
 - task\(git\_reset\_wip\): create a commit after reset [\#174](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/174)
 - trigger update-pipeline on each`secrets-repo` commit and `init-concourse-boshrelease-and-stemcell` improvements [\#171](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/171)
+- Online stemcells support [\#169](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/169)
 - 145 yaml passwords [\#167](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/167)
 - Terraform improvements [\#166](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/166)
 - bootstrap-coa-env\(\*\) [\#164](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/164)
@@ -244,6 +251,8 @@
 - Upgrade script for config repo for upcoming release 2.2.0 [\#160](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/160)
 - pipeline\(depls\): collapse delete task to speed up concourse execution [\#154](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/154)
 - 107 living documentation refactored [\#149](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/149)
+- tasks\(terraform\_\*\): add iaas\_type support [\#126](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/126)
+- pipeline\(cf-apps\): injects CF info as environment variable in post-cf-deploy [\#97](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/97)
 
 ## [v2.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.1.0) (2018-06-20)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.1...v2.1.0)
@@ -273,7 +282,6 @@
 
 - Test ticket from Code Climate [\#132](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/132)
 - Remove custom slack certificates - requires concourse 3.9.1 [\#105](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/105)
-- Terraform update are not detected by depls-pipeline [\#94](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/94)
 - Support Iaas specific TF configs loading [\#38](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/38)
 
 **Merged pull requests:**
@@ -286,11 +294,9 @@
 - Update terraform dev env to enable use of docker images used by COA [\#133](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/133)
 - Reference Dataset [\#131](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/131)
 - add value 'serial: true' to cf-push-app job in cf-apps-pipeline [\#127](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/127)
-- tasks\(terraform\_\*\): add iaas\_type support [\#126](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/126)
 - pipeline\(\*\): reduce retry number [\#118](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/118)
 - Suggestions for slight Changes [\#116](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/116)
 - feature: multi deployer support [\#115](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/115)
-- pipeline\(sync-\*-branches, bootstrap-all-init\): updates [\#114](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/114)
 
 ## [v1.9.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.9.0) (2018-02-27)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.7.3...v1.9.0)
@@ -319,9 +325,13 @@
 
 - bump spruce 1.14 - better hybrid spruce / bosh 2 interop [\#70](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/70)
 
+**Closed issues:**
+
+- Terraform update are not detected by depls-pipeline [\#94](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/94)
+
 **Merged pull requests:**
 
-- pipeline\(cf-apps\): injects CF info as environment variable in post-cf-deploy [\#97](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/97)
+- pipeline\(sync-\*-branches, bootstrap-all-init\): updates [\#114](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/114)
 - pipeline\(depls,s3-br-upload\): supports offline boshrelease and updates boshrelease upload location - REQUIRES shared/private config feature [\#93](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/93)
 
 ## [v1.8.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.3) (2018-01-30)
@@ -394,6 +404,7 @@
 **Merged pull requests:**
 
 - feature: Support ops-files and var-files for \[cloud|runtime\]-config [\#60](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/60)
+- task\(execute\_deploy\_script\): ensure deploy.sh is always executable [\#54](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/54)
 
 ## [v1.6.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.6.0) (2017-11-28)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.5.1...v1.6.0)
@@ -408,10 +419,10 @@
 - Fix improper input mapping for secrets in tf-pipeline [\#58](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/58)
 - Fix Tf pipeline [\#57](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/57)
 - pipeline\(depls\): move stemcell support from bosh.io to S3 [\#55](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/55)
-- task\(execute\_deploy\_script\): ensure deploy.sh is always executable [\#54](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/54)
 - task\(post\_bosh\_deploy\): switch to cf-cli image [\#49](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/49)
 - pipeline\(depls\): refactor to extract task variable args into task params [\#48](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/48)
 - Tf dev env refinements [\#47](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/47)
+- pipeline\(s3-\*-upload\): add pipeline to upload bosh releases or stemcells to s3 [\#42](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/42)
 - tf only pipeline [\#40](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/40)
 
 ## [v1.5.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.5.1) (2017-10-27)
@@ -432,7 +443,6 @@
 **Merged pull requests:**
 
 - pipeline\(depls\): extract cloud and runtime task to dedicated files [\#43](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/43)
-- pipeline\(s3-\*-upload\): add pipeline to upload bosh releases or stemcells to s3 [\#42](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/42)
 - pipeline\(depls\): upgrade to bosh-cli-v2 for \[cloud|runtime\]-config [\#41](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/41)
 
 ## [v1.4.1-prod](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.4.1-prod) (2017-10-20)
