@@ -155,6 +155,7 @@ jobs:
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/meta.yml
             ./credentials-resource/<%= cf_app_info["base-dir"] %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= cf_app_info["base-dir"] %>/template
     - task: push-<%= app_name %>
       attempts: 2

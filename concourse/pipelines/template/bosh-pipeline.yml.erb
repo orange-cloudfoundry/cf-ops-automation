@@ -380,6 +380,7 @@ jobs:
             ./credentials-resource/<%= depls %>/secrets/meta.yml
             ./credentials-resource/<%= depls %>/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/template
         IAAS_TYPE: ((iaas-type))
 
@@ -530,6 +531,7 @@ jobs:
           ./credentials-resource/<%= depls %>/<%= name %>/secrets/meta.yml
           ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
           ./credentials-resource/shared/secrets.yml
+          ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
       IAAS_TYPE: ((iaas-type))
   - task: execute-<%= name %>-spiff-pre-bosh-deploy
@@ -947,6 +949,7 @@ jobs:
         ./credentials-resource/shared/secrets.yml
         ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
         ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
+        ./additional-resource/meta-inf.yml
       YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
       CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
       SUFFIX: -tpl.tfvars.yml
@@ -994,6 +997,7 @@ jobs:
         ./credentials-resource/shared/secrets.yml
         ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
         ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
+        ./additional-resource/meta-inf.yml
       YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
       CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
       SUFFIX: -tpl.tfvars.yml

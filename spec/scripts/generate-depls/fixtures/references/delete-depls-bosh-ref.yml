@@ -205,6 +205,7 @@ jobs:
             ./credentials-resource/delete-depls/secrets/meta.yml
             ./credentials-resource/delete-depls/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
           CUSTOM_SCRIPT_DIR: additional-resource/delete-depls/template
           IAAS_TYPE: ((iaas-type))
       - in_parallel:

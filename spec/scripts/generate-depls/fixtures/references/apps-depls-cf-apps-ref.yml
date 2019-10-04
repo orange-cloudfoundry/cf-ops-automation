@@ -140,6 +140,7 @@ jobs:
             ./credentials-resource/apps-depls/my_cf_app/secrets/meta.yml
             ./credentials-resource/apps-depls/my_cf_app/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/apps-depls/my_cf_app/template
     - task: push-test-app
       attempts: 2

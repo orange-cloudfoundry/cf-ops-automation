@@ -166,6 +166,7 @@ jobs:
             ./credentials-resource/dummy-depls/secrets/meta.yml
             ./credentials-resource/dummy-depls/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/dummy-depls/template
         IAAS_TYPE: ((iaas-type))
 

@@ -305,6 +305,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 YML_FILES: |
                     ./credentials-resource/#{root_deployment_name}/#{name}/secrets/secrets.yml
                     ./credentials-resource/shared/secrets.yml
+                    ./additional-resource/meta-inf.yml
                 CUSTOM_SCRIPT_DIR: additional-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}
                 IAAS_TYPE: ((iaas-type))
 

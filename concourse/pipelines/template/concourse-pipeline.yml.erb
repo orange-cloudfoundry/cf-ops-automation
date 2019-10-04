@@ -133,6 +133,7 @@ jobs:
       YML_FILES: |
           ./credentials-resource/<%= depls %>/<%= name %>/secrets/secrets.yml
           ./credentials-resource/shared/secrets.yml
+          ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
       IAAS_TYPE: ((iaas-type))
   - task: execute-<%= name %>-spiff-pre-deploy

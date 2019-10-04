@@ -458,7 +458,7 @@ describe 'BoshPipelineTemplateProcessing' do
               "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
               "params" =>
              { "YML_FILES" =>
-                         "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n",
+                         "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n./additional-resource/meta-inf.yml\n",
                "YML_TEMPLATE_DIR" => "additional-resource/my-tfstate-location/template",
                "CUSTOM_SCRIPT_DIR" => "additional-resource/my-tfstate-location/template",
                "SUFFIX" => "-tpl.tfvars.yml",
