@@ -1,4 +1,6 @@
 ---
+secrets:
+  meta-inf-support: (( grab meta-inf.status ))
 resources:
 - name: (( grab secrets.release-name ))
   type: git

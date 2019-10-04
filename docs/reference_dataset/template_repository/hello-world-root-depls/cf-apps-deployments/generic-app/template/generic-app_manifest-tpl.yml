@@ -19,5 +19,6 @@ secrets: # you may define temporary keys in this section, that will be pruned up
 
 timeout: (( file secrets.path_to_my_file ))
 
+meta-inf-support: (( grab meta-inf.status ))
 
 

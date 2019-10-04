@@ -1,4 +1,7 @@
 ---
+secrets:
+  meta-inf-support: (( grab meta-inf.status ))
+
 name: bosh-deployment-sample
 
 releases: [] # defined in a operators file
