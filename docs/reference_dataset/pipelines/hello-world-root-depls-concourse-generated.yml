@@ -85,6 +85,7 @@ jobs:
       YML_FILES: |
           ./credentials-resource/hello-world-root-depls/pipeline-sample/secrets/secrets.yml
           ./credentials-resource/shared/secrets.yml
+          ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
       IAAS_TYPE: ((iaas-type))
   - task: execute-pipeline-sample-spiff-pre-deploy

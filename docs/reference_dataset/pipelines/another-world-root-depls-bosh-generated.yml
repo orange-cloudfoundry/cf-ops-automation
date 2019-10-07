@@ -144,6 +144,7 @@ jobs:
             ./credentials-resource/another-world-root-depls/secrets/meta.yml
             ./credentials-resource/another-world-root-depls/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/another-world-root-depls/template
         IAAS_TYPE: ((iaas-type))
     - in_parallel:

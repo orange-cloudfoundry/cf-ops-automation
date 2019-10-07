@@ -80,6 +80,7 @@ jobs:
           ./credentials-resource/shared/secrets.yml
           ./credentials-resource/hello-world-root-depls/terraform-config/secrets/meta.yml
           ./credentials-resource/hello-world-root-depls/terraform-config/secrets/secrets.yml
+          ./additional-resource/meta-inf.yml
         YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/terraform-config/template
         CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
         SUFFIX: -tpl.tfvars.yml

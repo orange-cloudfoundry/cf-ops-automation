@@ -122,6 +122,7 @@ jobs:
             ./credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/secrets/meta.yml
             ./credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
+            ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
     - task: push-generic-app
       attempts: 2
