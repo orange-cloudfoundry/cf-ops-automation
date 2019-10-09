@@ -1,0 +1,21 @@
+---
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: governmentpaas/spruce
+    tag: 7a7678281e1f152183c7359546912df68f298664
+inputs:
+  - name: scripts-resource
+  - name: config-resource
+  - name: templates-resource
+outputs:
+  - name: check-configuration-result
+run:
+  path: scripts-resource/concourse/tasks/check_configuration/run.sh
+params:
+  ROOT_DEPLOYMENT:
+  DEPLOYMENT:
+  SCAN_PATHS:
+  GIT_SUBMODULES:
+  LOCAL_SECRETS_SCAN:

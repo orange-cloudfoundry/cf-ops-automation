@@ -517,6 +517,19 @@ jobs:
     )
   %>
         submodules: <%= submodules %>
+  - task: check-configuration
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      config-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      templates-resource: paas-templates-<%= name %>
+    output_mapping: {check-configuration-result: check-configuration-result}
+    file: cf-ops-automation/concourse/tasks/check-configuration/task.yml
+    params:
+      ROOT_DEPLOYMENT: <%= depls %>
+      DEPLOYMENT: <%= name %>
+      SCAN_PATHS: <%= paas_templates_selected_paths&.join(" ") if paas_templates_selected_paths.is_a?(Array) %>
+      GIT_SUBMODULES: <%= submodules&.join(" ") if submodules.is_a?(Array) %>
+      LOCAL_SECRETS_SCAN: <%= deployment_details.local_deployment_secrets_scan? %>
   - task: generate-<%= name %>-manifest
     input_mapping:
       scripts-resource: cf-ops-automation
