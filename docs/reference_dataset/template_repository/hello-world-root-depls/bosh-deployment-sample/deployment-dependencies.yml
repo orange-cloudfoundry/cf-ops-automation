@@ -11,7 +11,7 @@ deployment:
         # As bosh 2 deployment does not require the manifest to interact, you should use bosh link, instead !
         # extended_scan_path: ["hello-world-root-depls/pipeline-sample"]
 
-        local_deployment_scan: false # Enable when `secrets.yml`, 'meta.yml' or any files in deployment secrets directory are required - Default: false
+        local_deployment_scan: true # Enable when `secrets.yml`, 'meta.yml' or any files in deployment secrets directory are required - Default: false
         local_deployment_trigger: true # Enable when a change in deployment secrets directory should trigger as build. This parameter is ignored when `local_deployment_scan`is `false`  - Default: true
 
     # bosh-release required. Don't set version here, set it in paas-template/<depls>-versions.yml
