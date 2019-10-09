@@ -317,6 +317,20 @@ jobs:
             trigger: true
             params:
               submodules: none
+      - task: check-configuration
+        input_mapping:
+          scripts-resource: cf-ops-automation
+          config-resource: secrets-ntp-with-scan
+          templates-resource: paas-templates-ntp-with-scan
+        output_mapping:
+          check-configuration-result: check-configuration-result
+        file: cf-ops-automation/concourse/tasks/check_configuration/task.yml
+        params:
+          ROOT_DEPLOYMENT: simple-depls
+          DEPLOYMENT: ntp-with-scan
+          SCAN_PATHS: simple-depls/ntp-with-scan
+          GIT_SUBMODULES:
+          LOCAL_SECRETS_SCAN: true
       - task: generate-ntp-with-scan-manifest
         input_mapping:
           scripts-resource: cf-ops-automation
@@ -518,6 +532,20 @@ jobs:
         trigger: true
         params:
           submodules: none
+    - task: check-configuration
+      input_mapping:
+        scripts-resource: cf-ops-automation
+        config-resource: secrets-full-writer
+        templates-resource: paas-templates-zookeeper-without-scan
+      output_mapping:
+        check-configuration-result: check-configuration-result
+      file: cf-ops-automation/concourse/tasks/check_configuration/task.yml
+      params:
+        ROOT_DEPLOYMENT: simple-depls
+        DEPLOYMENT: zookeeper-without-scan
+        SCAN_PATHS: simple-depls/zookeeper-without-scan
+        GIT_SUBMODULES:
+        LOCAL_SECRETS_SCAN: false
     - task: generate-zookeeper-without-scan-manifest
       input_mapping:
         scripts-resource: cf-ops-automation

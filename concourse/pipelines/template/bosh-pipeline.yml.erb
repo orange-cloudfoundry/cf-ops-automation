@@ -523,7 +523,7 @@ jobs:
       config-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
       templates-resource: paas-templates-<%= name %>
     output_mapping: {check-configuration-result: check-configuration-result}
-    file: cf-ops-automation/concourse/tasks/check-configuration/task.yml
+    file: cf-ops-automation/concourse/tasks/check_configuration/task.yml
     params:
       ROOT_DEPLOYMENT: <%= depls %>
       DEPLOYMENT: <%= name %>
