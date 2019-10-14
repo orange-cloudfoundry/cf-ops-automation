@@ -4,7 +4,7 @@ PATH_PREFIX=${PATH_PREFIX:-templates-resource}
 OUTPUT_PATH=${OUTPUT_PATH:-check-configuration-result}
 
 DEPLOYMENT_PATH=${PATH_PREFIX}/${ROOT_DEPLOYMENT}/${DEPLOYMENT}
-LOG_FILE="$OUTPUT_PATH/check.log"
+LOG_FILE="$OUTPUT_PATH/errors.log"
 printf "" > ${LOG_FILE}
 
 echo "checking deployment-dependencies.yml @ $DEPLOYMENT_PATH"
@@ -18,7 +18,7 @@ for scan_path in ${SCAN_PATHS};do
     echo "Checking $scan_path - $PATH_PREFIX/$scan_path"
     if [[ ! -e "$PATH_PREFIX/$scan_path" ]]; then
       echo "ERROR: inconsistency detected in ${DEPLOYMENT}"
-      echo "ERROR: $scan_path does not exist ($DEPLOYMENT_PATH)" >> ${LOG_FILE}
+      echo "ERROR: $scan_path does not exist ($DEPLOYMENT_PATH), please check related deployment-dependencies.yml" >> ${LOG_FILE}
     fi
 done
 
@@ -29,17 +29,18 @@ if [[ "$LOCAL_SECRETS_SCAN" = "true" ]];then
   echo "Local secrets scan enabled for ${DEPLOYMENT}"
   if [[ ! -e "$CONFIG_DEPLOYMENT_PATH/secrets.yml" && ! -e "$CONFIG_DEPLOYMENT_PATH/meta.yml" ]];then
     echo "ERROR: inconsistency detected in ${DEPLOYMENT}"
-    echo "ERROR: local-secret-scan enabled for ${DEPLOYMENT} but no config files detected at $CONFIG_DEPLOYMENT_PATH" >> ${LOG_FILE}
+    echo "ERROR: local-secret-scan enabled in deployment-dependencies.yml for ${DEPLOYMENT}, but no config files (meta.yml, secrets.yml) detected at $CONFIG_DEPLOYMENT_PATH" >> ${LOG_FILE}
   fi
 else
   echo "Local secrets scan disabled for ${DEPLOYMENT}"
   if [[ -e "$CONFIG_DEPLOYMENT_PATH/secrets.yml" || -e "$CONFIG_DEPLOYMENT_PATH/meta.yml" ]];then
     echo "ERROR: inconsistency detected in ${DEPLOYMENT}"
-    echo "ERROR: local-secret-scan disabled for ${DEPLOYMENT} but config files detected at $CONFIG_DEPLOYMENT_PATH" >> ${LOG_FILE}
+    echo "ERROR: local-secret-scan disabled  in deployment-dependencies.yml for ${DEPLOYMENT}, but config files (meta.yml, secrets.yml) detected at $CONFIG_DEPLOYMENT_PATH" >> ${LOG_FILE}
   fi
 fi
 
 if [[ -s ${LOG_FILE}  ]];then
+    echo "Error(s):"
     cat ${LOG_FILE}
     exit 1
 fi
