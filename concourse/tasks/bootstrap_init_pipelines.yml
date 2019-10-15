@@ -42,14 +42,13 @@ run:
     export PAAS_TEMPLATES=$(pwd)/templates-resource
     export PIPELINES_DIR=$(pwd)/pipelines-resource/pipelines
     cd scripts-resource
-    DYNAMIC_DEPLS_FILE_LIST=$(cd $SECRETS && find . -maxdepth 1 -type d -name "*-depls")
-    for i in $DYNAMIC_DEPLS_FILE_LIST;
-    do
-    export DYNAMIC_DEPLS_LIST="$DYNAMIC_DEPLS_LIST $(basename $i)"
+    DYNAMIC_DEPLS_FILE_LIST=$(cd ${SECRETS} && find . -maxdepth 1 -type d -name "*-depls")
+    for i in ${DYNAMIC_DEPLS_FILE_LIST}; do
+      export DYNAMIC_DEPLS_LIST="$DYNAMIC_DEPLS_LIST $(basename $i)"
     done
     export DEPLS_LIST="${DEPLS_LIST:-${DYNAMIC_DEPLS_LIST}}"
     for depls in ${DEPLS_LIST};do
-    ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t ${PIPELINE_TYPE} ${COA_CONFIG_MODE}
+      ./scripts/concourse-manual-pipelines-update.rb -d ${depls} --no-interactive -t ${PIPELINE_TYPE} ${COA_CONFIG_MODE}
     done
 
 params:

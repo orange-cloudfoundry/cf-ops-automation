@@ -40,18 +40,18 @@ run:
     ###
 
     if [ -z "${SPEC_PATH}" ]; then
-    echo "FATAL: SPEC_PATH is missing"
-    exit 1
+      echo "FATAL: SPEC_PATH is missing"
+      exit 1
     fi
 
     if [ -z "${IAAS_SPEC_PATH}" ]; then
-    echo "FATAL: IAAS_SPEC_PATH is missing"
-    exit 1
+      echo "FATAL: IAAS_SPEC_PATH is missing"
+      exit 1
     fi
 
     if [ -z "${SECRET_STATE_FILE_PATH}" ]; then
-    echo "FATAL: SECRET_STATE_FILE_PATH is missing"
-    exit 1
+      echo "FATAL: SECRET_STATE_FILE_PATH is missing"
+      exit 1
     fi
 
     # copy tfstate and secrets
@@ -64,21 +64,18 @@ run:
     find spec-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
 
     # copy spec in secrets, preserving the nested modules if any
-    if [ -d "secret-state-resource/${SPEC_PATH}" ]
-    then
-    find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    if [ -d "secret-state-resource/${SPEC_PATH}" ]; then
+      find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
 
-    if [ -d "spec-resource/${IAAS_SPEC_PATH}" ]
-    then
-    # copy iaas-spec in spec, preserving the nested modules if any
-    find spec-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    if [ -d "spec-resource/${IAAS_SPEC_PATH}" ]; then
+      # copy iaas-spec in spec, preserving the nested modules if any
+      find spec-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
     
     # copy iaas-spec in secrets, preserving the nested modules if any
-    if [ -d "secret-state-resource/${IAAS_SPEC_PATH}" ]
-    then
-    find secret-state-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    if [ -d "secret-state-resource/${IAAS_SPEC_PATH}" ]; then
+      find secret-state-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
     fi
 
     cd generated-files/

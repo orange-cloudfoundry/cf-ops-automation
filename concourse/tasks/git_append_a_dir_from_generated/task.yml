@@ -58,7 +58,7 @@ run:
       git commit --file .git/message
     else
       echo "No change detected, skip commit"
-      fi
+    fi
 
 params:
   GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
