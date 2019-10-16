@@ -10,10 +10,12 @@ disk_quota: (( file "spruce-file-sample-from-secrets.txt" ))
 
 # To reference spruce-generated files use the path : "../../../../generated-files"
 # To access paas-templates directory, it is possible to use one of the following:
-#   - direct reference, quite similar, like  "../../../../additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template"
+#   - direct reference, quite similar, like  "../../../additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template"
 
-#### Below a NOT RECOMMENDED and subject to change option. See https://github.com/orange-cloudfoundry/cf-ops-automation/issues/259
-#   - use a variable see sample with timeout and path_to_my_file $CUSTOM_SCRIPT_DIR: (( grab $CUSTOM_SCRIPT_DIR )), in this sample, CUSTOM_SCRIPT_DIR=additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
+#### Below is a NOT RECOMMENDED and subject to change option to access paas-templates directory.
+# See https://github.com/orange-cloudfoundry/cf-ops-automation/issues/259
+#   - use a variable see sample with timeout and path_to_my_file $CUSTOM_SCRIPT_DIR: (( grab $CUSTOM_SCRIPT_DIR )),
+#     in this sample, CUSTOM_SCRIPT_DIR=additional-resource/hello-world-root-depls/cf-apps-deployments/generic-app/template
 secrets: # you may define temporary keys in this section, that will be pruned upon spruce invocation, ie won't endup in spruce-generated files
   path_to_my_file: ((concat "../../../../" $CUSTOM_SCRIPT_DIR "/spruce-file-sample-from-templates.txt" ))
 
