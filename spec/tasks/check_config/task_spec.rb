@@ -54,7 +54,7 @@ describe 'check_configuration task' do
     let(:expected_errors) do
       ['ERROR: dummy-path does not exist (templates-resource/hello-world-root-depls/bosh-deployment-sample), please check related deployment-dependencies.yml',
        "\n",
-       'ERROR: local-secret-scan enabled in deployment-dependencies.yml for bosh-deployment-sample, but no config files (meta.yml, secrets.yml) detected at config-resource/hello-world-root-depls/bosh-deployment-sample/secrets',
+       'ERROR: local_deployment_scan enabled in deployment-dependencies.yml for bosh-deployment-sample, but no config files (meta.yml, secrets.yml) detected at config-resource/hello-world-root-depls/bosh-deployment-sample/secrets',
        "\n"].join('')
     end
 
