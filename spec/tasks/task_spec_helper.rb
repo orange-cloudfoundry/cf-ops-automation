@@ -5,7 +5,7 @@ class TaskSpecHelper
   end
 
   def self.governmentpaas_default_image_version
-    'b3185eed905c8320013c5d09b6b18cdc0b68ce36'
+    '2792f166a305a329b1d3c4156038490853e3766e'
   end
 
   def self.bosh_cli_v2_image

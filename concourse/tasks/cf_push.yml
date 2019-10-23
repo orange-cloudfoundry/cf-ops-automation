@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: governmentpaas/cf-cli
-    tag: b3185eed905c8320013c5d09b6b18cdc0b68ce36
+    tag: 2792f166a305a329b1d3c4156038490853e3766e
 inputs:
   - name: scripts-resource
   - name: credentials-resource
