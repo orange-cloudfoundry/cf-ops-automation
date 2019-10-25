@@ -46,6 +46,14 @@ module PipelineHelpers
       @details['errands'] || DEFAULT_EMPTY_ERRANDS_VALUE
     end
 
+    def manual_errands?
+      @details['manual-errands']&.any?
+    end
+
+    def manual_errands
+      @details['manual-errands'] || DEFAULT_EMPTY_ERRANDS_VALUE
+    end
+
     def releases
       @details['releases']&.sort || DEFAULT_EMPTY_RELEASES_VALUE
     end

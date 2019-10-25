@@ -165,7 +165,7 @@ resources:
     deployment: <%= name %>
     ca_cert: <%= bosh_cert[depls]&.dump %>
 
-  <% if deployment_details.errands? %>
+  <% if deployment_details.errands? || deployment_details.manual_errands? %>
 - name: errand-<%= name %>
   type: bosh-errand
   source:
@@ -666,7 +666,6 @@ jobs:
       - ops-and-vars-files/vars/*
       cleanup: true
 
-
   - task: bosh-variables
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
     output_mapping: {result-dir: bosh-variables-result}
@@ -711,9 +710,10 @@ jobs:
       SECRETS_DIR: credentials-resource/<%= depls %>/<%= name %>
 
   <% if deployment_details.errands? %>
-- name: run-errand-<%= name %>
-    <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}" %>
-  serial: true
+    <% deployment_details.errands.each do |errand_name, errand_info| %>
+- name: run-errand-<%= name %>-<%= errand_name %>
+  <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}-#{errand_name}" %>
+  serial_groups: [auto-errand-<%= name %>]
   on_failure:
     put: failure-alert
     params:
@@ -723,20 +723,37 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
-      params: { submodules: none}
-      trigger: <%= deployment_details.local_deployment_secrets_trigger? %>
-      passed: [deploy-<%= name %>]
-    - get: paas-templates-<%= name %>
-      params: { submodules: none}
+    - get: concourse-meta
       trigger: true
       passed: [deploy-<%= name %>]
-    <% deployment_details.errands.each do |errand_name, errand_info| %>
+
   - put: errand-<%= name %>
     params:
       name: <%= errand_name %>
     <% end %>
   <% end %>
+
+  <% if deployment_details.manual_errands? %>
+    <% deployment_details.manual_errands.each do |errand_name, errand_info| %>
+- name: run-manual-errand-<%= name %>-<%= errand_name %>
+  <% jobs["deploy-#{name[0]}*"] << "run-manual-errand-#{name}-#{errand_name}" %>
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+        - get: concourse-meta
+          passed: [deploy-<%= name %>]
+    - put: errand-<%= name %>
+      params:
+        name: <%= errand_name %>
+    <% end %>
+    <% end %>
 <% end %>
 
 <% if enabled_deployments.any? %>

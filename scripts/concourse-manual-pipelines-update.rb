@@ -7,6 +7,7 @@ require_relative '../lib/../lib/pipeline_helpers'
 # Argument parsing
 OPTIONS = {
   depls: 'ops-depls',
+  team: 'main',
   no_interactive: false,
   fail_fast: false,
   fail_on_error: true,
@@ -53,6 +54,9 @@ Customization using ENVIRONMENT_VARIABLE:
   opts.on('--[no-]use-coa-config', "Use configuration - Default: #{OPTIONS[:coa_config]}") do |boolean_option|
     OPTIONS[:coa_config] = boolean_option
   end
+  opts.on('--team=TEAM', "Concourse team to use to deploy pipelines - Default: #{OPTIONS[:team]}") do |team_string|
+    OPTIONS[:team] = team_string
+  end
 end
 opt_parser.parse!
 
@@ -72,10 +76,16 @@ def get_pipeline_name(name)
   "#{PIPELINE_PREFIX}#{name}"
 end
 
-def set_pipeline(target_name:, name:, config:, load: [], options: [])
+def set_pipeline(target_name:, team_name: 'main', name:, config:, load: [], options: [])
   return if OPTIONS.key?(:match) && !name.include?(OPTIONS[:match])
   return if OPTIONS.key?(:without) && name.include?(OPTIONS[:without])
+
   puts "   Setting #{name} pipeline"
+
+  switch_team_cmd = %{bash -c "fly -t #{target_name} edit-target -n #{team_name}"}
+  switch_concourse_team = system(switch_team_cmd)
+  puts "Switched to team: #{team_name}"
+  raise "Failed to switch team to #{team_name} to load pipeline #{get_pipeline_name(name)} from template #{name}" unless switch_concourse_team
 
   fly_cmd = %{bash -c "fly -t #{target_name} set-pipeline \
     -p #{get_pipeline_name(name)} \
@@ -88,15 +98,15 @@ def set_pipeline(target_name:, name:, config:, load: [], options: [])
 
   pipeline_successfully_loaded = system(fly_cmd)
   puts "Pipeline successfully loaded: #{pipeline_successfully_loaded}"
-  if OPTIONS[:fail_fast] && !pipeline_successfully_loaded
-    raise "Failed to load pipeline #{get_pipeline_name(name)} from template #{name}"
-  end
+  raise "Failed to load pipeline #{get_pipeline_name(name)} from template #{name}" if OPTIONS[:fail_fast] && !pipeline_successfully_loaded
+
   pipeline_successfully_loaded
 end
 
 def generate_full_path_for_concourse_vars_files(vars_files)
   vars_files_with_path = []
   return vars_files_with_path if vars_files.nil?
+
   vars_files.each do |var_file|
     vars_files_with_path << if var_file =~ /versions.yml/
                               "#{PAAS_TEMPLATES}/#{var_file}"
@@ -126,9 +136,12 @@ end
 
 def load_pipeline_into_concourse(pipeline_name, pipeline_vars_files, pipeline_definition_filename, concourse_target_name)
   raise "No vars_files detected. Please ensure coa-config option is #{OPTIONS[:coa_config]}" if pipeline_vars_files&.empty?
+
+  pipeline_team_name = OPTIONS[:team]
   set_pipeline(
     target_name: concourse_target_name,
     name: pipeline_name,
+    team_name: pipeline_team_name,
     config: pipeline_definition_filename,
     load: pipeline_vars_files,
     options: concourse_additional_options
@@ -184,9 +197,7 @@ def update_pipelines(target_name)
     loaded_pipelines_status[pipeline_name] = pipeline_loading_status
   end
 
-  if OPTIONS[:fail_on_error]
-    raise "pipeline loading error. Summary #{loaded_pipelines_status}" unless loaded_pipelines_status.select { |_, status| !status.nil? && !status }.empty?
-  end
+  raise "pipeline loading error. Summary #{loaded_pipelines_status}" if OPTIONS[:fail_on_error] && !loaded_pipelines_status.select { |_, status| !status.nil? && !status }.empty?
 end
 
 update_pipelines TARGET_NAME
