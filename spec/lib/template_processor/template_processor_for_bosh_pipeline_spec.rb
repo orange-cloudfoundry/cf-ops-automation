@@ -24,49 +24,53 @@ describe 'BoshPipelineTemplateProcessing' do
   let(:root_deployment_versions) { {} }
   let(:all_dependencies) do
     deps_yaml = <<~YAML
-      bosh-bats:
-          status: disabled
-      maria-db:
-          status: disabled
-      shield-expe:
-          stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
-          releases:
-            cf-routing-release:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-incubator/cf-routing-release
-              version: 0.169.0
-          errands:
-              import:
-          bosh-deployment:
-            active: true
-          status: enabled
-      bui:
-          stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
-          releases:
-            route-registrar-boshrelease:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-community/route-registrar-boshrelease
-              version: '3'
-            haproxy-boshrelease:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-community/haproxy-boshrelease
-              version: 8.0.12
-          bosh-deployment:
-            active: true
-          status: enabled
-    YAML
-    YAML.safe_load(deps_yaml)
-  end
-  let(:all_ci_deployments) { {} }
-  let(:git_submodules) { {} }
-  let(:loaded_config) do
-    my_config_yaml = <<~YAML
-      offline-mode:
-        boshreleases: true
-        stemcells: true
-        docker-images: false
+          bosh-bats:
+              status: disabled
+          maria-db:
+              status: disabled
+          shield-expe:
+              stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+              releases:
+                cf-routing-release:
+                  base_location: https://bosh.io/d/github.com/
+                  repository: cloudfoundry-incubator/cf-routing-release
+                  version: 0.169.0
+              errands:
+                  import:
+                  smoke-tests:
+              manual-errands:
+                  manual-import:
+                  manual-smoke-tests:
+              bosh-deployment:
+                active: true
+              status: enabled
+          bui:
+              stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+              releases:
+                route-registrar-boshrelease:
+                  base_location: https://bosh.io/d/github.com/
+                  repository: cloudfoundry-community/route-registrar-boshrelease
+                  version: '3'
+                haproxy-boshrelease:
+                  base_location: https://bosh.io/d/github.com/
+                  repository: cloudfoundry-community/haproxy-boshrelease
+                  version: 8.0.12
+              bosh-deployment:
+                active: true
+              status: enabled
+        YAML
+        YAML.safe_load(deps_yaml)
+      end
+      let(:all_ci_deployments) { {} }
+      let(:git_submodules) { {} }
+      let(:loaded_config) do
+        my_config_yaml = <<~YAML
+          offline-mode:
+            boshreleases: true
+            stemcells: true
+            docker-images: false
     YAML
     YAML.safe_load(my_config_yaml)
   end
@@ -112,9 +116,12 @@ describe 'BoshPipelineTemplateProcessing' do
           'recreate-bui',
           'recreate-shield-expe',
           'retrigger-all-jobs',
-          'run-errand-shield-expe'] },
+          'run-errand-shield-expe-import', 
+          'run-errand-shield-expe-smoke-tests', 
+          'run-manual-errand-shield-expe-manual-import', 
+          'run-manual-errand-shield-expe-manual-smoke-tests'] },
       { 'name' => 'Deploy-b*', 'jobs' => ['deploy-bui'] },
-      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe'] },
+      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe-import', 'run-errand-shield-expe-smoke-tests', 'run-manual-errand-shield-expe-manual-import', 'run-manual-errand-shield-expe-manual-smoke-tests' ] },
       { 'name' => 'Recreate',
         'jobs' => ['recreate-all', 'recreate-bui', 'recreate-shield-expe'] },
       { 'name' => 'Utils',
@@ -143,6 +150,19 @@ describe 'BoshPipelineTemplateProcessing' do
             - #{root_deployment_name}/#{root_deployment_name}-versions.yml
     YAML
     YAML.safe_load ci_deployments_yaml
+  end
+  let(:expected_shield_errand_resource) do
+    my_shield_errand_yaml = <<~YAML
+      - name: errand-shield-expe
+        type: bosh-errand
+        source:
+          target: ((bosh-target))
+          client: ((bosh-username))
+          client_secret: ((bosh-password))
+          deployment: shield-expe
+          ca_cert: shared/certificate.pem
+    YAML
+    YAML.safe_load(my_shield_errand_yaml)
   end
 
   context 'when processing bosh-pipeline.yml.erb' do
@@ -175,47 +195,89 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - get: secrets-full-writer
-              params: { submodules: none}
+            - get: concourse-meta
+              passed: [ deploy-shield-expe ]
               trigger: true
-              passed: [deploy-shield-expe]
-            - get: paas-templates-shield-expe
-              params: { submodules: none}
-              trigger: true
-              passed: [deploy-shield-expe]
           - put: errand-shield-expe
             params:
               name: import
         YAML
         YAML.safe_load(my_shield_errand_yaml)
       end
-      let(:expected_shield_errand_resource) do
-        my_shield_errand_yaml = <<~YAML
-          - name: errand-shield-expe
-            type: bosh-errand
-            source:
-              target: ((bosh-target))
-              client: ((bosh-username))
-              client_secret: ((bosh-password))
-              deployment: shield-expe
-              ca_cert: shared/certificate.pem
-        YAML
-        YAML.safe_load(my_shield_errand_yaml)
-      end
 
       it 'generates an errand resource for shield boshrelease' do
-        generated_errand_resource = generated_pipeline['resources'].select { |job| job['name'] == 'errand-shield-expe' } # .flat_map { |job| job['plan'] }
+        generated_errand_resource = generated_pipeline['resources'].select { |job| job['name'] == 'errand-shield-expe' }
         expect(generated_errand_resource).to match(expected_shield_errand_resource)
       end
 
       it 'generates an errand job for shield boshrelease' do
-        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe' }.flat_map { |job| job['plan'] }
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe-import' }.flat_map { |job| job['plan'] }
         expect(generated_errand_job).to match(expected_shield_errand)
       end
 
-      it 'generates a serialized errand job for shield boshrelease' do
-        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe' }.first
-        expect(generated_errand_job['serial']).to be_truthy
+      it 'generates a concourse job per errand for shield boshrelease' do
+        generated_errand_jobs = generated_pipeline['jobs'].select { |job| job['name'].start_with? 'run-errand-shield-expe' }
+        expect(generated_errand_jobs.size).to eq(2)
+      end
+
+      it 'generates a shared serial_groups for shield boshrelease errand jobs' do
+        serial_groups = generated_pipeline['jobs'].select { |job| job['name'].start_with? 'run-errand-shield-expe' }.map { |job| job['serial_groups'] }.uniq.flatten
+        expect(serial_groups).to eq(['auto-errand-shield-expe'])
+      end
+    end
+
+    context 'when an manual errand job is defined' do
+      let(:shield_dependencies_only_with_manual_errands_definition_only) do
+        shield_only = <<~YAML
+          shield-expe:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            manual-errands:
+              manual-import:
+              manual-smoke-tests:
+            bosh-deployment:
+              active: true
+            status: enabled
+        YAML
+        YAML.safe_load(shield_only)
+      end
+      let(:all_dependencies) { shield_dependencies_only_with_manual_errands_definition_only }
+      let(:expected_shield_manual_errand) do
+        my_shield_errand_yaml = <<~YAML
+          - in_parallel:
+            - get: concourse-meta
+              passed: [ deploy-shield-expe ]
+              # Not triggered automatically as it is a manual errand
+          - put: errand-shield-expe
+            params:
+              name: manual-smoke-tests
+        YAML
+        YAML.safe_load(my_shield_errand_yaml)
+      end
+
+      it 'generates an manual errand resource for shield boshrelease' do
+        generated_errand_resource = generated_pipeline['resources'].select { |job| job['name'] == 'errand-shield-expe' }
+        expect(generated_errand_resource).to match(expected_shield_errand_resource)
+      end
+
+      it 'generates an errand job for shield boshrelease' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-manual-smoke-tests' }.flat_map { |job| job['plan'] }
+        expect(generated_errand_job).to match(expected_shield_manual_errand)
+      end
+
+      it 'generates a concourse job per manual errand for shield boshrelease' do
+        generated_errand_jobs = generated_pipeline['jobs'].select { |job| job['name'].start_with? 'run-manual-errand-shield-expe' }
+        expect(generated_errand_jobs.size).to eq(2)
+      end
+
+      it 'generates serialized manual errand job for shield boshrelease' do
+        serials = generated_pipeline['jobs'].select { |job| job['name'].start_with? 'run-manual-errand-shield-expe' }.map { |job| job['serial'] }.uniq.flatten
+        expect(serials).to be_truthy
       end
     end
 
