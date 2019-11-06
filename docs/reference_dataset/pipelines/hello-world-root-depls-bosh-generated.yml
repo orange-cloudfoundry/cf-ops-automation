@@ -63,6 +63,13 @@ resources:
   source:
     name: ((stemcell-name-prefix))((stemcell-main-name))
   version: { version: "((stemcell-version))" }
+- name: secrets-bosh-deployment-sample
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["hello-world-root-depls/bosh-deployment-sample", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
 - name: paas-templates-bosh-deployment-sample
   type: git
   source:
@@ -349,14 +356,30 @@ jobs:
       # vault-version is pinned, see resource declaration. This is disabled for now...
       trigger: true
       attempts: 2
+    - get: secrets-bosh-deployment-sample
+      params: { submodules: none}
+      trigger: true
     - get: paas-templates-bosh-deployment-sample
       trigger: true
       params:
         submodules: none
+  - task: check-configuration
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      config-resource: secrets-bosh-deployment-sample
+      templates-resource: paas-templates-bosh-deployment-sample
+    output_mapping: {check-configuration-result: check-configuration-result}
+    file: cf-ops-automation/concourse/tasks/check_configuration/task.yml
+    params:
+      ROOT_DEPLOYMENT: hello-world-root-depls
+      DEPLOYMENT: bosh-deployment-sample
+      SCAN_PATHS: hello-world-root-depls/bosh-deployment-sample shared-files
+      GIT_SUBMODULES: 
+      LOCAL_SECRETS_SCAN: true
   - task: generate-bosh-deployment-sample-manifest
     input_mapping:
       scripts-resource: cf-ops-automation
-      credentials-resource: secrets-full-writer
+      credentials-resource: secrets-bosh-deployment-sample
       additional-resource: paas-templates-bosh-deployment-sample
     output_mapping: {generated-files: release-manifest}
     file: cf-ops-automation/concourse/tasks/generate-manifest.yml
@@ -374,7 +397,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-bosh-deployment-sample
-      credentials-resource: secrets-full-writer
+      credentials-resource: secrets-bosh-deployment-sample
       additional-resource: release-manifest
     output_mapping: {generated-files: pre-bosh-deploy-resource}
     file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
@@ -385,7 +408,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-bosh-deployment-sample
-      credentials-resource: secrets-full-writer
+      credentials-resource: secrets-bosh-deployment-sample
       additional-resource: pre-bosh-deploy-resource
     output_mapping: {generated-files: final-release-manifest}
     file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
@@ -445,7 +468,7 @@ jobs:
     input_mapping:
       bosh-inputs: ops-and-vars-files
       manifest-dir: final-release-manifest
-      secrets: secrets-full-writer
+      secrets: secrets-bosh-deployment-sample
       scripts-resource: cf-ops-automation
     output_mapping: { result-dir: interpolated-manifest }
     file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
@@ -519,7 +542,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-bosh-deployment-sample
-      credentials-resource: secrets-full-writer
+      credentials-resource: secrets-bosh-deployment-sample
       additional-resource: final-release-manifest
     output_mapping: {generated-files: post-deploy-result}
     file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml

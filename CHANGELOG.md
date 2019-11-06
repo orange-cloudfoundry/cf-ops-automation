@@ -1,11 +1,29 @@
 # Change Log
 
-## [v4.0.4](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.0.4) (2019-10-07)
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.3...v4.0.4)
+## [v4.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.1.0) (2019-11-06)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.4...v4.1.0)
+
+**Implemented enhancements:**
+
+- bump cf cli 6.46.1 in cf app support [\#257](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/257)
+- Add support for multiple errands \(automatic and manual ones\) [\#14](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/14)
 
 **Closed issues:**
 
+- bosh errands should trigger after each bosh deploy [\#285](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/285)
+- Bump spruce 1.22 [\#283](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/283)
+- Bump terraform 0.11.14 [\#277](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/277)
+- Ensure deployment consistency [\#276](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/276)
 - Support meta information defined in templates repository [\#275](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/275)
+
+**Merged pull requests:**
+
+- feature\(bosh-pipeline\): add manual-errand support and multi job errands [\#286](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/286)
+- Improve wording of error message [\#282](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/282)
+- Fix invalid relative path in reference documentation [\#281](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/281)
+
+## [v4.0.4](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.0.4) (2019-10-04)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.3...v4.0.4)
 
 ## [v4.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.0.3) (2019-10-03)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.2...v4.0.3)
@@ -93,7 +111,6 @@
 **Implemented enhancements:**
 
 - Record bosh deployment manifest including ops files interpolation [\#242](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/242)
-- git submodule of a deployment model are not pulled in the on-demand-pipeline context   [\#195](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/195)
 
 **Fixed bugs:**
 
@@ -173,6 +190,7 @@
 
 **Implemented enhancements:**
 
+- git submodule of a deployment model are not pulled in the on-demand-pipeline context   [\#195](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/195)
 - bosh config server / credhub variables fingerprint [\#72](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/72)
 - First class support for public bosh release not hosted on bosh.io [\#12](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/12)
 
@@ -429,6 +447,7 @@
 - Fix Tf pipeline [\#57](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/57)
 - pipeline\(depls\): move stemcell support from bosh.io to S3 [\#55](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/55)
 - task\(execute\_deploy\_script\): ensure deploy.sh is always executable [\#54](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/54)
+- task\(post\_bosh\_deploy\): switch to cf-cli image [\#49](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/49)
 - pipeline\(depls\): refactor to extract task variable args into task params [\#48](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/48)
 - Tf dev env refinements [\#47](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/47)
 - tf only pipeline [\#40](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/40)
@@ -469,7 +488,6 @@
 
 **Merged pull requests:**
 
-- task\(post\_bosh\_deploy\): switch to cf-cli image [\#49](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/49)
 - pipeline\(depls\): support deployment manifest without template [\#37](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/37)
 - Don't allow TF to prompt for user input  [\#36](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/36)
 
