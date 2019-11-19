@@ -176,7 +176,7 @@ jobs:
         input_mapping:
           scripts-resource: cf-ops-automation
           secrets: secrets-dummy-depls-limited
-        file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
           BOSH_TARGET: ((bosh-target))
           BOSH_CLIENT: ((bosh-username))
@@ -210,7 +210,7 @@ jobs:
         input_mapping:
           scripts-resource: cf-ops-automation
           secrets: secrets-dummy-depls-limited
-        file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
           BOSH_TARGET: ((bosh-target))
           BOSH_CLIENT: ((bosh-username))

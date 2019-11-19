@@ -152,7 +152,7 @@ jobs:
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited}
         output_mapping: {deployed-config: deployed-cloud-config}
-        file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
@@ -184,7 +184,7 @@ jobs:
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-another-world-root-depls-limited}
         output_mapping: {deployed-config: deployed-runtime-config}
-        file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))

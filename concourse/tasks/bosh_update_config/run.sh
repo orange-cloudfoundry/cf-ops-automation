@@ -12,15 +12,28 @@
 # limitations under the License.
 #
 set -eC
-ls -lrt config-manifest
+echo "Credhub info:"
+credhub --version
+echo "Bosh CLI info: $(bosh --version)"
 
+ls -lrt config-manifest
+VARS_FILES_SUFFIX=${VARS_FILES_SUFFIX:-$CONFIG_TYPE-vars.yml}
+OPS_FILES_SUFFIX=${OPS_FILES_SUFFIX:-$CONFIG_TYPE-operators.yml}
 VARS_FILES=""
 OPS_FILES=""
+if [ "$CONFIG_TYPE" = "" ];then
+    echo "ERROR: Config type must be provided. Config type, e.g. 'cloud', 'runtime', or 'cpi' "
+    exit 1
+else
+    echo "Config type detected: $CONFIG_TYPE"
+fi
 
+echo "selecting vars files with '${VARS_FILES_SUFFIX}' suffix"
 for a_vars_file in $(ls ./config-manifest/*${VARS_FILES_SUFFIX}); do
     VARS_FILES="${VARS_FILES} -l ${a_vars_file}"
 done
 
+echo "selecting ops files with '${OPS_FILES_SUFFIX}' suffix"
 for an_ops_file in $(ls ./config-manifest/*${OPS_FILES_SUFFIX}); do
     OPS_FILES="${OPS_FILES} -o ${an_ops_file}"
 done
@@ -29,13 +42,13 @@ echo "Operators detected: <${OPS_FILES}>"
 echo "Vars files detected: <${VARS_FILES}>"
 
 source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-cat config-manifest/cloud-config.yml
-OLD_CONFIG=$(mktemp cloud-config-XXXXXX)
-bosh cloud-config >$OLD_CONFIG || true
-diff $OLD_CONFIG config-manifest/cloud-config.yml || true
+cat config-manifest/${CONFIG_TYPE}-config.yml
+OLD_CONFIG=$(mktemp ${CONFIG_TYPE}-config-XXXXXX)
+bosh ${CONFIG_TYPE}-config >>${OLD_CONFIG} || true
+diff $OLD_CONFIG config-manifest/${CONFIG_TYPE}-config.yml || true
 
-bosh -n int ${VARS_FILES} ${OPS_FILES} config-manifest/cloud-config.yml
+bosh -n int ${VARS_FILES} ${OPS_FILES} config-manifest/${CONFIG_TYPE}-config.yml
 
-bosh -n update-cloud-config ${VARS_FILES} ${OPS_FILES} config-manifest/cloud-config.yml
-bosh -n cloud-config > deployed-config/cloud-config.yml
+#bosh -n update-config --type -${CONFIG_TYPE} ${VARS_FILES} ${OPS_FILES} config-manifest/${CONFIG_TYPE}-config.yml
+bosh -n ${CONFIG_TYPE}-config > deployed-config/${CONFIG_TYPE}-config.yml
 
