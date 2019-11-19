@@ -105,10 +105,6 @@ resources:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
-- name: nginx
-  type: bosh-io-release
-  source:
-    repository: cloudfoundry-community/nginx-release
 - name: ntp
   type: bosh-io-release
   source:
@@ -166,7 +162,7 @@ jobs:
       input_mapping: {scripts-resource: cf-ops-automation}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
-        DEPLOYMENTS_TO_DELETE: "terraform-sample to-delete-bosh-deployment-sample"
+        DEPLOYMENTS_TO_DELETE: "dummy terraform-sample to-delete-bosh-deployment-sample"
 - name: approve-and-delete-disabled-deployments
   on_failure:
     put: failure-alert
@@ -191,7 +187,7 @@ jobs:
          BOSH_CLIENT: ((bosh-username))
          BOSH_CLIENT_SECRET: "((bosh-password))"
          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-         DEPLOYMENTS_TO_DELETE: "terraform-sample to-delete-bosh-deployment-sample"
+         DEPLOYMENTS_TO_DELETE: "dummy terraform-sample to-delete-bosh-deployment-sample"
 - name: execute-deploy-script
   serial: true
   on_failure:
@@ -263,7 +259,7 @@ jobs:
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
         output_mapping: {deployed-config: deployed-cloud-config}
-        file: cf-ops-automation/concourse/tasks/bosh_update_cloud_config.yml
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
@@ -295,7 +291,7 @@ jobs:
         attempts: 2
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
         output_mapping: {deployed-config: deployed-runtime-config}
-        file: cf-ops-automation/concourse/tasks/bosh_update_runtime_config.yml
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
            BOSH_TARGET: ((bosh-target))
            BOSH_CLIENT: ((bosh-username))
@@ -344,10 +340,6 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-    - get: nginx
-      version: { version: ((nginx-version)) }
-      trigger: true
-      attempts: 2
     - get: ntp
       version: { version: ((ntp-version)) }
       trigger: true
@@ -499,7 +491,6 @@ jobs:
       stemcells:
       - ((stemcell-main-name))/stemcell.tgz
       releases: 
-      - "nginx/*.tgz"
       - "ntp/*.tgz"
       - "vault/*.tgz"
       ops_files:
@@ -696,7 +687,6 @@ jobs:
         args:
         - -ec
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan

@@ -25,11 +25,15 @@ inputs:
 outputs:
   - name: deployed-config
 run:
-  path: scripts-resource/concourse/tasks/bosh_update_runtime_config/run.sh
+  path: scripts-resource/concourse/tasks/bosh_update_config/run.sh
 params:
+   CONFIG_TYPE:
+   VARS_FILES_SUFFIX:
+   OPS_FILES_SUFFIX:
    BOSH_TARGET:
    BOSH_CLIENT:
    BOSH_CLIENT_SECRET:
    BOSH_CA_CERT:
-   VARS_FILES_SUFFIX: runtime-vars.yml
-   OPS_FILES_SUFFIX:  runtime-operators.yml
+   CREDHUB_CLIENT:
+   CREDHUB_SECRET:
+   CREDHUB_SERVER:
