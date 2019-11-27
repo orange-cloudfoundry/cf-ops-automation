@@ -395,7 +395,10 @@ jobs:
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: "((bosh-password))"
           BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
-          TYPE: cloud
+          CONFIG_TYPE: cloud
+          CREDHUB_SERVER: ((credhub-server))
+          CREDHUB_CLIENT: ((credhub-client))
+          CREDHUB_SECRET: "((credhub-secret))"
         ensure:
           task: update-cloud-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
@@ -429,8 +432,10 @@ jobs:
            BOSH_CLIENT: ((bosh-username))
            BOSH_CLIENT_SECRET: "((bosh-password))"
            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
-           TYPE: runtime
-
+           CONFIG_TYPE: runtime
+           CREDHUB_SERVER: ((credhub-server))
+           CREDHUB_CLIENT: ((credhub-client))
+           CREDHUB_SECRET: "((credhub-secret))"
         ensure:
           task: update-runtime-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
@@ -464,8 +469,10 @@ jobs:
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: "((bosh-password))"
           BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
-          TYPE: cpi
-
+          CONFIG_TYPE: cpi
+          CREDHUB_SERVER: ((credhub-server))
+          CREDHUB_CLIENT: ((credhub-client))
+          CREDHUB_SECRET: "((credhub-secret))"
         ensure:
           task: update-cpi-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}

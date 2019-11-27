@@ -16,7 +16,8 @@ describe 'bosh_update_runtime_config task' do
         'BOSH_TARGET' => 'https://dummy-bosh',
         'BOSH_CLIENT' => 'aUser',
         'BOSH_CLIENT_SECRET' => 'aPassword',
-        'BOSH_CA_CERT' => 'secrets/dummy' )
+        'BOSH_CA_CERT' => 'secrets/dummy',
+        'CONFIG_TYPE' => 'runtime' )
     rescue FlyExecuteError => e
       @output = e.out
       @fly_error = e.err

@@ -9,6 +9,7 @@ class TestConfigGenerator
       FileUtils.touch(File.join(@config_manifest_path, "my-custom-#{type}-vars.yml"))
       FileUtils.touch(File.join(@config_manifest_path, "01-my-custom-#{type}-operators.yml"))
       FileUtils.touch(File.join(@config_manifest_path, "02-my-custom-#{type}-operators.yml"))
+      FileUtils.touch(File.join(@config_manifest_path, "#{type}-config.yml"))
     end
   end
 
