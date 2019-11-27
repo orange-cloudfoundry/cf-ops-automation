@@ -60,6 +60,46 @@ describe 'bosh_update_CPI_config task' do
     end
   end
 
+  context 'when no config file detected' do
+
+    before(:context) do
+      @test_config_generator = TestConfigGenerator.new
+      @secrets = Dir.mktmpdir
+      @deployed_config = Dir.mktmpdir
+
+      fly_cli_environment = {
+          'BOSH_TARGET' => 'https://dummy-bosh',
+          'BOSH_CLIENT' => 'aUser',
+          'BOSH_CLIENT_SECRET' => 'aPassword',
+          'BOSH_CA_CERT' => 'secrets/shared/certs/internal_paas-ca/server-ca.crt',
+          'CONFIG_TYPE' => 'xxx'
+      }
+
+      @output = execute('-c concourse/tasks/bosh_update_config/task.yml ' \
+        '-i scripts-resource=. ' \
+        "-i secrets=#{@secrets} " \
+        "-o deployed-config=#{@deployed_config} " \
+        "-i config-manifest=#{@test_config_generator.config_manifest_path} ", \
+        fly_cli_environment )
+    rescue FlyExecuteError => e
+      puts "OUTPUT: #{e.out}"
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
+    end
+
+    after(:context) do
+      @test_config_generator.cleanup
+      FileUtils.rm_rf @secrets if File.exist?(@secrets)
+      FileUtils.rm_rf @deployed_config if File.exist?(@deployed_config)
+    end
+
+    it 'generates an warning message' do
+      file = File.read(File.join(@deployed_config, 'xxx-config.yml'))
+      expect(file).to include('message: "WARNING - No xxx-config.yml detected"')
+    end
+  end
+
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/bosh_update_config/task.yml' }
 

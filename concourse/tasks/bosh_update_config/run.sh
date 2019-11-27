@@ -41,6 +41,13 @@ done
 echo "Operators detected: <${OPS_FILES}>"
 echo "Vars files detected: <${VARS_FILES}>"
 
+if [ ! -f "config-manifest/${CONFIG_TYPE}-config.yml" ];then
+    MESSAGE="WARNING - No ${CONFIG_TYPE}-config.yml detected"
+    echo "$MESSAGE, skipping"
+    echo "message: \"$MESSAGE\"" > "deployed-config/${CONFIG_TYPE}-config.yml"
+    exit 0
+fi
+
 source ./scripts-resource/scripts/bosh_cli_v2_login.sh "${BOSH_TARGET}"
 cat "config-manifest/${CONFIG_TYPE}-config.yml"
 OLD_CONFIG=$(mktemp "${CONFIG_TYPE}-config-XXXXXX")
@@ -49,7 +56,6 @@ bosh "${CONFIG_TYPE}-config" >>"${OLD_CONFIG}" || true
 
 echo "diff between current ${CONFIG_TYPE}-config and to be deployed version"
 diff "${OLD_CONFIG}" "config-manifest/${CONFIG_TYPE}-config.yml" || true
-
 echo "apply operators and vars files to ${CONFIG_TYPE}-config.yml"
 BOSH_INTERPOLATED_FILE="bosh-interpolated-${CONFIG_TYPE}-config.yml"
 bosh -n int ${VARS_FILES} ${OPS_FILES} "config-manifest/${CONFIG_TYPE}-config.yml" > "${BOSH_INTERPOLATED_FILE}"
