@@ -499,13 +499,12 @@ jobs:
       - get: PR-develop
         trigger: true
         version: every
-
       - put: PR-develop
         params:
           path: PR-develop
           status: pending
-
       - put: cf-ops-automation-docker-image-PR
+        attempts: 3
         params:
           build: PR-develop
           tag: PR-develop/.git/id
