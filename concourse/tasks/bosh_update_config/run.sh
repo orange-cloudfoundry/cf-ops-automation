@@ -65,5 +65,6 @@ echo "apply credhub interpolation to bosh interpolated file"
 CREDHUB_INTERPOLATED_FILE="credhub-interpolated-${CONFIG_TYPE}-config.yml"
 credhub interpolate -f "${BOSH_INTERPOLATED_FILE}" > "${CREDHUB_INTERPOLATED_FILE}"
 
-bosh -n update-config --type "${CONFIG_TYPE}" "${CREDHUB_INTERPOLATED_FILE}"
+echo "updating ${CONFIG_TYPE} with ${CREDHUB_INTERPOLATED_FILE}"
+bosh -n update-config --type "${CONFIG_TYPE}" --name default "${CREDHUB_INTERPOLATED_FILE}"
 bosh -n "${CONFIG_TYPE}-config" > "deployed-config/${CONFIG_TYPE}-config.yml"
