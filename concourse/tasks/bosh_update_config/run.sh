@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2015-2017 Orange
+# Copyright (C) 2015-2020 Orange
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -21,7 +21,7 @@ VARS_FILES_SUFFIX=${VARS_FILES_SUFFIX:-$CONFIG_TYPE-vars.yml}
 OPS_FILES_SUFFIX=${OPS_FILES_SUFFIX:-$CONFIG_TYPE-operators.yml}
 VARS_FILES=""
 OPS_FILES=""
-if [ "$CONFIG_TYPE" = "" ];then
+if [[ "$CONFIG_TYPE" = "" ]];then
     echo "ERROR: Config type must be provided. Config type, e.g. 'cloud', 'runtime', or 'cpi' "
     exit 1
 else
@@ -41,14 +41,23 @@ done
 echo "Operators detected: <${OPS_FILES}>"
 echo "Vars files detected: <${VARS_FILES}>"
 
-source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}
-cat config-manifest/${CONFIG_TYPE}-config.yml
-OLD_CONFIG=$(mktemp ${CONFIG_TYPE}-config-XXXXXX)
-bosh ${CONFIG_TYPE}-config >>${OLD_CONFIG} || true
-diff $OLD_CONFIG config-manifest/${CONFIG_TYPE}-config.yml || true
+source ./scripts-resource/scripts/bosh_cli_v2_login.sh "${BOSH_TARGET}"
+cat "config-manifest/${CONFIG_TYPE}-config.yml"
+OLD_CONFIG=$(mktemp "${CONFIG_TYPE}-config-XXXXXX")
+echo "getting current ${CONFIG_TYPE}-config"
+bosh "${CONFIG_TYPE}-config" >>"${OLD_CONFIG}" || true
 
-bosh -n int ${VARS_FILES} ${OPS_FILES} config-manifest/${CONFIG_TYPE}-config.yml
+echo "diff between current ${CONFIG_TYPE}-config and to be deployed version"
+diff "${OLD_CONFIG}" "config-manifest/${CONFIG_TYPE}-config.yml" || true
 
-#bosh -n update-config --type -${CONFIG_TYPE} ${VARS_FILES} ${OPS_FILES} config-manifest/${CONFIG_TYPE}-config.yml
-bosh -n ${CONFIG_TYPE}-config > deployed-config/${CONFIG_TYPE}-config.yml
+echo "apply operators and vars files to ${CONFIG_TYPE}-config.yml"
+BOSH_INTERPOLATED_FILE="bosh-interpolated-${CONFIG_TYPE}-config.yml"
+bosh -n int ${VARS_FILES} ${OPS_FILES} "config-manifest/${CONFIG_TYPE}-config.yml" > "${BOSH_INTERPOLATED_FILE}"
+cat "${BOSH_INTERPOLATED_FILE}"
 
+echo "apply credhub interpolation to bosh interpolated file"
+CREDHUB_INTERPOLATED_FILE="credhub-interpolated-${CONFIG_TYPE}-config.yml"
+credhub interpolate -f "${BOSH_INTERPOLATED_FILE}" > "${CREDHUB_INTERPOLATED_FILE}"
+
+bosh -n update-config --type "${CONFIG_TYPE}" "${CREDHUB_INTERPOLATED_FILE}"
+bosh -n "${CONFIG_TYPE}-config" > "deployed-config/${CONFIG_TYPE}-config.yml"

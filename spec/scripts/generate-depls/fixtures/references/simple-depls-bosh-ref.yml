@@ -231,6 +231,11 @@ jobs:
               BOSH_CLIENT: ((bosh-username))
               BOSH_CLIENT_SECRET: "((bosh-password))"
               BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+              CONFIG_TYPE: cloud
+              CREDHUB_SERVER: ((credhub-server))
+              CREDHUB_CLIENT: ((credhub-client))
+              CREDHUB_SECRET: "((credhub-secret))"
+
             ensure:
               task: update-cloud-config
               input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
@@ -263,6 +268,10 @@ jobs:
               BOSH_CLIENT: ((bosh-username))
               BOSH_CLIENT_SECRET: "((bosh-password))"
               BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+              CONFIG_TYPE: runtime
+              CREDHUB_SERVER: ((credhub-server))
+              CREDHUB_CLIENT: ((credhub-client))
+              CREDHUB_SECRET: "((credhub-secret))"
             ensure:
               task: update-runtime-config
               input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
@@ -284,6 +293,42 @@ jobs:
                 get_params: {submodules: none}
                 params:
                   repository: updated-runtime-config
+                  rebase: true
+          - task: update-cpi-config-for-simple-depls
+            attempts: 2
+            input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
+            output_mapping: {deployed-config: deployed-cpi-config}
+            file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
+            params:
+              BOSH_TARGET: ((bosh-target))
+              BOSH_CLIENT: ((bosh-username))
+              BOSH_CLIENT_SECRET: "((bosh-password))"
+              BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+              CONFIG_TYPE: cpi
+              CREDHUB_SERVER: ((credhub-server))
+              CREDHUB_CLIENT: ((credhub-client))
+              CREDHUB_SECRET: "((credhub-secret))"
+            ensure:
+              task: update-cpi-config
+              input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
+              output_mapping: {updated-git-resource: updated-cpi-config}
+              file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+              params:
+                OLD_FILE: "simple-depls/cpi-config.yml"
+                NEW_FILE: "cpi-config.yml"
+                COMMIT_MESSAGE: "simple-depls cpi-config auto update - [skip ci]"
+              on_failure:
+                put: failure-alert
+                params:
+                  channel: ((slack-channel))
+                  text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+                  icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+                  username: Concourse
+              on_success:
+                put: secrets-full-writer
+                get_params: {submodules: none}
+                params:
+                  repository: updated-cpi-config
                   rebase: true
   - name: deploy-ntp-with-scan
     serial: true
