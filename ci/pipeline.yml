@@ -8,7 +8,7 @@ resource_types:
   - name: pull-request
     type: docker-image
     source:
-      repository: jtarchie/pr
+      repository: teliaoss/github-pr-resource
 
   - name: meta
     type: docker-image
@@ -72,13 +72,11 @@ resources:
 - name: PR-develop
   type: pull-request
   source:
-    repo: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
-    username: ((cf-ops-automation-git-username))
-    password: ((cf-ops-automation-git-password))
+    repository: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
     access_token: ((cf-ops-automation-git-hub-token))
-    base: develop
+    base_branch: develop
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
-    authorship_restriction: true
+    disable_forks: true
 
 
 - name: cf-ops-automation-dependencies
@@ -492,7 +490,7 @@ jobs:
         text: |
           $TEXT_FILE_CONTENT
           Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
-        text_file: cf-ops-automation/.git/url
+        text_file: cf-ops-automation/.git/resource/url
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
@@ -507,7 +505,7 @@ jobs:
         attempts: 3
         params:
           build: PR-develop
-          tag: PR-develop/.git/id
+          tag: PR-develop/.git/resource/pr
           tag_prefix: PR-
         on_failure: &PR_failure
           put: PR-develop
@@ -539,8 +537,8 @@ jobs:
         timeout: 30m
         config: *unit_tests_config
         params:
-          GIT_SHA_CMD: cat .git/head_sha
-          GIT_BRANCH_CMD: cat .git/branch
+          GIT_SHA_CMD: cat .git/resource/head_sha
+          GIT_BRANCH_CMD: cat .git/resource/head_name
         on_failure: *PR_failure
 
   - name: PullRequests-AcceptanceTests
@@ -613,7 +611,7 @@ jobs:
           text: |
             $TEXT_FILE_CONTENT
             Pull request successfully ran tests :<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/>
-          text_file: cf-ops-automation/.git/url
+          text_file: cf-ops-automation/.git/resource/url
           icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
           username: Concourse
   - name: run-tests-for-hotfix-branch
