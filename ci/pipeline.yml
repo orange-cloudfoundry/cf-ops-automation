@@ -588,7 +588,7 @@ jobs:
           INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
 
       - task: upload-pipelines
-        attempts: 1
+        attempts: 2
         image: cf-ops-automation-docker-image-PR
         config: *integration_tests_upload-pipelines_task_config
         on_failure: *PR_coa_failure
