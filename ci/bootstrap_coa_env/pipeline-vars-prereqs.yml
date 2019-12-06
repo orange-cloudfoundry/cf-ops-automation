@@ -18,6 +18,5 @@ pipeline_vars:
   stemcell-main-name: bosh-openstack-kvm-ubuntu-xenial-go_agent
   stemcell-version: "456.1"
   bosh-openstack-cpi-release-version: "39"
-  docker-registry-url: ""
   concourse-ldap-admin-groups: my-ldap-group
   concourse-cf-admin-groups: my-cf-org

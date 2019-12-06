@@ -18,8 +18,9 @@ describe 'all tasks' do
           next
         end
         docker_image = "library/#{docker_image}" unless docker_image.include?('/')
-        docker_image_tag = task['image_resource']['source']['tag'] || 'latest'
-        name = "#{docker_image}:#{docker_image_tag}"
+        docker_image_no_prefix = docker_image.delete_prefix(DOCKER_REGISTRY_PREFIX)
+        docker_image_tag = task.dig('image_resource','source','tag') || 'latest'
+        name = "#{docker_image_no_prefix}:#{docker_image_tag}"
         images[name] = if images[name]
                          images[name] << task_filename
                        else
@@ -35,8 +36,8 @@ describe 'all tasks' do
         TaskSpecHelper.bosh_cli_v2_image + ':' + TaskSpecHelper.bosh_cli_v2_image_version,
         TaskSpecHelper.cf_cli_image + ':' + TaskSpecHelper.cf_cli_image_version,
         TaskSpecHelper.spruce_image + ':' + TaskSpecHelper.spruce_image_version,
-        "library/ruby:" + TaskSpecHelper.ruby_image_version,
-        "library/ruby:" + TaskSpecHelper.ruby_slim_image_version,
+        TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_image_version,
+        TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_slim_image_version,
         "orangecloudfoundry/cf-ops-automation:latest",
         "orangecloudfoundry/spiff:latest",
         TaskSpecHelper.terraform_image + ':' + TaskSpecHelper.terraform_image_version

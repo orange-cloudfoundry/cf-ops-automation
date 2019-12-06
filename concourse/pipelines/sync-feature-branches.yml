@@ -8,7 +8,8 @@ resource_types:
 
   - name: git-branch-heads
     type: docker-image
-    source: {repository: "((docker-registry-url))orangecloudfoundry/git-branch-heads-resource"}
+    source:
+      repository: ((docker-registry-url))orangecloudfoundry/git-branch-heads-resource
 
 resources:
 

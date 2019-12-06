@@ -16,7 +16,7 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: orangecloudfoundry/cf-ops-automation
+    repository: ((docker-registry-url))orangecloudfoundry/cf-ops-automation
 
 inputs:
 - name: cf-ops-automation

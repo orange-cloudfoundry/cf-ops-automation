@@ -152,13 +152,28 @@ RSpec.configure do |config|
   end
 
   def execute(cmd, env = {})
-    fly_run("execute #{cmd}", env)
+    fly_run("execute #{cmd} -v docker-registry-url=#{docker_registry_hostname}/", env)
+  end
+
+  def execute_task(task_filename, params = [], env = {})
+    cmd = " -c #{task_filename} "
+    cmd += "#{params.join(' ')} "
+    cmd += "-v docker-registry-url=#{docker_registry_hostname}/"
+    puts cmd
+    fly_run(cmd, env)
+  end
+
+  def docker_registry_hostname
+    'registry.hub.docker.com'
+    # 'index.docker.io/' # this is an alternate url
+  end
+
+  def docker_registry_url
+    "https://#{docker_registry_hostname}/"
   end
 
   def docker_registry
-    DockerRegistry2.connect('https://registry.hub.docker.com', open_timeout: 30, read_timeout: 30)
-
-
+    DockerRegistry2.connect(docker_registry_url, open_timeout: 30, read_timeout: 30)
   end
 
   DOCKER_REGISTRY_PREFIX = "((docker-registry-url))".freeze
