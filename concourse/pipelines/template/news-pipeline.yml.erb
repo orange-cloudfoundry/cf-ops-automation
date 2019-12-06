@@ -8,6 +8,9 @@
   uniq_releases= {}
   all_dependencies.sort.each do |name,boshrelease|
     boshrelease["releases"]&.each do |release, info|
+      previous_info = uniq_releases[release]
+      raise "Inconsitency detected with deployment #{name}: trying to replace \n#{previous_info} with \n#{info}" if previous_info && ! info.eql?(previous_info)
+
       uniq_releases[release] = info
     end
 
