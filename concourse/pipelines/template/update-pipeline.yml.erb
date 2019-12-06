@@ -100,7 +100,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3-slim
       inputs:
       - name: cf-ops-automation

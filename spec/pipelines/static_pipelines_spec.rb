@@ -12,7 +12,7 @@ describe 'static concourse pipelines spec' do
   end
 
   # FIXME enable when network issue on COA_CI@FE are fixed
-  xcontext 'resource_type exists' do
+  context 'resource_type exists' do
     let(:resource_types) do
       result = []
       puts "list: #{pipeline_files}"
@@ -64,14 +64,14 @@ describe 'static concourse pipelines spec' do
   end
 
   # FIXME enable when network issue on COA_CI@FE are fixed
-  xcontext 'when job image_resources is defined' do
+  context 'when job image_resources is defined' do
     let(:expected_task_images) do
       [{ "repository" => "concourse/busyboxplus", "tag" => "git" },
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_image_version },
        { "repository" => "orangecloudfoundry/orange-cf-bosh-cli" },
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_slim_image_version },
        { "repository" => TaskSpecHelper.terraform_image, "tag" => TaskSpecHelper.terraform_image_version },
-       { "repository" => "alpine", "tag" => "3.9" },
+       { "repository" => TaskSpecHelper.alpine_image, "tag" => TaskSpecHelper.alpine_image_version },
        { "repository" => "governmentpaas/curl-ssl" },
        { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version }]
     end
@@ -88,7 +88,8 @@ describe 'static concourse pipelines spec' do
           s["repository"] = repo
           s
         end
-        result.concat(source.uniq) if source
+        result += source.uniq if source
+        puts "#{pipeline_filename} adding #{source}"
       end
       result.uniq
     end

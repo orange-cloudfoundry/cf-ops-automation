@@ -109,7 +109,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       inputs:
       - name: concourse-micro
       run:
@@ -124,7 +126,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: "((docker-registry-url))ruby", tag: 2.6.3}
+        source:
+          repository: ((docker-registry-url))library/ruby
+          tag: 2.6.3
       inputs:
       - name: concourse-micro
       outputs:
@@ -206,7 +210,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       inputs:
       - name: config-resource
       run:
@@ -279,7 +285,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
+        source:
+          repository: ((docker-registry-url))concourse/busyboxplus
+          tag: "git"
       inputs:
       - name: secrets-writer
       outputs:

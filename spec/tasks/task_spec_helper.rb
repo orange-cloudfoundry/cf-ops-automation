@@ -4,6 +4,14 @@ class TaskSpecHelper
     File.absolute_path(relative_path)
   end
 
+  def self.alpine_image
+    'library/alpine'
+  end
+
+  def self.alpine_image_version
+    '3.9'
+  end
+
   def self.governmentpaas_default_image_version
     '2857fdbaea59594c06cf9c6e32027091b67d4767'
   end
@@ -33,7 +41,7 @@ class TaskSpecHelper
   end
 
   def self.ruby_image
-    'ruby'
+    'library/ruby'
   end
 
   def self.ruby_image_version

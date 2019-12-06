@@ -1,6 +1,6 @@
 #!/bin/sh
 
-set -ex
+set -e
 
 CURRENT_DIR=$(pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files}

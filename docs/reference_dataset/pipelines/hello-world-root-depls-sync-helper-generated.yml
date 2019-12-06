@@ -78,7 +78,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: scripts-resource
@@ -127,7 +127,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: anonymized-secrets
@@ -148,7 +148,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-              repository: ((docker-registry-url))ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 2.6.3
         inputs:
           - name: anonymized-secrets
@@ -183,7 +183,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: anonymized-secrets
@@ -204,7 +204,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-              repository: ((docker-registry-url))ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 2.6.3
         inputs:
           - name: anonymized-secrets
@@ -239,7 +239,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: anonymized-secrets
@@ -260,7 +260,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-              repository: ((docker-registry-url))ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 2.6.3
         inputs:
           - name: anonymized-secrets
@@ -295,7 +295,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: anonymized-secrets
@@ -316,7 +316,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-              repository: ((docker-registry-url))ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 2.6.3
         inputs:
           - name: anonymized-secrets
@@ -351,7 +351,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: anonymized-secrets
@@ -372,7 +372,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-              repository: ((docker-registry-url))ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 2.6.3
         inputs:
           - name: anonymized-secrets
@@ -407,7 +407,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-            repository: ((docker-registry-url))ruby
+            repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
       inputs:
         - name: anonymized-secrets
@@ -428,7 +428,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-              repository: ((docker-registry-url))ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 2.6.3
         inputs:
           - name: anonymized-secrets
