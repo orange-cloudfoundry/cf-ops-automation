@@ -165,7 +165,7 @@ class PipelineGenerator
             options[:ops_automation] = ap_string
           end
 
-          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process') do |ip_array|
+          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process without full path and without suffix "-pipeline.yml.erb"') do |ip_array|
             options[:input_pipelines] = ip_array
           end
 
