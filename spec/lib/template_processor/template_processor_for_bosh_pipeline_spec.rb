@@ -24,53 +24,53 @@ describe 'BoshPipelineTemplateProcessing' do
   let(:root_deployment_versions) { {} }
   let(:all_dependencies) do
     deps_yaml = <<~YAML
-          bosh-bats:
-              status: disabled
-          maria-db:
-              status: disabled
-          shield-expe:
-              stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
-              releases:
-                cf-routing-release:
-                  base_location: https://bosh.io/d/github.com/
-                  repository: cloudfoundry-incubator/cf-routing-release
-                  version: 0.169.0
-              errands:
-                  import:
-                  smoke-tests:
-              manual-errands:
-                  manual-import:
-                  manual-smoke-tests:
-              bosh-deployment:
-                active: true
-              status: enabled
-          bui:
-              stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
-              releases:
-                route-registrar-boshrelease:
-                  base_location: https://bosh.io/d/github.com/
-                  repository: cloudfoundry-community/route-registrar-boshrelease
-                  version: '3'
-                haproxy-boshrelease:
-                  base_location: https://bosh.io/d/github.com/
-                  repository: cloudfoundry-community/haproxy-boshrelease
-                  version: 8.0.12
-              bosh-deployment:
-                active: true
-              status: enabled
-        YAML
-        YAML.safe_load(deps_yaml)
-      end
-      let(:all_ci_deployments) { {} }
-      let(:git_submodules) { {} }
-      let(:loaded_config) do
-        my_config_yaml = <<~YAML
-          offline-mode:
-            boshreleases: true
-            stemcells: true
-            docker-images: false
+      bosh-bats:
+        status: disabled
+      maria-db:
+        status: disabled
+      shield-expe:
+        stemcells:
+          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+        releases:
+          cf-routing-release:
+            base_location: https://bosh.io/d/github.com/
+            repository: cloudfoundry-incubator/cf-routing-release
+            version: 0.169.0
+        errands:
+            import:
+            smoke-tests:
+        manual-errands:
+            manual-import:
+            manual-smoke-tests:
+        bosh-deployment:
+          active: true
+        status: enabled
+      bui:
+        stemcells:
+          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+        releases:
+          route-registrar-boshrelease:
+            base_location: https://bosh.io/d/github.com/
+            repository: cloudfoundry-community/route-registrar-boshrelease
+            version: '3'
+          haproxy-boshrelease:
+            base_location: https://bosh.io/d/github.com/
+            repository: cloudfoundry-community/haproxy-boshrelease
+            version: 8.0.12
+        bosh-deployment:
+          active: true
+        status: enabled
+      YAML
+      YAML.safe_load(deps_yaml)
+  end
+  let(:all_ci_deployments) { {} }
+  let(:git_submodules) { {} }
+  let(:loaded_config) do
+    my_config_yaml = <<~YAML
+      offline-mode:
+        boshreleases: true
+        stemcells: true
+        docker-images: false
     YAML
     YAML.safe_load(my_config_yaml)
   end
@@ -164,6 +164,7 @@ describe 'BoshPipelineTemplateProcessing' do
     YAML
     YAML.safe_load(my_shield_errand_yaml)
   end
+  let(:config) { { dump_output: true, output_path: @output_dir } }
 
   context 'when processing bosh-pipeline.yml.erb' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
@@ -182,14 +183,16 @@ describe 'BoshPipelineTemplateProcessing' do
       FileUtils.rm_rf(@pipelines_dir)
     end
 
-    let(:config) { { dump_output: true, output_path: @output_dir } }
     let(:generated_pipeline) do
       pipeline_template = @processed_template[File.join(@pipelines_dir, @template_pipeline_name)]
       generated_pipeline_path = File.join(@pipelines_output_dir, pipeline_template)
       YAML.load_file(generated_pipeline_path)
     end
 
-    before { @processed_template = subject.process(@pipelines_dir + '/*') }
+    before do
+      @processed_template = subject.process(@pipelines_dir + '/*')
+
+    end
 
     context 'when an errand job is defined' do
       let(:expected_shield_errand) do
@@ -573,6 +576,56 @@ describe 'BoshPipelineTemplateProcessing' do
       it 'triggers approve-and-enforce manually on paas-templates' do
         expect(enforce_terraform_paas_templates_triggering.uniq).to match([false]).or match([nil])
       end
+    end
+  end
+
+  context 'when a boshrelease overrides with another value' do
+    subject { TemplateProcessor.new root_deployment_name, config, processor_context }
+    let(:all_dependencies) do
+      deps_yaml = <<~YAML
+          shield-expe:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            bosh-deployment:
+              active: true
+            status: enabled
+          bui:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/route-registrar-boshrelease
+                version: '3'
+              haproxy-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/haproxy-boshrelease
+                version: 8.0.12
+            bosh-deployment:
+              active: true
+            status: enabled
+      YAML
+      YAML.safe_load(deps_yaml)
+    end
+    let(:template_processing_error) { subject.process(@pipelines_dir + '/*')}
+
+
+    before(:context) do
+      @output_dir = Dir.mktmpdir('generated-pipelines')
+      @pipelines_output_dir = File.join(@output_dir, 'pipelines')
+      @template_pipeline_name = 'bosh-pipeline.yml.erb'
+      @pipelines_dir = Dir.mktmpdir('pipeline-templates')
+
+      FileUtils.copy("concourse/pipelines/template/#{@template_pipeline_name}", @pipelines_dir)
+    end
+
+    it 'raises an error' do
+      expect { template_processing_error }.to raise_error(RuntimeError, /Inconsitency detected with 'cf-routing-release' boshrelease, in 'shield-expe' deployment: trying to replace.*/)
     end
   end
 end
