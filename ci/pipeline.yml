@@ -261,7 +261,46 @@ jobs:
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
-
+      - task: setup-credhub-pre-requisites
+        attempts: 1
+        config: &integration_tests_setup_credhub_pre_requisites_task_config
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: governmentpaas/bosh-cli-v2
+              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          inputs:
+            - name: cf-ops-automation
+          params:
+            CREDHUB_SERVER: ((integration-test-prereqs.credhub.server))
+            CREDHUB_CLIENT: ((integration-test-prereqs.credhub.client))
+            CREDHUB_SECRET: "((integration-test-prereqs.credhub.secret))"
+            CREDHUB_CA_CERT: ((integration-test-prereqs.credhub.ca-cert))
+            CREHUB_CONCOURSE_NAMESPACE: concourse-IT
+            CONCOURSE_TEAMS: main upload
+          run:
+            path: /bin/bash
+            args:
+              - -ce
+              - |
+                echo "Setup Credhub pre-requisites"
+                ca_cert() {
+                    local ca_cert=$1
+                    local tmp=$(mktemp -d)
+                    local ca_cert_file="${tmp}/ca.pem"
+                    echo "writting credhub certificates to ${ca_cert_file}"
+                    echo $ca_cert >> $ca_cert_file
+                }
+                ca_cert ${CREDHUB_CA_CERT}
+                credhub login
+                credhub --version
+                credhub f
+                #credhub set -n
+                ruby --version
+                for team in ${CONCOURSE_TEAMS};do
+                  credhub set --type value -n "/${CREHUB_CONCOURSE_NAMESPACE}/${team}/docker-registry-url" -v "registry.hub.docker.com/"
+                done
 
       - task: upload-pipelines
         attempts: 2
@@ -586,7 +625,10 @@ jobs:
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
           INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
-
+      - task: setup-credhub-pre-requisites
+        attempts: 1
+        config: *integration_tests_setup_credhub_pre_requisites_task_config
+        on_failure: *PR_coa_failure
       - task: upload-pipelines
         attempts: 2
         image: cf-ops-automation-docker-image-PR
