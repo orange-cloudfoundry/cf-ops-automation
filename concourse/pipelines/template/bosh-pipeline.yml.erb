@@ -760,8 +760,9 @@ jobs:
 
   <% if deployment_details.errands? %>
     <% deployment_details.errands.each do |errand_name, errand_info| %>
-- name: run-errand-<%= name %>-<%= errand_name %>
-  <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}-#{errand_name}" %>
+    <% errand_display_name = errand_info&.dig('display-name') || errand_name %>
+- name: run-errand-<%= name %>-<%= errand_display_name %>
+  <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}-#{errand_display_name}" %>
   serial_groups: [auto-errand-<%= name %>]
   on_failure:
     put: failure-alert
@@ -784,8 +785,10 @@ jobs:
 
   <% if deployment_details.manual_errands? %>
     <% deployment_details.manual_errands.each do |errand_name, errand_info| %>
-- name: run-manual-errand-<%= name %>-<%= errand_name %>
-  <% jobs["deploy-#{name[0]}*"] << "run-manual-errand-#{name}-#{errand_name}" %>
+    <% errand_display_name = errand_info&.dig('display-name') || errand_name %>
+- name: run-manual-errand-<%= name %>-<%= errand_display_name %>
+  <% jobs["deploy-#{name[0]}*"] << "run-manual-errand-#{name}-#{errand_display_name}" %>
+
   serial: true
   on_failure:
     put: failure-alert

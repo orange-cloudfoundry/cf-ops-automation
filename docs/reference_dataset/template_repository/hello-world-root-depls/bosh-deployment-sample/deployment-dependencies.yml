@@ -25,7 +25,9 @@ deployment:
         repository: cloudfoundry-community/vault-boshrelease
     errands: # errands to execute automatically after each deploy. Errand are executed one by one in random order.
       # errand-1:
+        # display-name: my-custom-name   # => run-errand-bosh-deployment-sample-my-custom-name (ie: run-errand-<deployment-name>-<display-name>)
       # errand-2:
     manual-errands: # errands manually executed by an operator
       # manual-errand-1:
       # manual-errand-2:
+        # display-name: my-custom-name   # => run-manual-errand-bosh-deployment-sample-my-custom-name
