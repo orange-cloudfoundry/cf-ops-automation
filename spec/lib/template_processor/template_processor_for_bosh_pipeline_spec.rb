@@ -39,9 +39,11 @@ describe 'BoshPipelineTemplateProcessing' do
         errands:
             import:
             smoke-tests:
+              display-name: automated-smoke-tests
         manual-errands:
             manual-import:
             manual-smoke-tests:
+              display-name: my-smoke-tests
         bosh-deployment:
           active: true
         status: enabled
@@ -116,12 +118,12 @@ describe 'BoshPipelineTemplateProcessing' do
           'recreate-bui',
           'recreate-shield-expe',
           'retrigger-all-jobs',
-          'run-errand-shield-expe-import', 
-          'run-errand-shield-expe-smoke-tests', 
-          'run-manual-errand-shield-expe-manual-import', 
-          'run-manual-errand-shield-expe-manual-smoke-tests'] },
+          'run-errand-shield-expe-automated-smoke-tests',
+          'run-errand-shield-expe-import',
+          'run-manual-errand-shield-expe-manual-import',
+          'run-manual-errand-shield-expe-my-smoke-tests'] },
       { 'name' => 'Deploy-b*', 'jobs' => ['deploy-bui'] },
-      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe-import', 'run-errand-shield-expe-smoke-tests', 'run-manual-errand-shield-expe-manual-import', 'run-manual-errand-shield-expe-manual-smoke-tests' ] },
+      { 'name' => 'Deploy-s*', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe-automated-smoke-tests', 'run-errand-shield-expe-import', 'run-manual-errand-shield-expe-manual-import', 'run-manual-errand-shield-expe-my-smoke-tests' ] },
       { 'name' => 'Recreate',
         'jobs' => ['recreate-all', 'recreate-bui', 'recreate-shield-expe'] },
       { 'name' => 'Utils',
@@ -213,9 +215,14 @@ describe 'BoshPipelineTemplateProcessing' do
         expect(generated_errand_resource).to match(expected_shield_errand_resource)
       end
 
-      it 'generates an errand job for shield boshrelease' do
+      it 'generates an errand job for shield boshrelease with default name' do
         generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe-import' }.flat_map { |job| job['plan'] }
         expect(generated_errand_job).to match(expected_shield_errand)
+      end
+
+      it 'generates an errand job for shield boshrelease with custom name' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-errand-shield-expe-automated-smoke-tests' }.flat_map { |job| job['plan'] }
+        expect(generated_errand_job).not_to be_nil
       end
 
       it 'generates a concourse job per errand for shield boshrelease' do
@@ -243,6 +250,7 @@ describe 'BoshPipelineTemplateProcessing' do
             manual-errands:
               manual-import:
               manual-smoke-tests:
+                display-name: my-smoke-tests
             bosh-deployment:
               active: true
             status: enabled
@@ -268,9 +276,14 @@ describe 'BoshPipelineTemplateProcessing' do
         expect(generated_errand_resource).to match(expected_shield_errand_resource)
       end
 
-      it 'generates an errand job for shield boshrelease' do
-        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-manual-smoke-tests' }.flat_map { |job| job['plan'] }
+      it 'generates an errand job for shield boshrelease with custom name' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-my-smoke-tests' }.flat_map { |job| job['plan'] }
         expect(generated_errand_job).to match(expected_shield_manual_errand)
+      end
+
+      it 'generates an errand job for shield boshrelease with default name' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-manual-import' }.flat_map { |job| job['plan'] }
+        expect(generated_errand_job).to_not be_nil
       end
 
       it 'generates a concourse job per manual errand for shield boshrelease' do
