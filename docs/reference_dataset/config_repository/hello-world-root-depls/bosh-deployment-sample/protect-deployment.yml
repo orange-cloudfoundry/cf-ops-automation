@@ -1,0 +1,4 @@
+meta:
+  description: |
+    This is a marker file to avoid directory deletion even if `enable-deployment.yml` is not present.
+    This file does not require any content, like `enable-deployment.yml`.

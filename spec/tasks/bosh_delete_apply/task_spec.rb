@@ -3,8 +3,8 @@ require 'tmpdir'
 require 'yaml'
 require_relative '../task_spec_helper'
 
-describe 'bosh_delete_plan task' do
-  let(:error_log) { File.join(@delete_result_dir, 'error.log') }
+describe 'bosh_delete_apply task' do
+  let(:error_log) { File.join(@result_dir, 'error.log') }
 
   context 'when missing environment variables' do
     let(:expected_error_log) do
@@ -17,24 +17,30 @@ describe 'bosh_delete_plan task' do
     end
 
     before(:context) do
-      @deployments_to_delete = Dir.mktmpdir
-      @secrets = Dir.mktmpdir
-      @delete_result_dir = Dir.mktmpdir
+      begin
+        @output_config_resource = Dir.mktmpdir
+        @config_resource = Dir.mktmpdir
+        `cd #{@config_resource} && git init .`
+        @result_dir = Dir.mktmpdir
+        @root_deployment_name = 'my-big-root-deployment'
 
-      @output = execute('-c concourse/tasks/bosh_delete_apply/task.yml ' \
-      '-i scripts-resource=. ' \
-      "-i secrets=#{@secrets} " \
-      "-o delete-result-dir=#{@delete_result_dir} ")
-    rescue FlyExecuteError => e
-      @output = e.out
-      @fly_error = e.err
-      @fly_status = e.status
+        @output = execute('-c concourse/tasks/bosh_delete_apply/task.yml --include-ignored ' \
+        '-i scripts-resource=. ' \
+        "-i config-resource=#{@config_resource} " \
+        "-o output-config-resource=#{@output_config_resource} " \
+        "-o result-dir=#{@result_dir} ", "ROOT_DEPLOYMENT_NAME" => @root_deployment_name)
+      rescue FlyExecuteError => e
+        @output = e.out
+        @fly_error = e.err
+        @fly_status = e.status
+      end
+      puts "Fly error message: #{@fly_error}" unless  @fly_status.success?
     end
 
     after(:context) do
-      FileUtils.rm_rf @deployments_to_delete if File.exist?(@deployments_to_delete)
-      FileUtils.rm_rf @secrets if File.exist?(@secrets)
-      FileUtils.rm_rf @delete_result_dir if File.exist?(@delete_result_dir)
+      FileUtils.rm_rf(@output_config_resource) if File.exist?(@output_config_resource)
+      FileUtils.rm_rf(@config_resource) if File.exist?(@config_resource)
+      FileUtils.rm_rf(@result_dir) if File.exist?(@result_dir)
     end
 
     it 'generates an error.log' do
@@ -49,8 +55,8 @@ describe 'bosh_delete_plan task' do
       expect(File.read(error_log)).not_to be_empty
     end
 
-    it 'returns with exit status 3' do
-      expect(@fly_status.exitstatus).to eq(3)
+    it 'returns with exit status' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
 

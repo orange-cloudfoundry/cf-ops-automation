@@ -155,30 +155,30 @@ describe 'UpdatePipelineTemplateProcessing' do
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
         task = update_pipeline_DEPLS_plan
-                      .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-pipelines" }
-                      .first
+          .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-pipelines" }
+          .first
         expect(task['params']).to match(expected_generate_DEPLS_pipelines_params).and not_be(nil)
       end
 
       it'generates params for copy-and-filter-generated-pipeline' do
         task = update_pipeline_DEPLS_plan
-                   .select { |step| step['task'] && step['task'] == "copy-and-filter-generated-pipeline" }
-                   .first
+          .select { |step| step['task'] && step['task'] == "copy-and-filter-generated-pipeline" }
+          .first
         expect(task['params']).to match( { 'ROOT_DEPLOYMENT' => root_deployment_name } )
       end
 
       it 'generates params for update-git-generated-pipelines' do
         task = update_pipeline_DEPLS_plan
-                   .select { |step| step['task'] && step['task'] == "update-git-generated-pipelines" }
-                   .first
-        expect(task['params']).to match( { 'COMMIT_MESSAGE' => "Generated pipelines update for #{root_deployment_name}", 'OLD_DIR' => "coa/pipelines/generated" } )
+          .select { |step| step['task'] && step['task'] == "update-git-generated-pipelines" }
+          .first
+        expect(task['params']).to match({ 'COMMIT_MESSAGE' => "Generated pipelines update for #{root_deployment_name}", 'OLD_DIR' => "coa/pipelines/generated" })
       end
 
       it 'generates params for update-git-generated-pipelines' do
         task = update_pipeline_DEPLS_plan
-                   .select { |step| step['task'] && step['task'] == "update-git-generated-pipelines" }
-                   .first
-        expect(task['file']).to match( "cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml" )
+          .select { |step| step['task'] && step['task'] == "update-git-generated-pipelines" }
+          .first
+        expect(task['file']).to match("cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml")
       end
     end
 
@@ -245,7 +245,6 @@ describe 'UpdatePipelineTemplateProcessing' do
       it 'defines on_failure at job level' do
         expect(on_failure.uniq.first).to match(expected_on_failure_config)
       end
-
     end
   end
 end

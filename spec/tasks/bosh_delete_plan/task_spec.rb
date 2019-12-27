@@ -4,82 +4,74 @@ require 'yaml'
 require_relative '../task_spec_helper'
 
 describe 'bosh_delete_plan task' do
-  let(:delete_plan) do
-    stdout_str, stderr_str, status = Open3.capture3(delete_env, 'concourse/tasks/bosh_delete_plan/run.rb')
-    { stdout: stdout_str, stderr: stderr_str, status: status }
-  end
-  let(:delete_env) { {} }
+  let(:error_log) { File.join(@result_dir, 'error.log') }
 
-  context 'when invalid DEPLOYMENTS_TO_DELETE env var' do
-
-    it 'displays an error message' do
-      expect(delete_plan[:stderr]).to match(/missing environment variable: DEPLOYMENTS_TO_DELETE/)
-    end
-  end
-
-  context 'when DEPLOYMENTS_FILE is customized' do
-    let(:deployments_to_delete) { Dir.mktmpdir }
-    let(:deployments_filename) { 'my_customized_file.txt' }
-    let(:deployments_to_delete_list_file) { File.join(deployments_to_delete, deployments_filename) }
-    let(:delete_env) { { 'DEPLOYMENTS_TO_DELETE' => 'hello-world', 'DEPLOYMENTS_FILE' => deployments_to_delete_list_file } }
-
-    it 'generates an output file with deployments to delete' do
-      delete_plan
-      expect(File.read(deployments_to_delete_list_file)).to match('hello-world')
-    end
-  end
-
-  context 'when executed on concourse' do
-    let(:deployments_to_delete_list_file) { File.join(@deployments_to_delete, 'list.txt') }
-    let(:expected_deployments_to_delete_list) do
+  context 'when missing environment variables' do
+    let(:expected_error_log) do
       <<~TEXT
-        hello-world-deployment
-        another-world-deployment
+        ERROR: missing environment variable: BOSH_TARGET
+        ERROR: missing environment variable: BOSH_CLIENT
+        ERROR: missing environment variable: BOSH_CLIENT_SECRET
+        ERROR: missing environment variable: BOSH_CA_CERT
       TEXT
     end
 
     before(:context) do
+      @root_deployment_name = "my-root-depl"
       @deployments_to_delete = Dir.mktmpdir
+      @config_resource = Dir.mktmpdir
+      @result_dir = Dir.mktmpdir
+      %w[a b c].each do |dir|
+        depl= File.join(@config_resource,@root_deployment_name, dir)
+        FileUtils.mkdir_p(depl)
+        FileUtils.touch(File.join(depl, 'enable-deployment.yml'))
+      end
 
       @output = execute('-c concourse/tasks/bosh_delete_plan/task.yml ' \
-        '-i scripts-resource=. ' \
-        "-o deployments-to-delete=#{@deployments_to_delete} ",
-            'DEPLOYMENTS_TO_DELETE' => '\"hello-world-deployment another-world-deployment\"')
+      '-i scripts-resource=. ' \
+      "-i config-resource=#{@config_resource} " \
+      "-o result-dir=#{@result_dir} ", "ROOT_DEPLOYMENT_NAME" => @root_deployment_name)
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
     end
 
     after(:context) do
       FileUtils.rm_rf @deployments_to_delete if File.exist?(@deployments_to_delete)
+      FileUtils.rm_rf @config_resource if File.exist?(@config_resource)
+      FileUtils.rm_rf @result_dir if File.exist?(@result_dir)
+    end
+
+    it 'generates an error.log' do
+      expect(File.read(error_log)).to match(expected_error_log)
     end
 
     it 'generates a file as result' do
-      expect(File).to exist(deployments_to_delete_list_file)
+      expect(File).to exist(error_log)
     end
 
     it 'generates a non empty file' do
-      expect(deployments_to_delete_list_file).not_to be_empty
+      expect(File.read(error_log)).not_to be_empty
     end
 
-    it 'generates a text file' do
-      generated_content = File.read(deployments_to_delete_list_file)
-      expect(generated_content).to match(expected_deployments_to_delete_list)
-    end
-
-    it 'executes without error' do
-      expect(@output).not_to include('failed')
+    it 'returns with exit status' do
+      expect(@fly_status.exitstatus).to eq(1)
     end
   end
+
 
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/bosh_delete_plan/task.yml' }
 
     it 'uses ruby image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match(TaskSpecHelper.ruby_image)
+      expect(docker_image_used).to match(TaskSpecHelper.bosh_cli_v2_image)
     end
 
     it 'uses a managed ruby image version' do
       docker_image_tag_used = task['image_resource']['source']['tag'].to_s
-      expect(docker_image_tag_used).to match(TaskSpecHelper.ruby_image_version)
+      expect(docker_image_tag_used).to match(TaskSpecHelper.bosh_cli_v2_image_version)
     end
   end
 end

@@ -46,6 +46,7 @@ module Coa
           "team" => "main",
           "jobs" => {
             "delete-deployments-review"                                          => {},
+            "approve-and-delete-disabled-deployments"                            => { "trigger" => true },
             "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
             "cloud-config-and-runtime-config-for-hello-world-root-depls"         => { "pause" => true },
             "execute-deploy-script"                                              => {},

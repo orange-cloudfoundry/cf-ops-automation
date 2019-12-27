@@ -283,10 +283,14 @@ jobs:
         trigger: true
         params: { submodules: none}
     - task: prepare_deployment_to_be_deleted
-      input_mapping: {scripts-resource: cf-ops-automation}
+      input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-<%= depls %>-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
-        DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments&.keys&.sort&.join(' ') %>"
+        ROOT_DEPLOYMENT_NAME: <%= depls %>
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
 - name: approve-and-delete-disabled-deployments
   <% jobs['utils'] << 'approve-and-delete-disabled-deployments' %>
   on_failure:
@@ -304,15 +308,24 @@ jobs:
       - get: secrets-<%= depls %>-trigger
         params: { submodules: none}
         passed: [delete-deployments-review]
+      - get: concourse-meta
     - task: delete_deployments
-      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-trigger}
+      input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-<%= depls %>-trigger}
+      output_mapping: {output-config-resource: updated-config-resource}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
-         BOSH_TARGET: ((bosh-target))
-         BOSH_CLIENT: ((bosh-username))
-         BOSH_CLIENT_SECRET: "((bosh-password))"
-         BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
-         DEPLOYMENTS_TO_DELETE: "<%= disabled_deployments&.keys&.sort&.join(' ') %>"
+        ROOT_DEPLOYMENT_NAME: <%= depls %>
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: "((bosh-password))"
+        BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[depls] %>
+        COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
+      ensure:
+        put: secrets-full-writer
+        get_params: {submodules: none}
+        params:
+          repository: updated-config-resource
+          rebase: true
 <% end %>
 
 - name: execute-deploy-script

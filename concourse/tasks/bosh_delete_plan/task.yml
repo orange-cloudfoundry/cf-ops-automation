@@ -15,16 +15,23 @@
 platform: linux
 image_resource:
   type: docker-image
-  source: {repository: ((docker-registry-url))library/ruby, tag: 2.6.3-slim}
+  source:
+    repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
 inputs:
   - name: scripts-resource
+  - name: config-resource
 outputs:
-  - name: deployments-to-delete
+  - name: result-dir
 run:
   path: bash
   args:
     - -ce
     - ruby --version && scripts-resource/concourse/tasks/bosh_delete_plan/run.rb
 params:
-  DEPLOYMENTS_TO_DELETE:
-  DEPLOYMENTS_FILE: deployments-to-delete/list.txt
+  ROOT_DEPLOYMENT_NAME:
+  BOSH_TARGET:
+  BOSH_CLIENT:
+  BOSH_CLIENT_SECRET:
+  BOSH_CA_CERT:
+  OUTPUT_FILE: result-dir/list.txt

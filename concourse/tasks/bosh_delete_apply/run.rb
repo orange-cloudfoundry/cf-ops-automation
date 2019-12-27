@@ -11,8 +11,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require_relative './delete_plan'
+require_relative './delete_apply'
 require_relative '../../../lib/tasks'
 
 puts __FILE__
-DeletePlan.new.process
+DeleteApply.new.process
