@@ -71,12 +71,11 @@ describe 'generate-depls for bosh pipeline' do
               lifecycle['pre-bosh-deploy'] = index
             when 'execute-ntp-with-scan-post-bosh-deploy' then
               lifecycle['post-bosh-deploy'] = index
-            # do not add an else as other task may exist
+              # do not add an else as other task may exist
             end
           end
         lifecycle
       end
-
 
       before do
         TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
@@ -84,17 +83,17 @@ describe 'generate-depls for bosh pipeline' do
       end
 
       it 'generates a post-generate task' do
-        manifest_generation_task = deployment_plan.select{ |task| task['task'] == 'generate-ntp-with-scan-manifest' }.first
+        manifest_generation_task = deployment_plan.select { |task| task['task'] == 'generate-ntp-with-scan-manifest' }.first
         expect(manifest_generation_task).to include('file' => 'cf-ops-automation/concourse/tasks/generate-manifest.yml')
       end
 
       it 'generates a pre-bosh-deploy task' do
-        pre_bosh_deploy_task = deployment_plan.select{ |task| task['task'] == 'execute-ntp-with-scan-spiff-pre-bosh-deploy' }.first
+        pre_bosh_deploy_task = deployment_plan.select { |task| task['task'] == 'execute-ntp-with-scan-spiff-pre-bosh-deploy' }.first
         expect(pre_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml')
       end
 
       it 'generates a post-bosh task' do
-        post_bosh_deploy_task = deployment_plan.select{ |task| task['task'] == 'execute-ntp-with-scan-post-bosh-deploy' }.first
+        post_bosh_deploy_task = deployment_plan.select { |task| task['task'] == 'execute-ntp-with-scan-post-bosh-deploy' }.first
         expect(post_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/post_bosh_deploy.yml')
       end
 
@@ -136,15 +135,15 @@ describe 'generate-depls for bosh pipeline' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
       current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'prepare_deployment_to_be_deleted' }&.first
       expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml').and \
-       include('params' => {'DEPLOYMENTS_TO_DELETE' => 'ntp'})
-
+        include('params' => { 'ROOT_DEPLOYMENT_NAME' => depls_name, "BOSH_TARGET" => "((bosh-target))", "BOSH_CLIENT" => "((bosh-username))", "BOSH_CLIENT_SECRET" => "((bosh-password))", "BOSH_CA_CERT" => "config-resource/shared/certs/internal_paas-ca/server-ca.crt" })
     end
 
     it 'generates approve-and-delete-disabled-deployments job with valid task' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
       current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete_deployments' }&.first
-      expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml' ).and \
-       include('params' => {"BOSH_TARGET"=>"((bosh-target))", "BOSH_CLIENT"=>"((bosh-username))", "BOSH_CLIENT_SECRET"=>"((bosh-password))", "BOSH_CA_CERT"=>"secrets/shared/certs/internal_paas-ca/server-ca.crt", "DEPLOYMENTS_TO_DELETE"=>"ntp"})
+      expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml').and \
+        include('params' => { 'ROOT_DEPLOYMENT_NAME' => depls_name, "BOSH_TARGET" => "((bosh-target))", "BOSH_CLIENT" => "((bosh-username))", "BOSH_CLIENT_SECRET" => "((bosh-password))", "BOSH_CA_CERT" => "config-resource/shared/certs/internal_paas-ca/server-ca.crt", "COMMIT_MESSAGE" => "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup" }).and \
+        include('ensure' => { 'get_params'=>{'submodules'=>'none'}, 'params'=>{'rebase'=>true, 'repository'=>'updated-config-resource'}, 'put'=>'secrets-full-writer'})
     end
   end
 
@@ -165,7 +164,7 @@ describe 'generate-depls for bosh pipeline' do
     end
 
     it 'does not generate bosh release resource' do
-      current_resources = pipeline['resources'].select { |resource| resource['type'] == 'type: bosh-io-release' || resource['type'] == 'type: github-release'}&.first
+      current_resources = pipeline['resources'].select { |resource| resource['type'] == 'type: bosh-io-release' || resource['type'] == 'type: github-release' }&.first
 
       expect(current_resources).to match(nil)
     end

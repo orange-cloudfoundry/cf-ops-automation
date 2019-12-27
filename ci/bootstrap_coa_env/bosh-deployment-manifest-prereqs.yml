@@ -1,0 +1,41 @@
+meta:
+  description: |
+    this file contains bosh manifests that must be deployed prior to running integration tests
+
+bosh:
+  manifests:
+    delete-sample-for-bosh:
+      name: delete-sample-for-bosh
+      releases:
+        - name: zookeeper
+          version: 0.0.10
+          url: git+https://github.com/cppforlife/zookeeper-release
+      stemcells:
+        - alias: default
+          os: ubuntu-xenial
+          version: latest
+
+      update:
+        canaries: 1
+        max_in_flight: 1
+        canary_watch_time: 5000-60000
+        update_watch_time: 5000-60000
+
+      instance_groups:
+        - name: zookeeper
+          azs: [z1]
+          instances: 1
+          jobs:
+            - name: zookeeper
+              release: zookeeper
+              provides:
+                conn: {shared: true}
+              properties: {}
+            - name: status
+              release: zookeeper
+              properties: {}
+          vm_type: default
+          stemcell: default
+          persistent_disk: 10240
+          networks:
+            - name: concourse-bucc

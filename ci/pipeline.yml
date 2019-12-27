@@ -123,7 +123,7 @@ jobs:
     - get: cf-ops-automation-dependencies
       trigger: true
     - put: cf-ops-automation-docker-image-develop
-      attempts: 3
+      attempts: 5
       params:
         build: cf-ops-automation-dependencies
   - name: unit-tests
@@ -248,9 +248,7 @@ jobs:
             - -ce
             - |
               echo "Setup pre-requisites"
-              cp cf-ops-automation/ci/bootstrap_coa_env/inactive-steps-prereqs.yml  prereqs/inactive-steps-prereqs.yml
-              cp cf-ops-automation/ci/bootstrap_coa_env/git-server-manifest-prereqs.yml  prereqs/git-server-manifest-prereqs.yml
-              cp cf-ops-automation/ci/bootstrap_coa_env/pipeline-vars-prereqs.yml  prereqs/pipeline-vars-prereqs.yml
+              cp -v cf-ops-automation/ci/bootstrap_coa_env/*-prereqs.yml  prereqs/
               echo "  bot-github-access-token: ((cf-ops-automation-git-hub-token))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-webhook: ((slack-webhook))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-channel: ((slack-channel))" >> prereqs/pipeline-vars-prereqs.yml
@@ -258,6 +256,7 @@ jobs:
               echo "  slack-disable: ((slack-disable-it))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-proxy-https-tunnel:" >> prereqs/pipeline-vars-prereqs.yml
               printenv INTEGRATION_TEST_PREREQS > prereqs/integration-test-prereqs.yml
+              cf-ops-automation/ci/scripts/deploy-bosh-releases.rb prereqs/bosh-deployment-manifest-prereqs.yml
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
@@ -541,7 +540,7 @@ jobs:
           path: PR-develop
           status: pending
       - put: cf-ops-automation-docker-image-PR
-        attempts: 3
+        attempts: 5
         params:
           build: PR-develop
           tag: PR-develop/.git/resource/pr
