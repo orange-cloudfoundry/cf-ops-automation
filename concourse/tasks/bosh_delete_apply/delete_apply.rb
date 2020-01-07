@@ -10,11 +10,13 @@ class DeleteApply
 
   def process
     expected_deployments = @config_repo_deployments.enabled_deployments
+    puts "Expected deployments: #{expected_deployments}"
     protected_deployments = @config_repo_deployments.protected_deployments
+    puts "Protected deployments: #{protected_deployments}"
 
     deployed_bosh_deployments = @list_command_holder.execute
     puts "Active bosh deployments: #{deployed_bosh_deployments}"
-    puts "Filtering deployments (ie: removing expected and protected deployments)"
+    puts "Filtering deployments (ie: excluding expected and protected deployments)"
     deployed_bosh_deployments.delete_if { |deployment_name| expected_deployments&.include?(deployment_name) || protected_deployments&.include?(deployment_name) }
 
     puts "Deployments to delete: #{deployed_bosh_deployments}"
