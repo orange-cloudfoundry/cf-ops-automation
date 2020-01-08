@@ -55,6 +55,10 @@ resources:
     expression: 30 8 * * 1
     location: "Europe/Paris"
     fire_immediately: true
+- name: nginx
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/nginx-release
 - name: ntp
   type: bosh-io-release
   source:
@@ -70,8 +74,64 @@ jobs:
 #        version: { version: ((stemcell-version)) }
 #        trigger: true
 #        attempts: 2
-- name: check-ntp
+- name: check-nginx
   serial_groups: [concurrent-group-0]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: monday-morning
+        trigger: true
+      - get: nginx
+        attempts: 2
+        params: {tarball: false}
+      - get: paas-templates-full
+        params: { submodules: none}
+      - get: cf-ops-automation
+        params: { submodules: none}
+    - task: generate-update-message
+      input_mapping: {boshrelease: nginx}
+      output_mapping: {message: nginx-message}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+        inputs:
+          - name: boshrelease
+        outputs:
+          - name: message
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            MESSAGE_FILE=message/update_notif
+            NEW_VERSION=$(cat boshrelease/version)
+            RELEASE_URL=$(cat boshrelease/url|sed 's|/d/|/releases/|'|sed 's/?v=/?version=/')
+            if [ "${NEW_VERSION}" != "${CURRENT_VERSION}" ]
+            then
+              echo "New version of nginx detected: [${NEW_VERSION}](${RELEASE_URL})." >${MESSAGE_FILE}
+              echo "hello-world-root-depls is using ${CURRENT_VERSION} of nginx" >>${MESSAGE_FILE}
+            else
+              echo "hello-world-root-depls is  running the latest nginx (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
+            fi
+      params:
+        CURRENT_VERSION: ((nginx-version))
+    - put: new-version-alert
+      params:
+        channel: ((slack-channel))
+        text_file: nginx-message/update_notif
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+- name: check-ntp
+  serial_groups: [concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -127,7 +187,7 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
 - name: check-vault
-  serial_groups: [concurrent-group-1]
+  serial_groups: [concurrent-group-2]
   on_failure:
     put: failure-alert
     params:

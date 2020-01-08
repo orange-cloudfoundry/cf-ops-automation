@@ -32,6 +32,20 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
+- name: nginx
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/nginx-release
+- name: nginx-s3
+  type: s3
+  source:
+    bucket: ((s3-br-bucket))
+    region_name: ((s3-br-region-name))
+    regexp: cloudfoundry-community/nginx-(.*).tgz
+    access_key_id: ((s3-br-access-key-id))
+    secret_access_key: ((s3-br-secret-key))
+    endpoint: ((s3-br-endpoint))
+    skip_ssl_verification: ((s3-br-skip-ssl-verification))
 - name: ntp
   type: bosh-io-release
   source:
@@ -94,6 +108,7 @@ jobs:
         args:
         - -exc
         - |
+          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" >> result-dir/flight-plan
       params:
@@ -135,6 +150,7 @@ jobs:
         args:
         - -exc
         - |
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-nginx" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-ntp" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-vault" >> result-dir/flight-plan
       params:
@@ -148,8 +164,104 @@ jobs:
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
       FLY_TEAM: upload
+- name: upload-current-nginx
+  serial_groups: [nginx,concurrent-group-0]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: nginx
+        attempts: 2
+        version: { version: "((nginx-version))" }
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ init-concourse-boshrelease-for-hello-world-root-depls ]
+    - task: generate-nginx-name
+      input_mapping: {release: nginx}
+      output_mapping: {result-dir: nginx}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: nginx
+          TARGET_VERSION: ((nginx-version))
+    - put: nginx-s3
+      params:
+        file: nginx/*.tgz
+        acl: public-read
+- name: upload-latest-nginx
+  serial_groups: [nginx,concurrent-group-0]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: nginx
+        attempts: 2
+        version: every
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ upload-current-nginx ]
+    - task: generate-nginx-name
+      input_mapping: {release: nginx}
+      output_mapping: {result-dir: nginx}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))concourse/busyboxplus
+            tag: "git"
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: nginx
+          TARGET_VERSION: ((nginx-version))
+    - put: nginx-s3
+      params:
+        file: nginx/*.tgz
+        acl: public-read
 - name: upload-current-ntp
-  serial_groups: [ntp,concurrent-group-0]
+  serial_groups: [ntp,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -197,7 +309,7 @@ jobs:
         file: ntp/*.tgz
         acl: public-read
 - name: upload-latest-ntp
-  serial_groups: [ntp,concurrent-group-0]
+  serial_groups: [ntp,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
@@ -245,7 +357,7 @@ jobs:
         file: ntp/*.tgz
         acl: public-read
 - name: upload-current-vault
-  serial_groups: [vault,concurrent-group-1]
+  serial_groups: [vault,concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -293,7 +405,7 @@ jobs:
         file: vault/*.tgz
         acl: public-read
 - name: upload-latest-vault
-  serial_groups: [vault,concurrent-group-1]
+  serial_groups: [vault,concurrent-group-2]
   on_failure:
     put: failure-alert
     params:
@@ -345,12 +457,16 @@ groups:
   jobs:
   - init-concourse-boshrelease-for-hello-world-root-depls
   - retrigger-all-uploads
+  - upload-current-nginx
+  - upload-latest-nginx
   - upload-current-ntp
   - upload-latest-ntp
   - upload-current-vault
   - upload-latest-vault
 - name: "n*"
   jobs:
+  - upload-current-nginx
+  - upload-latest-nginx
   - upload-current-ntp
   - upload-latest-ntp
 - name: "v*"

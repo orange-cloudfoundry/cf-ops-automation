@@ -105,6 +105,10 @@ resources:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
+- name: nginx
+  type: bosh-io-release
+  source:
+    repository: cloudfoundry-community/nginx-release
 - name: ntp
   type: bosh-io-release
   source:
@@ -159,10 +163,14 @@ jobs:
         trigger: true
         params: { submodules: none}
     - task: prepare_deployment_to_be_deleted
-      input_mapping: {scripts-resource: cf-ops-automation}
+      input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-hello-world-root-depls-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
-        DEPLOYMENTS_TO_DELETE: "dummy terraform-sample to-delete-bosh-deployment-sample"
+        ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
 - name: approve-and-delete-disabled-deployments
   on_failure:
     put: failure-alert
@@ -179,15 +187,24 @@ jobs:
       - get: secrets-hello-world-root-depls-trigger
         params: { submodules: none}
         passed: [delete-deployments-review]
+      - get: concourse-meta
     - task: delete_deployments
-      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-trigger}
+      input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-hello-world-root-depls-trigger}
+      output_mapping: {output-config-resource: updated-config-resource}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
       params:
-         BOSH_TARGET: ((bosh-target))
-         BOSH_CLIENT: ((bosh-username))
-         BOSH_CLIENT_SECRET: "((bosh-password))"
-         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-         DEPLOYMENTS_TO_DELETE: "dummy terraform-sample to-delete-bosh-deployment-sample"
+        ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: "((bosh-password))"
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+        COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
+      ensure:
+        put: secrets-full-writer
+        get_params: {submodules: none}
+        params:
+          repository: updated-config-resource
+          rebase: true
 - name: execute-deploy-script
   serial: true
   on_failure:
@@ -261,10 +278,15 @@ jobs:
         output_mapping: {deployed-config: deployed-cloud-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
-           BOSH_TARGET: ((bosh-target))
-           BOSH_CLIENT: ((bosh-username))
-           BOSH_CLIENT_SECRET: "((bosh-password))"
-           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: "((bosh-password))"
+          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          CONFIG_TYPE: cloud
+          CREDHUB_SERVER: ((credhub-server))
+          CREDHUB_CLIENT: ((credhub-client))
+          CREDHUB_SECRET: "((credhub-secret))"
+          CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
@@ -297,6 +319,11 @@ jobs:
            BOSH_CLIENT: ((bosh-username))
            BOSH_CLIENT_SECRET: "((bosh-password))"
            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+           CONFIG_TYPE: runtime
+           CREDHUB_SERVER: ((credhub-server))
+           CREDHUB_CLIENT: ((credhub-client))
+           CREDHUB_SECRET: "((credhub-secret))"
+           CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
           input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
@@ -319,6 +346,43 @@ jobs:
             params:
               repository: updated-runtime-config
               rebase: true
+      - task: update-cpi-config-for-hello-world-root-depls
+        attempts: 2
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
+        output_mapping: {deployed-config: deployed-cpi-config}
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
+        params:
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: "((bosh-password))"
+          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          CONFIG_TYPE: cpi
+          CREDHUB_SERVER: ((credhub-server))
+          CREDHUB_CLIENT: ((credhub-client))
+          CREDHUB_SECRET: "((credhub-secret))"
+          CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ensure:
+          task: update-cpi-config
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
+          output_mapping: {updated-git-resource: updated-cpi-config}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "hello-world-root-depls/cpi-config.yml"
+            NEW_FILE: "cpi-config.yml"
+            COMMIT_MESSAGE: "hello-world-root-depls cpi-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: ((slack-channel))
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-full-writer
+            get_params: {submodules: none}
+            params:
+              repository: updated-cpi-config
+              rebase: true
 - name: deploy-bosh-deployment-sample
   serial: true
   serial_groups: [concurrent-group-0]
@@ -340,6 +404,10 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
+    - get: nginx
+      version: { version: ((nginx-version)) }
+      trigger: true
+      attempts: 2
     - get: ntp
       version: { version: ((ntp-version)) }
       trigger: true
@@ -491,6 +559,7 @@ jobs:
       stemcells:
       - ((stemcell-main-name))/stemcell.tgz
       releases: 
+      - "nginx/*.tgz"
       - "ntp/*.tgz"
       - "vault/*.tgz"
       ops_files:
@@ -687,6 +756,7 @@ jobs:
         args:
         - -ec
         - |
+          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan

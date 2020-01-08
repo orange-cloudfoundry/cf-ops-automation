@@ -1,16 +1,44 @@
 # Change Log
 
-## [v4.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.1.0) (2019-11-06)
+## [v4.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.2.0) (2020-01-08)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.1.0...v4.2.0)
+
+**Implemented enhancements:**
+
+- Customize the errand name displayed on concourse job box [\#296](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/296)
+- credhub interpolation for cloud-config and runtime-config [\#290](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/290)
+- support cpi-config files [\#191](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/191)
+- Add support for multiple errands \(automatic and manual ones\) [\#14](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/14)
+
+**Closed issues:**
+
+- Bump cf cli to 6.47.2 [\#292](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/292)
+- bosh errands should trigger after each bosh deploy [\#285](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/285)
+- Full private docker registry support [\#278](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/278)
+- Polluting trace in cloud-config-and-runtime-config-for-xx-depls/update-cloud-config-for-micro-depls run.sh [\#265](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/265)
+- Bump to latest Ruby 2.6.x and alpine 3.9 [\#260](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/260)
+- COA CI Iaas Migration [\#229](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/229)
+- delete-lifecyle does not support clean up of paas-template instances [\#67](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/67)
+
+**Merged pull requests:**
+
+- task\(bosh\_delete\_\*\): enhance log messages [\#300](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/300)
+- feature\(bosh-pipeline\): enhance templates repository instances automatic cleanup [\#298](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/298)
+- feature\(bosh-pipeline\): support errand name customization [\#297](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/297)
+- feature\(bosh-pipelines\): detect inconsistent boshrelease detect-inconsistent-boshrelease-definitions [\#295](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/295)
+- Full private docker registry support [\#294](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/294)
+- feature\(cf-app\): bump cf cli version [\#293](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/293)
+- Rework cloud and runtime config support [\#291](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/291)
+
+## [v4.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.1.0) (2019-11-04)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.0.4...v4.1.0)
 
 **Implemented enhancements:**
 
 - bump cf cli 6.46.1 in cf app support [\#257](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/257)
-- Add support for multiple errands \(automatic and manual ones\) [\#14](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/14)
 
 **Closed issues:**
 
-- bosh errands should trigger after each bosh deploy [\#285](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/285)
 - Bump spruce 1.22 [\#283](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/283)
 - Bump terraform 0.11.14 [\#277](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/277)
 - Ensure deployment consistency [\#276](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/276)
@@ -111,6 +139,7 @@
 **Implemented enhancements:**
 
 - Record bosh deployment manifest including ops files interpolation [\#242](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/242)
+- git submodule of a deployment model are not pulled in the on-demand-pipeline context   [\#195](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/195)
 
 **Fixed bugs:**
 
@@ -190,7 +219,6 @@
 
 **Implemented enhancements:**
 
-- git submodule of a deployment model are not pulled in the on-demand-pipeline context   [\#195](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/195)
 - bosh config server / credhub variables fingerprint [\#72](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/72)
 - First class support for public bosh release not hosted on bosh.io [\#12](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/12)
 
@@ -279,6 +307,7 @@
 - Upgrade script for config repo for upcoming release 2.2.0 [\#160](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/160)
 - pipeline\(depls\): collapse delete task to speed up concourse execution [\#154](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/154)
 - 107 living documentation refactored [\#149](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/149)
+- pipeline\(cf-apps\): injects CF info as environment variable in post-cf-deploy [\#97](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/97)
 
 ## [v2.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v2.1.0) (2018-06-20)
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v1.9.1...v2.1.0)
@@ -359,7 +388,6 @@
 
 **Merged pull requests:**
 
-- pipeline\(cf-apps\): injects CF info as environment variable in post-cf-deploy [\#97](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/97)
 - pipeline\(depls,s3-br-upload\): supports offline boshrelease and updates boshrelease upload location - REQUIRES shared/private config feature [\#93](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/93)
 
 ## [v1.8.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.8.3) (2018-01-30)
