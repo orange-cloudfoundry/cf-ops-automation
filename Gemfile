@@ -17,7 +17,7 @@ end
 
 group :test do
   gem 'cucumber'
-  gem 'rspec', '>= 3.8.0'
+  gem 'rspec', '>= 3.9.0'
   gem 'rspec-rerun'
-  gem 'simplecov', '>= 0.16.1'
+  gem 'simplecov', '>= 0.17.1'
 end
