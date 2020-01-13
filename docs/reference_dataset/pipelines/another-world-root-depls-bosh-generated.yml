@@ -23,8 +23,10 @@ resource_types:
     tag: release-v0.0.3
 resources:
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -32,6 +34,7 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: secrets-another-world-root-depls-limited
+  icon: source-branch
   type: git
   source:
     uri: ((secrets-uri))
@@ -39,12 +42,14 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-another-world-root-depls
+  icon: home-analytics
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -53,6 +58,7 @@ resources:
     skip_ssl_verification: true
 - name: cf-ops-automation
   type: git
+  icon: rocket
   source:
     uri: ((cf-ops-automation-uri))
     branch: ((cf-ops-automation-branch))

@@ -118,8 +118,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
       - name: concourse-micro
       run:
@@ -219,8 +219,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
       - name: config-resource
       run:
@@ -294,8 +294,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus # TODO move to git-ssh
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/git-ssh
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
       - name: secrets-writer
       outputs:
@@ -339,7 +339,9 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
+        source:
+          repository: ((docker-registry-url))governmentpaas/git-ssh
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
       - name: paas-templates-full
       outputs:

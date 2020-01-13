@@ -31,8 +31,8 @@ describe 'all tasks' do
     end
     let(:expected_task_images) do
       [
-        "concourse/buildroot:curl",
-        "concourse/busyboxplus:git",
+        TaskSpecHelper.curl_image + ':' + TaskSpecHelper.curl_image_version,
+        TaskSpecHelper.git_image + ':' + TaskSpecHelper.git_image_version,
         TaskSpecHelper.bosh_cli_v2_image + ':' + TaskSpecHelper.bosh_cli_v2_image_version,
         TaskSpecHelper.cf_cli_image + ':' + TaskSpecHelper.cf_cli_image_version,
         TaskSpecHelper.spruce_image + ':' + TaskSpecHelper.spruce_image_version,
@@ -53,8 +53,7 @@ describe 'all tasks' do
       expect(docker_images_with_task.keys).to match_array(expected_task_images)
     end
 
-    # FIXME enable when network issue on COA_CI@FE are fixed
-    xit 'uses an existing image on docker hub'do
+    it 'uses an existing image on docker hub'do
       docker_images_with_task.each do |image, files|
         puts "processing image #{image}"
         parsed_image = image.split(':')

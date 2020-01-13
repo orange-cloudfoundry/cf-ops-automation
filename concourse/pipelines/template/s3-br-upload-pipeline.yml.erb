@@ -111,8 +111,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:
@@ -158,8 +158,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:
@@ -217,8 +217,8 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: ((docker-registry-url))concourse/busyboxplus
-            tag: "git"
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: release
         outputs:
@@ -271,8 +271,8 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: ((docker-registry-url))concourse/busyboxplus # TODO move to curl ssl
-            tag: "git"
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: release
         outputs:

@@ -7,6 +7,7 @@ resource_types:
     tag: v1.4.2
 resources:
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -29,6 +30,7 @@ resources:
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -44,6 +46,7 @@ resources:
 #    branch: ((secrets-branch))
 #    skip_ssl_verification: true
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))

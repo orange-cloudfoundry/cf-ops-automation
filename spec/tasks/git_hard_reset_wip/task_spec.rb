@@ -7,14 +7,17 @@ require 'tmpdir'
 describe 'git_hard reset_wip task' do
   before(:context) do
     @git_test_reference_repo = 'https://github.com/orange-cloudfoundry/cf-ops-automation-git-reset-wip-it'
-    @reference_repo_dir = 'spec/tasks/git_hard_reset_wip/reference-resource'
-    FileUtils.rm_rf @reference_repo_dir if Dir.exist? @reference_repo_dir
+    @reference_repo_dir = Dir.mktmpdir
     out, err, status = Open3.capture3("git clone #{@git_test_reference_repo} #{@reference_repo_dir}")
-    expect(err).to eq("Cloning into 'spec/tasks/git_hard_reset_wip/reference-resource'...\n")
+    expect(err).to eq("Cloning into '#{@reference_repo_dir}'...\n")
+    @coa_dir = Dir.mktmpdir
+    FileUtils.cp_r('concourse', @coa_dir)
   end
 
   after(:context) do
-    FileUtils.rm_rf @reference_repo_dir
+    FileUtils.rm_rf @reference_repo_dir if File.exist?(@reference_repo_dir.to_s)
+    FileUtils.rm_rf @result if File.exist?(@result.to_s)
+    FileUtils.rm_rf @coa_dir if File.exist?(@coa_dir.to_s)
   end
 
   context 'when executed with develop as base branch' do
@@ -22,8 +25,8 @@ describe 'git_hard reset_wip task' do
       @updated_git_resource = Dir.mktmpdir
 
       @output = execute('--include-ignored -c concourse/tasks/git_hard_reset_wip/task.yml ' \
-        '-i reference-resource=spec/tasks/git_hard_reset_wip/reference-resource ' \
-        '-i cf-ops-automation=. ' \
+        "-i reference-resource=#{@reference_repo_dir} " \
+        "-i cf-ops-automation=#{@coa_dir} " \
         "-o updated-git-resource=#{@updated_git_resource} ",
                         'SKIP_SSL_VERIFICATION' => 'true',
                         'GIT_BRANCH_FILTER' => '\"WIP-* wip-* feature-* Feature-*\"')
@@ -68,8 +71,8 @@ describe 'git_hard reset_wip task' do
       @updated_git_resource = Dir.mktmpdir
 
       @output = execute('--include-ignored -c concourse/tasks/git_hard_reset_wip/task.yml ' \
-        '-i reference-resource=spec/tasks/git_hard_reset_wip/reference-resource ' \
-        '-i cf-ops-automation=. ' \
+        "-i reference-resource=#{@reference_repo_dir} " \
+        "-i cf-ops-automation=#{@coa_dir} " \
         "-o updated-git-resource=#{@updated_git_resource} ",
                         'GIT_BRANCH_FILTER' => '"unknown-branch"',
                         'GIT_CHECKOUT_BRANCH' => 'master')
@@ -80,7 +83,7 @@ describe 'git_hard reset_wip task' do
     end
 
     it 'reset master branch' do
-      expect(@output).to include("Reset branch 'master'", "Your branch is up-to-date with 'origin/master'")
+      expect(@output).to include("Reset branch 'master'", "Your branch is up to date with 'origin/master'")
     end
 
     it 'contains master.md file' do

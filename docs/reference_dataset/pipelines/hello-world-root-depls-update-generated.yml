@@ -12,8 +12,10 @@ resource_types:
       tag: release-v0.0.3
 resources:
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -28,12 +30,14 @@ resources:
     skip_ssl_verification: true
     paths: [ "hello-world-root-depls/ci-deployment-overview.yml", coa/config, "coa/pipelines/generated/**/hello-world-root-depls-*-generated.yml", shared, private-config.yml, "hello-world-root-depls/**/enable-cf-app.yml", "hello-world-root-depls/**/enable-deployment.yml" ]
 - name: secrets-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-hello-world-root-depls
+  icon: home-analytics
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -41,6 +45,7 @@ resources:
     skip_ssl_verification: true
     paths: [ "hello-world-root-depls", '.gitmodules', 'public-config.yml' ]
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))

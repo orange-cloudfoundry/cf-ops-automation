@@ -8,6 +8,7 @@ resource_types:
       tag: v1.4.2
 resources:
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -15,18 +16,21 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: secrets-full
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -34,6 +38,7 @@ resources:
     skip_ssl_verification: true
     tag_filter: ((cf-ops-automation-tag-filter))
 - name: secrets-generic-app
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
@@ -41,6 +46,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-template-generic-app
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -69,8 +75,8 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: ((docker-registry-url))concourse/busyboxplus
-            tag: "git"
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         outputs:
           - name: result-dir
         run:

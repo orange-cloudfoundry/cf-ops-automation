@@ -11,7 +11,6 @@ describe 'static concourse pipelines spec' do
     Dir.glob(pipelines_dir + '**/*.yml') + Dir.glob(pipelines_references_fixture + '*.yml') + Dir.glob(pipelines_references_dataset + '*.yml')
   end
 
-  # FIXME enable when network issue on COA_CI@FE are fixed
   context 'resource_type exists' do
     let(:resource_types) do
       result = []
@@ -63,17 +62,18 @@ describe 'static concourse pipelines spec' do
     end
   end
 
-  # FIXME enable when network issue on COA_CI@FE are fixed
   context 'when job image_resources is defined' do
     let(:expected_task_images) do
-      [{ "repository" => "concourse/busyboxplus", "tag" => "git" },
+      [
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_image_version },
        { "repository" => "orangecloudfoundry/orange-cf-bosh-cli" },
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_slim_image_version },
        { "repository" => TaskSpecHelper.terraform_image, "tag" => TaskSpecHelper.terraform_image_version },
        { "repository" => TaskSpecHelper.alpine_image, "tag" => TaskSpecHelper.alpine_image_version },
-       { "repository" => "governmentpaas/curl-ssl" },
-       { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version }]
+       { "repository" => TaskSpecHelper.curl_image, "tag" => TaskSpecHelper.curl_image_version },
+       { "repository" => TaskSpecHelper.git_image, "tag" => TaskSpecHelper.git_image_version },
+       { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version }
+      ]
     end
     let(:image_resources) do
       result = []

@@ -23,8 +23,10 @@ resource_types:
     tag: release-v0.0.3
 resources:
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -32,6 +34,7 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: secrets-hello-world-root-depls-limited
+  icon: source-branch
   type: git
   source:
     uri: ((secrets-uri))
@@ -39,12 +42,14 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-hello-world-root-depls
+  icon: home-analytics
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -53,6 +58,7 @@ resources:
     skip_ssl_verification: true
 - name: cf-ops-automation
   type: git
+  icon: rocket
   source:
     uri: ((cf-ops-automation-uri))
     branch: ((cf-ops-automation-branch))
@@ -60,10 +66,12 @@ resources:
     skip_ssl_verification: true
 - name: ((stemcell-main-name))
   type: bosh-io-stemcell
+  icon: home-floor-g
   source:
     name: ((stemcell-name-prefix))((stemcell-main-name))
   version: { version: "((stemcell-version))" }
 - name: secrets-bosh-deployment-sample
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
@@ -71,6 +79,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-bosh-deployment-sample
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -78,6 +87,7 @@ resources:
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: bosh-deployment-sample-deployment
+  icon: cube-send
   type: bosh-deployment-v2
   source:
     target: ((bosh-target))
@@ -86,6 +96,7 @@ resources:
     deployment: bosh-deployment-sample
     ca_cert: 
 - name: secrets-hello-world-root-depls-trigger
+  icon: source-commit
   type: git
   source:
     uri: ((secrets-uri))
@@ -93,6 +104,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-hello-world-root-depls-versions
+  icon: home-thermometer
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -100,20 +112,24 @@ resources:
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: nginx
+  icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/nginx-release
 - name: ntp
+  icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
 - name: vault
+  icon: github-circle
   type: github-release
   source:
     user: cloudfoundry-community
@@ -483,8 +499,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:
@@ -507,8 +523,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
         - name: final-release-manifest
       outputs:
@@ -630,8 +646,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:
@@ -747,8 +763,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:
