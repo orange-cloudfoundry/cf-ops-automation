@@ -5,9 +5,11 @@ module Coa
     RESOURCES = YAML.safe_load <<~YAML
       concourse-meta:
         name: concourse-meta
+        icon: file-document-box-search-outline
         type: meta
       failure-alert:
         name: failure-alert
+        icon: slack
         type: slack-notification
         source:
           url: ((slack-webhook))
@@ -24,6 +26,7 @@ module Coa
           paths: [ "<%= depls %>/ci-deployment-overview.yml", coa/config, "coa/pipelines/generated/**/<%= depls %>-*-generated.yml", shared, private-config.yml, "<%= depls %>/**/enable-cf-app.yml", "<%= depls %>/**/enable-deployment.yml" ]
       secrets-writer:
         name: secrets-writer
+        icon: source-pull
         type: git
         source:
           uri: ((secrets-uri))
@@ -31,6 +34,7 @@ module Coa
           skip_ssl_verification: true
       paas-templates-DEPLS:
         name: paas-templates-<%= depls %>
+        icon: home-analytics
         type: git
         source:
           uri: ((paas-templates-uri))
@@ -39,6 +43,7 @@ module Coa
           paths: [ "<%= depls %>", '.gitmodules', 'public-config.yml' ]
       cf-ops-automation:
         name: cf-ops-automation
+        icon: rocket
         type: git
         source:
           uri: ((cf-ops-automation-uri))

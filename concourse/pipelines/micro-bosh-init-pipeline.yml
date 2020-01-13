@@ -14,6 +14,7 @@ resources:
 
 
 - name: at-noon
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: "0 12 * * 1-5"
@@ -46,6 +47,7 @@ resources:
 
 
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))

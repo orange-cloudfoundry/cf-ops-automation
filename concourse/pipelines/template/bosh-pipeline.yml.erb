@@ -62,9 +62,11 @@ resource_types:
 
 resources:
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -73,6 +75,7 @@ resources:
     disable: ((slack-disable))
 
 - name: secrets-<%= depls %>-limited
+  icon: source-branch
   type: git
   source:
     uri: ((secrets-uri))
@@ -81,6 +84,7 @@ resources:
     skip_ssl_verification: true
 
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
@@ -88,6 +92,7 @@ resources:
     skip_ssl_verification: true
 
 - name: paas-templates-<%=depls %>
+  icon: home-analytics
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -97,6 +102,7 @@ resources:
 
 - name: cf-ops-automation
   type: git
+  icon: rocket
   source:
     uri: ((cf-ops-automation-uri))
     branch: ((cf-ops-automation-branch))
@@ -107,6 +113,7 @@ resources:
 - name: ((stemcell-main-name))
   <% if offline_stemcells_enabled %>
   type: s3
+  icon: home-floor-l
   source:
     bucket: ((s3-stemcell-bucket))
     region_name: ((s3-stemcell-region-name))
@@ -118,6 +125,7 @@ resources:
   version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
   <% else %>
   type: bosh-io-stemcell
+  icon: home-floor-g
   source:
     name: ((stemcell-name-prefix))((stemcell-main-name))
   version: { version: "((stemcell-version))" }
@@ -143,6 +151,7 @@ resources:
 <% deployment_details = PipelineHelpers::DeploymentDetails.new(boshrelease) %>
 <% if deployment_details.local_deployment_secrets_scan? %>
 - name: secrets-<%= name %>
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
@@ -151,6 +160,7 @@ resources:
     skip_ssl_verification: true
 <% end %>
 - name: paas-templates-<%= name %>
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -159,6 +169,7 @@ resources:
     skip_ssl_verification: true
 
 - name: <%= name %>-deployment
+  icon: cube-send
   type: bosh-deployment-v2
   source:
     target: ((bosh-target))
@@ -169,6 +180,7 @@ resources:
 
   <% if deployment_details.errands? || deployment_details.manual_errands? %>
 - name: errand-<%= name %>
+  icon: arrange-send-to-back
   type: bosh-errand
   source:
     target: ((bosh-target))
@@ -181,6 +193,7 @@ resources:
 
 <% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments&.any? %>
 - name: secrets-<%=depls %>-trigger
+  icon: source-commit
   type: git
   source:
     uri: ((secrets-uri))
@@ -191,6 +204,7 @@ resources:
 
 <% if enabled_deployments.any? %>
 - name: paas-templates-<%=depls %>-versions
+  icon: home-thermometer
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -201,6 +215,7 @@ resources:
 
 <% if disabled_deployments.any? %>
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -211,6 +226,7 @@ resources:
 <% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
   <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
+  icon: home-floor-a
   type: s3
   source:
     bucket: ((s3-br-bucket))
@@ -222,10 +238,12 @@ resources:
     skip_ssl_verification: ((s3-br-skip-ssl-verification))
   <% else %>
     <% if info['base_location'].include?('bosh.io') %>
+  icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: <%= info['repository'] %>
     <% else %>
+  icon: github-circle
   type: github-release
   source:
     user: <%= info['repository'].split('/').first %>

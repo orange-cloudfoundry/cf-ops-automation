@@ -144,6 +144,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       let(:expected_failure_alert) do
         my_yaml = <<~YAML
           - name: failure-alert
+            icon: slack
             type: slack-notification
             source:
               url: ((slack-webhook))
@@ -156,6 +157,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       let(:expected_concourse) do
         my_yaml = <<~YAML
           - name: concourse-for-#{root_deployment_name}
+            icon: concourse-ci
             type: concourse-pipeline
             source:
               target: ((concourse-#{root_deployment_name}-target))
@@ -170,6 +172,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       let(:expected_cf_ops_automation) do
         my_yaml = <<~YAML
           - name: cf-ops-automation
+            icon: rocket
             type: git
             source:
                uri: ((cf-ops-automation-uri))
@@ -205,6 +208,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
             - name: paas-templates-#{name}
+              icon: home-edit
               type: git
               source:
                 uri: ((paas-templates-uri))
@@ -222,6 +226,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
             - name: secrets-#{name}
+              icon: source-merge
               type: git
               source:
                 uri: ((secrets-uri))

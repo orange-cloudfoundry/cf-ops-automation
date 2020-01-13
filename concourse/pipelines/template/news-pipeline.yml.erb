@@ -43,6 +43,7 @@ resources:
 #    name: ((stemcell-name))
   <% if uniq_releases.any? %>
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -51,6 +52,7 @@ resources:
     disable: ((slack-disable))
 
 - name: new-version-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -66,6 +68,7 @@ resources:
 #    skip_ssl_verification: true
 
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -73,6 +76,7 @@ resources:
     skip_ssl_verification: true
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -81,6 +85,7 @@ resources:
     skip_ssl_verification: true
 
 - name: monday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 30 8 * * 1
@@ -92,10 +97,12 @@ resources:
 <% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
   <% if info["base_location"].include?("bosh.io") %>
+  icon: home-floor-b
   type: bosh-io-release
   source:
     repository: <%= info["repository"] %>
   <% else %>
+  icon: github-circle
   type: github-release
   source:
     user: <%= info["repository"].split('/').first %>

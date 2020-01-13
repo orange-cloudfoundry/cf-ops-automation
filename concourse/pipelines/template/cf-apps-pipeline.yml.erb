@@ -19,6 +19,7 @@ resources:
 
 <% if ! all_cf_apps.empty? %>
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -26,12 +27,14 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: secrets-full
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
@@ -39,6 +42,7 @@ resources:
     skip_ssl_verification: true
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -49,6 +53,7 @@ resources:
 
 <% all_cf_apps.sort.each do |app_name,cf_app_info| %>
 - name: secrets-<%= app_name %>
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
@@ -57,6 +62,7 @@ resources:
     skip_ssl_verification: true
 
 - name: paas-template-<%= app_name %>
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))

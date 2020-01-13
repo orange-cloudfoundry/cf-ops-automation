@@ -14,6 +14,7 @@ resource_types:
 
 resources:
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -22,6 +23,7 @@ resources:
     disable: ((slack-disable))
 
 - name: weekday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 30 8 * * 1-5
@@ -29,6 +31,7 @@ resources:
     fire_immediately: true
 
 - name: secrets-full
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
@@ -36,6 +39,7 @@ resources:
     skip_ssl_verification: true
 
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -43,6 +47,7 @@ resources:
     skip_ssl_verification: true
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -224,7 +229,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          repository: ((docker-registry-url))governmentpaas/curl-ssl # TODO move to bosh-cli-v2
       inputs:
         - name: scripts-resource
         - name: secrets
