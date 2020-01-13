@@ -14,8 +14,10 @@ resources:
 
 <% if all_ci_deployments&.any? %>
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -31,6 +33,7 @@ resources:
     skip_ssl_verification: true
     paths: [ "<%= depls %>/ci-deployment-overview.yml", coa/config, "coa/pipelines/generated/**/<%= depls %>-*-generated.yml", shared, private-config.yml, "<%= depls %>/**/enable-cf-app.yml", "<%= depls %>/**/enable-deployment.yml" ]
 - name: secrets-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
@@ -38,6 +41,7 @@ resources:
     skip_ssl_verification: true
 
 - name: paas-templates-<%= depls %>
+  icon: home-analytics
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -47,6 +51,7 @@ resources:
 
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))

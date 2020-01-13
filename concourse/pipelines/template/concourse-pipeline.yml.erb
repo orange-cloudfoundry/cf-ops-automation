@@ -27,6 +27,7 @@ resources:
 <% unless enabled_concourse_deployments.empty? %>
 
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -35,6 +36,7 @@ resources:
     disable: ((slack-disable))
 
 - name: concourse-for-<%= depls %>
+  icon: concourse-ci
   type: concourse-pipeline
   source:
     target: ((concourse-<%= depls %>-target))
@@ -45,6 +47,7 @@ resources:
       password: ((concourse-<%= depls %>-password))
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -70,6 +73,7 @@ resources:
 %>
 
 - name: secrets-<%= name %>
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
@@ -78,6 +82,7 @@ resources:
     skip_ssl_verification: true
 
 - name: paas-templates-<%= name %>
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))

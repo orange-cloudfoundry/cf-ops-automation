@@ -52,12 +52,12 @@ describe 'CfAppsPipelineTemplateProcessing' do
   let(:custom_team) { 'my-custom-team' }
   let(:all_ci_deployments) do
     ci_deployments_yaml = <<~YAML
-          #{root_deployment_name}:
-            target_name: my-concourse-name
-            pipelines:
-              #{root_deployment_name}-bosh-generated:
-              #{root_deployment_name}-cf-apps-generated:
-                team: #{custom_team}
+      #{root_deployment_name}:
+        target_name: my-concourse-name
+        pipelines:
+          #{root_deployment_name}-bosh-generated:
+          #{root_deployment_name}-cf-apps-generated:
+            team: #{custom_team}
     YAML
     YAML.safe_load ci_deployments_yaml
   end

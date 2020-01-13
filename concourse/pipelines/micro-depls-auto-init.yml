@@ -73,6 +73,7 @@ resources:
 
 
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))

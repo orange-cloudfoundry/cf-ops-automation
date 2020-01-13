@@ -18,14 +18,17 @@ resource_types:
 
 resources:
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 
 - name: slack-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
 
 - name: cf-ops-automation-docker-image-develop
+  icon: docker
   type: docker-image
   source:
     repository: orangecloudfoundry/cf-ops-automation
@@ -34,6 +37,7 @@ resources:
     tag: develop-latest
 
 - name: cf-ops-automation-docker-image-PR
+  icon: docker
   type: docker-image
   source:
     repository: orangecloudfoundry/cf-ops-automation
@@ -41,6 +45,7 @@ resources:
     password: ((dockerhub-password))
 
 - name: version
+  icon: tag-multiple
   type: semver
   source:
     driver: git
@@ -52,6 +57,7 @@ resources:
     file: version
 
 - name: ci-develop
+  icon: github-circle
   type: git
   source:
     uri: ((cf-ops-automation-git-uri))
@@ -61,6 +67,7 @@ resources:
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
 - name: ci-master
+  icon: github-circle
   type: git
   source:
     uri: ((cf-ops-automation-git-uri))
@@ -70,6 +77,7 @@ resources:
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
 - name: PR-develop
+  icon: source-pull
   type: pull-request
   source:
     repository: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
@@ -80,6 +88,7 @@ resources:
 
 
 - name: cf-ops-automation-dependencies
+  icon: github-circle
   type: git
   source:
     uri: ((cf-ops-automation-git-uri))
@@ -88,6 +97,7 @@ resources:
     paths: [ "Gemfile*", "Dockerfile" ]
 
 - name: gh-release
+  icon: package-variant
   type: github-release
   source:
     owner: ((cf-ops-automation-git-hub-owner))
@@ -95,6 +105,7 @@ resources:
     access_token: ((cf-ops-automation-git-hub-token))
 
 - name: hotfix-branch
+  icon: github-circle
   type: git
   source:
     uri: ((cf-ops-automation-git-uri))

@@ -156,6 +156,7 @@ describe 'BoshPipelineTemplateProcessing' do
   let(:expected_shield_errand_resource) do
     my_shield_errand_yaml = <<~YAML
       - name: errand-shield-expe
+        icon: arrange-send-to-back
         type: bosh-errand
         source:
           target: ((bosh-target))
@@ -334,6 +335,7 @@ describe 'BoshPipelineTemplateProcessing' do
         expected_boshreleases.map do |br_name, br_repo|
           fragment = <<~YAML
             - name: #{br_name}
+              icon: home-floor-a
               type: s3
               source:
                 bucket: ((s3-br-bucket))
@@ -410,6 +412,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_bosh_io_stemcell) do
         expected_yaml = <<~YAML
           - name: ((stemcell-main-name))
+            icon: home-floor-g
             type: bosh-io-stemcell
             source:
               name: ((stemcell-name-prefix))((stemcell-main-name))

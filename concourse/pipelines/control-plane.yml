@@ -17,6 +17,7 @@ resource_types:
       tag: release-v0.0.3
 resources:
 - name: concourse-meta
+  icon: file-document-box-search-outline
   type: meta
 - name: secrets-generated-pipelines
   type: git
@@ -27,6 +28,7 @@ resources:
     paths: ["private-config.yml", "coa/config", "coa/pipelines/generated", "shared"]
     # Changes on theses paths are imply updates on generated pipelines: [ "**/ci-deployment-overview.yml", "**/enable-cf-app.yml", "**/enable-deployment.yml" ]
 - name: secrets-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
@@ -40,6 +42,7 @@ resources:
 #    skip_ssl_verification: true
 
 - name: paas-templates-versions
+  icon: home-thermometer
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -47,18 +50,21 @@ resources:
     skip_ssl_verification: true
     paths: ["**/*-versions.yml","*-depls/.last-reset"]
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: paas-templates-scanned
+  icon: home-automation
   type: git
   source:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -66,6 +72,7 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -74,6 +81,7 @@ resources:
     skip_ssl_verification: true
 
 - name: concourse-micro
+  icon: concourse-ci
   type: concourse-pipeline
   source:
     target: ((concourse-micro-depls-target))
@@ -286,7 +294,7 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
+          repository: ((docker-registry-url))concourse/busyboxplus # TODO move to git-ssh
           tag: "git"
       inputs:
       - name: secrets-writer
@@ -331,7 +339,7 @@ jobs:
       platform: linux
       image_resource:
         type: docker-image
-        source: {repository: concourse/busyboxplus, tag: "git"}
+        source: {repository: concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
       inputs:
       - name: paas-templates-full
       outputs:

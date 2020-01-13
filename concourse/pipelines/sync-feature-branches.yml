@@ -14,6 +14,7 @@ resource_types:
 resources:
 
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -22,6 +23,7 @@ resources:
     disable: ((slack-disable))
 
 - name: features-or-wip-merged
+  icon: home-group
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -32,6 +34,7 @@ resources:
         value: 10000
 
 - name: paas-templates-reference
+  icon: shield-home
   type: git
   source:
     uri: ((paas-templates-uri))
@@ -42,6 +45,7 @@ resources:
         value: 10000
 
 - name: paas-templates-features
+  icon: home-import-outline
   type: git-branch-heads
   source:
     uri: ((paas-templates-uri))
@@ -49,6 +53,7 @@ resources:
     skip_ssl_verification: true
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -81,7 +86,7 @@ jobs:
             config:
               image_resource:
                 type: docker-image
-                source: {repository: concourse/busyboxplus, tag: "git"}
+                source: {repository: concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
               platform: linux
               inputs:
                 - name: paas-templates-features
@@ -141,7 +146,7 @@ jobs:
             config:
               image_resource:
                 type: docker-image
-                source: {repository: concourse/busyboxplus, tag: "git"}
+                source: {repository: concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
               platform: linux
               inputs:
                 - name: paas-templates-features-reseted

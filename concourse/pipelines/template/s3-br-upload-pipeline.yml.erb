@@ -32,6 +32,7 @@ resource_types:
 
 resources:
 - name: weekday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 40 8 * * 1-5
@@ -39,6 +40,7 @@ resources:
     fire_immediately: true
 
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -47,6 +49,7 @@ resources:
     disable: ((slack-disable))
 
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -57,10 +60,12 @@ resources:
 <% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
   <% if PipelineHelpers.bosh_io_hosted?(info) %>
+  icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: <%= info["repository"] %>
   <% else %>
+  icon: github-circle
   type: github-release
   source:
     user: <%= info["repository"].split('/').first %>
@@ -69,6 +74,7 @@ resources:
   <% end %>
 
 - name: <%= release %>-s3
+  icon: home-floor-a
   type: s3
   source:
     bucket: ((s3-br-bucket))
@@ -265,7 +271,7 @@ jobs:
         image_resource:
           type: docker-image
           source:
-            repository: ((docker-registry-url))concourse/busyboxplus
+            repository: ((docker-registry-url))concourse/busyboxplus # TODO move to curl ssl
             tag: "git"
         inputs:
           - name: release
