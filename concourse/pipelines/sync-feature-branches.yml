@@ -86,7 +86,9 @@ jobs:
             config:
               image_resource:
                 type: docker-image
-                source: {repository: concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
+                source:
+                  repository: ((docker-registry-url))governmentpaas/git-ssh
+                  tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
               platform: linux
               inputs:
                 - name: paas-templates-features
@@ -146,7 +148,9 @@ jobs:
             config:
               image_resource:
                 type: docker-image
-                source: {repository: concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
+                source:
+                  repository: ((docker-registry-url))governmentpaas/git-ssh
+                  tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
               platform: linux
               inputs:
                 - name: paas-templates-features-reseted

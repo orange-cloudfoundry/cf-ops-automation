@@ -17,6 +17,7 @@ resources:
 #  source:
 #    name: ((stemcell-name))
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -24,6 +25,7 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: new-version-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -37,12 +39,14 @@ resources:
 #    branch: master
 #    skip_ssl_verification: true
 - name: paas-templates-full
+  icon: home-assistant
   type: git
   source:
     uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -50,20 +54,24 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 - name: monday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 30 8 * * 1
     location: "Europe/Paris"
     fire_immediately: true
 - name: nginx
+  icon: home-floor-b
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/nginx-release
 - name: ntp
+  icon: home-floor-b
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
 - name: vault
+  icon: github-circle
   type: github-release
   source:
     user: cloudfoundry-community
@@ -103,6 +111,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: boshrelease
         outputs:
@@ -159,6 +168,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: boshrelease
         outputs:
@@ -215,6 +225,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: boshrelease
         outputs:

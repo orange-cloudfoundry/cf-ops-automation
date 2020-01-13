@@ -16,8 +16,8 @@ platform: linux
 image_resource:
   type: docker-image
   source:
-    repository: ((docker-registry-url))concourse/buildroot
-    tag: curl
+    repository: ((docker-registry-url))governmentpaas/curl-ssl
+    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
 inputs:
 - name: fly-cmd
 outputs:

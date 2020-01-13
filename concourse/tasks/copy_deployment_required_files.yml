@@ -2,7 +2,9 @@
 platform: linux
 image_resource:
   type: docker-image
-  source: {repository: ((docker-registry-url))concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
+  source:
+    repository: ((docker-registry-url))governmentpaas/git-ssh
+    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
 inputs:
   - name: scripts-resource
   - name: template-resource

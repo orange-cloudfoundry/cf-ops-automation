@@ -13,12 +13,14 @@ resource_types:
       # use latest as no other recent tag available
 resources:
 - name: weekday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 40 8 * * 1-5
     location: "Europe/Paris"
     fire_immediately: true
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -26,6 +28,7 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -55,8 +58,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:
@@ -94,8 +97,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
         - name: result-dir
       run:

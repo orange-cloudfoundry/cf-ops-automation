@@ -176,8 +176,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
         - name: final-control-plane-pipeline
         - name: secrets-full
@@ -229,7 +229,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl # TODO move to bosh-cli-v2
+          repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -238,7 +239,6 @@ jobs:
         args:
         - -ec
         - |
-          apk add bash coreutils --no-cache
           export SECRETS=$(pwd)/secrets
           if [ -d ${SECRETS}/coa/config ];then
             CONFIG_DIR=${SECRETS}/coa/config
@@ -323,8 +323,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
       - name: concourse-teams
       outputs:
@@ -408,8 +408,8 @@ jobs:
       image_resource:
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/busyboxplus
-          tag: "git"
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       inputs:
       - name: all-pipelines
       outputs:

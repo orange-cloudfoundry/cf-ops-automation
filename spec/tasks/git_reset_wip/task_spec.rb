@@ -78,7 +78,7 @@ describe 'git_reset_wip task' do
     end
 
     it 'reset master branch' do
-      expect(@output).to include("Reset branch 'master'", "Your branch is up-to-date with 'origin/master'")
+      expect(@output).to include("Reset branch 'master'", "Your branch is up to date with 'origin/master'")
     end
 
     it 'contains master.md file' do

@@ -13,6 +13,7 @@ resource_types:
       tag: v1.4.2
 resources:
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -20,6 +21,7 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: concourse-for-hello-world-root-depls
+  icon: concourse-ci
   type: concourse-pipeline
   source:
     target: ((concourse-hello-world-root-depls-target))
@@ -29,6 +31,7 @@ resources:
       username: ((concourse-hello-world-root-depls-username))
       password: ((concourse-hello-world-root-depls-password))
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
@@ -36,6 +39,7 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 - name: secrets-pipeline-sample
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
@@ -43,6 +47,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-pipeline-sample
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))

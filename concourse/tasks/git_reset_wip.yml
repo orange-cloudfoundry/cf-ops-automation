@@ -15,7 +15,9 @@
 platform: linux
 image_resource:
   type: docker-image
-  source: {repository: ((docker-registry-url))concourse/busyboxplus, tag: "git"} # TODO move to git-ssh
+  source:
+    repository: ((docker-registry-url))governmentpaas/git-ssh
+    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
 inputs:
   - name: reference-resource
 outputs:
@@ -26,6 +28,7 @@ run:
   - -ec
   - |
     set -o pipefail
+    git --version
     git config --global user.email "$GIT_USER_EMAIL"
     git config --global user.name "$GIT_USER_NAME"
     git config --global merge.renamelimit "$GIT_MERGE_RENAMELIMIT"

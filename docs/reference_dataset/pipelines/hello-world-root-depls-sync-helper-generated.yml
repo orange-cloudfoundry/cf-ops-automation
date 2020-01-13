@@ -12,12 +12,14 @@ resource_types:
       # use latest as no other recent tag available
 resources:
 - name: at-nine
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: "15 9 * * 1-5"
     location: "Europe/Paris"
     fire_immediately: true
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
@@ -37,12 +39,14 @@ resources:
     branch: master
     skip_ssl_verification: true
 - name: secrets-full
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
