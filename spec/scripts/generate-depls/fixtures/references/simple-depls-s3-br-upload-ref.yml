@@ -1,29 +1,34 @@
+
 ---
 resource_types:
-- name: slack-notification
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))cfcommunity/slack-notification-resource"
-    tag: v1.4.2
-- name: cron-resource
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))cftoolsmiths/cron-resource"
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+      tag: v1.4.2
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: ((docker-registry-url))cftoolsmiths/cron-resource
+      # use latest as no other recent tag available
 resources:
 - name: weekday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 40 8 * * 1-5
-    location: Europe/Paris
+    location: "Europe/Paris"
     fire_immediately: true
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
-    url: "((slack-webhook))"
+    url: ((slack-webhook))
     proxy: ((slack-proxy))
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: "((cf-ops-automation-uri))"
@@ -31,10 +36,12 @@ resources:
     tag_filter: "((cf-ops-automation-tag-filter))"
     skip_ssl_verification: true
 - name: ntp_boshrelease
+  icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
 - name: ntp_boshrelease-s3
+  icon: home-floor-a
   type: s3
   source:
     bucket: "((s3-br-bucket))"
@@ -45,263 +52,137 @@ resources:
     endpoint: "((s3-br-endpoint))"
     skip_ssl_verification: "((s3-br-skip-ssl-verification))"
 - name: zookeeper_boshrelease
+  icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: cppforlife/zookeeper-release
 - name: zookeeper_boshrelease-s3
+  icon: home-floor-a
   type: s3
   source:
-    bucket: "((s3-br-bucket))"
-    region_name: "((s3-br-region-name))"
+    bucket: ((s3-br-bucket))
+    region_name: ((s3-br-region-name))
     regexp: cppforlife/zookeeper_boshrelease-(.*).tgz
-    access_key_id: "((s3-br-access-key-id))"
-    secret_access_key: "((s3-br-secret-key))"
-    endpoint: "((s3-br-endpoint))"
-    skip_ssl_verification: "((s3-br-skip-ssl-verification))"
-
+    access_key_id: ((s3-br-access-key-id))
+    secret_access_key: ((s3-br-secret-key))
+    endpoint: ((s3-br-endpoint))
+    skip_ssl_verification: ((s3-br-skip-ssl-verification))
 jobs:
 - name: init-concourse-boshrelease-for-simple-depls
   on_failure:
     put: failure-alert
     params:
-      channel: "((slack-channel))"
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params:
-        submodules: none
+      params: { submodules: none}
       attempts: 2
     - get: weekday-morning
       trigger: true
   - task: generate-simple-depls-flight-plan
-    output_mapping:
-      result-dir: init-simple-depls-plan
+    output_mapping: {result-dir: init-simple-depls-plan}
     config:
       platform: linux
       image_resource:
         type: docker-image
         source:
-          repository: "((docker-registry-url))concourse/busyboxplus"
-          tag: git
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
-      - name: result-dir
+        - name: result-dir
       run:
         path: sh
         args:
-        - "-exc"
-        - |2
+        - -exc
+        - |
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" >> result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/zookeeper_boshrelease --from version:((zookeeper_boshrelease-version))" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-s3-br-upload-generated
   - task: fly-into-concourse
-    input_mapping:
-      fly-cmd: init-simple-depls-plan
-    output_mapping:
-      flight-report: concourse-simple-depls-init-report
+    input_mapping: {fly-cmd: init-simple-depls-plan}
+    output_mapping: {flight-report: concourse-simple-depls-init-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: "((concourse-simple-depls-target))"
-      FLY_USERNAME: "((concourse-simple-depls-username))"
+      ATC_EXTERNAL_URL: ((concourse-simple-depls-target))
+      FLY_USERNAME: ((concourse-simple-depls-username))
       FLY_PASSWORD: "((concourse-simple-depls-password))"
       FLY_TEAM: custom-team-name
 - name: retrigger-all-uploads
   on_failure:
     put: failure-alert
     params:
-      channel: "((slack-channel))"
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params:
-        submodules: none
+      params: { submodules: none}
   - task: generate-simple-depls-pipeline
-    output_mapping:
-      result-dir: trigger-simple-depls-plan
+    output_mapping: {result-dir: trigger-simple-depls-plan}
     config:
       platform: linux
       image_resource:
         type: docker-image
         source:
-          repository: "((docker-registry-url))concourse/busyboxplus"
-          tag: git
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
-      - name: result-dir
+        - name: result-dir
       run:
         path: sh
         args:
-        - "-exc"
+        - -exc
         - |
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-ntp_boshrelease" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/upload-current-zookeeper_boshrelease" >> result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-s3-br-upload-generated
   - task: fly-into-concourse
-    input_mapping:
-      fly-cmd: trigger-simple-depls-plan
-    output_mapping:
-      flight-report: concourse-simple-depls-trigger-report
+    input_mapping: {fly-cmd: trigger-simple-depls-plan}
+    output_mapping: {flight-report: concourse-simple-depls-trigger-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: "((concourse-simple-depls-target))"
-      FLY_USERNAME: "((concourse-simple-depls-username))"
-      FLY_PASSWORD: "((concourse-simple-depls-password))"
+      ATC_EXTERNAL_URL: ((concourse-simple-depls-target))
+      FLY_USERNAME: ((concourse-simple-depls-username))
+      FLY_PASSWORD: ((concourse-simple-depls-password))
       FLY_TEAM: upload
 - name: upload-current-ntp_boshrelease
-  serial_groups:
-  - ntp_boshrelease
-  - concurrent-group-0
+  serial_groups: [ntp_boshrelease,concurrent-group-0]
   on_failure:
     put: failure-alert
     params:
-      channel: "((slack-channel))"
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-  - in_parallel:
-    - get: ntp_boshrelease
-      attempts: 2
-      version:
-        version: ((ntp_boshrelease-version))
-      trigger: true
-      params:
-        tarball: true
-    - get: cf-ops-automation
-      params:
-        submodules: none
-      attempts: 2
-      passed:
-      - init-concourse-boshrelease-for-simple-depls
-  - task: generate-ntp_boshrelease-name
-    input_mapping:
-      release: ntp_boshrelease
-    output_mapping:
-      result-dir: ntp_boshrelease
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: "((docker-registry-url))concourse/busyboxplus"
-          tag: git
-      inputs:
-      - name: release
-      outputs:
-      - name: result-dir
-      run:
-        path: sh
-        args:
-        - "-exc"
-        - |
-          VERSION=$(cat release/version)
-          cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
-      params:
-        RELEASE_PREFIX: ntp_boshrelease
-        TARGET_VERSION: "((ntp_boshrelease-version))"
-  - put: ntp_boshrelease-s3
-    params:
-      file: ntp_boshrelease/*.tgz
-      acl: public-read
-- name: upload-latest-ntp_boshrelease
-  serial_groups:
-  - ntp_boshrelease
-  - concurrent-group-0
-  on_failure:
-    put: failure-alert
-    params:
-      channel: "((slack-channel))"
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-  - in_parallel:
-    - get: ntp_boshrelease
-      attempts: 2
-      version: every
-      trigger: true
-      params:
-        tarball: true
-    - get: cf-ops-automation
-      params:
-        submodules: none
-      attempts: 2
-      passed:
-      - upload-current-ntp_boshrelease
-  - task: generate-ntp_boshrelease-name
-    input_mapping:
-      release: ntp_boshrelease
-    output_mapping:
-      result-dir: ntp_boshrelease
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: "((docker-registry-url))concourse/busyboxplus"
-          tag: git
-      inputs:
-      - name: release
-      outputs:
-      - name: result-dir
-      run:
-        path: sh
-        args:
-        - "-exc"
-        - |
-          VERSION=$(cat release/version)
-          cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
-      params:
-        RELEASE_PREFIX: ntp_boshrelease
-        TARGET_VERSION: "((ntp_boshrelease-version))"
-  - put: ntp_boshrelease-s3
-    params:
-      file: ntp_boshrelease/*.tgz
-      acl: public-read
-- name: upload-current-zookeeper_boshrelease
-  serial_groups:
-    - zookeeper_boshrelease
-    - concurrent-group-1
-  on_failure:
-    put: failure-alert
-    params:
-      channel: "((slack-channel))"
+      channel: ((slack-channel))
       text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
     - in_parallel:
-        - get: zookeeper_boshrelease
-          attempts: 2
-          version:
-            version: ((zookeeper_boshrelease-version))
-          trigger: true
-          params:
-            tarball: true
-        - get: cf-ops-automation
-          params:
-            submodules: none
-          attempts: 2
-          passed:
-            - init-concourse-boshrelease-for-simple-depls
-    - task: generate-zookeeper_boshrelease-name
-      input_mapping:
-        release: zookeeper_boshrelease
-      output_mapping:
-        result-dir: zookeeper_boshrelease
+      - get: ntp_boshrelease
+        attempts: 2
+        version: { version: "((ntp_boshrelease-version))" }
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ init-concourse-boshrelease-for-simple-depls ]
+    - task: generate-ntp_boshrelease-name
+      input_mapping: {release: ntp_boshrelease}
+      output_mapping: {result-dir: ntp_boshrelease}
       config:
         platform: linux
         image_resource:
           type: docker-image
           source:
-            repository: "((docker-registry-url))concourse/busyboxplus"
-            tag: git
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: release
         outputs:
@@ -309,54 +190,143 @@ jobs:
         run:
           path: sh
           args:
-            - "-exc"
-            - |
-              VERSION=$(cat release/version)
-              cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: ntp_boshrelease
+          TARGET_VERSION: ((ntp_boshrelease-version))
+    - put: ntp_boshrelease-s3
+      params:
+        file: ntp_boshrelease/*.tgz
+        acl: public-read
+- name: upload-latest-ntp_boshrelease
+  serial_groups: [ntp_boshrelease,concurrent-group-0]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: ntp_boshrelease
+        attempts: 2
+        version: every
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ upload-current-ntp_boshrelease ]
+    - task: generate-ntp_boshrelease-name
+      input_mapping: {release: ntp_boshrelease}
+      output_mapping: {result-dir: ntp_boshrelease}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+        params:
+          RELEASE_PREFIX: ntp_boshrelease
+          TARGET_VERSION: ((ntp_boshrelease-version))
+    - put: ntp_boshrelease-s3
+      params:
+        file: ntp_boshrelease/*.tgz
+        acl: public-read
+- name: upload-current-zookeeper_boshrelease
+  serial_groups: [zookeeper_boshrelease,concurrent-group-1]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: zookeeper_boshrelease
+        attempts: 2
+        version: { version: "((zookeeper_boshrelease-version))" }
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ init-concourse-boshrelease-for-simple-depls ]
+    - task: generate-zookeeper_boshrelease-name
+      input_mapping: {release: zookeeper_boshrelease}
+      output_mapping: {result-dir: zookeeper_boshrelease}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: release
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: zookeeper_boshrelease
-          TARGET_VERSION: "((zookeeper_boshrelease-version))"
+          TARGET_VERSION: ((zookeeper_boshrelease-version))
     - put: zookeeper_boshrelease-s3
       params:
         file: zookeeper_boshrelease/*.tgz
         acl: public-read
 - name: upload-latest-zookeeper_boshrelease
-  serial_groups:
-    - zookeeper_boshrelease
-    - concurrent-group-1
+  serial_groups: [zookeeper_boshrelease,concurrent-group-1]
   on_failure:
     put: failure-alert
     params:
-      channel: "((slack-channel))"
+      channel: ((slack-channel))
       text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
     - in_parallel:
-        - get: zookeeper_boshrelease
-          attempts: 2
-          version: every
-          trigger: true
-          params:
-            tarball: true
-        - get: cf-ops-automation
-          params:
-            submodules: none
-          attempts: 2
-          passed:
-            - upload-current-zookeeper_boshrelease
+      - get: zookeeper_boshrelease
+        attempts: 2
+        version: every
+        trigger: true
+        params: {tarball: true}
+      - get: cf-ops-automation
+        params: { submodules: none}
+        attempts: 2
+        passed: [ upload-current-zookeeper_boshrelease ]
     - task: generate-zookeeper_boshrelease-name
-      input_mapping:
-        release: zookeeper_boshrelease
-      output_mapping:
-        result-dir: zookeeper_boshrelease
+      input_mapping: {release: zookeeper_boshrelease}
+      output_mapping: {result-dir: zookeeper_boshrelease}
       config:
         platform: linux
         image_resource:
           type: docker-image
           source:
-            repository: "((docker-registry-url))concourse/busyboxplus"
-            tag: git
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
           - name: release
         outputs:
@@ -364,13 +334,13 @@ jobs:
         run:
           path: sh
           args:
-            - "-exc"
-            - |
-              VERSION=$(cat release/version)
-              cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
+          - -exc
+          - |
+            VERSION=$(cat release/version)
+            cp release/release.tgz result-dir/${RELEASE_PREFIX}-${VERSION}.tgz
         params:
           RELEASE_PREFIX: zookeeper_boshrelease
-          TARGET_VERSION: "((zookeeper_boshrelease-version))"
+          TARGET_VERSION: ((zookeeper_boshrelease-version))
     - put: zookeeper_boshrelease-s3
       params:
         file: zookeeper_boshrelease/*.tgz
@@ -384,11 +354,11 @@ groups:
   - upload-latest-ntp_boshrelease
   - upload-current-zookeeper_boshrelease
   - upload-latest-zookeeper_boshrelease
-- name: n*
+- name: "n*"
   jobs:
   - upload-current-ntp_boshrelease
   - upload-latest-ntp_boshrelease
-- name: z*
+- name: "z*"
   jobs:
-    - upload-current-zookeeper_boshrelease
-    - upload-latest-zookeeper_boshrelease
+  - upload-current-zookeeper_boshrelease
+  - upload-latest-zookeeper_boshrelease

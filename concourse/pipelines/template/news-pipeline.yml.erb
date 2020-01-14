@@ -37,10 +37,6 @@ resource_types:
 
 resources:
 <% if enabled_deployments.any? %>
-#- name: bosh-stemcell
-#  type: bosh-io-stemcell
-#  source:
-#    name: ((stemcell-name))
   <% if uniq_releases.any? %>
 - name: failure-alert
   icon: slack
@@ -59,13 +55,6 @@ resources:
     proxy: ((slack-proxy))
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
-
-#- name: secrets-complete
-#  type: git
-#  source:
-#    uri: ((secrets-uri))
-#    branch: master
-#    skip_ssl_verification: true
 
 - name: paas-templates-full
   icon: home-assistant
@@ -112,10 +101,6 @@ resources:
 <% end %>
 
 jobs:
-#      - get: bosh-stemcell
-#        version: { version: ((stemcell-version)) }
-#        trigger: true
-#        attempts: 2
 <% if enabled_deployments.empty? || uniq_releases.empty? %>
 - name: this-is-an-empty-pipeline
 <% else %>

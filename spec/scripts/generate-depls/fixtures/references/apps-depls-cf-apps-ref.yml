@@ -1,70 +1,60 @@
+
 ---
 resource_types:
   - name: slack-notification
     type: docker-image
     source:
-      repository: "((docker-registry-url))cfcommunity/slack-notification-resource"
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
       tag: v1.4.2
-
 resources:
-#- name: at-noon
-#  type: cron-resource
-#  source:
-#    expression: "15 12 * * 1-5"
-#    location: "Europe/Paris"
-#    fire_immediately: true
-
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
     proxy: ((slack-proxy))
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
-
 - name: secrets-full
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
     uri: ((cf-ops-automation-uri))
     branch: ((cf-ops-automation-branch))
     skip_ssl_verification: true
     tag_filter: ((cf-ops-automation-tag-filter))
-
 - name: secrets-test-app
+  icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
     paths: ["apps-depls/my_cf_app", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
-
 - name: paas-template-test-app
+  icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))
     paths: ["apps-depls/my_cf_app"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
-
 jobs:
-
-
 - name: retrigger-all-jobs
-
   on_failure:
     put: failure-alert
     params:
@@ -84,7 +74,9 @@ jobs:
         platform: linux
         image_resource:
           type: docker-image
-          source: {repository: "((docker-registry-url))concourse/busyboxplus", tag: "git"}
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         outputs:
           - name: result-dir
         run:
@@ -102,9 +94,8 @@ jobs:
       params:
         ATC_EXTERNAL_URL: ((concourse-apps-depls-target))
         FLY_USERNAME: ((concourse-apps-depls-username))
-        FLY_PASSWORD:  ((concourse-apps-depls-password))
+        FLY_PASSWORD: ((concourse-apps-depls-password))
         FLY_TEAM: main
-
 - name: cf-push-test-app
   serial: true
   serial_groups: [concurrent-group-0]
@@ -128,7 +119,6 @@ jobs:
       - get: cf-ops-automation
         trigger: true
         params: { submodules: none }
-
     - task: generate-test-app-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-test-app, additional-resource: paas-template-test-app}
       output_mapping: {generated-files: release-manifest}
@@ -156,7 +146,6 @@ jobs:
         CF_SPACE: my-test-space
         CF_USERNAME: "\"a-test-User"
         CF_PASSWORD: "'a-test-Password"
-
     - task: update-test-app-files
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: final-release-manifest}
       output_mapping: {updated-git-resource: updated-test-app-secrets}
@@ -182,27 +171,14 @@ jobs:
         CF_SPACE: my-test-space
         CF_USERNAME: "\"a-test-User"
         CF_PASSWORD: "'a-test-Password"
-
-
 groups:
 - name: Apps-depls
   jobs:
-
-
-    - retrigger-all-jobs
-
-
-
-    - cf-push-test-app
-
-
-
+      - retrigger-all-jobs
+      - cf-push-test-app
 - name: App-t*
   jobs:
-
     - cf-push-test-app
-
 - name: Utils
   jobs:
-
     - retrigger-all-jobs

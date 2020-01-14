@@ -26,7 +26,7 @@ class TestHelper
   def self.generate_deployment_bosh_ca_cert(secrets_path)
     crt_path = "#{secrets_path}/shared/certs/internal_paas-ca/server-ca.crt"
     File.delete(crt_path) if File.exist? crt_path
-    crt_content = File.read("./spec/scripts/generate-depls/fixtures/server-ca.crt")
+    crt_content = File.read(File.dirname(__FILE__) + "/fixtures/server-ca.crt")
     dir = File.dirname(crt_path)
     FileUtils.mkdir_p dir unless Dir.exist? dir
     file = File.new(crt_path, 'w')

@@ -1,128 +1,124 @@
+
 ---
 resource_types:
-- name: slack-notification
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))cfcommunity/slack-notification-resource"
-    tag: v1.4.2
-- name: cron-resource
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))cftoolsmiths/cron-resource"
+  - name: slack-notification
+    type: docker-image
+    source:
+      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+      tag: v1.4.2
+  - name: cron-resource
+    type: docker-image
+    source:
+      repository: ((docker-registry-url))cftoolsmiths/cron-resource
+      # use latest as no other recent tag available
 resources:
 - name: weekday-morning
+  icon: calendar-clock
   type: cron-resource
   source:
     expression: 40 8 * * 1-5
-    location: Europe/Paris
+    location: "Europe/Paris"
     fire_immediately: true
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
-    url: "((slack-webhook))"
+    url: ((slack-webhook))
     proxy: ((slack-proxy))
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
-
 - name: cf-ops-automation
+  icon: rocket
   type: git
   source:
-    uri: "((cf-ops-automation-uri))"
-    branch: "((cf-ops-automation-branch))"
-    tag_filter: "((cf-ops-automation-tag-filter))"
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 jobs:
-- name: init-concourse-boshrelease-for-dummy-depls
+- name: init-concourse-boshrelease-for-empty-depls
   on_failure:
     put: failure-alert
     params:
-      channel: "((slack-channel))"
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params:
-        submodules: none
+      params: { submodules: none}
       attempts: 2
     - get: weekday-morning
       trigger: true
-  - task: generate-dummy-depls-flight-plan
-    output_mapping:
-      result-dir: init-dummy-depls-plan
+  - task: generate-empty-depls-flight-plan
+    output_mapping: {result-dir: init-empty-depls-plan}
     config:
       platform: linux
       image_resource:
         type: docker-image
         source:
-          repository: "((docker-registry-url))concourse/busyboxplus"
-          tag: git
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
-      - name: result-dir
+        - name: result-dir
       run:
         path: sh
         args:
-        - "-exc"
-        - ''
+        - -exc
+        - |
       params:
-        BUILD_PIPELINE_NAME: dummy-depls-s3-br-upload-generated
+        BUILD_PIPELINE_NAME: empty-depls-s3-br-upload-generated
   - task: fly-into-concourse
-    input_mapping:
-      fly-cmd: init-dummy-depls-plan
-    output_mapping:
-      flight-report: concourse-dummy-depls-init-report
+    input_mapping: {fly-cmd: init-empty-depls-plan}
+    output_mapping: {flight-report: concourse-empty-depls-init-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: "((concourse-dummy-depls-target))"
-      FLY_USERNAME: "((concourse-dummy-depls-username))"
-      FLY_PASSWORD: "((concourse-dummy-depls-password))"
+      ATC_EXTERNAL_URL: ((concourse-empty-depls-target))
+      FLY_USERNAME: ((concourse-empty-depls-username))
+      FLY_PASSWORD: "((concourse-empty-depls-password))"
       FLY_TEAM: main
 - name: retrigger-all-uploads
   on_failure:
     put: failure-alert
     params:
-      channel: "((slack-channel))"
+      channel: ((slack-channel))
       text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params:
-        submodules: none
-  - task: generate-dummy-depls-pipeline
-    output_mapping:
-      result-dir: trigger-dummy-depls-plan
+      params: { submodules: none}
+  - task: generate-empty-depls-pipeline
+    output_mapping: {result-dir: trigger-empty-depls-plan}
     config:
       platform: linux
       image_resource:
         type: docker-image
         source:
-          repository: "((docker-registry-url))concourse/busyboxplus"
-          tag: git
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
       outputs:
-      - name: result-dir
+        - name: result-dir
       run:
         path: sh
         args:
-        - "-exc"
-        - ''
+        - -exc
+        - |
       params:
-        BUILD_PIPELINE_NAME: dummy-depls-s3-br-upload-generated
+        BUILD_PIPELINE_NAME: empty-depls-s3-br-upload-generated
   - task: fly-into-concourse
-    input_mapping:
-      fly-cmd: trigger-dummy-depls-plan
-    output_mapping:
-      flight-report: concourse-dummy-depls-trigger-report
+    input_mapping: {fly-cmd: trigger-empty-depls-plan}
+    output_mapping: {flight-report: concourse-empty-depls-trigger-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: "((concourse-dummy-depls-target))"
-      FLY_USERNAME: "((concourse-dummy-depls-username))"
-      FLY_PASSWORD: "((concourse-dummy-depls-password))"
+      ATC_EXTERNAL_URL: "((concourse-empty-depls-target))"
+      FLY_USERNAME: "((concourse-empty-depls-username))"
+      FLY_PASSWORD: "((concourse-empty-depls-password))"
       FLY_TEAM: upload
 groups:
-- name: Dummy-depls
+- name: Empty-depls
   jobs:
-  - init-concourse-boshrelease-for-dummy-depls
+  - init-concourse-boshrelease-for-empty-depls
   - retrigger-all-uploads
