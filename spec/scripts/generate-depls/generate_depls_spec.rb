@@ -118,7 +118,7 @@ describe 'generate-depls' do
 
         initializer = DirectoryInitializer.new depls_name, secrets_path, templates_path
         initializer.setup_templates!
-        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}", :binmode => true )
+        stdout_str, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}", binmode: true)
       end
 
       it 'no error message expected' do
