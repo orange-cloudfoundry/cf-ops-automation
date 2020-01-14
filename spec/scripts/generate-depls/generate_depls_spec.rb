@@ -63,7 +63,7 @@ describe 'generate-depls' do
     end
 
     context 'when only a pipeline is selected' do
-      let(:depls_name) { 'dummy-depls' }
+      let(:depls_name) { 'empty-depls' }
       let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} -i bosh --no-dump" }
 
       stdout_str, stderr_str, = ''
@@ -89,7 +89,7 @@ describe 'generate-depls' do
   end
 
   context 'when a dummy deployment is used and output-path is set' do
-    let(:depls_name) { 'dummy-depls' }
+    let(:depls_name) { 'empty-depls' }
     let(:output_path) { Dir.mktmpdir }
     let(:templates_path) { Dir.mktmpdir }
     let(:secrets_path) { Dir.mktmpdir }
@@ -105,7 +105,7 @@ describe 'generate-depls' do
 
       it 'failed because versions.yml is missing' do
         _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-        expect(stderr_str).to include('dummy-depls-versions.yml: file not found')
+        expect(stderr_str).to include('empty-depls-versions.yml: file not found')
       end
     end
 
@@ -136,27 +136,27 @@ describe 'generate-depls' do
       end
 
       context 'when cf-apps pipeline is empty' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-cf-apps-generated.yml', 'empty-cf-apps.yml'
+        it_behaves_like 'pipeline checker', 'empty-depls-cf-apps-generated.yml', 'empty-cf-apps.yml'
       end
 
       context 'when news pipeline is empty' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-news-generated.yml', 'empty-news.yml'
+        it_behaves_like 'pipeline checker', 'empty-depls-news-generated.yml', 'empty-news.yml'
       end
 
       context 'when sync_helper pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-sync-helper-generated.yml', 'empty-sync-helper.yml'
+        it_behaves_like 'pipeline checker', 'empty-depls-sync-helper-generated.yml', 'empty-sync-helper.yml'
       end
 
       context 'when s3-stemcell-upload pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-s3-stemcell-upload-generated.yml', 'empty-s3-stemcell-upload.yml'
+        it_behaves_like 'pipeline checker', 'empty-depls-s3-stemcell-upload-generated.yml', 'empty-s3-stemcell-upload.yml'
       end
 
       context 'when s3-br-upload pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-s3-br-upload-generated.yml', 'empty-s3-br-upload.yml'
+        it_behaves_like 'pipeline checker', 'empty-depls-s3-br-upload-generated.yml', 'empty-s3-br-upload.yml'
       end
 
       context 'when concourse pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'dummy-depls-concourse-generated.yml', 'empty-concourse.yml'
+        it_behaves_like 'pipeline checker', 'empty-depls-concourse-generated.yml', 'empty-concourse.yml'
       end
     end
   end

@@ -31,3 +31,5 @@ ci/bootstrap_coa_env/prereqs.yml
 ci/bootstrap_coa_env/bosh-prereqs.yml
 ci/bootstrap_coa_env/concourse-prereqs.yml
 ci/bootstrap_coa_env/bucc/pipeline-vars-prereqs.yml
+
+/spec/scripts/generate-depls/fixtures/pipelines/

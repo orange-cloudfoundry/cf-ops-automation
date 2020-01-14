@@ -1,15 +1,12 @@
+
 ---
 resource_types:
-- name: bosh-deployment
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))concourse/bosh-deployment-resource"
-    tag: latest
 - name: slack-notification
   type: docker-image
   source:
-    repository: "((docker-registry-url))cfcommunity/slack-notification-resource"
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
+
 - name: cron-resource
   type: docker-image
   source:
@@ -23,61 +20,61 @@ resource_types:
 - name: bosh-deployment-v2
   type: docker-image
   source:
-    repository: "((docker-registry-url))cloudfoundry/bosh-deployment-resource"
+    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 - name: bosh-errand
   type: docker-image
   source:
-    repository: "((docker-registry-url))cfcommunity/bosh2-errand-resource"
+    repository: ((docker-registry-url))cfcommunity/bosh2-errand-resource
     tag: v0.1.2
-
-resources:
-- name: at-noon
-  type: cron-resource
+- name: meta
+  type: docker-image
   source:
-    expression: "15 12 * * 1-5"
-    location: "Europe/Paris"
-    fire_immediately: true
-
+    repository: ((docker-registry-url))swce/metadata-resource
+    tag: release-v0.0.3
+resources:
+- name: concourse-meta
+  icon: file-document-box-search-outline
+  type: meta
 - name: failure-alert
+  icon: slack
   type: slack-notification
   source:
     url: ((slack-webhook))
     proxy: ((slack-proxy))
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
-
-- name: secrets-dummy-depls-limited
+- name: secrets-empty-depls-limited
+  icon: source-branch
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["private-config.yml","dummy-depls/ci-deployment-overview.yml","dummy-depls/secrets","shared"]
+    paths: ["private-config.yml", "empty-depls/ci-deployment-overview.yml", "empty-depls/secrets", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
-
 - name: secrets-full-writer
+  icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
-
-- name: paas-templates-dummy-depls
+- name: paas-templates-empty-depls
+  icon: home-analytics
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml","dummy-depls/template"]
-    branch: ((paas-templates-branch))
+    paths: ["shared-config.yml", "meta-inf.yml", "empty-depls/template"]
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
-
 - name: cf-ops-automation
   type: git
+  icon: rocket
   source:
     uri: ((cf-ops-automation-uri))
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
-
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -90,18 +87,16 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params:
-        submodules: none
-    - get: secrets-dummy-depls-limited
-      params:
-        submodules: none
+      params: { submodules: none }
+    - get : secrets-empty-depls-limited
+      params: { submodules: none }
   - task: cancel-all-bosh-tasks
-    input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-dummy-depls-limited}
-    file: cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
+    input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-empty-depls-limited }
+    file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
     params:
-      BOSH_CLIENT: "((bosh-username))"
-      BOSH_CLIENT_SECRET: "((bosh-password))"
-      BOSH_TARGET: "((bosh-target))"
+      BOSH_CLIENT: ((bosh-username))
+      BOSH_CLIENT_SECRET: ((bosh-password))
+      BOSH_TARGET: ((bosh-target))
       BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 - name: execute-deploy-script
   serial: true
@@ -113,84 +108,87 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - get: at-noon
-      trigger: true
     - in_parallel:
-      - get: secrets-dummy-depls-limited
+      - get: secrets-empty-depls-limited
         params: { submodules: none}
-      - get: paas-templates-dummy-depls
+        trigger: true
+      - get: paas-templates-empty-depls
         params: { submodules: none}
+        trigger: true
       - get: cf-ops-automation
         params: { submodules: none}
     - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-dummy-depls, secrets: secrets-dummy-depls-limited}
+      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-empty-depls, secrets: secrets-empty-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
       params:
-        CURRENT_DEPLS: dummy-depls/template
+        CURRENT_DEPLS: empty-depls/template
         COMMON_SCRIPT_DIR: scripts-resource/scripts
         SECRETS_DIR: secrets
         BOSH_TARGET: ((bosh-target))
         BOSH_CLIENT: ((bosh-username))
-        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_CLIENT_SECRET: "((bosh-password))"
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-
-- name: cloud-config-and-runtime-config-for-dummy-depls
+- name: cloud-config-and-runtime-config-for-empty-depls
   serial: true
   on_failure:
-   put: failure-alert
-   params:
-     channel: ((slack-channel))
-     text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-     icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-     username: Concourse
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
   plan:
+    - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: secrets-dummy-depls-limited
+    - get: secrets-empty-depls-limited
       params: { submodules: none}
       trigger: true
-    - get: paas-templates-dummy-depls
+    - get: paas-templates-empty-depls
       params: { submodules: none}
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-    - task: generate-dummy-depls-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-dummy-depls-limited, additional-resource: paas-templates-dummy-depls}
+    - task: generate-empty-depls-all-config
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-empty-depls-limited, additional-resource: paas-templates-empty-depls}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate-manifest.yml
       params:
-        SPRUCE_FILE_BASE_PATH: credentials-resource/dummy-depls/
-        YML_TEMPLATE_DIR: additional-resource/dummy-depls/template
+        SPRUCE_FILE_BASE_PATH: credentials-resource/empty-depls/
+        YML_TEMPLATE_DIR: additional-resource/empty-depls/template
         YML_FILES: |
-            ./credentials-resource/dummy-depls/secrets/meta.yml
-            ./credentials-resource/dummy-depls/secrets/secrets.yml
+            ./credentials-resource/empty-depls/secrets/meta.yml
+            ./credentials-resource/empty-depls/secrets/secrets.yml
             ./credentials-resource/shared/secrets.yml
             ./additional-resource/meta-inf.yml
-        CUSTOM_SCRIPT_DIR: additional-resource/dummy-depls/template
+        CUSTOM_SCRIPT_DIR: additional-resource/empty-depls/template
         IAAS_TYPE: ((iaas-type))
-
     - in_parallel:
-      - task: update-cloud-config-for-dummy-depls
+      - task: update-cloud-config-for-empty-depls
         attempts: 2
-        input_mapping:
-          scripts-resource: cf-ops-automation
-          secrets: secrets-dummy-depls-limited
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-empty-depls-limited}
+        output_mapping: {deployed-config: deployed-cloud-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
           BOSH_TARGET: ((bosh-target))
           BOSH_CLIENT: ((bosh-username))
-          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_CLIENT_SECRET: "((bosh-password))"
           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          CONFIG_TYPE: cloud
+          CREDHUB_SERVER: ((credhub-server))
+          CREDHUB_CLIENT: ((credhub-client))
+          CREDHUB_SECRET: "((credhub-secret))"
+          CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-cloud-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
           output_mapping: {updated-git-resource: updated-cloud-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
-            OLD_FILE: "dummy-depls/cloud-config.yml"
+            OLD_FILE: "empty-depls/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            COMMIT_MESSAGE: "dummy-depls cloud-config auto update - [skip ci]"
+            COMMIT_MESSAGE: "empty-depls cloud-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -204,27 +202,30 @@ jobs:
             params:
               repository: updated-cloud-config
               rebase: true
-
-      - task: update-runtime-config-for-dummy-depls
+      - task: update-runtime-config-for-empty-depls
         attempts: 2
-        input_mapping:
-          scripts-resource: cf-ops-automation
-          secrets: secrets-dummy-depls-limited
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-empty-depls-limited}
+        output_mapping: {deployed-config: deployed-runtime-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
         params:
-          BOSH_TARGET: ((bosh-target))
-          BOSH_CLIENT: ((bosh-username))
-          BOSH_CLIENT_SECRET: ((bosh-password))
-          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+           BOSH_TARGET: ((bosh-target))
+           BOSH_CLIENT: ((bosh-username))
+           BOSH_CLIENT_SECRET: "((bosh-password))"
+           BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+           CONFIG_TYPE: runtime
+           CREDHUB_SERVER: ((credhub-server))
+           CREDHUB_CLIENT: ((credhub-client))
+           CREDHUB_SECRET: "((credhub-secret))"
+           CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
           task: update-runtime-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: config-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
           output_mapping: {updated-git-resource: updated-runtime-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
-            OLD_FILE: "dummy-depls/runtime-config.yml"
+            OLD_FILE: "empty-depls/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            COMMIT_MESSAGE: "dummy-depls runtime-config auto update - [skip ci]"
+            COMMIT_MESSAGE: "empty-depls runtime-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -238,7 +239,43 @@ jobs:
             params:
               repository: updated-runtime-config
               rebase: true
-
+      - task: update-cpi-config-for-empty-depls
+        attempts: 2
+        input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-empty-depls-limited}
+        output_mapping: {deployed-config: deployed-cpi-config}
+        file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
+        params:
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: "((bosh-password))"
+          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          CONFIG_TYPE: cpi
+          CREDHUB_SERVER: ((credhub-server))
+          CREDHUB_CLIENT: ((credhub-client))
+          CREDHUB_SECRET: "((credhub-secret))"
+          CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ensure:
+          task: update-cpi-config
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
+          output_mapping: {updated-git-resource: updated-cpi-config}
+          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+          params:
+            OLD_FILE: "empty-depls/cpi-config.yml"
+            NEW_FILE: "cpi-config.yml"
+            COMMIT_MESSAGE: "empty-depls cpi-config auto update - [skip ci]"
+          on_failure:
+            put: failure-alert
+            params:
+              channel: ((slack-channel))
+              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+              username: Concourse
+          on_success:
+            put: secrets-full-writer
+            get_params: {submodules: none}
+            params:
+              repository: updated-cpi-config
+              rebase: true
 - name: recreate-all
   on_failure:
     put: failure-alert
@@ -249,19 +286,18 @@ jobs:
       username: Concourse
   serial_groups: [recreate]
   plan:
-    - in_parallel:
-       - get: secrets-dummy-depls-limited
-         params: { submodules: none}
-       - get: paas-templates-dummy-depls
-         params: { submodules: none}
-       - get: cf-ops-automation
-         params: { submodules: none}
-
+  - in_parallel:
+     - get: secrets-empty-depls-limited
+       params: { submodules: none}
+     - get: paas-templates-empty-depls
+       params: { submodules: none}
+     - get: cf-ops-automation
+       params: { submodules: none}
 groups:
-- name: Dummy-depls
+- name: Empty-depls
   jobs:
     - cancel-all-bosh-tasks
-    - cloud-config-and-runtime-config-for-dummy-depls
+    - cloud-config-and-runtime-config-for-empty-depls
     - execute-deploy-script
     - recreate-all
 - name: Recreate
@@ -270,6 +306,6 @@ groups:
 - name: Utils
   jobs:
     - cancel-all-bosh-tasks
-    - cloud-config-and-runtime-config-for-dummy-depls
+    - cloud-config-and-runtime-config-for-empty-depls
     - execute-deploy-script
     - recreate-all

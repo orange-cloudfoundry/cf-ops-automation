@@ -3,8 +3,7 @@ require 'tmpdir'
 require 'yaml'
 
 describe 'reference concourse pipelines spec' do
-  # FIXME enable when network issue on COA_CI@FE are fixed
-  xcontext 'resource_type exists' do
+  context 'resource_type exists' do
     let(:pipelines_dir) { File.join(File.dirname(__FILE__), 'fixtures/references') }
     let(:pipeline_files) { Dir.glob(pipelines_dir + '**/*.yml') }
     let(:resource_types) do
