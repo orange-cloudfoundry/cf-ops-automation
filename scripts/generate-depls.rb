@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../lib/pipeline_generator.rb'
+require_relative '../lib/pipeline_generator'
 
 options = PipelineGenerator::Parser.parse(ARGV)
 puts "Parsed options: #{options}"
