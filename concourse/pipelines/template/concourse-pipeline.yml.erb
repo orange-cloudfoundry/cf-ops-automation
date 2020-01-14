@@ -1,5 +1,5 @@
 <%
-  require './lib/pipeline_helpers'
+  require "#{ops_automation_path}/lib/pipeline_helpers"
 
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(depls).build
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)

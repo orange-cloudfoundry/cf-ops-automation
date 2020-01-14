@@ -1,5 +1,5 @@
 <%
-  require './lib/pipeline_helpers'
+  require "#{ops_automation_path}/lib/pipeline_helpers"
 
   uniq_releases= {}
   all_dependencies.sort.each do |name, boshrelease|
