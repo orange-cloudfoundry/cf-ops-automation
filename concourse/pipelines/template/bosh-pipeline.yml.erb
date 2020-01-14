@@ -1,5 +1,5 @@
 <%
-  require './lib/pipeline_helpers'
+  require "#{ops_automation_path}/lib/pipeline_helpers"
 
   terraform_config_path = nil
   if all_ci_deployments&.any? && all_ci_deployments[depls][PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY]

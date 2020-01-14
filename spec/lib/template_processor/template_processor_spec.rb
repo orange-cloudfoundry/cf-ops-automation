@@ -189,6 +189,7 @@ describe TemplateProcessor do
         subject { described_class.new(root_deployment_name, config, processor_context) }
 
         let(:root_deployment_name) { 'my-root-depls' }
+        let(:ops_automation_path) { '.' }
         let(:secrets_dirs_overview) { {} }
         let(:root_deployment_versions) { {} }
         let(:all_ci_deployments) { {} }
@@ -203,7 +204,9 @@ describe TemplateProcessor do
             git_submodules: git_submodules,
             all_cf_apps: all_cf_apps,
             secrets_dirs_overview: secrets_dirs_overview,
-            config: loaded_config }
+            config: loaded_config,
+            ops_automation_path: ops_automation_path }
+
         end
         let(:all_dependencies) do
           deps_yaml = <<~YAML

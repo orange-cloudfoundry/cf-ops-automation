@@ -12,13 +12,15 @@ require_relative 'test_fixtures'
 describe 'BoshPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
   let(:bosh_cert) { BOSH_CERT_LOCATIONS = { root_deployment_name => 'shared/certificate.pem' }.freeze }
+  let(:ops_automation_path) { '.' }
   let(:processor_context) do
     { depls: root_deployment_name,
       bosh_cert: bosh_cert,
       all_dependencies: all_dependencies,
       all_ci_deployments: all_ci_deployments,
       git_submodules: git_submodules,
-      config: loaded_config }
+      config: loaded_config,
+      ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }

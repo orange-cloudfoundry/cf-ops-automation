@@ -1,5 +1,5 @@
 <%
-  require './lib/pipeline_helpers'
+  require "#{ops_automation_path}/lib/pipeline_helpers"
 
   enabled_deployments = all_dependencies.select do |_,deployment_infos|
     deployment_infos['status'] == 'enabled'

@@ -85,6 +85,7 @@ class PipelineGenerator
     ctxt.all_cf_apps           = CfApps.new(File.join(options.secrets_path, ctxt.depls, '/*'), ctxt.depls).overview
     ctxt.git_submodules        = GitModules.new(options.git_submodule_path).list
     ctxt.config                = config.loaded_config
+    ctxt.ops_automation_path   = options.ops_automation
   end
 
   def check_warnings
@@ -248,6 +249,7 @@ class PipelineGenerator
     :all_ci_deployments,
     :all_cf_apps,
     :git_submodules,
-    :config
+    :config,
+    :ops_automation_path
   )
 end

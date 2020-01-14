@@ -11,6 +11,7 @@ require_relative 'test_fixtures'
 RSpec::Matchers.define_negated_matcher :not_be, :be
 describe 'UpdatePipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
+  let(:ops_automation_path) { '.' }
   let(:bosh_cert) { BOSH_CERT_LOCATIONS = { root_deployment_name => 'shared/certificate.pem' }.freeze }
   let(:git_submodules) { {} }
   let(:loaded_config) { {} }
@@ -21,7 +22,8 @@ describe 'UpdatePipelineTemplateProcessing' do
       all_dependencies: all_dependencies,
       all_ci_deployments: all_ci_deployments,
       git_submodules: git_submodules,
-      config: loaded_config }
+      config: loaded_config,
+      ops_automation_path: ops_automation_path}
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }

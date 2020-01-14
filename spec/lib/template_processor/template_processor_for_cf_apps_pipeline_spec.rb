@@ -7,11 +7,13 @@ require_relative 'test_fixtures'
 
 describe 'CfAppsPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
+  let(:ops_automation_path) { '.' }
   let(:processor_context) do
     { depls: root_deployment_name,
       all_ci_deployments: all_ci_deployments,
       all_cf_apps: all_cf_apps,
-      config: loaded_config }
+      config: loaded_config,
+      ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }
@@ -83,17 +85,12 @@ describe 'CfAppsPipelineTemplateProcessing' do
   let(:groups) do
     [
       { 'name' => 'My-root-depls',
-        'jobs' =>
-        ["retrigger-all-jobs",
-         "cf-push-elpaaso-sandbox",
-         "cf-push-log-broker",
-         "cf-push-mattermost",
-         "cf-push-ops-dataflow"]},
-         {"name"=>"App-e*", "jobs"=>["cf-push-elpaaso-sandbox"]},
-         {"name"=>"App-l*", "jobs"=>["cf-push-log-broker"]},
-         {"name"=>"App-m*", "jobs"=>["cf-push-mattermost"]},
-         {"name"=>"App-o*", "jobs"=>["cf-push-ops-dataflow"]},
-         {"name"=>"Utils", "jobs"=>["retrigger-all-jobs"]}
+        'jobs' => %w[retrigger-all-jobs cf-push-elpaaso-sandbox cf-push-log-broker cf-push-mattermost cf-push-ops-dataflow] },
+      { "name" => "App-e*", "jobs"=>["cf-push-elpaaso-sandbox"] },
+      { "name" => "App-l*", "jobs"=>["cf-push-log-broker"] },
+      { "name" => "App-m*", "jobs"=>["cf-push-mattermost"] },
+      { "name" => "App-o*", "jobs"=>["cf-push-ops-dataflow"] },
+      { "name" => "Utils", "jobs"=>["retrigger-all-jobs"] }
     ]
   end
 
@@ -156,10 +153,8 @@ describe 'CfAppsPipelineTemplateProcessing' do
       end
 
       it 'generates CF variables available for post-deploy' do
-        cf_push_params = generated_pipeline['jobs']
-          .flat_map { |job| job['plan'] }
-          .select { |step| step['task'] && step['task'].start_with?("push")  }
-          .flat_map { |step| step['params'] }
+        cf_push_params = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
+          .select { |step| step['task']&.start_with?("push") }.flat_map { |step| step['params'] }
 
         cf_push_params.each do |task_params|
           expect(task_params).to include('CF_API_URL', 'CF_ORG', 'CF_SPACE', 'CF_USERNAME', 'CF_PASSWORD')
@@ -168,10 +163,8 @@ describe 'CfAppsPipelineTemplateProcessing' do
 
 
       it 'generates retrigger all' do
-        fly_into_concourse_params = generated_pipeline['jobs']
-                                        .flat_map { |job| job['plan'] }
-                                        .select { |step| step['task'] && step['task'].start_with?("fly-into-concourse")  }
-                                        .flat_map { |step| step['params'] }
+        fly_into_concourse_params = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
+          .select { |step| step['task']&.start_with?("fly-into-concourse") }.flat_map { |step| step['params'] }
 
         fly_into_concourse_params.each do |task_params|
           expect(task_params).to match(expected_fly_into_concourse)

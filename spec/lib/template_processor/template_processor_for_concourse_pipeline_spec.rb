@@ -9,6 +9,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
   subject { TemplateProcessor.new root_deployment_name, config, processor_context }
 
   let(:root_deployment_name) { 'my-root-depls' }
+  let(:ops_automation_path) { '.' }
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }
   let(:all_ci_deployments) { {} }
@@ -18,7 +19,8 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       all_dependencies: all_dependencies,
       all_ci_deployments: all_ci_deployments,
       git_submodules: git_submodules,
-      config: loaded_config }
+      config: loaded_config,
+      ops_automation_path: ops_automation_path }
   end
   let(:all_dependencies) do
     deps_yaml = <<~YAML
