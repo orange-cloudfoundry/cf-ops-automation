@@ -2,8 +2,8 @@
   require "#{ops_automation_path}/lib/pipeline_helpers"
 
   terraform_config_path = nil
-  if all_ci_deployments&.any? && all_ci_deployments[depls][PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY]
-    terraform_config_path = all_ci_deployments[depls][PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY]['state_file_path']
+  if all_ci_deployments&.any? && all_ci_deployments&.dig(depls, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY)
+    terraform_config_path = all_ci_deployments.dig(depls, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY, 'state_file_path')
     terraform_config_path_value = ", \"#{terraform_config_path}\""
   end
 
@@ -24,7 +24,7 @@
     end
   end
 
-  offline_stemcells_enabled = config['offline-mode'] && config['offline-mode']['stemcells'] && true
+  offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
   jobs = Hash.new {|h,k| h[k]=[]}
 
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(depls).build
@@ -225,7 +225,7 @@ resources:
 
 <% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
-  <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
+  <% if config&.dig('offline-mode','boshreleases') %>
   icon: home-floor-a
   type: s3
   source:
@@ -1004,7 +1004,7 @@ jobs:
         - |
   <% uniq_releases.sort.each do |name, info| %>
     <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
-    <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
+    <% if config&.dig('offline-mode','boshreleases') %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" | tee -a result-dir/flight-plan
     <% else %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:((<%= name %>-version))" | tee -a result-dir/flight-plan
@@ -1029,7 +1029,7 @@ jobs:
 <% end %>
 
 <% if all_ci_deployments&.any? %>
-  <% if all_ci_deployments[depls][PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY] %>
+  <% if all_ci_deployments&.dig(depls, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY) %>
     <% raise "invalid ci-deployment-overview.yml. Missing key [#{depls}][#{PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY}][state_file_path] or delete terraform-config key." if terraform_config_path.nil? %>
 - name: check-terraform-consistency
     <% jobs['terraform'] << 'check-terraform-consistency' %>
