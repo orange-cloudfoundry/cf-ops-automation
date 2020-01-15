@@ -347,12 +347,11 @@ describe 'BoshPipelineTemplateProcessing' do
                 secret_access_key: ((s3-br-secret-key))
                 endpoint: ((s3-br-endpoint))
                 skip_ssl_verification: ((s3-br-skip-ssl-verification))
+              version:
+                path: "#{br_repo}/#{br_name}-((#{br_name}-version)).tgz"
           YAML
           YAML.safe_load fragment
         end.flatten
-      end
-      let(:expected_boshrelease_get_version) do
-        expected_boshreleases.flat_map { |name, repo| { name => "#{repo}/#{name}-((#{name}-version)).tgz" } }
       end
       let(:expected_boshrelease_put_version) do
         expected_boshreleases.flat_map { |name, _repo| { name => "#{name}/*.tgz" } }
@@ -373,13 +372,13 @@ describe 'BoshPipelineTemplateProcessing' do
         expect(s3_boshreleases).to include(*expected_s3_boshreleases)
       end
 
-      it 'generates s3 version using path on get' do
+      it 'does not generate s3 version using path on get' do
         boshrelease_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
           .flat_map { |plan| plan['in_parallel'] }
           .compact
           .select { |resource| expected_boshreleases.key?(resource['get']) }
-          .flat_map { |resource| { resource['get'] => resource['version']['path'] } }
-        expect(boshrelease_get_version).to include(*expected_boshrelease_get_version)
+          .flat_map { |resource| { resource['get'] => resource['version'] } }
+        expect(boshrelease_get_version).to all(satisfy { |k,v| v.nil? })
       end
 
       it 'generates s3 version using path on deployment put' do
@@ -391,7 +390,7 @@ describe 'BoshPipelineTemplateProcessing' do
       end
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
-        expected_init_version = expected_boshrelease_get_version.flat_map(&:values).flatten.flat_map { |get_version| "path:#{get_version}" }
+        expected_init_version = expected_boshreleases.values.flat_map { |get_version| "path:#{get_version}" }
         init_args = generated_pipeline['jobs']
           .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
           .flat_map { |job| job['plan'] }

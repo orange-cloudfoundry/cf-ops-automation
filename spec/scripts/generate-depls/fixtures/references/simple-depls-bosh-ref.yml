@@ -139,11 +139,16 @@ resources:
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
+  version:
+    version: "((ntp_boshrelease-version))"
 - name: zookeeper_boshrelease
   icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: cppforlife/zookeeper-release
+  version:
+    version: "((zookeeper_boshrelease-version))"
+
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -367,7 +372,6 @@ jobs:
       params: { submodules: none}
       trigger: true
     - get: ntp_boshrelease
-      version: { version: "((ntp_boshrelease-version))" }
       trigger: true
       attempts: 2
     - get: secrets-ntp-with-scan
@@ -583,7 +587,6 @@ jobs:
       params: { submodules: none}
       trigger: true
     - get: zookeeper_boshrelease
-      version: { version: ((zookeeper_boshrelease-version)) }
       trigger: true
       attempts: 2
     - get: paas-templates-zookeeper-without-scan

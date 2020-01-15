@@ -236,12 +236,14 @@ resources:
     secret_access_key: ((s3-br-secret-key))
     endpoint: ((s3-br-endpoint))
     skip_ssl_verification: ((s3-br-skip-ssl-verification))
+  version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
   <% else %>
     <% if info['base_location'].include?('bosh.io') %>
   icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: <%= info['repository'] %>
+  version: { version: ((<%= release %>-version)) }
     <% else %>
   icon: github-circle
   type: github-release
@@ -250,6 +252,7 @@ resources:
     repository: <%= info['repository'].split('/').last %>
     access_token: ((bot-github-access-token))
 #  version: tag:( (<%#= release %>-version) ) # FIXME https://github.com/concourse/concourse/issues/3990
+# <%= release %>-version is pinned, see resource declaration. This is disabled for now...
     <% end %>
   <% end %>
 <% end %>
@@ -560,15 +563,6 @@ jobs:
       trigger: true
   <% deployment_details.releases.each do |release, info| %>
     - get: <%= release %>
-    <% if config['offline-mode'] && config['offline-mode']['boshreleases'] %>
-      version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
-    <% else %>
-      <% if PipelineHelpers.bosh_io_hosted?(info) %>
-      version: { version: ((<%= release %>-version)) }
-      <% else %>
-      # <%= release %>-version is pinned, see resource declaration. This is disabled for now...
-      <% end %>
-    <% end %>
       trigger: true
       attempts: 2
   <% end %>
