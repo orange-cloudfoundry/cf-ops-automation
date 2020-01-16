@@ -1,0 +1,4 @@
+---
+name: profile-b
+director_uuid: (( grab secrets.bosh_uuid ))
+

@@ -21,3 +21,4 @@ params:
   SUFFIX:
   CUSTOM_SCRIPT_DIR:
   IAAS_TYPE:
+  PROFILES:

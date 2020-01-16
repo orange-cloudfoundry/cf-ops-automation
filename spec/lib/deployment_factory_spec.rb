@@ -4,11 +4,16 @@ require 'deployment_factory'
 describe DeploymentFactory do
   let(:root_deployment_name) { 'main_depls' }
   let(:deployment_name) { 'my_deployment' }
-  let(:config) { Config.new }
+  let(:config) { instance_double(Config) }
   let(:versions) do
     { 'deployment-name' => root_deployment_name, 'stemcell-version' => '10.0',
       'bosh-version' => '264.10.0',
       'bosh-openstack-cpi-release-version' => '37' }
+  end
+
+  before do
+    allow(config).to receive(:stemcell_name).and_return(Config.new.stemcell_name)
+    allow(config).to receive(:iaas_type).and_return(Config.new.iaas_type)
   end
 
   describe '#initialize' do
@@ -53,25 +58,110 @@ describe DeploymentFactory do
     end
   end
 
-  describe '#load_file_with_iaas' do
+  describe '#load_files' do
     let(:deployment_factory) { described_class.new(root_deployment_name, versions, config) }
     let(:generic_deployment) { [Deployment.default(deployment_name)] }
-    let(:loaded_deployment) { deployment_factory.load_file_with_iaas('dummy-filename.yml') }
+    let(:loaded_deployment) { deployment_factory.load_files('dummy-filename.yml') }
     let(:my_deployment) { loaded_deployment.first }
+    let(:current_profiles) { %w[no_profile_files] }
+    let(:current_iaas_type) { 'a_custom_iaas' }
 
-    context 'when no iaas file exists' do
-      let(:current_iaas_type) { 'a_custom_iaas' }
+    before do
+      allow(config).to receive(:iaas_type).and_return(current_iaas_type)
+      allow(config).to receive(:profiles).and_return(current_profiles)
+    end
 
-      it 'loads deployment-dependencies.yml' do
-        allow(config).to receive(:iaas_type).and_return(current_iaas_type)
+    context 'when no profiles and no iaas_type files exist' do
+      before do
         allow(deployment_factory).to receive(:load_file).with('dummy-filename.yml').and_return(generic_deployment)
         allow(File).to receive(:exist?).with("dummy-filename-#{current_iaas_type}.yml").and_return(false)
+        allow(File).to receive(:exist?).with("dummy-filename-#{current_profiles.first}.yml").and_return(false)
+      end
 
+      it 'loads deployment-dependencies.yml' do
         expect(my_deployment.details).to eq(Deployment.default_details)
       end
     end
 
-    context 'when a iaas file exists' do
+    context 'when two profiles exists' do
+      let(:current_profiles) { %w[profile-1 profile-2] }
+      let(:generic_deployment) do
+        content = <<~YAML
+          releases:
+            my-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry/my-bosh-release
+            overridden-bosh-release:
+              base_location: to-be-overriden
+              repository: to-be-overriden
+        YAML
+        details = YAML.safe_load(content)
+        [Deployment.new(deployment_name, Deployment.default_details.merge(details))]
+      end
+      let(:profile_1_deployment) do
+        content = <<~YAML
+          profile-1-type: true
+          profile-1-property: true
+          releases:
+            overridden-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: profile-1/overridden-bosh-release
+            profile-1-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry/p1-bosh-release
+        YAML
+        details = YAML.safe_load(content)
+        [Deployment.new('profile-1-override', details)]
+      end
+      let(:profile_2_deployment) do
+        content = <<~YAML
+          profile-2-type: true
+          profile-1-property: false
+          releases:
+            overridden-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: profile-2/overridden-bosh-release
+            profile-2-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry/p2-bosh-release
+        YAML
+        details = YAML.safe_load(content)
+        [Deployment.new('profile-1-override', details)]
+      end
+      let(:expected_details) do
+        {
+          'profile-1-type' => true,
+          'profile-1-property' => false,
+          'profile-2-type' => true,
+          'releases' => {
+            'profile-1-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/p1-bosh-release' },
+            'profile-2-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/p2-bosh-release' },
+            'my-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/my-bosh-release' },
+            'overridden-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'profile-2/overridden-bosh-release' }
+          },
+          'stemcells' => {}
+        }
+      end
+
+      before do
+        allow(deployment_factory).to receive(:load_file).with('dummy-filename.yml').and_return(generic_deployment)
+
+        allow(File).to receive(:exist?).with("dummy-filename-#{current_iaas_type}.yml").and_return(false)
+
+        allow(File).to receive(:exist?).with("dummy-filename-profile-1.yml").and_return(true)
+        allow(deployment_factory).to receive(:load_file).with('dummy-filename-profile-1.yml').and_return(profile_1_deployment)
+      end
+
+      it 'loads and merges all deployment dependencies files' do
+        allow(File).to receive(:exist?).with("dummy-filename-profile-2.yml").and_return(true)
+        allow(deployment_factory).to receive(:load_file).with('dummy-filename-profile-2.yml').and_return(profile_2_deployment)
+
+        expect(my_deployment.details).to eq(expected_details)
+      end
+    end
+
+    context 'when iaas file exists without profiles' do
+      let(:current_iaas_type) { 'openstack' }
       let(:generic_deployment) do
         content = <<~YAML
           releases:
@@ -102,9 +192,9 @@ describe DeploymentFactory do
       let(:expected_details) do
         { 'iaas-type' => true,
           'releases' => {
-            'my-bosh-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/my-bosh-release'},
-            'overridden-bosh-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/overridden-bosh-release'},
-            'bosh-openstack-cpi-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry-incubator/bosh-openstack-cpi-release'}
+              'my-bosh-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/my-bosh-release'},
+              'overridden-bosh-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/overridden-bosh-release'},
+              'bosh-openstack-cpi-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry-incubator/bosh-openstack-cpi-release'}
           },
           'stemcells' => {} }
       end
@@ -113,11 +203,91 @@ describe DeploymentFactory do
         allow(deployment_factory).to receive(:load_file).with('dummy-filename.yml').and_return(generic_deployment)
         allow(deployment_factory).to receive(:load_file).with('dummy-filename-openstack.yml').and_return(iaas_deployment)
         allow(File).to receive(:exist?).with("dummy-filename-#{config.iaas_type}.yml").and_return(true)
+        allow(File).to receive(:exist?).with("dummy-filename-#{config.profiles.first}.yml").and_return(false)
+
+        expect(my_deployment.details).to eq(expected_details)
+      end
+    end
+
+    context 'when iaas and profiles files exist' do
+      let(:generic_deployment) do
+        content = <<~YAML
+          releases:
+            my-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry/my-bosh-release
+            overridden-bosh-release:
+              base_location: to-be-overriden
+              repository: to-be-overriden
+        YAML
+        details = YAML.safe_load(content)
+        [Deployment.new(deployment_name, Deployment.default_details.merge(details))]
+      end
+      let(:iaas_deployment) do
+        content = <<~YAML
+          iaas-type: true
+          releases:
+            bosh-openstack-cpi-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-incubator/bosh-openstack-cpi-release
+            overridden-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry/overridden-bosh-release
+        YAML
+        details = YAML.safe_load(content)
+        [Deployment.new('iaas-override', details)]
+      end
+      let(:profile_1_deployment) do
+        content = <<~YAML
+          profile-1-type: true
+          releases:
+            bosh-openstack-cpi-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-incubator/bosh-openstack-cpi-release
+            overridden-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: profile-1/overridden-bosh-release
+            profile-1-bosh-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry/p1-bosh-release
+        YAML
+        details = YAML.safe_load(content)
+        [Deployment.new('profile-1-override', details)]
+      end
+
+      let(:expected_details) do
+        {
+          'profile-1-type' => true,
+          # 'profile-type-2' => true,
+          'iaas-type' => true,
+          'releases' => {
+             'profile-1-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/p1-bosh-release' },
+             'my-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/my-bosh-release' },
+             'overridden-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'profile-1/overridden-bosh-release' },
+             'bosh-openstack-cpi-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry-incubator/bosh-openstack-cpi-release' }
+          },
+          'stemcells' => {}
+        }
+      end
+      let(:current_profiles) { %w[profile-1] }
+
+      before do
+        allow(config).to receive(:iaas_type).and_return('openstack')
+        allow(deployment_factory).to receive(:load_file).with('dummy-filename-openstack.yml').and_return(iaas_deployment)
+        allow(config).to receive(:profiles).and_return(current_profiles)
+        allow(File).to receive(:exist?).with("dummy-filename-#{current_profiles.first}.yml").and_return(true)
+        allow(deployment_factory).to receive(:load_file).with('dummy-filename-profile-1.yml').and_return(profile_1_deployment)
+      end
+
+      it 'merge deployment-dependencies with iaas file and then with profiles' do
+        allow(deployment_factory).to receive(:load_file).with('dummy-filename.yml').and_return(generic_deployment)
+        allow(File).to receive(:exist?).with("dummy-filename-#{config.iaas_type}.yml").and_return(true)
 
         expect(my_deployment.details).to eq(expected_details)
       end
     end
   end
+
 
   describe '#load_file' do
     context 'when file does not exist' do

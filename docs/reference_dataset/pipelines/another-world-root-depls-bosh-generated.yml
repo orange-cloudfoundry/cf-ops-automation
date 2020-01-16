@@ -142,7 +142,7 @@ jobs:
     - task: generate-another-world-root-depls-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-another-world-root-depls-limited, additional-resource: paas-templates-another-world-root-depls}
       output_mapping: {generated-files: config-manifest}
-      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/another-world-root-depls/
         YML_TEMPLATE_DIR: additional-resource/another-world-root-depls/template

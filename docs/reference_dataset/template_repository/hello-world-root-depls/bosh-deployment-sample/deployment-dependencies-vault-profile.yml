@@ -1,0 +1,9 @@
+---
+deployment:
+  bosh-deployment:
+    # bosh-release required. Don't set version here, set it in paas-template/<depls>-versions.yml
+    releases:
+      #we add vault boshrelease in profile dedicated file
+      vault:
+        base_location: http://github.com/ # COA can use boshrelease published on github if a tgz is available
+        repository: cloudfoundry-community/vault-boshrelease

@@ -15,6 +15,7 @@ run:
   - -exc
   - |
     echo "Selected Iaas Type: <${IAAS_TYPE}>"
+    echo "Profiles: <${PROFILES}>"
     export SECRETS=$(pwd)/secrets-resource
     export TEMPLATES=$(pwd)/templates-resource
     export OUTPUT_DIR=$(pwd)/result-dir
@@ -24,3 +25,4 @@ run:
 params:
   IAAS_TYPE:
   PIPELINE_TYPE:
+  PROFILES:

@@ -1,0 +1,4 @@
+---
+vars:
+  profile-b:
+    skip: true

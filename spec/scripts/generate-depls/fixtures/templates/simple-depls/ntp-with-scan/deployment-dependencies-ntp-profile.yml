@@ -1,0 +1,7 @@
+---
+deployment:
+  bosh-deployment:
+    releases:
+      ntp_boshrelease:
+        base_location: https://bosh.io/d/github.com/
+        repository: cloudfoundry-community/ntp-release

@@ -29,7 +29,7 @@ do
     echo "processing $filename"
     output_filename=${filename%${SUFFIX}}${file_extension}
     echo "generating ${output_filename}"
-     ${SPRUCE_SCRIPT_DIR}/spruce-manifest.sh ${template} ${YML_FILES} >${OUTPUT_DIR}/${output_filename}
+    ${SPRUCE_SCRIPT_DIR}/spruce-manifest.sh ${template} ${YML_FILES} >${OUTPUT_DIR}/${output_filename}
 done
 
 

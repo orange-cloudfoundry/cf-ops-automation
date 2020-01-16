@@ -131,7 +131,7 @@ jobs:
   - task: spruce-processing-<%= name %>
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= name %>, additional-resource: paas-templates-<%= name %>}
     output_mapping: {generated-files: spruced-files}
-    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
       SPRUCE_FILE_BASE_PATH: credentials-resource/<%= "#{depls}/#{name}" %>
       YML_TEMPLATE_DIR: additional-resource/<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
@@ -141,6 +141,7 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
       IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
   - task: execute-<%= name %>-spiff-pre-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: spruced-files}
     output_mapping: {generated-files: pre-deploy-resource}

@@ -408,7 +408,7 @@ jobs:
     - task: generate-<%= depls %>-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>-limited, additional-resource: paas-templates-<%=depls %>}
       output_mapping: {generated-files: config-manifest}
-      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/
         YML_TEMPLATE_DIR: additional-resource/<%= depls %>/template
@@ -419,6 +419,7 @@ jobs:
             ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/template
         IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
 
     - in_parallel:
       - task: update-cloud-config-for-<%= depls %>
@@ -610,7 +611,7 @@ jobs:
       credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
       additional-resource: paas-templates-<%= name %>
     output_mapping: {generated-files: release-manifest}
-    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
       SPRUCE_FILE_BASE_PATH: credentials-resource/<%= depls %>/<%= name %>/
       YML_TEMPLATE_DIR: additional-resource/<%= depls %>/<%= name %>/template
@@ -621,6 +622,7 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
       IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
   - task: execute-<%= name %>-spiff-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -1050,7 +1052,7 @@ jobs:
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%=depls %>}
     output_mapping: {generated-files: terraform-tfvars}
-    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
       YML_FILES: |
         ./credentials-resource/shared/secrets.yml
@@ -1061,6 +1063,7 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
   - task: terraform-plan
     input_mapping: {secret-state-resource: secrets-<%= depls %>-limited,spec-resource: paas-templates-<%=depls %>}
     file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
@@ -1068,6 +1071,8 @@ jobs:
       SPEC_PATH: "<%= terraform_config_path %>/spec"
       SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
       IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
+      PROFILES_SPEC_PATH_PREFIX: "<%= terraform_config_path %>/spec-"
+      PROFILES: ((profiles))
 
 - name: approve-and-enforce-terraform-consistency
     <% jobs['terraform'] << 'approve-and-enforce-terraform-consistency' %>
@@ -1098,7 +1103,7 @@ jobs:
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%=depls %>}
     output_mapping: {generated-files: terraform-tfvars}
-    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
       YML_FILES: |
         ./credentials-resource/shared/secrets.yml
@@ -1109,6 +1114,7 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
   - task: terraform-apply
     input_mapping: {secret-state-resource: secrets-<%= depls %>-limited,spec-resource: paas-templates-<%=depls %>}
     output_mapping: {generated-files: terraform-cf}
@@ -1117,6 +1123,8 @@ jobs:
       SPEC_PATH: "<%= terraform_config_path %>/spec"
       SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
       IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
+      PROFILES_SPEC_PATH_PREFIX: "<%= terraform_config_path %>/spec-"
+      PROFILES: ((profiles))
     ensure:
       task: update-terraform-state-file
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}

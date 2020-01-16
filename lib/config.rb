@@ -7,6 +7,7 @@ require_relative 'extended_config'
 # an extended configuration (based on environment variables)
 class Config
   DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-xenial-go_agent'.freeze
+  DEFAULT_PROFILES = [].freeze
   DEFAULT_STEMCELL_PREFIX = 'bosh'.freeze
   CONFIG_DEFAULT_KEY = 'default'.freeze
   CONFIG_CONCOURSE_KEY = 'concourse'.freeze
@@ -33,15 +34,16 @@ class Config
         CONFIG_STEMCELL_KEY => { 'name' => DEFAULT_STEMCELL },
         CONFIG_CONCOURSE_KEY => { CONFIG_PARALLEL_EXECUTION_LIMIT_KEY => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT }
       }
-    }.deep_merge(@extended_config.default_config)
+    }.deep_merge(@extended_config.default_format)
   end
 
   def load_config
+    public_config = private_config = nil
     public_config = YAML.load_file(@public_yaml) if File.exist?(@public_yaml)
     private_config = YAML.load_file(@private_yaml) if File.exist?(@private_yaml)
     @loaded_config = @loaded_config.deep_merge(public_config) unless public_config.nil?
     @loaded_config = @loaded_config.deep_merge(private_config) unless private_config.nil?
-    @loaded_config = @loaded_config.deep_merge(@extended_config.default_config)
+    @loaded_config = @loaded_config.deep_merge(@extended_config.default_format)
     puts "Loaded config: #{@loaded_config.to_yaml}"
     self
   end
@@ -54,6 +56,10 @@ class Config
   end
 
   def iaas_type
-    @loaded_config['default']['iaas']
+    @loaded_config.dig('default', 'iaas') || ''
+  end
+
+  def profiles
+    @loaded_config.dig('default', 'profiles') || DEFAULT_PROFILES
   end
 end

@@ -5,7 +5,41 @@ CURRENT_DIR=$(pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files/}
 COMMON_SCRIPT_DIR=${COMMON_SCRIPT_DIR:-scripts-resource/concourse/tasks/generate_manifest}
 
+process_bosh_config_files() {
+    for config_file in cloud-config.yml runtime-config.yml cpi-config.yml; do
+        if [ -e ${config_file} ]; then
+            echo "copying '${YML_TEMPLATE_DIR}/${config_file}' to '${OUTPUT_DIR}'"
+            cp ${config_file} ${OUTPUT_DIR}
+        fi
+    done
+}
+
+generate_manifest() {
+    local customization_dir=$1
+    local yml_template_dir=$2
+    local output_dir=$3
+    local common_script_dir=$4
+
+    echo "$customization_dir"
+    echo "${yml_template_dir}/${customization_dir}"
+
+    if [ -n "${customization_dir}" -a  -d "${yml_template_dir}/${customization_dir}" ]; then
+        echo "Customization detected for ${customization_dir}"
+        find "${yml_template_dir}"/"${customization_dir}" -maxdepth 1 -name "*-operators.yml" -exec cp --verbose {} "${output_dir}" +
+        find "${yml_template_dir}"/"${customization_dir}" -maxdepth 1 -name "*-vars.yml" -exec cp --verbose {} "${output_dir}" +
+        YML_TEMPLATE_DIR=${yml_template_dir}/${customization_dir} ${common_script_dir}/generate-manifest.sh
+        if [ $? -ne 0 ]; then
+            exit $?
+        fi
+
+    else
+        return 3
+    fi
+}
+
 cd "${YML_TEMPLATE_DIR}"
+
+process_bosh_config_files
 echo "Coping operators files from '${YML_TEMPLATE_DIR}' to '${OUTPUT_DIR}'"
 find . -maxdepth 1 -name "*-operators.yml" -exec cp --verbose {} "${OUTPUT_DIR}" +
 
@@ -15,14 +49,19 @@ cd "${CURRENT_DIR}"
 
 ${COMMON_SCRIPT_DIR}/generate-manifest.sh
 
-if [ -n "${IAAS_TYPE}" -a  -d "${YML_TEMPLATE_DIR}/${IAAS_TYPE}" ]; then
-    echo "Customization detected for ${IAAS_TYPE}"
-    find "${YML_TEMPLATE_DIR}"/"${IAAS_TYPE}" -maxdepth 1 -name "*-operators.yml" -exec cp --verbose {} "${OUTPUT_DIR}" +
-    find "${YML_TEMPLATE_DIR}"/"${IAAS_TYPE}" -maxdepth 1 -name "*-vars.yml" -exec cp --verbose {} "${OUTPUT_DIR}" +
-    YML_TEMPLATE_DIR=${YML_TEMPLATE_DIR}/${IAAS_TYPE} ${COMMON_SCRIPT_DIR}/generate-manifest.sh
-else
-    echo "ignoring Iaas customization. No IAAS_TYPE set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. IAAS_TYPE: <${IAAS_TYPE}>"
+set +e
+generate_manifest "${IAAS_TYPE}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
+if [ $? -eq 3 ]; then
+    echo "ignoring Iaas customization. No IAAS_TYPE set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. IAAS_TYPE: <${CUSTOMIZATION_DIR}>"
 fi
+
+for profile in ${PROFILES};do
+    generate_manifest "${profile}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
+    if [ $? -eq 3 ]; then
+        echo "ignoring Iaas customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${CUSTOMIZATION_DIR}>"
+    fi
+done
+set -e
 
 if [ -n "$CUSTOM_SCRIPT_DIR" -a  -f "$CUSTOM_SCRIPT_DIR/post-generate.sh" ]
 then

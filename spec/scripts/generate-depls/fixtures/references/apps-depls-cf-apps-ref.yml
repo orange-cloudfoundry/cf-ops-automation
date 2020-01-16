@@ -122,7 +122,7 @@ jobs:
     - task: generate-test-app-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-test-app, additional-resource: paas-template-test-app}
       output_mapping: {generated-files: release-manifest}
-      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/apps-depls/my_cf_app/
         YML_TEMPLATE_DIR: additional-resource/apps-depls/my_cf_app/template

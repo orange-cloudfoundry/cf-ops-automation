@@ -16,13 +16,14 @@ describe 'generate-depls for s3 boshrelease upload pipeline' do
     let(:templates_path) { "#{fixture_path}/templates" }
     let(:secrets_path) { "#{fixture_path}/secrets" }
     let(:iaas_type) { 'my-custom-iaas' }
+    let(:profiles) { %w[ntp-profile] }
 
     after do
       FileUtils.rm_rf(output_path) unless output_path.nil?
     end
 
     context 'when valid' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i s3-br-upload" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i s3-br-upload --profiles #{profiles.join(',')}" }
 
       stdout_str = stderr_str = ''
       before do

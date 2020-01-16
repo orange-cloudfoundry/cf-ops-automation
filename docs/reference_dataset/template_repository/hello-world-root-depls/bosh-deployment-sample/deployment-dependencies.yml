@@ -20,9 +20,6 @@ deployment:
       ntp:
         base_location: https://bosh.io/d/github.com/
         repository: cloudfoundry-community/ntp-release
-      vault:
-        base_location: http://github.com/ # COA can use boshrelease published on github if a tgz is available
-        repository: cloudfoundry-community/vault-boshrelease
     errands: # errands to execute automatically after each deploy. Errand are executed one by one in random order.
       # errand-1:
         # display-name: my-custom-name   # => run-errand-bosh-deployment-sample-my-custom-name (ie: run-errand-<deployment-name>-<display-name>)

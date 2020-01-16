@@ -14,7 +14,22 @@
 set -C
 set -o pipefail # error on first command failure when using pipe
 
-env
+if [ -n "${PROFILES}" ]
+then
+   echo "Profiles detected: ${PROFILES}"
+   PROFILES_OPTION="--profiles ${PROFILES}"
+else
+   echo "INFO: undefined variable: PROFILES - ignoring"
+fi
+
+if [ -n "${EXCLUDE_PIPELINES}" ]
+then
+   echo "Excluding pipeline templates matching ${EXCLUDE_PIPELINES}"
+   PIPELINES_RESTRICTIONS="--exclude ${EXCLUDE_PIPELINES}"
+else
+    echo "INFO: undefined variable: EXCLUDE_PIPELINES - ignoring"
+fi
+
 if [ -z "${ROOT_DEPLOYMENT}" ]
 then
     echo "ERROR: missing environment variable: ROOT_DEPLOYMENT" | tee -a result-dir/error.log
@@ -33,18 +48,12 @@ then
     exit 1
 fi
 
-if [ -n "${EXCLUDE_PIPELINES}" ]
-then
-   echo "Excluding pipeline templates matching ${EXCLUDE_PIPELINES}"
-   PIPELINES_RESTRICTIONS="--exclude ${EXCLUDE_PIPELINES}"
-fi
-
 
 cp -r templates/. result-dir
 cp -r scripts-resource/. result-dir
 cp -rf secrets/. result-dir
 cd result-dir
-./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}" $PIPELINES_RESTRICTIONS > >(tee generate-depls.log) 2> >(tee -a error.log >&2) # tee generate-depls.log
+./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}" ${PROFILES_OPTION} ${PIPELINES_RESTRICTIONS} > >(tee generate-depls.log) 2> >(tee -a error.log >&2) # tee generate-depls.log
 if [ -s 'error.log' ]; then
     cat error.log
     exit 1

@@ -77,7 +77,7 @@ jobs:
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
-      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
