@@ -18,12 +18,6 @@ describe 'bosh_variables task' do
   end
 
   context 'when executed on concourse' do
-    let(:expected_deployments_to_delete_list) do
-      <<~TEXT
-        hello-world-deployment
-        another-world-deployment
-      TEXT
-    end
 
     before(:context) do
       @result_dir = Dir.mktmpdir

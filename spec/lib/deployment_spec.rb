@@ -5,41 +5,57 @@ describe Deployment do
   let(:depl_name) { 'a-deployment' }
 
   describe '#initialize' do
-    it 'creates an new deployment without details'
+    context 'when creating a deployment without details' do
+      subject(:deployment) { described_class.new(depl_name) }
+
+      it 'creates an new deployment without details' do
+        expect(deployment.details).to be_empty
+      end
+    end
+
+    context 'when creating a deployment' do
+      subject(:deployment) { described_class.new(depl_name, details) }
+
+      let(:details) { {key_1: 'value', key_2: 'value'} }
+
+      it 'creates an new deployment with details' do
+        expect(deployment.details).to match(details)
+      end
+    end
   end
 
   describe '#enabled?' do
     context 'when details contains a status set to enabled' do
-      subject { described_class.new(depl_name, 'status' => 'enabled') }
+      subject(:deployment) { described_class.new(depl_name, 'status' => 'enabled') }
 
       it 'return true' do
-        expect(subject).to be_enabled
+        expect(deployment).to be_enabled
       end
     end
 
     context 'when details does not contains any status set' do
-      subject { described_class.new(depl_name) }
+      subject(:deployment) { described_class.new(depl_name) }
 
       it 'return false' do
-        expect(subject).not_to be_enabled
+        expect(deployment).not_to be_enabled
       end
     end
   end
 
   describe '#disabled?' do
     context 'when details contains a status set to disabled' do
-      subject { described_class.new(depl_name, 'status' => 'disabled') }
+      subject(:deployment) { described_class.new(depl_name, 'status' => 'disabled') }
 
       it 'return true' do
-        expect(subject).to be_disabled
+        expect(deployment).to be_disabled
       end
     end
 
     context 'when details does not contains any status set' do
-      subject { described_class.new(depl_name) }
+      subject(:deployment) { described_class.new(depl_name) }
 
       it 'return true' do
-        expect(subject).to be_disabled
+        expect(deployment).to be_disabled
       end
     end
   end

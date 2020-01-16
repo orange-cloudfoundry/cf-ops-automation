@@ -46,8 +46,14 @@ describe 'generate-depls' do
           include('-e PIPELINE1,PIPELINE2,          List of pipelines to exclude).and').and \
           include('--exclude').and \
           include('--[no-]dump            Dump genereted file on standart output').and \
-          include('--iaas IAAS_TYPE             Target a specific iaas for pipeline generation')
+          include('--iaas IAAS_TYPddddE             Target a specific iaas for pipeline generation').and \
+          include('List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)')
 
+        fail("Test not accurate")
+        expect(stderr_str).to include('--profiles PROFILES            List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)')
+        #stderr_line_count = 0
+        #stderr_str.each_line { stderr_line_count+=1 }
+        #expect(stderr_line_count).to eq(14)
         expect(stdout_str).to be_empty
       end
     end

@@ -34,6 +34,7 @@ class PipelineGenerator
     dump_output: true,
     paas_templates_path: '../paas-templates',
     iaas_type: 'openstack',
+    profiles: [],
     exclude_pipelines: [],
     include_pipelines: []
   }.freeze
@@ -71,7 +72,7 @@ class PipelineGenerator
   def set_context
     shared_config  = File.join(options.paas_templates_path, 'shared-config.yml')
     private_config = File.join(options.secrets_path, 'private-config.yml')
-    extended_config = ExtendedConfigBuilder.new.with_iaas_type(options.iaas_type).build
+    extended_config = ExtendedConfigBuilder.new.with_iaas_type(options.iaas_type).with_profiles(options.profiles).build
     config = Config.new(shared_config, private_config, extended_config).load_config
     root_deployment_versions = RootDeploymentVersion.load_file("#{options.paas_templates_path}/#{options.depls}/#{options.depls}-versions.yml")
     deployment_factory = DeploymentFactory.new(options.depls, root_deployment_versions.versions, config)
@@ -180,6 +181,10 @@ class PipelineGenerator
 
           opts.on('--iaas IAAS_TYPE', 'Target a specific iaas for pipeline generation') do |iaas_type|
             options[:iaas_type] = iaas_type
+          end
+
+          opts.on('--profiles PROFILES', Array, 'List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)') do |profiles_type|
+            options[:profiles] = profiles_type
           end
         end
       end

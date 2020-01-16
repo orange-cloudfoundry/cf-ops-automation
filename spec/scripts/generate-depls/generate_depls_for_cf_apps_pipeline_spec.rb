@@ -16,13 +16,14 @@ describe 'generate-depls for cf-apps pipeline' do
     let(:templates_path) { "#{fixture_path}/templates" }
     let(:secrets_path) { "#{fixture_path}/secrets" }
     let(:iaas_type) { 'my-custom-iaas' }
+    let(:profiles) { %w[ntp-profile] }
 
     after do
       # FileUtils.rm_rf(output_path) unless output_path.nil?
     end
 
     context 'when generate-depls is executed' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i cf-apps" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i cf-apps --profiles #{profiles.join(',')}" }
 
       stdout_str = stderr_str = ''
       before do

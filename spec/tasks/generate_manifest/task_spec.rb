@@ -2,8 +2,11 @@
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
+require 'fileutils'
 
 describe 'generate_manifest task' do
+  let(:credentials_meta_content) { { "meta" => { "ntp" => { "version" => 12 } } } }
+
   context 'when no template are detected' do
     after(:context) do
       FileUtils.rm_rf @generated_files
@@ -12,7 +15,7 @@ describe 'generate_manifest task' do
     before(:context) do
       @generated_files = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         '-i additional-resource=spec/tasks/generate_manifest/additional-resource ' \
@@ -41,7 +44,7 @@ describe 'generate_manifest task' do
       @generated_files = Dir.mktmpdir
       @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
 
-      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         "-i additional-resource=#{@additional_resource} " \
@@ -91,7 +94,7 @@ describe 'generate_manifest task' do
 
     context 'when processing an invalid template' do
       before(:context) do
-        @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+        @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         '-i additional-resource=spec/tasks/generate_manifest/additional-resource ' \
@@ -122,7 +125,7 @@ describe 'generate_manifest task' do
 
     context 'when a post generate script is detected' do
       before(:context) do
-        @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+        @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         '-i additional-resource=spec/tasks/generate_manifest/additional-resource ' \
@@ -167,7 +170,7 @@ describe 'generate_manifest task' do
       @generated_files = Dir.mktmpdir
       @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
 
-      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         "-i additional-resource=#{@additional_resource} " \
@@ -211,6 +214,41 @@ describe 'generate_manifest task' do
 
       expect(generated_files_dir_content).to match_array(expected_content)
     end
+    context 'when profiles are defined' do
+      let(:expected_generated_iaas_filenames) { %w[iaas-operators.yml iaas.yml iaas-unspruced-vars.yml iaas-vars.yml].sort }
+      let(:expected_generated_profile_a_filenames) { %w[iaas.yml profile-a-operators.yml profile-a.yml profile-b-unspruced-vars.yml].sort }
+      let(:expected_generated_base_filenames) { %w[shared-operators.yml shared.yml shared-vars.yml] }
+      let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_iaas_filenames + expected_generated_profile_a_filenames).sort.uniq}
+
+      before(:context) do
+        @generated_files = Dir.mktmpdir
+        @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
+
+        @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
+        '-i scripts-resource=. ' \
+        '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
+        "-i additional-resource=#{@additional_resource} " \
+        "-o generated-files=#{@generated_files} ",
+                          'YML_TEMPLATE_DIR' => 'additional-resource/template-with-iaas',
+                          'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
+                          'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
+                          'SUFFIX' => '',
+                          'PROFILES' => 'profile-a',
+                          'IAAS_TYPE' => 'openstack')
+      end
+
+      it 'processes iaas-type files before profiles' do
+        expected_content = {}.merge(credentials_meta_content).merge('name' => 'profile-a', 'director_uuid' => '1234-4567-7898-7654-3210')
+        loaded_yaml_content = YAML.load_file(File.join(@generated_files, 'iaas.yml'))
+        expect(loaded_yaml_content).to eq(expected_content)
+      end
+
+      it 'processes only expected files' do
+        processed_files = Dir[File.join(@generated_files,'*')].map { |path| File.basename(path) }.sort
+        expect(processed_files).to eq(expected_generated_filenames)
+      end
+    end
+
   end
 
   context 'when secrets.yml and meta.yml are empty' do
@@ -226,7 +264,7 @@ describe 'generate_manifest task' do
         YAML
       end
 
-      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         "-i credentials-resource=#{@credentials_dir} " \
         "-i additional-resource=#{@additional_resource} " \
@@ -257,22 +295,22 @@ describe 'generate_manifest task' do
       expect(@output).to match("\nsucceeded\n")
     end
   end
+
   context 'when a link is broken' do
     after(:context) do
       FileUtils.rm_rf @generated_files
-      a_symlink = File.join(@additional_resource_reference,"a-symlink-operators.yml")
-      File.unlink(a_symlink) if File.symlink?(a_symlink)
+      FileUtils.rm_rf @additional_resource
     end
 
     before(:context) do
       @generated_files = Dir.mktmpdir
       @additional_resource = Dir.mktmpdir
       @additional_resource_reference = 'spec/tasks/generate_manifest/additional-resource'
-      a_symlink = File.join(@additional_resource_reference,"a-symlink-operators.yml")
-      File.symlink('../dummy_symlink', a_symlink) unless File.symlink?(a_symlink)
       FileUtils.cp_r(@additional_resource_reference + '/.', @additional_resource)
+      a_symlink = File.join(@additional_resource,"a-symlink-operators.yml")
+      File.symlink('../dummy_symlink', a_symlink) unless File.symlink?(a_symlink)
 
-      @output = execute('-c concourse/tasks/generate-manifest.yml ' \
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
         '-i scripts-resource=. ' \
         '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
         "-i additional-resource=#{@additional_resource} " \
@@ -289,11 +327,139 @@ describe 'generate_manifest task' do
     end
 
     it 'displays an error message' do
-      expect(@output).to include("cp: can't stat")
+      expect(@output).to include("cp: can't stat './a-symlink-operators.yml'")
     end
 
     it 'returns with exit status 1' do
       expect(@fly_status.exitstatus).to eq(1)
+    end
+  end
+
+  context 'when profiles are defined' do
+    let(:paas_template_path) { File.join(@additional_resource, 'template') }
+    let(:profile_a_path) { File.join(paas_template_path, 'profile-a') }
+    let(:profile_b_path) { File.join(paas_template_path, 'profile-b') }
+    let(:base_tpl_yml_files) { Dir[File.join(paas_template_path, '*-tpl.yml')].sort }
+    let(:profiles_tpl_yml_files) { (Dir[File.join(profile_a_path, '*-tpl.yml')] + Dir[File.join(profile_b_path, '*-tpl.yml')]).sort }
+    let(:tpl_yml_files) { (base_tpl_yml_files + profiles_tpl_yml_files).sort }
+    let(:generated_files_dir_content) { Dir[File.join(@generated_files, '*')] }
+    let(:expected_generated_profile_b_filenames) { %w[first.yml profile-b.yml profile-b-unspruced-vars.yml second.yml profile-b-operators.yml].sort }
+    let(:expected_generated_profile_a_filenames) { %w[first.yml profile-a.yml profile-b-unspruced-vars.yml profile-a-operators.yml].sort }
+    let(:expected_generated_base_filenames) { %w[a-link-to-an-operators.yml an-operators.yml first.yml my-vars.yml second.yml unspruced-vars.yml] }
+    let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_profile_a_filenames + expected_generated_profile_b_filenames).sort.uniq}
+
+
+    before(:context) do
+      @generated_files = Dir.mktmpdir
+      @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
+      @fly_error = nil
+      @fly_status = 0
+
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
+        '-i scripts-resource=. ' \
+        '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
+        "-i additional-resource=#{@additional_resource} " \
+        "-o generated-files=#{@generated_files} ",
+                        'YML_TEMPLATE_DIR' => 'additional-resource/template',
+                        'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
+                        'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
+                        'PROFILES' => "'profile-b profile-a'",
+                        'SUFFIX' => '')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
+    end
+
+    after(:context) do
+      FileUtils.rm_rf @generated_files
+    end
+
+    it 'does not generate an error message' do
+      expect(@fly_error).to be nil
+    end
+
+    it 'processes profile-b files' do
+      expected_generated_profile_b_filenames.each do |filename|
+        generated_file_path = File.join(@generated_files, filename)
+        expect(File.exist?(generated_file_path)).to be true
+      end
+    end
+
+    it 'processes profile-a files' do
+      expected_generated_profile_a_filenames.each do |filename|
+        generated_file_path = File.join(@generated_files, filename)
+        expect(File.exist?(generated_file_path)).to be true
+      end
+    end
+
+    it 'generates a file per valid template' do
+      tpl_yml_files .map { |filename| File.basename(filename, '-tpl.yml') }.each do |base_filename|
+        expected_filename = File.join(@generated_files, base_filename + '.yml')
+        expect(File).to exist(expected_filename), 'expected ' + base_filename + '.yml'
+      end
+    end
+
+    it 'processes profiles in declared order' do
+      expected_content = {}.merge(credentials_meta_content).merge('name' => 'profile-a')
+      loaded_yaml_content = YAML.load_file(File.join(@generated_files, 'first.yml'))
+      expect(loaded_yaml_content).to eq(expected_content)
+    end
+
+    it 'overrides files processed by previous profile' do
+      expected_content = { 'vars' => { 'profile-a' => { 'skip' => true } } }
+      loaded_yaml_content = YAML.load_file(File.join(@generated_files, 'profile-b-unspruced-vars.yml'))
+      expect(loaded_yaml_content).to eq(expected_content)
+    end
+
+    it 'processes only expected files' do
+      processed_files = Dir[File.join(@generated_files,'*')].map { |path| File.basename(path) }.sort
+      expect(processed_files).to eq(expected_generated_filenames)
+    end
+  end
+
+  context 'when bosh config files exist' do
+    after(:context) do
+      FileUtils.rm_rf @generated_files if Dir.exist?(@generated_files)
+      FileUtils.rm_rf @additional_resource if Dir.exist?(@additional_resource)
+    end
+
+    before(:context) do
+      @generated_files = Dir.mktmpdir
+      @additional_resource = Dir.mktmpdir
+      @additional_resource_reference = 'spec/tasks/generate_manifest/additional-resource'
+      FileUtils.cp_r(@additional_resource_reference + '/.', @additional_resource)
+      %w[cloud runtime cpi].each { |config_file| FileUtils.touch(File.join(@additional_resource, 'template', config_file + "-config.yml")) }
+
+      @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
+        '-i scripts-resource=. ' \
+        '-i credentials-resource=spec/tasks/generate_manifest/credentials-resource ' \
+        "-i additional-resource=#{@additional_resource} " \
+        "-o generated-files=#{@generated_files} ",
+                        'IAAS_TYPE' => '',
+                        'YML_TEMPLATE_DIR' => 'additional-resource/template',
+                        'SPRUCE_FILE_BASE_PATH' => 'credentials-resource/',
+                        'YML_FILES' => "'./credentials-resource/meta.yml ./credentials-resource/secrets.yml'",
+                        'SUFFIX' => '')
+    rescue FlyExecuteError => e
+      @output = e.out
+      @fly_error = e.err
+      @fly_status = e.status
+    end
+
+    it "handles [cloud|runtime|cpi]-confg.yml" do
+      %w[cloud runtime cpi].each do |bosh_config_type|
+        expected_filename = File.join(@generated_files, bosh_config_type + '-config.yml')
+        expect(File).to exist(expected_filename)
+      end
+    end
+
+    it 'processes others files also' do
+      templates_files_processed_count = 6 # as 'another_file.yml' is ignored
+      bosh_config_files_count = 3
+      expected_files_count = templates_files_processed_count + bosh_config_files_count
+      processed_files = Dir[File.join(@generated_files,'*')]
+      expect(processed_files.size).to eq(expected_files_count), "expected #{processed_files.size} to equals #{expected_files_count} - Generated files : #{processed_files}"
     end
   end
 end

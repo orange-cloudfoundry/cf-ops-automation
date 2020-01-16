@@ -145,7 +145,7 @@ function setup_fly_and_printout_cmds() {
     #    - task: generate-terraform-tfvars
     #      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>, additional-resource: paas-template-<%=depls %>}
     #      output_mapping: {generated-files: terraform-tfvars}
-    #      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    #      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     #      params:
     #        YML_FILES: |
     #          ./credentials-resource/shared/secrets.yml
@@ -172,7 +172,7 @@ function setup_fly_and_printout_cmds() {
 
     echo "---- Fly cmd for the tf vars generation (should take close to 3 mins)---"
     echo fly -t int.micro execute \
-            -c "${WORKDIR}/cf-ops-automation/concourse/tasks/generate-manifest.yml"  \
+            -c "${WORKDIR}/cf-ops-automation/concourse/tasks/generate_manifest/task.yml"  \
             -i "scripts-resource=${WORKDIR}/cf-ops-automation"  \
             -i "credentials-resource=${WORKDIR}/${SECRET_REPO}"  \
             -i "additional-resource=${WORKDIR}/paas-template" \

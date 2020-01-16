@@ -305,7 +305,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
             - task: spruce-processing-#{name}
               input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-#{name}, additional-resource: paas-templates-#{name}}
               output_mapping: {generated-files: spruced-files}
-              file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+              file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
               params:
                 SPRUCE_FILE_BASE_PATH: credentials-resource/#{root_deployment_name}/#{name}
                 YML_TEMPLATE_DIR: additional-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}
@@ -315,7 +315,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                     ./additional-resource/meta-inf.yml
                 CUSTOM_SCRIPT_DIR: additional-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}
                 IAAS_TYPE: ((iaas-type))
-
+                PROFILES: ((profiles))
           YAML
         end
         YAML.safe_load my_yaml

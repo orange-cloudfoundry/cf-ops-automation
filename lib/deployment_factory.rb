@@ -14,15 +14,18 @@ class DeploymentFactory
     validate_version_reference
   end
 
-  def load_file_with_iaas(filename = '')
+  def load_files(filename = '')
     deployment_dependencies_extension = File.extname(filename)
     deployment_dependencies_basename = filename.gsub(deployment_dependencies_extension, '')
     deployment_dependencies_loaded = load_file(filename)
 
-    iaas_filename = "#{deployment_dependencies_basename}-#{@config.iaas_type}.yml"
-    iaas_loaded = File.exist?(iaas_filename) ? load_file(iaas_filename) : [Deployment.new('empty-deployment')]
-    puts "#{iaas_filename} content: #{iaas_loaded}"
-    merge(deployment_dependencies_loaded.first, iaas_loaded.first)
+    all_deployment_dependencies_loaded = load_and_merge(deployment_dependencies_basename, deployment_dependencies_loaded, @config.iaas_type)
+    profiles = @config.profiles
+    profiles.each do |profile|
+      current_deployment_dependencies_loaded = all_deployment_dependencies_loaded
+      all_deployment_dependencies_loaded = load_and_merge(deployment_dependencies_basename, current_deployment_dependencies_loaded, profile)
+    end
+    all_deployment_dependencies_loaded
   end
 
   def load_file(filename = '')
@@ -36,6 +39,7 @@ class DeploymentFactory
   def load(deployment_name = '', data = {})
     raise "invalid deployment_name. Cannot be empty" if deployment_name.empty?
     raise "invalid data. Cannot load empty data" if data.empty?
+
     deployment_info = load_deployment_info(data)
     process_deployment_info(deployment_info, deployment_name)
   end
@@ -50,6 +54,14 @@ class DeploymentFactory
 
   private
 
+  def load_and_merge(deployment_dependencies_basename, deployment_dependencies_loaded, suffix)
+    iaas_filename = "#{deployment_dependencies_basename}-#{suffix}.yml"
+    iaas_loaded = File.exist?(iaas_filename) ? load_file(iaas_filename) : [Deployment.new('empty-deployment')]
+    puts "#{iaas_filename} content: #{iaas_loaded}"
+    puts "deployment_dependencies_loaded content: #{deployment_dependencies_loaded}"
+    merge(deployment_dependencies_loaded.first, iaas_loaded.first)
+  end
+
   def validate_file(filename)
     raise 'invalid filename. Cannot be empty' if filename.to_s.empty?
     raise "file not found: #{filename}" unless File.exist?(filename)
@@ -59,6 +71,7 @@ class DeploymentFactory
     deployments = []
     deployment_info.each do |current_deployment_name, deployment_details|
       raise "Invalid deployment_name: expected <#{deployment_name}> or <bosh-deployment> - Found <#{current_deployment_name}> " unless deployment_name == current_deployment_name || current_deployment_name == 'bosh-deployment'
+
       update_deployment_details(deployment_details)
       deployments << Deployment.new(deployment_name, deployment_details)
     end
@@ -68,25 +81,30 @@ class DeploymentFactory
   def load_deployment_info(data)
     deployment_info = data['deployment'] || {}
     raise "Invalid data. Missing root: 'deployment'" if deployment_info.empty?
+
     deployment_info
   end
 
   def update_deployment_details(deployment_details)
+    puts "========================: #{deployment_details}"
     update_boshrelease_version(deployment_details)
     add_stemcell_info(deployment_details)
   end
 
   def add_stemcell_info(deployment_details)
     return if deployment_details.nil?
+
     deployment_details['stemcells'] = { stemcell_name => {} }
   end
 
   def update_boshrelease_version(deployment_details)
     return if deployment_details.nil?
+
     boshrelease_list = deployment_details['releases']
     boshrelease_list&.each do |a_release, _|
       version = version_reference[a_release + '-version']
       raise "Missing boshrelease version: expecting '#{a_release}-version' key in #{@root_deployment_name}-versions.yml" if version.nil?
+
       deployment_details['releases'][a_release]['version'] = version
     end
   end

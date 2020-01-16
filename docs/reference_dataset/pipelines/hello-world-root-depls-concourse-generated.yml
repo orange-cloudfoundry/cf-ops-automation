@@ -83,7 +83,7 @@ jobs:
   - task: spruce-processing-pipeline-sample
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-pipeline-sample, additional-resource: paas-templates-pipeline-sample}
     output_mapping: {generated-files: spruced-files}
-    file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
       SPRUCE_FILE_BASE_PATH: credentials-resource/hello-world-root-depls/pipeline-sample
       YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config

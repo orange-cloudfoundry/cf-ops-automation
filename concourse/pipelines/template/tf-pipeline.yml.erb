@@ -91,7 +91,7 @@ jobs:
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-tfvars}
-      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
         YML_FILES: |
           ./credentials-resource/shared/secrets.yml
@@ -101,6 +101,7 @@ jobs:
         YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
         CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
         SUFFIX: -tpl.tfvars.yml
+        PROFILES: ((profiles))
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets-<%=depls %>,spec-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-cf}
@@ -109,6 +110,8 @@ jobs:
         SPEC_PATH: "<%= terraform_config_path %>/spec"
         SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
         IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
+        PROFILE_SPEC_PATH_PREFIX: "<%= terraform_config_path %>/spec-"
+        PROFILES: ((profiles))
       ensure:
         task: update-terraform-state-file
         input_mapping: {reference-resource: secrets-<%=depls %>, generated-resource: terraform-cf}

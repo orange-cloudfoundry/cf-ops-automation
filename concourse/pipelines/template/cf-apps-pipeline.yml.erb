@@ -155,7 +155,7 @@ jobs:
     - task: generate-<%= app_name %>-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= app_name %>, additional-resource: paas-template-<%= app_name %>}
       output_mapping: {generated-files: release-manifest}
-      file: cf-ops-automation/concourse/tasks/generate-manifest.yml
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/<%= cf_app_info["base-dir"] %>/
         YML_TEMPLATE_DIR: additional-resource/<%= cf_app_info["base-dir"] %>/template

@@ -69,7 +69,7 @@ jobs:
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: secrets}
       output_mapping: {generated-files: terraform-tfvars}
-      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      file: paas-bootstrap/concourse/tasks/generate_manifest/task.yml
       params:
         YML_FILES: |
             ./credentials-resource/inception/micro-bosh/secrets/secrets.yml
@@ -168,7 +168,7 @@ jobs:
     - task: generate-micro-bosh-config
       input_mapping: {scripts-resource: paas-bootstrap, credentials-resource: secrets, additional-resource: terraform-outputs}
       output_mapping: {generated-files: micro-bosh}
-      file: paas-bootstrap/concourse/tasks/generate-manifest.yml
+      file: paas-bootstrap/concourse/tasks/generate_manifest/task.yml
       params:
         SPRUCE_FILE_BASE_PATH: credentials-resource/inception/micro-bosh/
         YML_FILES: |

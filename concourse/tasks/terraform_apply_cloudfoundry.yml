@@ -1,6 +1,6 @@
 ---
 #
-# Copyright (C) 2015-2017 Orange
+# Copyright (C) 2015-2020 Orange
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
 # You may obtain a copy of the License at
@@ -30,14 +30,29 @@ outputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
+    copy_spec_files() {
+      local base_path=$1
+      local spec_dirname=$2
+      local context=$3
+      local full_path=${base_path}/${spec_dirname}
+
+      if [ -d "${full_path}" ]; then
+        # copy profile-spec in spec, preserving the nested modules if any
+        echo "copy ${spec_dirname} (from ${full_path}) in spec, preserving the nested modules if any - Context: $context"
+        ###
+        ### don't use cp to copy file, or you'll get an error on empty dir
+        ### cp: can't stat 'terraform-tfvars/*': No such file or directory
+        ###
+        find ${full_path} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+      else
+        echo "Ignoring spec files in '${full_path}': directory does not exist - Context: $context"
+      fi
+    }
+
     terraform version
     CURRENT_DIR=$(pwd)
-    ###
-    ### don't use cp to copy file, or you'll get an error on empty dir
-    ### cp: can't stat 'terraform-tfvars/*': No such file or directory
-    ###
 
     if [ -z "${SPEC_PATH}" ]; then
       echo "FATAL: SPEC_PATH is missing"
@@ -54,28 +69,28 @@ run:
       exit 1
     fi
 
-    # copy tfstate and secrets
+    # copy tfstate
     find secret-state-resource/${SECRET_STATE_FILE_PATH} -type f -exec cp {} generated-files/ \;
 
     # copy generated tfvars
     find terraform-tfvars -type f -exec cp {} generated-files/ \;
 
-    # copy spec in spec, preserving the nested modules if any
-    find spec-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    copy_spec_files spec-resource ${SPEC_PATH} "Specs from paas-templates"
 
-    # copy spec in secrets, preserving the nested modules if any
-    if [ -d "secret-state-resource/${SPEC_PATH}" ]; then
-      find secret-state-resource/${SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
-    fi
+    copy_spec_files secret-state-resource ${SPEC_PATH}  "Specs from secrets"
 
-    if [ -d "spec-resource/${IAAS_SPEC_PATH}" ]; then
-      # copy iaas-spec in spec, preserving the nested modules if any
-      find spec-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
-    fi
-    
-    # copy iaas-spec in secrets, preserving the nested modules if any
-    if [ -d "secret-state-resource/${IAAS_SPEC_PATH}" ]; then
-      find secret-state-resource/${IAAS_SPEC_PATH} -mindepth 1 -maxdepth 1 -exec cp --verbose -r {} spec-applied/ \;
+    copy_spec_files spec-resource ${IAAS_SPEC_PATH} "Iaas Specs from paas-templates"
+    copy_spec_files secret-state-resource ${IAAS_SPEC_PATH} "Iaas Specs from secrets"
+
+    if [ -n "${PROFILES}" ]; then
+      echo "Profiles detected: ${PROFILES}"
+      SPACE_DELIMITED_PROFILES=$(echo ${PROFILES}|sed -e 's/,/ /g')
+      for profile in $SPACE_DELIMITED_PROFILES;do
+        copy_spec_files spec-resource "${PROFILES_SPEC_PATH_PREFIX}${profile}" "${profile} Specs from paas-templates"
+        copy_spec_files secret-state-resource "${PROFILES_SPEC_PATH_PREFIX}${profile}" "${profile} Specs from secrets"
+      done
+    else
+      echo "WARNING: no profile detected !"
     fi
 
     cd generated-files/
@@ -86,3 +101,5 @@ params:
   SPEC_PATH:
   SECRET_STATE_FILE_PATH:
   IAAS_SPEC_PATH:
+  PROFILES:
+  PROFILES_SPEC_PATH_PREFIX:

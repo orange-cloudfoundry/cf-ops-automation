@@ -26,7 +26,7 @@ describe 'generate_depls task' do
 
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
-      reference_dataset = File.join(@root_dir, 'docs','reference_dataset')
+      reference_dataset = File.join(@root_dir, 'docs', 'reference_dataset')
       reference_dataset_template = File.join(reference_dataset, 'template_repository')
       reference_dataset_secrets = File.join(reference_dataset, 'config_repository')
       @templates_dir =  Dir.mktmpdir
@@ -42,7 +42,8 @@ describe 'generate_depls task' do
         "-i secrets=#{@secrets_dir} " \
         "-o result-dir=#{@result_dir} ",
                         'ROOT_DEPLOYMENT' => 'hello-world-root-depls',
-                        'IAAS_TYPE' => 'task-iaas')
+                        'IAAS_TYPE' => 'task-iaas',
+                        'PROFILES' => 'vault-profile,undefine-profile')
     end
 
     after(:context) do
@@ -150,6 +151,13 @@ describe 'generate_depls task' do
 
       expect(missing_vars).to include('ERROR: missing environment variable: ROOT_DEPLOYMENT').and \
         include('ERROR: missing environment variable: IAAS_TYPE')
+    end
+
+    it 'contains info messages' do
+      info_messages = @output.scan(/^INFO: undefined variable:.*\w+/)
+
+      expect(info_messages).to include('INFO: undefined variable: PROFILES - ignoring').and \
+        include('INFO: undefined variable: EXCLUDE_PIPELINES - ignoring')
     end
   end
 end

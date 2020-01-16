@@ -1,13 +1,11 @@
 require 'rspec'
 require 'fileutils'
 require 'tmpdir'
-
 require 'template_processor'
 require 'ci_deployment'
 require 'deployment_deployers_config'
 require 'pipeline_generator'
 require_relative 'test_fixtures'
-
 
 describe 'BoshPipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
@@ -64,8 +62,8 @@ describe 'BoshPipelineTemplateProcessing' do
         bosh-deployment:
           active: true
         status: enabled
-      YAML
-      YAML.safe_load(deps_yaml)
+    YAML
+    YAML.safe_load(deps_yaml)
   end
   let(:all_ci_deployments) { {} }
   let(:git_submodules) { {} }
@@ -286,7 +284,7 @@ describe 'BoshPipelineTemplateProcessing' do
 
       it 'generates an errand job for shield boshrelease with default name' do
         generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-manual-import' }.flat_map { |job| job['plan'] }
-        expect(generated_errand_job).to_not be_nil
+        expect(generated_errand_job).not_to be_nil
       end
 
       it 'generates a concourse job per manual errand for shield boshrelease' do
@@ -423,7 +421,7 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML.safe_load expected_yaml
       end
       let(:expected_stemcell_deploy_get) do
-        [{'get' => '((stemcell-main-name))', 'trigger' => true, 'attempts' => 2}] * 2
+        [{ 'get' => '((stemcell-main-name))', 'trigger' => true, 'attempts' => 2 }] * 2
       end
       let(:expected_stemcell_deploy_put) { ['((stemcell-main-name))/stemcell.tgz'] * 2 }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan' }
@@ -475,10 +473,9 @@ describe 'BoshPipelineTemplateProcessing' do
         { depls: root_deployment_name,
           team: custom_team }
       end
-      let(:expected_fly_into_concourse) {
+      let(:expected_fly_into_concourse) do
         Coa::TestFixtures.expand_task_params_template('fly-into-concourse', fly_into_concourse_context)
-      }
-
+      end
 
       it 'generates all resource_types' do
         expect(generated_pipeline['resource_types']).to match_array(expected_resource_types)
@@ -493,13 +490,11 @@ describe 'BoshPipelineTemplateProcessing' do
 
       it 'generates retrigger all and init boshrelease version' do
         fly_into_concourse_params = generated_pipeline['jobs']
-                                        .flat_map { |job| job['plan'] }
-                                        .select { |step| step['task'] && step['task'].start_with?("fly-into-concourse")  }
-                                        .flat_map { |step| step['params'] }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task']&.start_with?("fly-into-concourse") }
+          .flat_map { |step| step['params'] }
 
-        fly_into_concourse_params.each do |task_params|
-          expect(task_params).to match(expected_fly_into_concourse)
-        end
+        fly_into_concourse_params.each { |task_params| expect(task_params).to match(expected_fly_into_concourse) }
       end
     end
 
@@ -523,9 +518,7 @@ describe 'BoshPipelineTemplateProcessing' do
 
       it 'generates terraform group' do
         expected_tf_group = { 'name' => 'Terraform',
-                              'jobs' =>
-                                     ['approve-and-enforce-terraform-consistency',
-                                      'check-terraform-consistency'] }
+                              'jobs' => ['approve-and-enforce-terraform-consistency', 'check-terraform-consistency'] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'Terraform' }.pop
         expect(generated).to match(expected_tf_group)
       end
@@ -537,23 +530,26 @@ describe 'BoshPipelineTemplateProcessing' do
               "input_mapping" =>
                 { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls-limited", "additional-resource" => "paas-templates-my-root-depls" },
               "output_mapping" => { "generated-files" => "terraform-tfvars" },
-              "file" => "cf-ops-automation/concourse/tasks/generate-manifest.yml",
+              "file" => "cf-ops-automation/concourse/tasks/generate_manifest/task.yml",
               "params" =>
              { "YML_FILES" =>
-                         "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n./additional-resource/meta-inf.yml\n",
+               "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n./additional-resource/meta-inf.yml\n",
                "YML_TEMPLATE_DIR" => "additional-resource/my-tfstate-location/template",
                "CUSTOM_SCRIPT_DIR" => "additional-resource/my-tfstate-location/template",
                "SUFFIX" => "-tpl.tfvars.yml",
-               "IAAS_TYPE" => "((iaas-type))" } },
+               "IAAS_TYPE" => "((iaas-type))",
+               "PROFILES" => "((profiles))" } },
             { "task" => "terraform-plan",
               "input_mapping" =>
-                   { "secret-state-resource" => "secrets-my-root-depls-limited",
-                     "spec-resource" => "paas-templates-my-root-depls" },
+                { "secret-state-resource" => "secrets-my-root-depls-limited",
+                  "spec-resource" => "paas-templates-my-root-depls" },
               "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
               "params" =>
-                   { "SPEC_PATH" => "my-tfstate-location/spec",
-                     "SECRET_STATE_FILE_PATH" => "my-tfstate-location",
-                     "IAAS_SPEC_PATH" => "my-tfstate-location/spec-((iaas-type))" } }
+                { "SPEC_PATH" => "my-tfstate-location/spec",
+                  "SECRET_STATE_FILE_PATH" => "my-tfstate-location",
+                  "IAAS_SPEC_PATH" => "my-tfstate-location/spec-((iaas-type))",
+                  "PROFILES" => "((profiles))",
+                  "PROFILES_SPEC_PATH_PREFIX" => "my-tfstate-location/spec-" } }
           ]
 
         generated = generated_pipeline['jobs']
@@ -598,38 +594,39 @@ describe 'BoshPipelineTemplateProcessing' do
 
   context 'when a boshrelease overrides with another value' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
+
     let(:all_dependencies) do
       deps_yaml = <<~YAML
-          shield-expe:
-            stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
-            releases:
-              cf-routing-release:
-                base_location: https://bosh.io/d/github.com/
-                repository: cloudfoundry-incubator/cf-routing-release
-                version: 0.169.0
-            bosh-deployment:
-              active: true
-            status: enabled
-          bui:
-            stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
-            releases:
-              cf-routing-release:
-                base_location: https://bosh.io/d/github.com/
-                repository: cloudfoundry-community/route-registrar-boshrelease
-                version: '3'
-              haproxy-boshrelease:
-                base_location: https://bosh.io/d/github.com/
-                repository: cloudfoundry-community/haproxy-boshrelease
-                version: 8.0.12
-            bosh-deployment:
-              active: true
-            status: enabled
+        shield-expe:
+          stemcells:
+            bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          releases:
+            cf-routing-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-incubator/cf-routing-release
+              version: 0.169.0
+          bosh-deployment:
+            active: true
+          status: enabled
+        bui:
+          stemcells:
+            bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          releases:
+            cf-routing-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-community/route-registrar-boshrelease
+              version: '3'
+            haproxy-boshrelease:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-community/haproxy-boshrelease
+              version: 8.0.12
+          bosh-deployment:
+            active: true
+          status: enabled
       YAML
       YAML.safe_load(deps_yaml)
     end
-    let(:template_processing_error) { subject.process(@pipelines_dir + '/*')}
+    let(:template_processing_error) { subject.process(@pipelines_dir + '/*') }
 
 
     before(:context) do

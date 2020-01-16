@@ -147,10 +147,11 @@ describe 'UpdatePipelineTemplateProcessing' do
             ROOT_DEPLOYMENT: <%= depls %>
             IAAS_TYPE: ((iaas-type))
             EXCLUDE_PIPELINES: depls
+            PROFILES: ((profiles))
         YAML
         YAML.safe_load expected_yaml
       end
-      let(:expected_generate_DEPLS_pipelines_params) { { 'ROOT_DEPLOYMENT' => root_deployment_name, 'IAAS_TYPE' => '((iaas-type))', 'EXCLUDE_PIPELINES' => 'depls'} }
+      let(:expected_generate_DEPLS_pipelines_params) { { 'ROOT_DEPLOYMENT' => root_deployment_name, 'IAAS_TYPE' => '((iaas-type))', 'EXCLUDE_PIPELINES' => 'depls', 'PROFILES' => '((profiles))' } }
       let(:expected_stemcell_deploy_put) { ['((stemcell-main-name))/stemcell.tgz'] * 2 }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan' }
 
