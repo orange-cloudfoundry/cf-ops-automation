@@ -5,6 +5,14 @@ offline-mode:
    stemcells: false # Choose where stemcells are downloaded from. Default: true
 
 default:
+  #bosh-options: # Optional. You may override bosh deploy default options for all deployments. To customize only a specific deployment, see 'deployment-dependencies.yml'
+    # cleanup: true # Optional. An boolean that specifies if a bosh cleanup should be run after deployment. Defaults to true.
+    # no_redact: false # Optional. Removes redacted from Bosh output. Defaults to false.
+    # dry_run: false # Optional. Shows the deployment diff without running a deploy. Defaults to false.
+    # fix: false # Optional. Recreate an instance with an unresponsive agent instead of erroring. Defaults to false.
+    # max_in_flight: # Optional. A number of max in flight option. Default: unset, use bosh max in flight
+    # recreate: false # Optional. Recreate all VMs in deployment. Defaults to false.
+    # skip_drain: # Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
   stemcell:
     name: 56  # Default: bosh-openstack-kvm-ubuntu-xenial-go_agent
   concourse:

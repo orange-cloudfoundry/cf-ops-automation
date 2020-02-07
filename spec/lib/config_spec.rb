@@ -15,6 +15,7 @@ describe Config do
         'docker-images' => false
       },
       'default' => {
+        'bosh-options' => { 'cleanup' => true, 'dry_run' => false, 'fix' => false, 'max_in_flight' => nil, 'no_redact' => false, 'recreate' => false, 'skip_drain' => [] },
         'iaas' => 'my_custom_iaas',
         'profiles' => [],
         'stemcell' => {
@@ -45,17 +46,19 @@ describe Config do
     context 'when shared, private and extended config has same key' do
       subject(:config) { described_class.new('my-public-config.yml', 'private-config.yml', extended_config) }
 
-      let(:shared_config_result) { { "default" => { "iaas" => 'shared', "profiles" => %w[shared-profile] }, shared: true } }
-      let(:private_config_result) { { "default" => { "iaas" => 'private', "profiles" => %w[private-profile] }, private: true } }
-      let(:extended_config_result) { { "default" => { "iaas" => 'extended', "profiles" => %w[x-profile] } } }
+      let(:shared_config_result) { { 'default' => { 'iaas' => 'shared', 'profiles' => %w[shared-profile], 'bosh-options' => { 'fix' => true } }, shared: true } }
+      let(:private_config_result) { { 'default' => { 'iaas' => 'private', 'profiles' => %w[private-profile], 'bosh-options' => { 'max_in_flight' => 10 } }, private: true } }
+      let(:extended_config_result) { { 'default' => { 'iaas' => 'extended', 'profiles' => %w[x-profile] } } }
       let(:extended_config) { instance_double(ExtendedConfig) }
       let(:expected_loaded_config) do
-        { 'default' => {
+        { 'default' =>
+          {
+            'bosh-options' => { 'cleanup' => true, 'dry_run' => false, 'fix' => true, 'max_in_flight' => 10, 'no_redact' => false, 'recreate' => false, 'skip_drain' => [] },
             'concourse' => {'parallel_execution_limit' => 5 },
-            "iaas" => "extended", "profiles" => ["x-profile"], "stemcell" => { "name" => "bosh-openstack-kvm-ubuntu-xenial-go_agent" }
+            'iaas' => 'extended', 'profiles' => ['x-profile'], 'stemcell' => { 'name' => 'bosh-openstack-kvm-ubuntu-xenial-go_agent' }
           },
-          "offline-mode" => { "boshreleases" => false, "docker-images" => false, "stemcells" => true },
-          :private => true, :shared => true}
+          'offline-mode' => { 'boshreleases' => false, 'docker-images' => false, 'stemcells' => true },
+          :private => true, :shared => true }
       end
 
       before do
@@ -126,7 +129,7 @@ describe Config do
     end
 
     context 'when stemcell does not contain name key' do
-      let(:shared_config_file_content) { { 'default' => { 'stemcell' => "x" } } }
+      let(:shared_config_file_content) { { 'default' => { 'stemcell' => 'x' } } }
 
       it 'returns the default stemcell name' do
         config.load_config

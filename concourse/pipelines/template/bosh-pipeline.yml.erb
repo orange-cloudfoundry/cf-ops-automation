@@ -91,7 +91,7 @@ resources:
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
-- name: paas-templates-<%=depls %>
+- name: paas-templates-<%= depls %>
   icon: home-analytics
   type: git
   source:
@@ -148,7 +148,7 @@ resources:
     config_key: 'templates',
     defaults: ["#{depls}/#{name}"])
 %>
-<% deployment_details = PipelineHelpers::DeploymentDetails.new(boshrelease) %>
+<% deployment_details = PipelineHelpers::DeploymentDetails.new(name, boshrelease) %>
 <% if deployment_details.local_deployment_secrets_scan? %>
 - name: secrets-<%= name %>
   icon: source-merge
@@ -192,7 +192,7 @@ resources:
 <% end %>
 
 <% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments&.any? %>
-- name: secrets-<%=depls %>-trigger
+- name: secrets-<%= depls %>-trigger
   icon: source-commit
   type: git
   source:
@@ -203,7 +203,7 @@ resources:
 <% end %>
 
 <% if enabled_deployments.any? %>
-- name: paas-templates-<%=depls %>-versions
+- name: paas-templates-<%= depls %>-versions
   icon: home-thermometer
   type: git
   source:
@@ -271,10 +271,10 @@ jobs:
   - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none }
-    - get : secrets-<%=depls %>-limited
+    - get : secrets-<%= depls %>-limited
       params: { submodules: none }
   - task: cancel-all-bosh-tasks
-    input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-<%=depls %>-limited }
+    input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
     params:
       BOSH_CLIENT: ((bosh-username))
@@ -396,17 +396,17 @@ jobs:
     - get: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none}
-    - get: secrets-<%=depls %>-limited
+    - get: secrets-<%= depls %>-limited
       params: { submodules: none}
       trigger: true
-    - get: paas-templates-<%=depls %>
+    - get: paas-templates-<%= depls %>
       params: { submodules: none}
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
     - task: generate-<%= depls %>-all-config
-      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>-limited, additional-resource: paas-templates-<%=depls %>}
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%= depls %>}
       output_mapping: {generated-files: config-manifest}
       file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
       params:
@@ -443,9 +443,9 @@ jobs:
           output_mapping: {updated-git-resource: updated-cloud-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
-            OLD_FILE: "<%=depls %>/cloud-config.yml"
+            OLD_FILE: "<%= depls %>/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            COMMIT_MESSAGE: "<%=depls %> cloud-config auto update - [skip ci]"
+            COMMIT_MESSAGE: "<%= depls %> cloud-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -481,9 +481,9 @@ jobs:
           output_mapping: {updated-git-resource: updated-runtime-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
-            OLD_FILE: "<%=depls %>/runtime-config.yml"
+            OLD_FILE: "<%= depls %>/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            COMMIT_MESSAGE: "<%=depls %> runtime-config auto update - [skip ci]"
+            COMMIT_MESSAGE: "<%= depls %> runtime-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -519,9 +519,9 @@ jobs:
           output_mapping: {updated-git-resource: updated-cpi-config}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
-            OLD_FILE: "<%=depls %>/cpi-config.yml"
+            OLD_FILE: "<%= depls %>/cpi-config.yml"
             NEW_FILE: "cpi-config.yml"
-            COMMIT_MESSAGE: "<%=depls %> cpi-config auto update - [skip ci]"
+            COMMIT_MESSAGE: "<%= depls %> cpi-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -539,7 +539,7 @@ jobs:
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
 <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
-<% deployment_details = PipelineHelpers::DeploymentDetails.new(boshrelease) %>
+<% deployment_details = PipelineHelpers::DeploymentDetails.new(name, boshrelease) %>
 - name: deploy-<%= name %>
   <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
   serial: true
@@ -740,7 +740,13 @@ jobs:
       - ops-and-vars-files/operators/*
       vars_files:
       - ops-and-vars-files/vars/*
-      cleanup: true
+      cleanup: <%= deployment_details.bosh_details.cleanup? %>
+      no_redact: <%= deployment_details.bosh_details.no_redact? %>
+      dry_run: <%= deployment_details.bosh_details.dry_run? %>
+      fix: <%= deployment_details.bosh_details.fix? %>
+      recreate: <%= deployment_details.bosh_details.recreate? %>
+      <%= deployment_details.bosh_details.max_in_flight? ? "max_in_flight: #{deployment_details.bosh_details.max_in_flight}":'' %>
+      <%= deployment_details.bosh_details.skip_drain? ? "skip_drain: #{deployment_details.bosh_details.skip_drain}":'' %>
 
   - task: bosh-variables
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
@@ -1043,14 +1049,14 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       trigger: true
-    - get: paas-templates-<%=depls %>
+    - get: paas-templates-<%= depls %>
       params: { submodules: none }
       trigger: true
     - get: secrets-<%= depls %>-limited
       params: { submodules: none }
       trigger: true
   - task: generate-terraform-tfvars
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%=depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%= depls %>}
     output_mapping: {generated-files: terraform-tfvars}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
@@ -1065,7 +1071,7 @@ jobs:
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
   - task: terraform-plan
-    input_mapping: {secret-state-resource: secrets-<%= depls %>-limited,spec-resource: paas-templates-<%=depls %>}
+    input_mapping: {secret-state-resource: secrets-<%= depls %>-limited,spec-resource: paas-templates-<%= depls %>}
     file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
     params:
       SPEC_PATH: "<%= terraform_config_path %>/spec"
@@ -1093,7 +1099,7 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none}
       passed: [check-terraform-consistency]
-    - get: paas-templates-<%=depls %>
+    - get: paas-templates-<%= depls %>
       params: { submodules: none}
       passed: [check-terraform-consistency]
       trigger: false
@@ -1101,7 +1107,7 @@ jobs:
       params: { submodules: none}
       passed: [check-terraform-consistency]
   - task: generate-terraform-tfvars
-    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%=depls %>}
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%= depls %>}
     output_mapping: {generated-files: terraform-tfvars}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
@@ -1116,7 +1122,7 @@ jobs:
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
   - task: terraform-apply
-    input_mapping: {secret-state-resource: secrets-<%= depls %>-limited,spec-resource: paas-templates-<%=depls %>}
+    input_mapping: {secret-state-resource: secrets-<%= depls %>-limited,spec-resource: paas-templates-<%= depls %>}
     output_mapping: {generated-files: terraform-cf}
     file: cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml
     params:

@@ -9,7 +9,7 @@ process_bosh_config_files() {
     for config_file in cloud-config.yml runtime-config.yml cpi-config.yml; do
         if [ -e ${config_file} ]; then
             echo "copying '${YML_TEMPLATE_DIR}/${config_file}' to '${OUTPUT_DIR}'"
-            cp ${config_file} ${OUTPUT_DIR}
+            cp "${config_file}" "${OUTPUT_DIR}"
         fi
     done
 }
@@ -31,7 +31,6 @@ generate_manifest() {
         if [ $? -ne 0 ]; then
             exit $?
         fi
-
     else
         return 3
     fi
@@ -52,23 +51,21 @@ ${COMMON_SCRIPT_DIR}/generate-manifest.sh
 set +e
 generate_manifest "${IAAS_TYPE}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
 if [ $? -eq 3 ]; then
-    echo "ignoring Iaas customization. No IAAS_TYPE set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. IAAS_TYPE: <${CUSTOMIZATION_DIR}>"
+    echo "ignoring Iaas customization. No IAAS_TYPE set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. IAAS_TYPE: <${IAAS_TYPE}>"
 fi
 
 for profile in ${PROFILES};do
     generate_manifest "${profile}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
     if [ $? -eq 3 ]; then
-        echo "ignoring Iaas customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${CUSTOMIZATION_DIR}>"
+        echo "ignoring Iaas customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${IAAS_TYPE}>"
     fi
 done
 set -e
 
-if [ -n "$CUSTOM_SCRIPT_DIR" -a  -f "$CUSTOM_SCRIPT_DIR/post-generate.sh" ]
-then
+if [ -n "$CUSTOM_SCRIPT_DIR" ] && [ -f "$CUSTOM_SCRIPT_DIR/post-generate.sh" ]; then
     echo "post generation script detected"
     chmod +x ${CUSTOM_SCRIPT_DIR}/post-generate.sh
     GENERATE_DIR=${OUTPUT_DIR} BASE_TEMPLATE_DIR=${CUSTOM_SCRIPT_DIR} ${CUSTOM_SCRIPT_DIR}/post-generate.sh
 else
     echo "ignoring post generate. No $CUSTOM_SCRIPT_DIR/post-generate.sh detected"
-
 fi

@@ -3,75 +3,15 @@ require_relative '../../../lib/pipeline_helpers'
 
 describe PipelineHelpers::DeploymentDetails do
   let(:depl_name) { 'a-deployment' }
-  let(:details) { described_class.new(options) }
+  let(:details) { described_class.new(depl_name, options) }
   let(:options) { {} }
   let(:empty_resources) { { 'resources' => {} } }
   let(:empty_secrets) { { 'resources' => { 'secrets' => {} } } }
 
   describe '#initialize' do
     context 'when creating a deployment without details' do
-      subject(:deployment) { described_class.new(depl_name, 'status' => 'enabled') }
-
       it 'creates an new deployment without details' do
-        fail('NYI')
-      end
-    end
-  end
-
-  describe '#enabled?' do
-    context 'when details contains a status set to enabled' do
-      subject(:deployment) { described_class.new(depl_name, 'status' => 'enabled') }
-
-      it 'return true' do
-        expect(deployment).to be_enabled
-      end
-    end
-
-    context 'when details does not contains any status set' do
-      subject(:deployment) { described_class.new(depl_name) }
-
-      it 'return false' do
-        expect(deployment).not_to be_enabled
-      end
-    end
-  end
-
-  describe '#disabled?' do
-    context 'when details contains a status set to disabled' do
-      subject(:deployment) { described_class.new(depl_name, 'status' => 'disabled') }
-
-      it 'return true' do
-        expect(deployment).to be_disabled
-      end
-    end
-
-    context 'when details does not contains any status set' do
-      subject(:deployment) { described_class.new(depl_name) }
-
-      it 'return true' do
-        expect(deployment).to be_disabled
-      end
-    end
-  end
-
-  describe '#default' do
-    context 'when a name is set' do
-      let(:my_default) { described_class.default('my-depls') }
-
-      it 'returns a new deployment named my-depls' do
-        expect(my_default.name).to eq('my-depls')
-      end
-
-      it 'returns a non empty details' do
-        expect(my_default.details).not_to be_empty
-      end
-
-      it 'has an empty releases tag' do
-        expect(my_default.details).to include('releases' => {})
-      end
-
-      it 'has a empty stemcell tag' do
-        expect(my_default.details).to include('stemcells' => {})
+        expect(details.deployment_name).to eq(depl_name)
       end
     end
   end
@@ -102,7 +42,7 @@ describe PipelineHelpers::DeploymentDetails do
     end
 
     context 'when local scan resources is enabled' do
-      let(:options_yaml) { YAML.load("resources: {secrets: {local_deployment_scan: true}}")}
+      let(:options_yaml) { YAML.load("resources: {secrets: {local_deployment_scan: true}}") }
       let(:options) { options_yaml.to_h }
 
       it 'returns true' do
@@ -111,7 +51,7 @@ describe PipelineHelpers::DeploymentDetails do
     end
 
     context 'when local scan resources is disabled' do
-      let(:options_yaml) { YAML.load("resources: {secrets: {local_deployment_scan: false}}")}
+      let(:options_yaml) { YAML.load("resources: {secrets: {local_deployment_scan: false}}") }
       let(:options) { options_yaml.to_h }
 
       it 'returns false' do
@@ -166,6 +106,181 @@ describe PipelineHelpers::DeploymentDetails do
     end
 
   end
+end
 
 
+describe PipelineHelpers::BoshDeploymentDetails do
+  subject(:bosh_deployment_details) { described_class.new(depl_name, options) }
+
+  let(:depl_name) { 'a-deployment' }
+  let(:options) { {} }
+  let(:empty_resources) { { 'resources' => {} } }
+  let(:empty_secrets) { { 'resources' => { 'secrets' => {} } } }
+
+  describe '#initialize' do
+    context 'when creating a deployment without details' do
+      it 'creates an new BoshDeploymentDetails without details' do
+        expect(bosh_deployment_details.deployment_name).to eq(depl_name)
+      end
+    end
+  end
+
+  describe '.cleanup?' do
+    subject(:cleanup) { bosh_deployment_details.cleanup? }
+
+    context 'when value is not set' do
+      it 'is enabled by default' do
+        expect(cleanup).to be true
+      end
+    end
+
+    context 'when value is disabled' do
+      let(:options) { { 'cleanup' => false } }
+
+      it 'is disabled' do
+        expect(cleanup).to be false
+      end
+    end
+  end
+
+  describe '.no_redact?' do
+    subject(:no_redact) { bosh_deployment_details.no_redact? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(no_redact).to be false
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:options) { { 'no_redact' => true } }
+
+      it 'is enabled' do
+        expect(no_redact).to be true
+      end
+    end
+  end
+
+  describe '.dry_run?' do
+    subject(:dry_run) { bosh_deployment_details.dry_run? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(dry_run).to be false
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:options) { { 'dry_run' => true } }
+
+      it 'is enabled' do
+        expect(dry_run).to be true
+      end
+    end
+  end
+
+  describe '.fix?' do
+    subject(:fix) { bosh_deployment_details.fix? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(fix).to be false
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:options) { { 'fix' => true } }
+
+      it 'is enabled' do
+        expect(fix).to be true
+      end
+    end
+  end
+
+  describe '.recreate?' do
+    subject(:recreate) { bosh_deployment_details.recreate? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(recreate).to be false
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:options) { { 'recreate' => true } }
+
+      it 'is enabled' do
+        expect(recreate).to be true
+      end
+    end
+  end
+
+  describe 'skip_drain?' do
+    subject(:skip_drain) { bosh_deployment_details.skip_drain? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(skip_drain).to be false
+      end
+    end
+
+    context 'when value is nil' do
+      let(:options) { { 'skip_drain' => nil } }
+
+      it 'is disabled' do
+        expect(skip_drain).to be false
+      end
+    end
+
+    context 'when value is empty' do
+      let(:options) { { 'skip_drain' => [] } }
+
+      it 'is disabled' do
+        expect(skip_drain).to be false
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:instances_group) { %w[web worker] }
+      let(:options) { { 'skip_drain' => instances_group } }
+
+      it 'is enabled' do
+        expect(skip_drain).to be true
+      end
+    end
+  end
+
+  describe 'max_in_flight?' do
+    subject(:max_in_flight) { bosh_deployment_details.max_in_flight? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(max_in_flight).to be false
+      end
+    end
+
+    context 'when value is nil' do
+      let(:options) { { 'max_in_flight' => nil } }
+
+      it 'is disabled' do
+        expect(max_in_flight).to be false
+      end
+    end
+
+    context 'when value is empty' do
+      let(:options) { { 'max_in_flight' => 0 } }
+
+      it 'is disabled' do
+        expect(max_in_flight).to be false
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:options) { { 'max_in_flight' => 10 } }
+
+      it 'is enabled' do
+        expect(max_in_flight).to be true
+      end
+    end
+  end
 end

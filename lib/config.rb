@@ -13,6 +13,7 @@ class Config
   CONFIG_CONCOURSE_KEY = 'concourse'.freeze
   CONFIG_STEMCELL_KEY = 'stemcell'.freeze
   CONFIG_PARALLEL_EXECUTION_LIMIT_KEY = 'parallel_execution_limit'.freeze
+  CONFIG_BOSH_OPTIONS_KEY = 'bosh-options'.freeze
   DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT = 5
   attr_reader :loaded_config
 
@@ -32,7 +33,10 @@ class Config
       },
       CONFIG_DEFAULT_KEY => {
         CONFIG_STEMCELL_KEY => { 'name' => DEFAULT_STEMCELL },
-        CONFIG_CONCOURSE_KEY => { CONFIG_PARALLEL_EXECUTION_LIMIT_KEY => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT }
+        CONFIG_CONCOURSE_KEY => { CONFIG_PARALLEL_EXECUTION_LIMIT_KEY => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT },
+        CONFIG_BOSH_OPTIONS_KEY => {
+          'cleanup' => true, 'no_redact' => false, 'dry_run' => false, 'fix' => false, 'recreate' => false, 'max_in_flight' => nil, 'skip_drain' => []
+        }
       }
     }.deep_merge(@extended_config.default_format)
   end
@@ -61,5 +65,9 @@ class Config
 
   def profiles
     @loaded_config.dig('default', 'profiles') || DEFAULT_PROFILES
+  end
+
+  def bosh_options
+    @loaded_config.dig('default', 'bosh-options') || {}
   end
 end

@@ -6,7 +6,6 @@ module PipelineHelpers
     def initialize(config, root_deployment_name = '')
       @config = config
       @root_deployment_name = root_deployment_name
-      puts self.class.name
     end
 
     def get

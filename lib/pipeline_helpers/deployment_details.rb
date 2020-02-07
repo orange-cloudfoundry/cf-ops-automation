@@ -7,11 +7,12 @@ module PipelineHelpers
 
   # this class helps parsing, and setting default values for deployments dependencies details instead of doing it in pipeline templates
   class DeploymentDetails
-    attr_reader :config, :root_deployment_name
+    attr_reader :config, :deployment_name, :bosh_details
 
-    def initialize(raw_details = {})
-      @details = {}
-      @details = raw_details if raw_details
+    def initialize(deployment_name, raw_details = {})
+      @details = raw_details || {}
+      @deployment_name = deployment_name
+      @bosh_details = BoshDeploymentDetails.new(deployment_name, @details.dig('bosh-options'))
     end
 
     def bosh_cli_version
@@ -64,6 +65,60 @@ module PipelineHelpers
       else
         otherwise
       end
+    end
+  end
+
+  class BoshDeploymentDetails
+    attr_reader :deployment_name, :skip_drain, :max_in_flight
+
+    # Values from https://github.com/cloudfoundry/bosh-deployment-resource/#out-deploy-or-delete-a-bosh-deployment-defaults-to-deploy
+    # cleanup: Optional. An boolean that specifies if a bosh cleanup should be run after deployment. Defaults to false.
+    # no_redact: Optional. Removes redacted from Bosh output. Defaults to false.
+    # dry_run: Optional. Shows the deployment diff without running a deploy. Defaults to false.
+    # fix: Optional. Recreate an instance with an unresponsive agent instead of erroring. Defaults to false.
+    # max_in_flight: Optional. A number of max in flight option.
+    # recreate: Optional. Recreate all VMs in deployment. Defaults to false.
+    # skip_drain: Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
+
+    def initialize(deployment_name, options = {})
+      @deployment_name = deployment_name
+      options ||= {}
+      cleanup = options.dig('cleanup')
+      @cleanup = cleanup.nil? ? true : cleanup # we enable cleanup unless specified in deployment
+      @no_redact = options.dig('no_redact') || false
+      @dry_run = options.dig('dry_run') || false
+      @fix = options.dig('fix') || false
+      @recreate = options.dig('recreate') || false
+      @skip_drain = options.dig('skip_drain') || []
+      @max_in_flight = options.dig('max_in_flight') || nil
+    end
+
+    def cleanup?
+      @cleanup
+    end
+
+    def no_redact?
+      @no_redact
+    end
+
+    def dry_run?
+      @dry_run
+    end
+
+    def fix?
+      @fix
+    end
+
+    def recreate?
+      @recreate
+    end
+
+    def skip_drain?
+      !@skip_drain&.empty?
+    end
+
+    def max_in_flight?
+      !(@max_in_flight.nil? || @max_in_flight.zero?)
     end
   end
 end
