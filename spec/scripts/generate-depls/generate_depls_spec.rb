@@ -30,31 +30,28 @@ describe 'generate-depls' do
     end
 
     context 'when no parameter are provided' do
+      let(:expected_usage) do
+        <<~TEXT
+         generate-depls: Incomplete/wrong parameter(s): [].
+          Usage: ./generate-depls <options>
+             -d, --depls ROOT_DEPLOYMENT      Specify a root deployment name to generate template for. MANDATORY
+             -t, --templates-path PATH        Base location for paas-templates (implies -s)
+             -s, --git-submodule-path PATH    .gitsubmodule path
+             -p, --secrets-path PATH          Base secrets dir (i.e. enable-deployment.yml, enable-cf-app.yml, etc.)
+             -o, --output-path PATH           Output dir for generated pipelines.
+             -a, --automation-path PATH       Base location for cf-ops-automation
+             -i, --input PIPELINE1,PIPELINE2  List of pipelines to process without full path and without suffix "-pipeline.yml.erb"
+             -e PIPELINE1,PIPELINE2,          List of pipelines to exclude
+                 --exclude
+                 --[no-]dump                  Dump genereted file on standart output
+                 --iaas IAAS_TYPE             Target a specific iaas for pipeline generation
+                 --profiles PROFILES          List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)
+        TEXT
+      end
       it 'display help message' do
-        stdout_str, stderr_str, status = Open3.capture3("#{ci_path}/scripts/generate-depls.rb")
+        stdout_stderr_str, status = Open3.capture2e("#{ci_path}/scripts/generate-depls.rb")
         expect(status.exitstatus).to eq(1)
-        expect(stderr_str).to \
-          include('generate-depls: Incomplete/wrong parameter(s): [].').and \
-          include("Usage: ./generate-depls <options>\n    -d, --depls ROOT_DEPLOYMENT").and \
-          include('-t, --templates-path PATH        Base location for paas-templates (implies -s)').and \
-          include('-s, --git-submodule-path PATH    .gitsubmodule path').and \
-          include('-p, --secrets-path PATH          Base secrets dir (i.e. enable-deployment.yml, enable-cf-app.yml, etc.)').and \
-          include('-o, --output-path PATH           Output dir for generated pipelines.').and \
-          include('-a, --automation-path PATH       Base location for cf-ops-automation').and \
-          include('-i, --input PIPELINE1,PIPELINE2  List of pipelines to process').and \
-          include('--[no-]dump                  Dump genereted file on standart output')
-          include('-e PIPELINE1,PIPELINE2,          List of pipelines to exclude).and').and \
-          include('--exclude').and \
-          include('--[no-]dump            Dump genereted file on standart output').and \
-          include('--iaas IAAS_TYPddddE             Target a specific iaas for pipeline generation').and \
-          include('List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)')
-
-        fail("Test not accurate")
-        expect(stderr_str).to include('--profiles PROFILES            List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)')
-        #stderr_line_count = 0
-        #stderr_str.each_line { stderr_line_count+=1 }
-        #expect(stderr_line_count).to eq(14)
-        expect(stdout_str).to be_empty
+        expect(stdout_stderr_str).to eq(expected_usage)
       end
     end
 

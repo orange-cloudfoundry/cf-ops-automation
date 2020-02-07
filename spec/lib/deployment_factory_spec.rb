@@ -14,6 +14,7 @@ describe DeploymentFactory do
   before do
     allow(config).to receive(:stemcell_name).and_return(Config.new.stemcell_name)
     allow(config).to receive(:iaas_type).and_return(Config.new.iaas_type)
+    allow(config).to receive(:bosh_options).and_return(Config.new.bosh_options)
   end
 
   describe '#initialize' do
@@ -72,6 +73,8 @@ describe DeploymentFactory do
     end
 
     context 'when no profiles and no iaas_type files exist' do
+      let(:default_bosh_options) { { 'bosh-options' => { 'cleanup' => true, 'dry_run' => false, 'fix' => false, 'max_in_flight' => nil, 'no_redact' => false, 'recreate' => false, 'skip_drain' => [] } } }
+
       before do
         allow(deployment_factory).to receive(:load_file).with('dummy-filename.yml').and_return(generic_deployment)
         allow(File).to receive(:exist?).with("dummy-filename-#{current_iaas_type}.yml").and_return(false)
@@ -79,7 +82,7 @@ describe DeploymentFactory do
       end
 
       it 'loads deployment-dependencies.yml' do
-        expect(my_deployment.details).to eq(Deployment.default_details)
+        expect(my_deployment.details).to eq(Deployment.default_details.merge(default_bosh_options))
       end
     end
 
@@ -87,6 +90,8 @@ describe DeploymentFactory do
       let(:current_profiles) { %w[profile-1 profile-2] }
       let(:generic_deployment) do
         content = <<~YAML
+          bosh-options:
+            cleanup: false
           releases:
             my-bosh-release:
               base_location: https://bosh.io/d/github.com/
@@ -100,6 +105,9 @@ describe DeploymentFactory do
       end
       let(:profile_1_deployment) do
         content = <<~YAML
+          bosh-options:
+            dry_run: true
+            recreate: true
           profile-1-type: true
           profile-1-property: true
           releases:
@@ -115,6 +123,8 @@ describe DeploymentFactory do
       end
       let(:profile_2_deployment) do
         content = <<~YAML
+          bosh-options:
+            dry_run: false
           profile-2-type: true
           profile-1-property: false
           releases:
@@ -130,6 +140,7 @@ describe DeploymentFactory do
       end
       let(:expected_details) do
         {
+          'bosh-options' => { 'cleanup' => false, 'dry_run' => false, 'recreate' => true, 'fix' => false, 'max_in_flight' => nil, 'no_redact' => false, 'skip_drain' => [] },
           'profile-1-type' => true,
           'profile-1-property' => false,
           'profile-2-type' => true,
@@ -164,6 +175,8 @@ describe DeploymentFactory do
       let(:current_iaas_type) { 'openstack' }
       let(:generic_deployment) do
         content = <<~YAML
+          bosh-options:
+            recreate: true
           releases:
             my-bosh-release:
               base_location: https://bosh.io/d/github.com/
@@ -177,6 +190,8 @@ describe DeploymentFactory do
       end
       let(:iaas_deployment) do
         content = <<~YAML
+          bosh-options:
+            fix: true
           iaas-type: true
           releases:
             bosh-openstack-cpi-release:
@@ -190,7 +205,8 @@ describe DeploymentFactory do
         [Deployment.new('iaas-override', details)]
       end
       let(:expected_details) do
-        { 'iaas-type' => true,
+        { 'bosh-options' => { 'recreate' => true, 'fix' => true, 'cleanup' => true, 'dry_run' => false, 'no_redact' => false, 'skip_drain' => [], 'max_in_flight' => nil },
+          'iaas-type' => true,
           'releases' => {
               'my-bosh-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/my-bosh-release'},
               'overridden-bosh-release' => {'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/overridden-bosh-release'},
@@ -206,6 +222,7 @@ describe DeploymentFactory do
         allow(File).to receive(:exist?).with("dummy-filename-#{config.profiles.first}.yml").and_return(false)
 
         expect(my_deployment.details).to eq(expected_details)
+        expect(my_deployment.name).to eq(deployment_name)
       end
     end
 
@@ -225,6 +242,9 @@ describe DeploymentFactory do
       end
       let(:iaas_deployment) do
         content = <<~YAML
+          bosh-options:
+            cleanup: false
+            dry_run: true
           iaas-type: true
           releases:
             bosh-openstack-cpi-release:
@@ -239,6 +259,9 @@ describe DeploymentFactory do
       end
       let(:profile_1_deployment) do
         content = <<~YAML
+          bosh-options:
+            dry_run: false
+            no_redact: true
           profile-1-type: true
           releases:
             bosh-openstack-cpi-release:
@@ -257,8 +280,8 @@ describe DeploymentFactory do
 
       let(:expected_details) do
         {
+          'bosh-options' => { 'cleanup' => false, 'dry_run' => false, 'fix' => false, 'max_in_flight' => nil, 'no_redact' => true, 'recreate' => false, 'skip_drain' => [] },
           'profile-1-type' => true,
-          # 'profile-type-2' => true,
           'iaas-type' => true,
           'releases' => {
              'profile-1-bosh-release' => { 'base_location' => 'https://bosh.io/d/github.com/', 'repository' => 'cloudfoundry/p1-bosh-release' },

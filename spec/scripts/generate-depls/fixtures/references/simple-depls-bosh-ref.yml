@@ -525,6 +525,10 @@ jobs:
       vars_files:
       - ops-and-vars-files/vars/*
       cleanup: true
+      no_redact: false
+      dry_run: false
+      fix: false
+      recreate: false
   - task: bosh-variables
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
     output_mapping: {result-dir: bosh-variables-result}
@@ -737,6 +741,10 @@ jobs:
       vars_files:
       - ops-and-vars-files/vars/*
       cleanup: true
+      no_redact: false
+      dry_run: false
+      fix: false
+      recreate: false
   - task: bosh-variables
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
     output_mapping: {result-dir: bosh-variables-result}

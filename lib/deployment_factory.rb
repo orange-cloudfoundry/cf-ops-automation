@@ -10,8 +10,6 @@ class DeploymentFactory
     @config = config
     @root_deployment_name = root_deployment_name
     validate
-    validate_config
-    validate_version_reference
   end
 
   def load_files(filename = '')
@@ -25,7 +23,7 @@ class DeploymentFactory
       current_deployment_dependencies_loaded = all_deployment_dependencies_loaded
       all_deployment_dependencies_loaded = load_and_merge(deployment_dependencies_basename, current_deployment_dependencies_loaded, profile)
     end
-    all_deployment_dependencies_loaded
+    [update_bosh_options(all_deployment_dependencies_loaded.first)]
   end
 
   def load_file(filename = '')
@@ -85,8 +83,19 @@ class DeploymentFactory
     deployment_info
   end
 
+  def update_bosh_options(deployment)
+    return deployment unless deployment
+
+    deployment_details = deployment.details.dup
+    return deployment unless deployment_details
+
+    default_option = @config.bosh_options.dup || {}
+    current_options = deployment_details.dig('bosh-options') || {}
+    deployment_details['bosh-options'] = default_option.merge(current_options)
+    Deployment.new(deployment.name, deployment_details)
+  end
+
   def update_deployment_details(deployment_details)
-    puts "========================: #{deployment_details}"
     update_boshrelease_version(deployment_details)
     add_stemcell_info(deployment_details)
   end
@@ -115,6 +124,9 @@ class DeploymentFactory
 
   def validate
     raise 'invalid/missing root_deployment_name' if @root_deployment_name.nil? || @root_deployment_name.empty?
+
+    validate_config
+    validate_version_reference
   end
 
   def validate_config
