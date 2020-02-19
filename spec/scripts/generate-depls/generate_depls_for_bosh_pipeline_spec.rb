@@ -90,7 +90,7 @@ describe 'generate-depls for bosh pipeline' do
 
       it 'generates a pre-bosh-deploy task' do
         pre_bosh_deploy_task = deployment_plan.select { |task| task['task'] == 'execute-ntp-with-scan-spiff-pre-bosh-deploy' }.first
-        expect(pre_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml')
+        expect(pre_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml')
       end
 
       it 'generates a post-bosh task' do

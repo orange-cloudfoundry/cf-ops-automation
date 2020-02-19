@@ -420,7 +420,7 @@ jobs:
       credentials-resource: secrets-ntp-with-scan
       additional-resource: release-manifest
     output_mapping: {generated-files: pre-bosh-deploy-resource}
-    file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
+    file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp-with-scan/template
       SECRETS_DIR: credentials-resource/simple-depls/ntp-with-scan
@@ -637,7 +637,7 @@ jobs:
       credentials-resource: secrets-full-writer
       additional-resource: release-manifest
     output_mapping: {generated-files: pre-bosh-deploy-resource}
-    file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
+    file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/simple-depls/zookeeper-without-scan/template
       SECRETS_DIR: credentials-resource/simple-depls/zookeeper-without-scan
