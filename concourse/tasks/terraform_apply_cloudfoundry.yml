@@ -11,6 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 platform: linux
 
 image_resource:
@@ -84,8 +85,15 @@ run:
 
     if [ -n "${PROFILES}" ]; then
       echo "Profiles detected: ${PROFILES}"
-      SPACE_DELIMITED_PROFILES=$(echo ${PROFILES}|sed -e 's/,/ /g')
-      for profile in $SPACE_DELIMITED_PROFILES;do
+      echo "${PROFILES}"|sed -e 's/,/\n/g' > /tmp/profiles.txt
+      if [ "$PROFILES_AUTOSORT" = "true" ]; then
+        NEWLINE_DELIMITED_PROFILES=$(sort </tmp/profiles.txt)
+        echo -e "Auto sort profiles:\n${NEWLINE_DELIMITED_PROFILES}"
+      else
+        NEWLINE_DELIMITED_PROFILES=$(cat /tmp/profiles.txt)
+        echo "Auto sort profiles disabled: ${NEWLINE_DELIMITED_PROFILES}"
+      fi
+      for profile in ${NEWLINE_DELIMITED_PROFILES}; do
         copy_spec_files spec-resource "${PROFILES_SPEC_PATH_PREFIX}${profile}" "${profile} Specs from paas-templates"
         copy_spec_files secret-state-resource "${PROFILES_SPEC_PATH_PREFIX}${profile}" "${profile} Specs from secrets"
       done
@@ -103,3 +111,4 @@ params:
   IAAS_SPEC_PATH:
   PROFILES:
   PROFILES_SPEC_PATH_PREFIX:
+  PROFILES_AUTOSORT: true

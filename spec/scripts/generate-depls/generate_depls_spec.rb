@@ -46,6 +46,7 @@ describe 'generate-depls' do
                  --[no-]dump                  Dump genereted file on standart output
                  --iaas IAAS_TYPE             Target a specific iaas for pipeline generation
                  --profiles PROFILES          List specific profiles to apply for pipeline generation,separated by "," (e.g. boostrap,feature-a,feature-b)
+                 --[no-]profiles-auto-sort    Sort alphabetically profiles. Default: true
         TEXT
       end
       it 'display help message' do
