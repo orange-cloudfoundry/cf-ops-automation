@@ -39,7 +39,7 @@ describe 'all tasks' do
         TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_image_version,
         TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_slim_image_version,
         "orangecloudfoundry/cf-ops-automation:latest",
-        "orangecloudfoundry/spiff:latest",
+        TaskSpecHelper.pre_deploy_image + ':' + TaskSpecHelper.pre_deploy_image_version,
         TaskSpecHelper.terraform_image + ':' + TaskSpecHelper.terraform_image_version
       ]
     end

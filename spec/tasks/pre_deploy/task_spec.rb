@@ -3,14 +3,14 @@
 require 'yaml'
 require 'tmpdir'
 
-describe 'spiff_pre_deploy task' do
+describe 'pre_deploy task' do
 
   context 'Pre-requisite' do
-    let(:task) { YAML.load_file 'concourse/tasks/spiff_pre_bosh_deploy.yml' }
+    let(:task) { YAML.load_file 'concourse/tasks/pre_bosh_deploy.yml' }
 
     it 'uses orangecloudfoundry spiff image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('orangecloudfoundry/spiff')
+      expect(docker_image_used).to match('orangecloudfoundry/bosh-cli-v2-cf-cli')
     end
 
   end
@@ -22,11 +22,11 @@ describe 'spiff_pre_deploy task' do
     before(:context) do
       generated_files = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/spiff_pre_bosh_deploy.yml ' \
+      @output = execute('-c concourse/tasks/pre_bosh_deploy.yml ' \
         '-i scripts-resource=. ' \
-        '-i template-resource=spec/tasks/spiff_pre_deploy/a-template-resource ' \
-        '-i credentials-resource=spec/tasks/spiff_pre_deploy/credentials-resource ' \
-        '-i additional-resource=spec/tasks/spiff_pre_deploy/additional-resource ' \
+        '-i template-resource=spec/tasks/pre_deploy/a-template-resource ' \
+        '-i credentials-resource=spec/tasks/pre_deploy/credentials-resource ' \
+        '-i additional-resource=spec/tasks/pre_deploy/additional-resource ' \
         "-o generated-files=#{generated_files} ",
         'CUSTOM_SCRIPT_DIR' => 'my-custom-script-dir',
         'SECRETS_DIR' => '' )
@@ -52,11 +52,11 @@ describe 'spiff_pre_deploy task' do
     before(:context) do
       generated_files = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/spiff_pre_bosh_deploy.yml ' \
+      @output = execute('-c concourse/tasks/pre_bosh_deploy.yml ' \
         '-i scripts-resource=. ' \
-        '-i template-resource=spec/tasks/spiff_pre_deploy/a-template-resource ' \
-        '-i credentials-resource=spec/tasks/spiff_pre_deploy/credentials-resource ' \
-        '-i additional-resource=spec/tasks/spiff_pre_deploy/additional-resource ' \
+        '-i template-resource=spec/tasks/pre_deploy/a-template-resource ' \
+        '-i credentials-resource=spec/tasks/pre_deploy/credentials-resource ' \
+        '-i additional-resource=spec/tasks/pre_deploy/additional-resource ' \
         "-o generated-files=#{generated_files} ",
                         'CUSTOM_SCRIPT_DIR' => 'template-resource/a-root-depls',
                         'SECRETS_DIR' => 'credentials-resource/a-root-depls')
@@ -87,11 +87,11 @@ describe 'spiff_pre_deploy task' do
     before(:context) do
       generated_files = Dir.mktmpdir
 
-      @output = execute('-c concourse/tasks/spiff_pre_bosh_deploy.yml ' \
+      @output = execute('-c concourse/tasks/pre_bosh_deploy.yml ' \
         '-i scripts-resource=. ' \
-        '-i template-resource=spec/tasks/spiff_pre_deploy/a-template-legacy-resource ' \
-        '-i credentials-resource=spec/tasks/spiff_pre_deploy/credentials-resource ' \
-        '-i additional-resource=spec/tasks/spiff_pre_deploy/additional-resource ' \
+        '-i template-resource=spec/tasks/pre_deploy/a-template-legacy-resource ' \
+        '-i credentials-resource=spec/tasks/pre_deploy/credentials-resource ' \
+        '-i additional-resource=spec/tasks/pre_deploy/additional-resource ' \
         "-o generated-files=#{generated_files} ",
                         'CUSTOM_SCRIPT_DIR' => 'template-resource/a-root-depls',
                         'SECRETS_DIR' => 'credentials-resource/a-root-depls')

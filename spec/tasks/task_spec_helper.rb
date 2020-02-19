@@ -12,6 +12,10 @@ class TaskSpecHelper
     '3.9'
   end
 
+  def self.orange_default_image_version
+    '0137f362db1fdd482668e899eb7638ff447b0856'
+  end
+
   def self.governmentpaas_default_image_version
     '2857fdbaea59594c06cf9c6e32027091b67d4767'
   end
@@ -73,6 +77,14 @@ class TaskSpecHelper
   end
 
   def self.terraform_image_version
-    '9abcdeea39faad8fd07163c73aa25aa062d174db'
+    orange_default_image_version
+  end
+
+  def self.pre_deploy_image
+    'orangecloudfoundry/bosh-cli-v2-cf-cli'
+  end
+
+  def self.pre_deploy_image_version
+    orange_default_image_version
   end
 end

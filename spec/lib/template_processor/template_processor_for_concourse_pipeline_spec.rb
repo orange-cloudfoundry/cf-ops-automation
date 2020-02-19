@@ -335,7 +335,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
             - task: execute-#{name}-spiff-pre-deploy
               input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{name}, credentials-resource: secrets-#{name}, additional-resource: spruced-files}
               output_mapping: {generated-files: pre-deploy-resource}
-              file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
+              file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
               params:
                 CUSTOM_SCRIPT_DIR: template-resource/#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}
                 SECRETS_DIR: credentials-resource/#{root_deployment_name}/#{name}

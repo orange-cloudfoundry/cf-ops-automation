@@ -20,7 +20,9 @@ check_var GENERATE_DIR
 check_var BASE_TEMPLATE_DIR
 check_var SECRETS_DIR
 
-spiff --version
+bosh --version
+spruce --version
+cf --version
 
 
 
