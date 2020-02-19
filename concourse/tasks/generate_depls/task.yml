@@ -29,3 +29,4 @@ params:
   IAAS_TYPE: ((iaas-type))
   EXCLUDE_PIPELINES:
   PROFILES:
+  PROFILES_AUTOSORT: true

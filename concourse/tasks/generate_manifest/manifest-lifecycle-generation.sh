@@ -20,9 +20,6 @@ generate_manifest() {
     local output_dir=$3
     local common_script_dir=$4
 
-    echo "$customization_dir"
-    echo "${yml_template_dir}/${customization_dir}"
-
     if [ -n "${customization_dir}" -a  -d "${yml_template_dir}/${customization_dir}" ]; then
         echo "Customization detected for ${customization_dir}"
         find "${yml_template_dir}"/"${customization_dir}" -maxdepth 1 -name "*-operators.yml" -exec cp --verbose {} "${output_dir}" +
@@ -54,10 +51,19 @@ if [ $? -eq 3 ]; then
     echo "ignoring Iaas customization. No IAAS_TYPE set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. IAAS_TYPE: <${IAAS_TYPE}>"
 fi
 
-for profile in ${PROFILES};do
+echo "${PROFILES}"|sed -e 's/,/\n/g' > /tmp/profiles.txt
+if [ "$PROFILES_AUTOSORT" = "true" ]; then
+    NEWLINE_DELIMITED_PROFILES=$(sort </tmp/profiles.txt)
+    echo -e "Auto sort profiles:\n${NEWLINE_DELIMITED_PROFILES}"
+else
+    NEWLINE_DELIMITED_PROFILES=$(cat /tmp/profiles.txt)
+    echo "Auto sort profiles disabled: ${NEWLINE_DELIMITED_PROFILES}"
+fi
+for profile in ${NEWLINE_DELIMITED_PROFILES}; do
+    echo "-------------------------"
     generate_manifest "${profile}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
     if [ $? -eq 3 ]; then
-        echo "ignoring Iaas customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${IAAS_TYPE}>"
+        echo "ignoring ${profile} customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${profile}>"
     fi
 done
 set -e

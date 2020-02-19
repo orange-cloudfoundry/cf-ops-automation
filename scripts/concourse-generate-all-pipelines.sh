@@ -10,7 +10,6 @@ done
 DEPLS_LIST=${DEPLS_LIST:-${DYNAMIC_DEPLS_LIST}}
 DEBUG=${DEBUG:=false}
 
-
 usage(){
     echo "$0" 1>&2
     echo -e "No parameter supported. Use environment variables:" 1>&2
@@ -60,9 +59,17 @@ else
     echo "No PIPELINE_TYPES detected"
 fi
 
+if [ "$PROFILES_AUTOSORT" = "false" ]; then
+    echo "Disabling profiles auto sort"
+    PROFILES_AUTOSORT_OPTION="--no-profiles-auto-sort"
+else
+    echo "Enabling profiles auto sort"
+    PROFILES_AUTOSORT_OPTION="--profiles-auto-sort"
+fi
+
 echo "Generating pipelines using secrets in $SECRET_DIR to ${OUTPUT_DIR}/pipelines for ${IAAS_TYPE} (Iaas Type), with profiles: [${PROFILES}]"
 for depls in ${DEPLS_LIST};do
-    "${CURRENT_SCRIPT_DIR}/generate-depls.rb" -d "${depls}" -p "${SECRET_DIR}" -o "${OUTPUT_DIR}" -t "${TEMPLATES}" --iaas "${IAAS_TYPE}" --profiles "${PROFILES}" --no-dump ${PIPELINES_RESTRICTION}
+    "${CURRENT_SCRIPT_DIR}/generate-depls.rb" -d "${depls}" -p "${SECRET_DIR}" -o "${OUTPUT_DIR}" -t "${TEMPLATES}" --iaas "${IAAS_TYPE}" ${PROFILES_AUTOSORT_OPTION} --profiles "${PROFILES}" --no-dump ${PIPELINES_RESTRICTION}
     PIPELINE="${depls}-${PIPELINE_TYPES}-generated"
     echo "${PIPELINE} generated  to ${OUTPUT_DIR}/pipelines"
 done
