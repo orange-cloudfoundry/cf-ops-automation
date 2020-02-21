@@ -119,7 +119,7 @@ The goal is to automate most (if not all) interactive operations of Bosh/CF API/
 * **diversity** of supported cloud and operators **customizations**
   * multiple iaas support (eg: openstack / vsphere / cloudstack)
   * rich yaml manifest templating support:
-    * spiff, spruce enable leveraging bosh v1 legay manifests
+    * spruce enable leveraging bosh manifests
     * vars & operators, bosh cli v2 interpolate enable leveraging current bosh v2 syntax
   * conditional activation of deployments
   * extensibility through terraform providers
@@ -247,7 +247,7 @@ If a template directory contains hook scripts with specific name, then these scr
       * GENERATE_DIR: directory holding generated files. It's an absolute path.
       * BASE_TEMPLATE_DIR: directory where `post-generate.sh` is located. It's an relative path.
 
-  2: `pre-deploy.sh`: can execute shell operation or spiff task.
+  2: `pre-deploy.sh`: can execute shell operation (bosh, credhub, cf and spruce).
      **Legacy support**: script named `pre-bosh-deploy.sh` are still supported
      Environment variables available:
 

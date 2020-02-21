@@ -32,7 +32,7 @@ depls -> depls: post-generate.sh
      **Restrictions**: see Readme.md
     end note
 depls -> depls:  pre-deploy.sh
-    note right: can execute shell operation or spiff task.
+    note right: can execute shell operation (bosh, credhub, cf and spruce).
 
 depls -> bosh: bosh release deployment
 depls -> depls: post-deploy.sh
@@ -73,7 +73,7 @@ concourse -> concourse: post-generate.sh
      **Restrictions**: see Readme.md
     end note
 concourse -> concourse:  pre-deploy.sh
-    note right: can execute shell operation or spiff task.
+    note right: can execute shell operation (bosh, credhub, cf and spruce).
 
 concourse -> CI: load pipelines
 concourse -> concourse: post-deploy.sh

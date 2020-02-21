@@ -469,7 +469,7 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/bosh-deployment-sample/template
       IAAS_TYPE: ((iaas-type))
-  - task: execute-bosh-deployment-sample-spiff-pre-bosh-deploy
+  - task: execute-bosh-deployment-sample-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-bosh-deployment-sample

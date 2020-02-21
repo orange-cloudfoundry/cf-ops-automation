@@ -56,7 +56,7 @@ describe 'generate-depls for bosh pipeline' do
       # if template directory contains scripts with specific name, then these scripts are executed, using the following order :
       #  1: post-generate.sh: can execute shell operation or spruce task.
       #         **Restrictions**: as the post-generation script is executed in the same docker image running spruce, no spiff is available.
-      #  2: pre-bosh-deploy.sh: can execute shell operation or spiff task.
+      #  2: pre-bosh-deploy.sh: can execute shell operation (bosh, credhub, cf and spruce).
       #  3: post-bosh-deploy.sh: can execute shell operation (including curl).
 
       let(:deploy_ntp) { pipeline['jobs'].select { |job| job['name'] == 'deploy-ntp-with-scan' }.first }
@@ -68,7 +68,7 @@ describe 'generate-depls for bosh pipeline' do
             case task['task']
             when 'generate-ntp-with-scan-manifest' then
               lifecycle['post-generate'] = index
-            when 'execute-ntp-with-scan-spiff-pre-bosh-deploy' then
+            when 'execute-ntp-with-scan-pre-bosh-deploy' then
               lifecycle['pre-bosh-deploy'] = index
             when 'execute-ntp-with-scan-post-bosh-deploy' then
               lifecycle['post-bosh-deploy'] = index
@@ -89,7 +89,7 @@ describe 'generate-depls for bosh pipeline' do
       end
 
       it 'generates a pre-bosh-deploy task' do
-        pre_bosh_deploy_task = deployment_plan.select { |task| task['task'] == 'execute-ntp-with-scan-spiff-pre-bosh-deploy' }.first
+        pre_bosh_deploy_task = deployment_plan.select { |task| task['task'] == 'execute-ntp-with-scan-pre-bosh-deploy' }.first
         expect(pre_bosh_deploy_task).to include('file' => 'cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml')
       end
 

@@ -413,7 +413,7 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp-with-scan/template
       IAAS_TYPE: ((iaas-type))
       PROFILES: "((profiles))"
-  - task: execute-ntp-with-scan-spiff-pre-bosh-deploy
+  - task: execute-ntp-with-scan-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-ntp-with-scan
@@ -630,7 +630,7 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/zookeeper-without-scan/template
       IAAS_TYPE: ((iaas-type))
       PROFILES: "((profiles))"
-  - task: execute-zookeeper-without-scan-spiff-pre-bosh-deploy
+  - task: execute-zookeeper-without-scan-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-zookeeper-without-scan

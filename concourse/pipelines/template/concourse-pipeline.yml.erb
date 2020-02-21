@@ -142,7 +142,7 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/<%= "#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
-  - task: execute-<%= name %>-spiff-pre-deploy
+  - task: execute-<%= name %>-pre-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= name %>, credentials-resource: secrets-<%= name %>, additional-resource: spruced-files}
     output_mapping: {generated-files: pre-deploy-resource}
     file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
