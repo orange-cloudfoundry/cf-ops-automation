@@ -25,8 +25,10 @@ generate_manifest() {
         find "${yml_template_dir}"/"${customization_dir}" -maxdepth 1 -name "*-operators.yml" -exec cp --verbose {} "${output_dir}" +
         find "${yml_template_dir}"/"${customization_dir}" -maxdepth 1 -name "*-vars.yml" -exec cp --verbose {} "${output_dir}" +
         YML_TEMPLATE_DIR=${yml_template_dir}/${customization_dir} ${common_script_dir}/generate-manifest.sh
-        if [ $? -ne 0 ]; then
-            exit $?
+        exit_code=$?
+        if [ ${exit_code} -ne 0 ]; then
+            echo "Error detected - exit code: $exit_code"
+            exit ${exit_code}
         fi
     else
         return 3
@@ -48,7 +50,7 @@ ${COMMON_SCRIPT_DIR}/generate-manifest.sh
 set +e
 generate_manifest "${IAAS_TYPE}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
 if [ $? -eq 3 ]; then
-    echo "ignoring Iaas customization. No IAAS_TYPE set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. IAAS_TYPE: <${IAAS_TYPE}>"
+    echo "ignoring Iaas customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${IAAS_TYPE}>"
 fi
 
 echo "${PROFILES}"|sed -e 's/,/\n/g' > /tmp/profiles.txt
@@ -71,7 +73,7 @@ set -e
 if [ -n "$CUSTOM_SCRIPT_DIR" ] && [ -f "$CUSTOM_SCRIPT_DIR/post-generate.sh" ]; then
     echo "post generation script detected"
     chmod +x ${CUSTOM_SCRIPT_DIR}/post-generate.sh
-    GENERATE_DIR=${OUTPUT_DIR} BASE_TEMPLATE_DIR=${CUSTOM_SCRIPT_DIR} ${CUSTOM_SCRIPT_DIR}/post-generate.sh
+    GENERATE_DIR="${OUTPUT_DIR}" BASE_TEMPLATE_DIR="${CUSTOM_SCRIPT_DIR}" ${CUSTOM_SCRIPT_DIR}/post-generate.sh
 else
     echo "ignoring post generate. No $CUSTOM_SCRIPT_DIR/post-generate.sh detected"
 fi
