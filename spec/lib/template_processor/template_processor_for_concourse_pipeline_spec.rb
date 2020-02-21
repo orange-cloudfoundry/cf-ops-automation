@@ -274,7 +274,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       tasks = %w[bosh-interpolate-pipeline-with-ops-and-vars-files concourse-for-my-root-depls]
       concourse_active_deployments.each_key do |name|
         tasks << "spruce-processing-#{name}"
-        tasks << "execute-#{name}-spiff-pre-deploy"
+        tasks << "execute-#{name}-pre-deploy"
         tasks << "copy-#{name}-required-files"
         tasks << "execute-#{name}-post-deploy"
         tasks << 'bosh-interpolate-pipeline-with-ops-and-vars-files'
@@ -332,7 +332,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         my_yaml = ''
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
-            - task: execute-#{name}-spiff-pre-deploy
+            - task: execute-#{name}-pre-deploy
               input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{name}, credentials-resource: secrets-#{name}, additional-resource: spruced-files}
               output_mapping: {generated-files: pre-deploy-resource}
               file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml

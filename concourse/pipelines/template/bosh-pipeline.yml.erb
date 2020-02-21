@@ -623,7 +623,7 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/<%= depls %>/<%= name %>/template
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
-  - task: execute-<%= name %>-spiff-pre-bosh-deploy
+  - task: execute-<%= name %>-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
       template-resource: paas-templates-<%= name %>

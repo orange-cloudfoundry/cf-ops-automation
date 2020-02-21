@@ -8,7 +8,7 @@ describe 'pre_deploy task' do
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/pre_bosh_deploy.yml' }
 
-    it 'uses orangecloudfoundry spiff image' do
+    it 'uses orangecloudfoundry bosh-cli-v2-cf-cli image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
       expect(docker_image_used).to match('orangecloudfoundry/bosh-cli-v2-cf-cli')
     end

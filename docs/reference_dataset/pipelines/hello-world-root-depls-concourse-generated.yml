@@ -93,7 +93,7 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/pipeline-sample/concourse-pipeline-config
       IAAS_TYPE: ((iaas-type))
-  - task: execute-pipeline-sample-spiff-pre-deploy
+  - task: execute-pipeline-sample-pre-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-pipeline-sample, credentials-resource: secrets-pipeline-sample, additional-resource: spruced-files}
     output_mapping: {generated-files: pre-deploy-resource}
     file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
