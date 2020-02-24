@@ -12,12 +12,12 @@ group :development do
   gem 'rake', '12.2.1'
   gem 'reek', '5.3.0'
   gem 'rubocop', '>= 0.68.1'
-  gem 'rubocop-rspec', '>= 1.33.0'
+  gem 'rubocop-rspec', '>= 1.38.1'
 end
 
 group :test do
   gem 'cucumber'
   gem 'rspec', '>= 3.9.0'
   gem 'rspec-rerun'
-  gem 'simplecov', '>= 0.17.1'
+  gem 'simplecov', '~> 0.16.1'
 end
