@@ -196,11 +196,24 @@ jobs:
           fi
           echo "Fetching fly...";
           curl -SsL "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
-          chmod +x $FLY;
+          chmod +x ${FLY};
 
-          fly login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
+          ${FLY} login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
           echo "set pipeline ${PIPELINE_FILE_PATH}"
-          fly -t main set-pipeline -p control-plane -c ${PIPELINE_FILE_PATH} -l secrets-full/coa/config/credentials-auto-init.yml -l secrets-full/coa/config/credentials-git-config.yml -l secrets-full/coa/config/credentials-slack-config.yml -l secrets-full/coa/config/credentials-docker-registry.yml -n
+          CONFIG_DIR=secrets-full/coa/config
+          FILTERED_CONFIG_FILES=$(cd ${CONFIG_DIR} && ls -1 credentials-*.yml|grep -v pipeline)
+          VARS_FILES=""
+          for config_file in ${FILTERED_CONFIG_FILES}; do
+            VARS_FILES="${VARS_FILES}-l \"${CONFIG_DIR}/${config_file}\" "
+          done
+          echo ${VARS_FILES}
+          FLY_TARGET=main
+          PIPELINE=control-plane
+          export FLY_SET_PIPELINE_OPTION="--non-interactive"
+          set +e
+          ${FLY} -t ${FLY_TARGET} set-pipeline ${FLY_SET_PIPELINE_OPTION} -p ${PIPELINE} -c ${PIPELINE_FILE_PATH} ${VARS_FILES}
+          set -e
+
       params:
         ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
         FLY_USERNAME: ((concourse-micro-depls-username))
