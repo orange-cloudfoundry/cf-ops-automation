@@ -25,6 +25,7 @@ module PipelineHelpers
       vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
       versions_file = File.join(templates_dir, root_deployment, "#{root_deployment}-versions.yml")
       raise "Missing version file: #{versions_file}" unless File.exist?(versions_file)
+
       vars_files << versions_file
       vars_files
     end

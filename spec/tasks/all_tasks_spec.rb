@@ -5,13 +5,13 @@ require_relative './task_spec_helper'
 
 describe 'all tasks' do
   context 'Pre-requisite' do
-    let(:tasks_dir) { 'concourse/tasks/'}
+    let(:tasks_dir) { 'concourse/tasks/' }
     let(:tasks) { Dir.glob(tasks_dir + '**/*.yml') }
     let(:docker_images_with_task) do
       images = {}
       tasks.each do |task_filename|
         puts "processing file #{task_filename}"
-        task = YAML.load_file (task_filename)
+        task = YAML.load_file task_filename
         docker_image = task['image_resource']&.fetch('source', [])&.fetch('repository', []).to_s
         if docker_image.empty?
           puts "No image detected, ignoring #{task_filename}"
@@ -19,7 +19,7 @@ describe 'all tasks' do
         end
         docker_image = "library/#{docker_image}" unless docker_image.include?('/')
         docker_image_no_prefix = docker_image.delete_prefix(DOCKER_REGISTRY_PREFIX)
-        docker_image_tag = task.dig('image_resource','source','tag') || 'latest'
+        docker_image_tag = task.dig('image_resource', 'source', 'tag') || 'latest'
         name = "#{docker_image_no_prefix}:#{docker_image_tag}"
         images[name] = if images[name]
                          images[name] << task_filename
@@ -53,7 +53,7 @@ describe 'all tasks' do
       expect(docker_images_with_task.keys).to match_array(expected_task_images)
     end
 
-    it 'uses an existing image on docker hub'do
+    it 'uses an existing image on docker hub' do
       docker_images_with_task.each do |image, files|
         puts "processing image #{image}"
         parsed_image = image.split(':')
@@ -63,11 +63,10 @@ describe 'all tasks' do
         begin
           manifest = docker_registry.manifest(docker_image, docker_image_tag)
           expect(manifest).not_to be_empty
-          rescue DockerRegistry2::NotFound => not_found
-            raise DockerRegistry2::NotFound, " #{image} used by #{files.to_s}"
+        rescue DockerRegistry2::NotFound => e
+          raise DockerRegistry2::NotFound, " #{image} used by #{files}"
         end
       end
     end
-
   end
 end

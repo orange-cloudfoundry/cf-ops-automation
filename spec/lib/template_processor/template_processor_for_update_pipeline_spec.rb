@@ -23,7 +23,7 @@ describe 'UpdatePipelineTemplateProcessing' do
       all_ci_deployments: all_ci_deployments,
       git_submodules: git_submodules,
       config: loaded_config,
-      ops_automation_path: ops_automation_path}
+      ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }
@@ -139,22 +139,21 @@ describe 'UpdatePipelineTemplateProcessing' do
     context 'when validating tasks' do
       let(:expected_generate_DEPLS_pipelines) do
         expected_yaml = <<~YAML
-        - task: 
-          input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-<%= depls %>,secrets: secrets-<%= depls %>-for-pipeline}
-          output_mapping: {result-dir: concourse-generated-pipeline}
-          file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
-          params:
-            ROOT_DEPLOYMENT: <%= depls %>
-            IAAS_TYPE: ((iaas-type))
-            EXCLUDE_PIPELINES: depls
-            PROFILES: ((profiles))
+          - task:
+            input_mapping: {scripts-resource: cf-ops-automation,templates: paas-templates-<%= depls %>,secrets: secrets-<%= depls %>-for-pipeline}
+            output_mapping: {result-dir: concourse-generated-pipeline}
+            file: cf-ops-automation/concourse/tasks/generate_depls/task.yml
+            params:
+              ROOT_DEPLOYMENT: <%= depls %>
+              IAAS_TYPE: ((iaas-type))
+              EXCLUDE_PIPELINES: depls
+              PROFILES: ((profiles))
         YAML
         YAML.safe_load expected_yaml
       end
       let(:expected_generate_DEPLS_pipelines_params) { { 'ROOT_DEPLOYMENT' => root_deployment_name, 'IAAS_TYPE' => '((iaas-type))', 'EXCLUDE_PIPELINES' => 'depls', 'PROFILES' => '((profiles))' } }
       let(:expected_stemcell_deploy_put) { ['((stemcell-main-name))/stemcell.tgz'] * 2 }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan' }
-
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
         task = update_pipeline_DEPLS_plan
@@ -163,11 +162,11 @@ describe 'UpdatePipelineTemplateProcessing' do
         expect(task['params']).to match(expected_generate_DEPLS_pipelines_params).and not_be(nil)
       end
 
-      it'generates params for copy-and-filter-generated-pipeline' do
+      it 'generates params for copy-and-filter-generated-pipeline' do
         task = update_pipeline_DEPLS_plan
           .select { |step| step['task'] && step['task'] == "copy-and-filter-generated-pipeline" }
           .first
-        expect(task['params']).to match( { 'ROOT_DEPLOYMENT' => root_deployment_name } )
+        expect(task['params']).to match({ 'ROOT_DEPLOYMENT' => root_deployment_name })
       end
 
       it 'generates params for update-git-generated-pipelines' do
@@ -237,9 +236,9 @@ describe 'UpdatePipelineTemplateProcessing' do
     end
 
     context 'when validating update-pipeline-hello-world-root-depls config' do
-      let(:serials) { update_pipeline_DEPLS_jobs.flat_map { |job| job['serial'] }}
-      let(:on_failure) { update_pipeline_DEPLS_jobs.flat_map { |job| job['on_failure'] }}
-      let(:expected_on_failure_config) { Coa::TestFixtures::JOB_CONFIG['on_failure']}
+      let(:serials) { update_pipeline_DEPLS_jobs.flat_map { |job| job['serial'] } }
+      let(:on_failure) { update_pipeline_DEPLS_jobs.flat_map { |job| job['on_failure'] } }
+      let(:expected_on_failure_config) { Coa::TestFixtures::JOB_CONFIG['on_failure'] }
 
       it 'uses serial mode' do
         expect(serials.uniq).to match([true])

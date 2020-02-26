@@ -37,9 +37,7 @@ module Coa
 
         Dir.chdir(repo_path) do
           list = "Inactive deployment: config dir for #{root_deployment_name} does not exist."
-          if Dir.exist?(root_deployment_name)
-            list = `tree --noreport #{root_deployment_name}`
-          end
+          list = `tree --noreport #{root_deployment_name}` if Dir.exist?(root_deployment_name)
         end
 
         write("### #{root_deployment_name} overview", "", "```bash", list, "```", "")

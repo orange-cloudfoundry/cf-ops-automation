@@ -13,11 +13,11 @@ describe 'bosh_update_runtime_config task' do
         '-i scripts-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@test_config_generator.config_manifest_path} ", \
-        'BOSH_TARGET' => 'https://dummy-bosh',
-        'BOSH_CLIENT' => 'aUser',
-        'BOSH_CLIENT_SECRET' => 'aPassword',
-        'BOSH_CA_CERT' => 'secrets/dummy',
-        'CONFIG_TYPE' => 'runtime' )
+                        'BOSH_TARGET' => 'https://dummy-bosh',
+                        'BOSH_CLIENT' => 'aUser',
+                        'BOSH_CLIENT_SECRET' => 'aPassword',
+                        'BOSH_CA_CERT' => 'secrets/dummy',
+                        'CONFIG_TYPE' => 'runtime')
     rescue FlyExecuteError => e
       @output = e.out
       @fly_error = e.err

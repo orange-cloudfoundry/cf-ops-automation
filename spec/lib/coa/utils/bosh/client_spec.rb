@@ -4,7 +4,7 @@ require 'coa/utils/bosh/config'
 require 'coa/utils/command_runner'
 
 describe Coa::Utils::Bosh::Client do
- let(:config) do
+  let(:config) do
     Coa::Utils::Bosh::Config.new(
       "bosh_client"        => "client",
       "bosh_client_secret" => "secret",
@@ -55,8 +55,8 @@ describe Coa::Utils::Bosh::Client do
         allow(command_runner).to receive(:execute).and_return(command_response)
 
         expect(
-          bosh_client.stemcell_uploaded?(stemcell_name, stemcell_version)
-        ).to be_truthy
+          bosh_client
+        ).to be_stemcell_uploaded(stemcell_name, stemcell_version)
 
         expect(Coa::Utils::CommandRunner).to have_received(:new).
           with(cmd, profile: source_profile)
@@ -71,8 +71,8 @@ describe Coa::Utils::Bosh::Client do
         allow(command_runner).to receive(:execute).and_return(command_response)
 
         expect(
-          bosh_client.stemcell_uploaded?(stemcell_name, stemcell_version)
-        ).to be_falsy
+          bosh_client
+        ).not_to be_stemcell_uploaded(stemcell_name, stemcell_version)
 
         expect(Coa::Utils::CommandRunner).to have_received(:new).
           with(cmd, profile: source_profile)
@@ -81,4 +81,3 @@ describe Coa::Utils::Bosh::Client do
     end
   end
 end
-

@@ -45,9 +45,7 @@ module Coa
       def write_file_list(repo_path, repo_name, root_deployment_name)
         list = ''
         Dir.chdir(repo_path) do
-          if Dir.exist?(root_deployment_name)
-            list = `find #{root_deployment_name}|sort`
-          end
+          list = `find #{root_deployment_name}|sort` if Dir.exist?(root_deployment_name)
         end
 
         write("### The #{root_deployment_name} files", "")

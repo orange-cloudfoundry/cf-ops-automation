@@ -8,7 +8,7 @@ require 'coa/env_bootstrapper/prereqs'
 
 describe Coa::EnvBootstrapper::Bootstrapper do
   let(:tempfile) { Tempfile.new }
-  let(:empty_prereqs) { Coa::EnvBootstrapper::Prereqs.new  }
+  let(:empty_prereqs) { Coa::EnvBootstrapper::Prereqs.new }
 
   describe '.new' do
     let(:bosh_prereqs_path) { File.join(fixtures_dir('lib'), 'coa/env_bootstrapper', 'bosh-prereqs.yml') }
@@ -44,7 +44,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
     let(:cf) { Coa::EnvBootstrapper::Cf.new({}) }
     let(:git) { Coa::EnvBootstrapper::Git.new(bosh) }
     let(:concourse) { Coa::EnvBootstrapper::Concourse.new({}) }
-    let(:env_creator) { Coa::EnvBootstrapper::EnvCreator.new() }
+    let(:env_creator) { Coa::EnvBootstrapper::EnvCreator.new }
     let(:git_server_ip) { "1.1.1.1" }
 
     before do

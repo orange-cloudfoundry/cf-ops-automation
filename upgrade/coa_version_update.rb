@@ -51,7 +51,6 @@ class CommandLineParser
   end
 end
 
-
 class CoaVersionUpdate
   COA_RESOURCE_NAME = 'cf-ops-automation'.freeze
 
@@ -64,7 +63,6 @@ class CoaVersionUpdate
   end
 
   def run
-
     concourse_url = @config[:concourse_url]
     concourse_password = @config[:concourse_password]
     concourse_username = @config[:concourse_username]
@@ -83,14 +81,14 @@ class CoaVersionUpdate
         begin
           check_output = current_fly.check_resource(name, COA_RESOURCE_NAME, coa_version)
           puts check_output
-        rescue FlyError => fly_error
-          raise fly_error unless fly_error.message =~ /resource 'cf-ops-automation' not found/
+        rescue FlyError => e
+          raise e unless e.message =~ /resource 'cf-ops-automation' not found/
+
           puts " > Ignoring #{name}, resource #{COA_RESOURCE_NAME} not found"
         end
       end
     end
   end
-
 end
 
 class Fly
@@ -101,11 +99,12 @@ class Fly
   def fly(arg, env = {})
     env_var = env.collect { |k, v| "#{k}=#{v}" }.join(' ')
     out, err, status = Open3.capture3("env #{env_var} fly --target #{@target} #{arg} | tee /tmp/fly.log")
-    raise FlyError, "Failed: env #{env_var} fly --target #{@target} #{arg} | tee /tmp/fly.log\n #{err unless err.empty? } " if !status.success? or !err.empty? #err =~ /error: websocket: bad handshake/
+    raise FlyError, "Failed: env #{env_var} fly --target #{@target} #{arg} | tee /tmp/fly.log\n #{err unless err.empty?} " if !status.success? || !err.empty? # err =~ /error: websocket: bad handshake/
+
     out
   end
 
-  def login(url, team = 'main', username = 'atc', password, insecure:false, env:{})
+  def login(url, team = 'main', username = 'atc', password, insecure: false, env: {})
     options = ''
     options += '--insecure ' if insecure
     puts "login --team-name #{team} -u #{username} -p **redacted** -c #{url} #{options}"
@@ -132,6 +131,7 @@ class Fly
     output.each_line do |line|
       matches = line.match /^([\w|-]+)\s+(\w*)\s+(\w*)/
       next if matches.nil?
+
       name = matches[1]
       paused = matches[2]
       public = matches[3]
@@ -140,13 +140,12 @@ class Fly
     pipelines
   end
 
-  def check_resource(pipeline, resource_name, version = '',env = {})
+  def check_resource(pipeline, resource_name, version = '', env = {})
     puts "Checking #{pipeline}/#{resource_name}: #{+ version}"
     check_resource_cmd = "check-resource --resource #{pipeline}/#{resource_name}"
     check_resource_cmd += " -from ref:#{version} " unless version.empty?
     fly(check_resource_cmd, env)
   end
-
 end
 class FlyError < RuntimeError; end
 

@@ -8,7 +8,6 @@ def display_available_versions
   Dir[versions_dir].map { |path| File.basename(path)[1..-1] }.sort
 end
 
-
 params = ARGV.dup.join(' ')
 options = CoaUpgrader::CommandLineParser.new.parse
 
@@ -17,8 +16,6 @@ full_version = 'v' + version
 
 upgrade_dir = File.join(File.dirname(__FILE__), full_version)
 raise "invalid version: <#{version}> does not exist - Available versions: #{display_available_versions}" unless Dir.exist?(upgrade_dir)
-
-
 
 Dir[File.join(upgrade_dir, '??-*')].sort.each do |upgrade_script|
   puts "Executing #{upgrade_dir}: "

@@ -92,12 +92,12 @@ describe PipelineGenerator do
         with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
         and_return(root_deployment_versions)
 
-        expect(Config).to receive(:new).with(shared_config, private_config,extended_config).
-          and_return(config)
-        expect(config).to receive(:load_config).
-          and_return(config)
-        expect(config).to receive(:loaded_config).
-          and_return(loaded_config)
+      expect(Config).to receive(:new).with(shared_config, private_config, extended_config).
+        and_return(config)
+      expect(config).to receive(:load_config).
+        and_return(config)
+      expect(config).to receive(:loaded_config).
+        and_return(loaded_config)
 
       expect(DeploymentFactory).to receive(:new).
         with(depls, root_deployment_versions.versions, config).
@@ -118,7 +118,7 @@ describe PipelineGenerator do
       expect(git_modules).to receive(:list).
         and_return(git_submodules)
       expect(TemplateProcessor).to receive(:new).
-      #   with(depls, options, erb_context).
+        #   with(depls, options, erb_context).
         and_return(template_processor)
 
       expect(template_processor).to receive(:process).
@@ -180,7 +180,7 @@ describe PipelineGenerator::PipelineTemplatesFiltering do
   context "when exclude filter is set" do
     let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: [], exclude_pipelines: %w[bosh update]) }
     let(:include_templates) { subject.filter }
-    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh') || path.include?('update')}}
+    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh') || path.include?('update') } }
 
     it 'contains only filtered templates' do
       expect(include_templates).to match_array(expected_excluded_templates)

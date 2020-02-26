@@ -66,11 +66,11 @@ describe 'generate-depls for bosh pipeline' do
         deployment_plan&.select { |item| item['task'] }
           .each_with_index do |task, index|
             case task['task']
-            when 'generate-ntp-with-scan-manifest' then
+            when 'generate-ntp-with-scan-manifest'
               lifecycle['post-generate'] = index
-            when 'execute-ntp-with-scan-pre-bosh-deploy' then
+            when 'execute-ntp-with-scan-pre-bosh-deploy'
               lifecycle['pre-bosh-deploy'] = index
-            when 'execute-ntp-with-scan-post-bosh-deploy' then
+            when 'execute-ntp-with-scan-post-bosh-deploy'
               lifecycle['post-bosh-deploy'] = index
               # do not add an else as other task may exist
             end
@@ -144,7 +144,7 @@ describe 'generate-depls for bosh pipeline' do
       current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete_deployments' }&.first
       expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml').and \
         include('params' => { 'ROOT_DEPLOYMENT_NAME' => depls_name, "BOSH_TARGET" => "((bosh-target))", "BOSH_CLIENT" => "((bosh-username))", "BOSH_CLIENT_SECRET" => "((bosh-password))", "BOSH_CA_CERT" => "config-resource/shared/certs/internal_paas-ca/server-ca.crt", "COMMIT_MESSAGE" => "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup" }).and \
-        include('ensure' => { 'get_params'=>{'submodules'=>'none'}, 'params'=>{'rebase'=>true, 'repository'=>'updated-config-resource'}, 'put'=>'secrets-full-writer'})
+          include('ensure' => { 'get_params' => { 'submodules' => 'none' }, 'params' => { 'rebase' => true, 'repository' => 'updated-config-resource' }, 'put' => 'secrets-full-writer' })
     end
   end
 

@@ -1,4 +1,3 @@
-# encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
@@ -66,7 +65,6 @@ describe 'list_used_ci_team task' do
               - micro-depls/concourse-micro/pipelines/credentials-git-config.yml
     YAML
 
-
     @temp_dir = Dir.mktmpdir
     @ops_depls_file = File.join(@temp_dir, 'ops-depls')
     @ops_depls_dir = Dir.mkdir(@ops_depls_file)
@@ -89,7 +87,7 @@ describe 'list_used_ci_team task' do
         '-i cf-ops-automation=. ' \
         "-i secrets=#{@secrets_dir} " \
         "-o ci-deployment-overview=#{@ci_deployment_overview} ",
-        'SECRETS_PATH' => 'secrets')
+                        'SECRETS_PATH' => 'secrets')
     end
 
     after(:context) do
@@ -98,7 +96,7 @@ describe 'list_used_ci_team task' do
     end
 
     it 'contains teams name' do
-      expect(YAML.load_file(teams_file)).to match_array(['my-custom-team-1','my-custom-team-2'])
+      expect(YAML.load_file(teams_file)).to match_array(%w[my-custom-team-1 my-custom-team-2])
     end
 
     it 'contains a teams.yml file' do

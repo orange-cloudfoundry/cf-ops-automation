@@ -26,6 +26,7 @@ class CoaUpgrade
 
   def self.format_result(script_name, header, data)
     return '' if data.empty?
+
     result = "##################\n"
     result << "#{script_name} #{header}:\n"
     result << data
@@ -35,6 +36,7 @@ class CoaUpgrade
   def self.coa_version
     version = ENV.fetch('COA_VERSION', UNDEFINED)
     return UNDEFINED if version.empty?
+
     version
   end
 
@@ -80,6 +82,7 @@ class CoaUpgrade
   def locate_migration_scripts
     location = File.join(@coa_root_dir, 'upgrade', "v#{self.class.coa_version}")
     raise "No migration scripts found at #{location}" unless File.exist?(location)
+
     location
   end
 

@@ -27,8 +27,6 @@ puts "Fly: " + `fly --version`
 puts `bundle --version`
 puts '=' * 20
 
-
-
 puts "Config files used: " + absolute_paths.to_s
 tests = Coa::IntegrationTests::Runner.new(absolute_paths)
 tests.start

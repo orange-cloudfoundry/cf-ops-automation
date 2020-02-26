@@ -44,8 +44,8 @@ class TemplateProcessor
       gsub(/\n\s*\n/, "\n") # removing blank lines
     puts output if config[:dump_output]
     output
-  # rescue NameError => name_error
-  #   raise NameError, "#{filename}: #{name_error}"
+    # rescue NameError => name_error
+    #   raise NameError, "#{filename}: #{name_error}"
   end
 
   def write_pipeline_content_in_file(output, pipeline_name)
@@ -63,8 +63,8 @@ class TemplateProcessor
     YAML.load_file(pipeline)
     puts "> #{pipeline_name} seems a valid Yaml file"
     2.times { puts '####################################################################################' }
-  rescue Psych::SyntaxError => err
-    raise "invalid #{pipeline_name} file: #{err.message}"
+  rescue Psych::SyntaxError => e
+    raise "invalid #{pipeline_name} file: #{e.message}"
   end
 
   # This method don't fail when a variable is missing in erb file.

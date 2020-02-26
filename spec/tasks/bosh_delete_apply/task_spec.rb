@@ -13,7 +13,7 @@ describe 'bosh_delete_apply task' do
         ERROR: missing environment variable: BOSH_CLIENT
         ERROR: missing environment variable: BOSH_CLIENT_SECRET
         ERROR: missing environment variable: BOSH_CA_CERT
-        TEXT
+      TEXT
     end
 
     before(:context) do
@@ -34,7 +34,7 @@ describe 'bosh_delete_apply task' do
         @fly_error = e.err
         @fly_status = e.status
       end
-      puts "Fly error message: #{@fly_error}" unless  @fly_status.success?
+      puts "Fly error message: #{@fly_error}" unless @fly_status.success?
     end
 
     after(:context) do

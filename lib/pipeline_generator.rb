@@ -62,9 +62,7 @@ class PipelineGenerator
 
   def load_erb_context
     deployment_versions_path = "#{options.paas_templates_path}/#{options.depls}/#{options.depls}-versions.yml"
-    unless File.exist? deployment_versions_path
-      raise "#{options.depls}-versions.yml: file not found. #{deployment_versions_path} does not exist"
-    end
+    raise "#{options.depls}-versions.yml: file not found. #{deployment_versions_path} does not exist" unless File.exist? deployment_versions_path
 
     set_context
     check_warnings
@@ -111,6 +109,7 @@ class PipelineGenerator
   def generate_templates(processor)
     processed_template_count = 0
     return processed_template_count unless options.input_pipelines
+
     options.input_pipelines.each do |dir|
       processed_template = processor.process(dir)
       processed_template_count += processed_template.length
@@ -213,6 +212,7 @@ class PipelineGenerator
     def filter
       pipelines_to_process = filter_pipeline_templates
       raise "No pipeline templates detected. Please check your CLI options." if pipelines_to_process.empty?
+
       pipelines_to_process
     end
 

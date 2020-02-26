@@ -50,6 +50,7 @@ class CfApps
   def load_cf_app_details(cf_app_name, cf_app_details, file, dir, cf_apps)
     puts "processing cf-app: #{cf_app_name} from #{file}"
     raise "cannot process #{file}, an application named #{cf_app_name} already exists" if cf_apps.key?(cf_app_name)
+
     #   raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname
     cf_app_details['base-dir'] = dir.sub(/^.*#{Regexp.escape(root_deployment_name)}/, root_deployment_name)
     cf_app_details

@@ -1,16 +1,13 @@
-# encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
 
 describe 'cf push task' do
-
   context 'Pre-requisite: a valid Cloudfoundry instance with existing user with password, org' do
     it 'is not possible yet (credentials leak)'
   end
 
   context 'when no custom pre-push script is detected' do
-
     generated_files = nil
     before(:context) do
       generated_files = Dir.mktmpdir
@@ -30,8 +27,7 @@ describe 'cf push task' do
     end
 
     it 'displays an ignore message'
-      # expect(@output).to include('ignoring pre CF push. No /pre-cf-push.sh detected')
-
+    # expect(@output).to include('ignoring pre CF push. No /pre-cf-push.sh detected')
   end
 
   context 'when a custom pre-push script script is detected' do
@@ -69,6 +65,4 @@ describe 'cf push task' do
 
     it 'adds additional resource to generated'
   end
-
-
 end

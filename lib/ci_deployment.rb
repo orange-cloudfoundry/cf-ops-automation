@@ -88,10 +88,12 @@ class CiDeployment
 
   def processes_ci_deployment_data(root_deployment_name, root_deployment_details, dir_basename)
     raise 'missing keys: expecting keys target and pipelines' unless root_deployment_details
-    raise "Invalid deployment: expected <#{dir_basename}> - Found <#{root_deployment_name}>" if root_deployment_name != dir_basename
-    content[root_deployment_name] = root_deployment_details
 
+    raise "Invalid deployment: expected <#{dir_basename}> - Found <#{root_deployment_name}>" if root_deployment_name != dir_basename
+
+    content[root_deployment_name] = root_deployment_details
     raise 'No target defined: expecting a target_name' unless root_deployment_details['target_name']
+
     raise 'No pipeline detected: expecting at least one pipeline' unless root_deployment_details['pipelines']
 
     processes_pipeline_definitions(root_deployment_details)

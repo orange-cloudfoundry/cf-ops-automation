@@ -17,10 +17,10 @@ describe 'generate-all-manifest task' do
 
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
-      reference_dataset = File.join(@root_dir, 'docs','reference_dataset')
+      reference_dataset = File.join(@root_dir, 'docs', 'reference_dataset')
       reference_dataset_template = File.join(reference_dataset, 'template_repository')
       reference_dataset_secrets = File.join(reference_dataset, 'config_repository')
-      @templates_dir =  Dir.mktmpdir
+      @templates_dir = Dir.mktmpdir
       @secrets_dir = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
 
@@ -43,10 +43,9 @@ describe 'generate-all-manifest task' do
 
     it 'generates expected pipelines' do
       generated_pipelines = generated_pipeline_filenames.filter { |filename| File.size?(filename) }
-                                .map { |filename| File.basename filename }
+        .map { |filename| File.basename filename }
       expect(generated_pipelines).to match_array(expected_generated_pipelines)
     end
-
   end
 
   context 'Pre-requisite' do

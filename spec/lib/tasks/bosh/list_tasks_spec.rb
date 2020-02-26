@@ -92,7 +92,7 @@ describe Tasks::Bosh::ListTasks do
 
         before do
           allow(Open3).to receive(:capture3).with(cmd_env, "bosh tasks --json").
-              and_return([tasks_json_response, nil, process_status_zero])
+            and_return([tasks_json_response, nil, process_status_zero])
         end
 
         it "executes a bosh command" do
@@ -108,12 +108,12 @@ describe Tasks::Bosh::ListTasks do
 
         before do
           allow(Open3).to receive(:capture3).with(cmd_env, "bosh tasks --json").once.
-              and_return([stdout, stderr, process_status_one])
+            and_return([stdout, stderr, process_status_one])
         end
 
         it "error" do
           expect { described_class.new.execute }.
-              to raise_error(Tasks::Bosh::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
+            to raise_error(Tasks::Bosh::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
         end
       end
 
@@ -152,7 +152,7 @@ describe Tasks::Bosh::ListTasks do
 
         before do
           allow(Open3).to receive(:capture3).with(cmd_env, "bosh tasks --json").
-              and_return([tasks_json_response, nil, process_status_zero])
+            and_return([tasks_json_response, nil, process_status_zero])
         end
 
         it "executes a bosh command" do

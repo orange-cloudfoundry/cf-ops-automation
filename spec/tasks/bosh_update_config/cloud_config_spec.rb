@@ -5,7 +5,6 @@ require_relative 'test_config_generator'
 
 describe 'bosh_update_cloud_config task' do
   context 'when no bosh is available' do
-
     before(:context) do
       @test_config_generator = TestConfigGenerator.new
       @secrets = Dir.mktmpdir
@@ -22,7 +21,7 @@ describe 'bosh_update_cloud_config task' do
         '-i scripts-resource=. ' \
         "-i secrets=#{@secrets} " \
         "-i config-manifest=#{@test_config_generator.config_manifest_path} ", \
-        fly_cli_environment )
+                        fly_cli_environment)
     rescue FlyExecuteError => e
       puts "OUTPUT: #{e.out}"
       @output = e.out

@@ -194,7 +194,6 @@ describe 'BoshPipelineTemplateProcessing' do
 
     before do
       @processed_template = subject.process(@pipelines_dir + '/*')
-
     end
 
     context 'when an errand job is defined' do
@@ -376,7 +375,7 @@ describe 'BoshPipelineTemplateProcessing' do
           .compact
           .select { |resource| expected_boshreleases.key?(resource['get']) }
           .flat_map { |resource| { resource['get'] => resource['version'] } }
-        expect(boshrelease_get_version).to all(satisfy { |k,v| v.nil? })
+        expect(boshrelease_get_version).to all(satisfy { |_k, v| v.nil? })
       end
 
       it 'generates s3 version using path on deployment put' do
@@ -415,7 +414,7 @@ describe 'BoshPipelineTemplateProcessing' do
             type: bosh-io-stemcell
             source:
               name: ((stemcell-name-prefix))((stemcell-main-name))
-            version: 
+            version:
               version: ((stemcell-version))
         YAML
         YAML.safe_load expected_yaml
@@ -518,7 +517,7 @@ describe 'BoshPipelineTemplateProcessing' do
 
       it 'generates terraform group' do
         expected_tf_group = { 'name' => 'Terraform',
-                              'jobs' => ['approve-and-enforce-terraform-consistency', 'check-terraform-consistency'] }
+                              'jobs' => %w[approve-and-enforce-terraform-consistency check-terraform-consistency] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'Terraform' }.pop
         expect(generated).to match(expected_tf_group)
       end
@@ -627,7 +626,6 @@ describe 'BoshPipelineTemplateProcessing' do
       YAML.safe_load(deps_yaml)
     end
     let(:template_processing_error) { subject.process(@pipelines_dir + '/*') }
-
 
     before(:context) do
       @output_dir = Dir.mktmpdir('generated-pipelines')

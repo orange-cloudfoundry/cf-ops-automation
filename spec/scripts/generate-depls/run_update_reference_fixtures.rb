@@ -5,14 +5,13 @@ require_relative '../../../lib/directory_initializer'
 require 'fileutils'
 
 formatter = RSpec::Core::Formatters::DocumentationFormatter.new(StringIO.new)
-def formatter.stop(arg1)
-end
+def formatter.stop(arg1); end
 
 RSpec.configuration.reporter.register_listener(formatter, :message, :dump_summary, :dump_profile, :stop, :seed, :close, :start, :example_group_started)
 
-spec_name = File.basename(__FILE__,'.rb').delete_prefix("run_") + "_spec.rb"
+spec_name = File.basename(__FILE__, '.rb').delete_prefix("run_") + "_spec.rb"
 puts "Running spec for #{spec_name}"
-#RSpec::Core::Runner.run([spec_name])
+# RSpec::Core::Runner.run([spec_name])
 
 puts formatter.output.string
 
@@ -25,25 +24,25 @@ raise "Invalid references_dir #{references_dir}" unless Dir.exist?(references_di
 puts "Coping generated files to reference"
 
 puts "Processing Cf-Apps Pipelines"
-FileUtils.cp("#{pipelines_dir}/apps-depls-cf-apps-generated.yml","#{references_dir}/apps-depls-cf-apps-ref.yml", verbose:true)
+FileUtils.cp("#{pipelines_dir}/apps-depls-cf-apps-generated.yml", "#{references_dir}/apps-depls-cf-apps-ref.yml", verbose: true)
 
 puts "Processing Delete Pipelines"
-FileUtils.cp("#{pipelines_dir}/delete-depls-bosh-generated.yml","#{references_dir}/delete-depls-bosh-ref.yml", verbose:true)
+FileUtils.cp("#{pipelines_dir}/delete-depls-bosh-generated.yml", "#{references_dir}/delete-depls-bosh-ref.yml", verbose: true)
 
 puts "Processing Empty Pipelines"
-FileUtils.cp("#{pipelines_dir}/empty-depls-cf-apps-generated.yml","#{references_dir}/empty-cf-apps.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/empty-depls-concourse-generated.yml","#{references_dir}/empty-concourse.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/empty-depls-bosh-generated.yml","#{references_dir}/empty-depls.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/empty-depls-news-generated.yml","#{references_dir}/empty-news.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/empty-depls-s3-br-upload-generated.yml","#{references_dir}/empty-s3-br-upload.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/empty-depls-s3-stemcell-upload-generated.yml","#{references_dir}/empty-s3-stemcell-upload.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/empty-depls-sync-helper-generated.yml","#{references_dir}/empty-sync-helper.yml", verbose:true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-cf-apps-generated.yml", "#{references_dir}/empty-cf-apps.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-concourse-generated.yml", "#{references_dir}/empty-concourse.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-bosh-generated.yml", "#{references_dir}/empty-depls.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-news-generated.yml", "#{references_dir}/empty-news.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-s3-br-upload-generated.yml", "#{references_dir}/empty-s3-br-upload.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-s3-stemcell-upload-generated.yml", "#{references_dir}/empty-s3-stemcell-upload.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-sync-helper-generated.yml", "#{references_dir}/empty-sync-helper.yml", verbose: true)
 
 puts "Processing Simple Pipelines"
-FileUtils.cp("#{pipelines_dir}/simple-depls-bosh-generated.yml","#{references_dir}/simple-depls-bosh-ref.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/simple-depls-news-generated.yml","#{references_dir}/simple-depls-news-ref.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/simple-depls-s3-br-upload-generated.yml","#{references_dir}/simple-depls-s3-br-upload-ref.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/simple-depls-s3-stemcell-upload-generated.yml","#{references_dir}/simple-depls-s3-stemcell-upload-ref.yml", verbose:true)
-FileUtils.cp("#{pipelines_dir}/simple-depls-sync-helper-generated.yml","#{references_dir}/simple-depls-sync-helper-ref.yml", verbose:true)
+FileUtils.cp("#{pipelines_dir}/simple-depls-bosh-generated.yml", "#{references_dir}/simple-depls-bosh-ref.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/simple-depls-news-generated.yml", "#{references_dir}/simple-depls-news-ref.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/simple-depls-s3-br-upload-generated.yml", "#{references_dir}/simple-depls-s3-br-upload-ref.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/simple-depls-s3-stemcell-upload-generated.yml", "#{references_dir}/simple-depls-s3-stemcell-upload-ref.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/simple-depls-sync-helper-generated.yml", "#{references_dir}/simple-depls-sync-helper-ref.yml", verbose: true)
 
 FileUtils.rm_rf(pipelines_dir)

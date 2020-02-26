@@ -1,5 +1,3 @@
-# encoding: utf-8
-
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
@@ -7,7 +5,6 @@ require 'fileutils'
 require 'git'
 
 describe 'git_update_a_dir_from_generated task' do
-
   context 'when executed' do
     after(:context) do
       FileUtils.rm_rf @generated_resource
@@ -37,8 +34,8 @@ describe 'git_update_a_dir_from_generated task' do
     end
 
     it 'updates files in output dir' do
-      expected_files = [File.join(@updated_git_resource,"coa/pipelines/deployed/unchanged_file.txt"), File.join(@updated_git_resource,"coa/pipelines/deployed/new_file.txt") ]
-      expect(Dir[File.join(@updated_git_resource,'coa/pipelines/deployed/') + '*']).to match(expected_files)
+      expected_files = [File.join(@updated_git_resource, "coa/pipelines/deployed/unchanged_file.txt"), File.join(@updated_git_resource, "coa/pipelines/deployed/new_file.txt")]
+      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/deployed/') + '*']).to match(expected_files)
     end
 
     it 'adds and removes files' do
@@ -52,6 +49,7 @@ describe 'git_update_a_dir_from_generated task' do
       expect(commit.message).to eq('my commit message')
     end
   end
+
   context 'when executed with meta' do
     after(:context) do
       FileUtils.rm_rf @generated_resource
@@ -63,8 +61,8 @@ describe 'git_update_a_dir_from_generated task' do
       @reference_resource = Dir.mktmpdir
       @updated_git_resource = Dir.mktmpdir
       @generated_resource = Dir.mktmpdir
-      File.open(File.join(@generated_resource,'unchanged_file.txt'), 'w') { |file| file.write('Unchanged') }
-      File.open(File.join(@generated_resource,'new_file.txt'), 'w') { |file| file.write('New') }
+      File.open(File.join(@generated_resource, 'unchanged_file.txt'), 'w') { |file| file.write('Unchanged') }
+      File.open(File.join(@generated_resource, 'new_file.txt'), 'w') { |file| file.write('New') }
 
       FileUtils.cp_r(File.join(File.dirname(__FILE__), 'reference-resource', '.'), @reference_resource)
       repo = Git.init(@reference_resource)
@@ -82,8 +80,8 @@ describe 'git_update_a_dir_from_generated task' do
     end
 
     it 'updates files in output dir' do
-      expected_files = [File.join(@updated_git_resource,"coa/pipelines/deployed/unchanged_file.txt"), File.join(@updated_git_resource,"coa/pipelines/deployed/new_file.txt") ]
-      expect(Dir[File.join(@updated_git_resource,'coa/pipelines/deployed/') + '*']).to match(expected_files)
+      expected_files = [File.join(@updated_git_resource, "coa/pipelines/deployed/unchanged_file.txt"), File.join(@updated_git_resource, "coa/pipelines/deployed/new_file.txt")]
+      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/deployed/') + '*']).to match(expected_files)
     end
 
     it 'adds and removes files' do
@@ -96,6 +94,5 @@ describe 'git_update_a_dir_from_generated task' do
       commit = repo.log.first
       expect(commit.message).to eq("my commit message\n\nCreated by main/pipeline/job/build-name - 1")
     end
-
   end
 end

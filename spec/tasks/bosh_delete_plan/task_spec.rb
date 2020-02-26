@@ -22,7 +22,7 @@ describe 'bosh_delete_plan task' do
       @config_resource = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
       %w[a b c].each do |dir|
-        depl= File.join(@config_resource,@root_deployment_name, dir)
+        depl = File.join(@config_resource, @root_deployment_name, dir)
         FileUtils.mkdir_p(depl)
         FileUtils.touch(File.join(depl, 'enable-deployment.yml'))
       end
@@ -59,7 +59,6 @@ describe 'bosh_delete_plan task' do
       expect(@fly_status.exitstatus).to eq(1)
     end
   end
-
 
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/bosh_delete_plan/task.yml' }
