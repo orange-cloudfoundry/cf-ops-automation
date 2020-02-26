@@ -77,5 +77,21 @@ describe 'bosh_variables task' do
       docker_image_tag_used = task['image_resource']['source']['tag'].to_s
       expect(docker_image_tag_used).to match(TaskSpecHelper.bosh_cli_v2_image_version)
     end
+
+    it 'has inputs' do
+      expected_inputs = [{ 'name' => 'scripts-resource' }, { 'name' => 'secrets', 'optional' => true }]
+      expect(task['inputs']).to eq(expected_inputs)
+    end
+
+    it 'has outputs' do
+      expected_outputs = [{ 'name' => 'result-dir' }]
+      expect(task['outputs']).to eq(expected_outputs)
+    end
+
+    it 'has params' do
+      expected_params = {"BOSH_CA_CERT"=>nil, "BOSH_CLIENT"=>nil, "BOSH_CLIENT_SECRET"=>nil, "BOSH_DEPLOYMENT"=>nil, "BOSH_TARGET"=>nil}
+      expect(task['params']).to eq(expected_params)
+    end
+
   end
 end

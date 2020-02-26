@@ -546,7 +546,11 @@ jobs:
     params:
       OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
-      COMMIT_MESSAGE: "ntp-with-scan variable fingerprints auto update - [skip ci]"
+      COMMIT_MESSAGE: |-
+          ntp-with-scan variable fingerprints auto update.
+          Deployment information: $(cat generated-resource/deployment_information.txt)
+
+          [skip ci]
   - task: update-ntp-with-scan-files
     input_mapping: {reference-resource: updated-ntp-with-scan-fingerprints-secrets, generated-resource: ntp-with-scan-deployment}
     output_mapping: {updated-git-resource: updated-ntp-with-scan-secrets}
@@ -762,7 +766,11 @@ jobs:
     params:
       OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
-      COMMIT_MESSAGE: "zookeeper-without-scan variable fingerprints auto update - [skip ci]"
+      COMMIT_MESSAGE: |-
+        zookeeper-without-scan variable fingerprints auto update.
+        Deployment information: $(cat generated-resource/deployment_information.txt)
+
+        [skip ci]
   - task: update-zookeeper-without-scan-files
     input_mapping: {reference-resource: updated-zookeeper-without-scan-fingerprints-secrets, generated-resource: zookeeper-without-scan-deployment}
     output_mapping: {updated-git-resource: updated-zookeeper-without-scan-secrets}

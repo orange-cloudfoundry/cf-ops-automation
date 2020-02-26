@@ -765,7 +765,7 @@ jobs:
     params:
       OLD_FILE: <%= depls %>/<%= name %>/<%= name %>-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
-      COMMIT_MESSAGE: "<%= name %> variable fingerprints auto update - [skip ci]"
+      COMMIT_MESSAGE: "<%= name %> variable fingerprints auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\n\n[skip ci]"
   - task: update-<%= name %>-files
     input_mapping: {reference-resource: updated-<%= name %>-fingerprints-secrets, generated-resource: <%= name %>-deployment}
     output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
