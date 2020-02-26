@@ -15,10 +15,11 @@ module Coa
         "bootstrap-all-init-pipelines" => {
           "team" => "main",
           "jobs" => {
-            "bootstrap-pipelines"        => { "trigger" => true },
-            "create-teams"               => {},
-            "bootstrap-control-plane"    => {},
-            "bootstrap-update-pipelines" => {}
+            "bootstrap-pipelines"            => { "trigger" => true },
+            "reload-this-pipeline-from-git"  => { "trigger" => true },
+            "create-teams"                   => {},
+            "bootstrap-control-plane"        => {},
+            "bootstrap-update-pipelines"     => {}
           }
         },
         "hello-world-root-depls-update-generated" => {
