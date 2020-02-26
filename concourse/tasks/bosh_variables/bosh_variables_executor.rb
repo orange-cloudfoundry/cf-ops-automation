@@ -15,7 +15,7 @@ class BoshVariablesExecutor
     end
 
     def execute_bosh_command
-      stdout, stderr, status = Open3.capture3(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}"))
+      stdout, stderr, status = Open3.capture3(%(bash -ec "source ./scripts-resource/scripts/bosh_cli_v2_login.sh ${BOSH_TARGET}; bosh variables --json > #{result_filepath}; bosh deployment > #{deployment_information}"))
       handle_bosh_cli_response(stdout, stderr, status)
     end
 
@@ -48,6 +48,10 @@ class BoshVariablesExecutor
 
     def result_filepath
       "result-dir/credential_fingerprints.json"
+    end
+
+    def deployment_information
+      "result-dir/deployment_information.txt"
     end
 
     def error_filepath
