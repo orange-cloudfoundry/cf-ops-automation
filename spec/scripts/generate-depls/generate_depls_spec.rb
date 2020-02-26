@@ -49,6 +49,7 @@ describe 'generate-depls' do
                  --[no-]profiles-auto-sort    Sort alphabetically profiles. Default: true
         TEXT
       end
+
       it 'display help message' do
         stdout_stderr_str, status = Open3.capture2e("#{ci_path}/scripts/generate-depls.rb")
         expect(status.exitstatus).to eq(1)
@@ -63,7 +64,6 @@ describe 'generate-depls' do
         _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
         expect(stderr_str).to include('generate-depls: Incomplete/wrong parameter(s):')
       end
-
     end
 
     context 'when only a pipeline is selected' do
@@ -83,13 +83,11 @@ describe 'generate-depls' do
       it 'only one pipeline template is processed' do
         expect(stdout_str).to include('1 concourse pipeline templates were processed').and include('processing ./concourse/pipelines/template/bosh-pipeline.yml.erb')
       end
-
     end
 
     context 'when no dump is set' do
       it 'log output to stdout is reduced'
     end
-
   end
 
   context 'when a dummy deployment is used and output-path is set' do
@@ -165,7 +163,3 @@ describe 'generate-depls' do
     end
   end
 end
-
-
-
-

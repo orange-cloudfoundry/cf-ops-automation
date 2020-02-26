@@ -45,6 +45,6 @@ describe Coa::ReferenceDatasetDocumentation::TreeWriter do
 
       expect(tree_writer).to have_received(:write).
         with("## The template repo", "", "### root level overview", "", "```bash", tree_root_level_answer, "```", "")
-   end
+    end
   end
 end

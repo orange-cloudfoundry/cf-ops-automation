@@ -59,12 +59,12 @@ describe Tasks::Bosh::CancelTask do
 
         before do
           allow(Open3).to receive(:capture3).with(cmd_env, "bosh cancel-task --json --non-interactive #{task_id}").once.
-              and_return([stdout, stderr, process_status_one])
+            and_return([stdout, stderr, process_status_one])
         end
 
         it "error" do
           expect { described_class.new.execute(task_id) }.
-              to raise_error(Tasks::Bosh::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
+            to raise_error(Tasks::Bosh::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
         end
       end
     end

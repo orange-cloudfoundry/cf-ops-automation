@@ -1,5 +1,4 @@
 #!/usr/bin/env ruby
-# encoding: utf-8
 
 task_root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..', '..'))
 require "#{task_root_dir}/cf-ops-automation/lib/ci_deployment"
@@ -14,4 +13,3 @@ File.open(filename, 'w') do |file|
   file.write result.to_yaml
   file.flush
 end
-

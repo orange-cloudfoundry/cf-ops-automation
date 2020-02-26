@@ -52,7 +52,7 @@ describe Coa::ReferenceDatasetDocumentation::Pipelines do
           with("#{output_dir}/pipelines/#{root_deployment_name}-foo-generated.yml").
           and_return(true)
 
-        expect(pipelines.are_present?).to be_truthy
+        expect(pipelines).to be_are_present
       end
 
       context "when generated pipelines form the concourse templates are not there" do
@@ -66,9 +66,9 @@ describe Coa::ReferenceDatasetDocumentation::Pipelines do
             and_return(false)
 
           expect(File).not_to receive(:exist?).
-              with("#{output_dir}/pipelines/#{root_deployment_name}-foo-generated.yml")
+            with("#{output_dir}/pipelines/#{root_deployment_name}-foo-generated.yml")
 
-          expect(pipelines.are_present?).to be_falsy
+          expect(pipelines).not_to be_are_present
         end
       end
     end

@@ -33,7 +33,9 @@ module PipelineHelpers
 
     def build
       raise MissingPipelineConfigurerOptions, 'Missing config' unless @config
+
       raise MissingPipelineConfigurerOptions, 'Missing root_deployment_name' unless @root_deployment_name
+
       OpenStruct.new(config: @config, root_deployment_name: @root_deployment_name)
     end
   end

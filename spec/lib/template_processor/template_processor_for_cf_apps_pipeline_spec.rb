@@ -86,11 +86,11 @@ describe 'CfAppsPipelineTemplateProcessing' do
     [
       { 'name' => 'My-root-depls',
         'jobs' => %w[retrigger-all-jobs cf-push-elpaaso-sandbox cf-push-log-broker cf-push-mattermost cf-push-ops-dataflow] },
-      { "name" => "App-e*", "jobs"=>["cf-push-elpaaso-sandbox"] },
-      { "name" => "App-l*", "jobs"=>["cf-push-log-broker"] },
-      { "name" => "App-m*", "jobs"=>["cf-push-mattermost"] },
-      { "name" => "App-o*", "jobs"=>["cf-push-ops-dataflow"] },
-      { "name" => "Utils", "jobs"=>["retrigger-all-jobs"] }
+      { "name" => "App-e*", "jobs" => ["cf-push-elpaaso-sandbox"] },
+      { "name" => "App-l*", "jobs" => ["cf-push-log-broker"] },
+      { "name" => "App-m*", "jobs" => ["cf-push-mattermost"] },
+      { "name" => "App-o*", "jobs" => ["cf-push-ops-dataflow"] },
+      { "name" => "Utils", "jobs" => ["retrigger-all-jobs"] }
     ]
   end
 
@@ -160,7 +160,6 @@ describe 'CfAppsPipelineTemplateProcessing' do
           expect(task_params).to include('CF_API_URL', 'CF_ORG', 'CF_SPACE', 'CF_USERNAME', 'CF_PASSWORD')
         end
       end
-
 
       it 'generates retrigger all' do
         fly_into_concourse_params = generated_pipeline['jobs'].flat_map { |job| job['plan'] }

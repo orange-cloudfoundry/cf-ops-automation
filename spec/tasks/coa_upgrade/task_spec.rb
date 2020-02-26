@@ -13,11 +13,11 @@ describe 'COA upgrade task' do
 
   before(:context) do
     @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
-    reference_dataset = File.join(@root_dir, 'docs','reference_dataset')
+    reference_dataset = File.join(@root_dir, 'docs', 'reference_dataset')
     reference_dataset_template = File.join(reference_dataset, 'template_repository')
     reference_dataset_secrets = File.join(reference_dataset, 'config_repository')
 
-    @templates_dir =  Dir.mktmpdir
+    @templates_dir = Dir.mktmpdir
     @config_dir = Dir.mktmpdir
     @upgrated_templates_dir = Dir.mktmpdir
     @upgrated_config_dir = Dir.mktmpdir

@@ -114,7 +114,7 @@ describe TemplateProcessor do
             resources: []
             jobs:
             - name: "good"
-                                  TEST
+          TEST
         end
 
         before { @processed_template = subject.process(@pipelines_dir + '/*') }
@@ -206,7 +206,6 @@ describe TemplateProcessor do
             secrets_dirs_overview: secrets_dirs_overview,
             config: loaded_config,
             ops_automation_path: ops_automation_path }
-
         end
         let(:all_dependencies) do
           deps_yaml = <<~YAML
@@ -232,11 +231,11 @@ describe TemplateProcessor do
         let(:processed_templates_reduced) do
           # excludes pipelines with minimal content
           @processed_template.reject { |_, generated_pipeline_name| generated_pipeline_name.end_with?('init-generated.yml') }
-              .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-s3-stemcell-upload-generated.yml") }
-              .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-s3-br-upload-generated.yml") }
-              .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-sync-helper-generated.yml") }
-              .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-generated.yml") }
-              .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-bosh-generated.yml") }
+            .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-s3-stemcell-upload-generated.yml") }
+            .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-s3-br-upload-generated.yml") }
+            .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-sync-helper-generated.yml") }
+            .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-generated.yml") }
+            .reject { |_, generated_pipeline_name| generated_pipeline_name.start_with?("#{root_deployment_name}-bosh-generated.yml") }
         end
 
         before do
@@ -248,7 +247,7 @@ describe TemplateProcessor do
           processed_templates_reduced.each_value do |generated_pipeline_name|
             generated_pipeline = YAML.load_file(File.join(@pipelines_output_dir, generated_pipeline_name))
             generated_jobs = PipelineHelper.to_hashmap(generated_pipeline_name, generated_pipeline['jobs'])
-            expected_jobs = PipelineHelper.to_hashmap(generated_pipeline_name, [{'name' => 'this-is-an-empty-pipeline'}])
+            expected_jobs = PipelineHelper.to_hashmap(generated_pipeline_name, [{ 'name' => 'this-is-an-empty-pipeline' }])
             expect(generated_jobs).to match(expected_jobs)
           end
         end

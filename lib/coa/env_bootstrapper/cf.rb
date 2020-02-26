@@ -21,6 +21,7 @@ module Coa
 
       def generate_activation_files(cf_config)
         raise NoActiveStepConfigError.new('cf', 'generate_activation_files') unless cf_config
+
         application_name = 'generic-app'
         enable_cf_app_file = File.join(CF_APPLICATIONS_PATH, application_name, CF_APPLICATION_ACTIVATION_FILENAME)
         file_content = create_enable_cf_app_content(cf_config, application_name)

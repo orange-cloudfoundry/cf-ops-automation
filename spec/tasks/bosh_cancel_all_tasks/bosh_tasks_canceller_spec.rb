@@ -11,7 +11,6 @@ describe BoshTasksCanceller do
   let(:error_filepath) { Tempfile.new }
   let(:tasks_canceller) { described_class.new(bosh_list_tasks, bosh_cancel_task) }
 
-
   before do
     allow(BoshTasksCanceller).to receive(:error_filepath).and_return(error_filepath)
   end
@@ -90,9 +89,9 @@ describe BoshTasksCanceller do
 
         before do
           allow(bosh_list_tasks).to receive(:execute).once.
-              and_return(list_tasks_response)
+            and_return(list_tasks_response)
           allow(bosh_cancel_task).to receive(:execute).
-              and_raise(Tasks::Bosh::BoshCliError, error_message)
+            and_raise(Tasks::Bosh::BoshCliError, error_message)
         end
 
         it "stops on first error" do
@@ -111,13 +110,13 @@ describe BoshTasksCanceller do
 
         before do
           allow(bosh_list_tasks).to receive(:execute).once.
-              and_raise(Tasks::Bosh::BoshCliError, error_message)
+            and_raise(Tasks::Bosh::BoshCliError, error_message)
           allow(bosh_cancel_task).to receive(:execute)
         end
 
         it "stops on first error" do
           expect { tasks_canceller.process }.
-              to raise_error(Tasks::Bosh::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
+            to raise_error(Tasks::Bosh::BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}")
 
           expect(bosh_list_tasks).to have_received(:execute).once
           expect(bosh_cancel_task).not_to have_received(:execute)

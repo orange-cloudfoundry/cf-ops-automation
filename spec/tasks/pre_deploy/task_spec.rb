@@ -1,10 +1,8 @@
-# encoding: utf-8
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
 
 describe 'pre_deploy task' do
-
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/pre_bosh_deploy.yml' }
 
@@ -12,12 +10,9 @@ describe 'pre_deploy task' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
       expect(docker_image_used).to match('orangecloudfoundry/bosh-cli-v2-cf-cli')
     end
-
   end
 
-
   context 'when no script is detected' do
-
     generated_files = nil
     before(:context) do
       generated_files = Dir.mktmpdir
@@ -28,8 +23,8 @@ describe 'pre_deploy task' do
         '-i credentials-resource=spec/tasks/pre_deploy/credentials-resource ' \
         '-i additional-resource=spec/tasks/pre_deploy/additional-resource ' \
         "-o generated-files=#{generated_files} ",
-        'CUSTOM_SCRIPT_DIR' => 'my-custom-script-dir',
-        'SECRETS_DIR' => '' )
+                        'CUSTOM_SCRIPT_DIR' => 'my-custom-script-dir',
+                        'SECRETS_DIR' => '')
     end
 
     after(:context) do
@@ -46,7 +41,6 @@ describe 'pre_deploy task' do
   end
 
   context 'when a script is detected' do
-
     generated_files = nil
 
     before(:context) do
@@ -61,6 +55,7 @@ describe 'pre_deploy task' do
                         'CUSTOM_SCRIPT_DIR' => 'template-resource/a-root-depls',
                         'SECRETS_DIR' => 'credentials-resource/a-root-depls')
     end
+
     after(:context) do
       FileUtils.rm_rf generated_files
     end
@@ -81,7 +76,6 @@ describe 'pre_deploy task' do
   end
 
   context 'when a legacy script is detected' do
-
     generated_files = nil
 
     before(:context) do
@@ -104,6 +98,5 @@ describe 'pre_deploy task' do
     it 'displays an execution message' do
       expect(@output).to include('**deprecated** LEGACY pre bosh deploy script detected').and include('LEGACY PRE-DEPLOY SCRIPT')
     end
-
   end
 end

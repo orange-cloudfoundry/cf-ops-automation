@@ -7,6 +7,7 @@ module Coa
           stripped_path = path.strip
           filename = File.basename(stripped_path)
           return "" if filename.empty? || filename[0] == "."
+
           prefix = extract_prefix(stripped_path)
           cleaned_path = clean_path(stripped_path)
           "#{prefix}* [#{filename}](/docs/reference_dataset/#{repo_name}/#{cleaned_path})"

@@ -4,22 +4,20 @@ require 'yaml'
 require_relative '../task_spec_helper'
 
 describe 'execute_deploy_script task' do
-
   context 'when no bosh is available' do
-
     before(:context) do
-      @templates_dir =  Dir.mktmpdir
+      @templates_dir = Dir.mktmpdir
       @secrets_dir = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
 
       fly_cli_environment = {
-          'BOSH_TARGET' => 'https://dummy-bosh',
-          'BOSH_CLIENT' => 'aUser',
-          'BOSH_CLIENT_SECRET' => 'aPassword',
-          'BOSH_CA_CERT' => 'dummy-cert',
-          'CURRENT_DEPLS' => 'xxx',
-          'COMMON_SCRIPT_DIR' => 'yyy',
-          'SECRETS_DIR' => 'zzz'
+        'BOSH_TARGET' => 'https://dummy-bosh',
+        'BOSH_CLIENT' => 'aUser',
+        'BOSH_CLIENT_SECRET' => 'aPassword',
+        'BOSH_CA_CERT' => 'dummy-cert',
+        'CURRENT_DEPLS' => 'xxx',
+        'COMMON_SCRIPT_DIR' => 'yyy',
+        'SECRETS_DIR' => 'zzz'
       }
 
       @output = execute('-c concourse/tasks/execute_deploy_script.yml ' \
@@ -27,7 +25,7 @@ describe 'execute_deploy_script task' do
         "-i templates=#{@templates_dir} " \
         "-i secrets=#{@secrets_dir} " \
         "-o run-resource=#{@result_dir} ",\
-        fly_cli_environment )
+                        fly_cli_environment)
     rescue FlyExecuteError => e
       @output = e.out
       @fly_error = e.err

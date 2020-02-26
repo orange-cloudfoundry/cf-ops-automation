@@ -25,7 +25,6 @@ describe PipelineHelpers::PipelineConfigurer do
 end
 
 describe PipelineHelpers::PipelineConfigurerOptions do
-
   context 'when missing parameters' do
     context 'when config is missing' do
       let(:builder) { described_class.new.with_config({}).build }

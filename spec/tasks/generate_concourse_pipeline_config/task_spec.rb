@@ -4,7 +4,7 @@ require 'yaml'
 require_relative '../task_spec_helper'
 
 describe 'generate_concourse_pipeline_config task' do
-  let(:pipelines_definitions_file) { File.join(@concourse_pipeline_config,'pipelines-definitions.yml') }
+  let(:pipelines_definitions_file) { File.join(@concourse_pipeline_config, 'pipelines-definitions.yml') }
   let(:expected_pipelines_definitions_content) do
     expected_yaml = <<~YAML
       ---
@@ -48,8 +48,8 @@ describe 'generate_concourse_pipeline_config task' do
       # to a tmp directory before executing tests.
       current_dir = File.dirname(__FILE__)
       FileUtils.cp_r(current_dir + '/../../../concourse', @coa)
-      @config_resource_source = File.join(current_dir,'config-resource')
-      @templates_resource_source = File.join(current_dir,'templates-resource')
+      @config_resource_source = File.join(current_dir, 'config-resource')
+      @templates_resource_source = File.join(current_dir, 'templates-resource')
       FileUtils.cp_r(@config_resource_source + '/.', @config_resource)
       FileUtils.cp_r(@templates_resource_source + '/.', @templates_resource)
 
@@ -58,7 +58,6 @@ describe 'generate_concourse_pipeline_config task' do
         "-i config-resource=#{@config_resource} " \
         "-i templates-resource=#{@templates_resource} " \
         "-o concourse-pipeline-config=#{@concourse_pipeline_config} ")
-
     end
 
     after(:context) do
@@ -71,7 +70,6 @@ describe 'generate_concourse_pipeline_config task' do
     it 'success' do
       expect(@output).to match("\nsucceeded\n")
     end
-
 
     it 'generates a pipeline definition file' do
       expect(File).to exist(pipelines_definitions_file)
@@ -97,4 +95,3 @@ describe 'generate_concourse_pipeline_config task' do
     end
   end
 end
-

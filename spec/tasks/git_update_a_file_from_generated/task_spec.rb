@@ -89,7 +89,6 @@ describe 'git_update_a_file_from_generated task' do
       expect(updated_content).to eq('updated')
     end
 
-
     it 'sets a valid commit message' do
       repo = Git.open(@updated_git_resource)
       commit = repo.log.first

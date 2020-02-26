@@ -1,7 +1,6 @@
 require 'yaml'
 
 class ConcoursePipelineResourceConfigGenerator
-
   def initialize(base_dir = ".", config_dir = '', templates_dir = '', output_dir = '')
     @pipelines = { 'pipelines' => [] }
     @pipelines_base_dir = base_dir
@@ -26,7 +25,6 @@ class ConcoursePipelineResourceConfigGenerator
           vars_files = generate_vars_files(pipeline_name, root_deployment_name)
           add_pipeline(pipeline_name, team_name, pipeline_config_filename, vars_files)
         end
-
       end
     end
     @pipelines['pipelines'] = @pipelines['pipelines'].sort_by { |pipeline| pipeline['name'] }
@@ -38,7 +36,7 @@ class ConcoursePipelineResourceConfigGenerator
   def write_yaml
     puts "pipelines:"
     puts @pipelines.to_yaml
-    pipeline_config_file = File.join(@output_dir,'pipelines-definitions.yml')
+    pipeline_config_file = File.join(@output_dir, 'pipelines-definitions.yml')
     File.open(pipeline_config_file, 'w') { |file| file.write(@pipelines.to_yaml) }
   end
 
@@ -72,6 +70,7 @@ class ConcoursePipelineResourceConfigGenerator
     vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
     versions_file = File.join(@templates_dir, root_deployment, "#{root_deployment}-versions.yml")
     raise "Missing version file: #{versions_file}" unless File.exist?(versions_file)
+
     vars_files << versions_file
     vars_files
   end
@@ -89,4 +88,3 @@ class ConcoursePipelineResourceConfigGenerator
     File.basename(file_path).include?('pipeline') || File.basename(file_path).include?('generated')
   end
 end
-

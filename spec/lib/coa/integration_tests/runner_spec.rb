@@ -5,7 +5,7 @@ require 'coa/utils/concourse/concourse'
 
 describe Coa::IntegrationTests::Runner do
   describe "#start" do
-    let(:prereqs_cats) { ["inactive-steps", "concourse"] }
+    let(:prereqs_cats) { %w[inactive-steps concourse] }
     let(:integration_tests) { described_class.new(prereqs_paths(prereqs_cats)) }
     let(:concourse) { integration_tests.concourse }
     let(:fly) { instance_double("Coa::Utils::Concourse::Fly") }
@@ -34,17 +34,18 @@ describe Coa::IntegrationTests::Runner do
     let(:integration_tests) { described_class.new(prereqs_paths(prereqs_cats)) }
 
     context "when values are provided in the 'concourse' prereqs" do
-      let(:prereqs_cats) { ["inactive-steps", "concourse"] }
+      let(:prereqs_cats) { %w[inactive-steps concourse] }
 
       it "builds a hash with those values" do
         concourse_config = integration_tests.concourse_config
         expect(concourse_config.target).to eq("rspec")
         expect(concourse_config.insecure).to be_truthy
-     end
+      end
     end
 
     context "when values are not provided in the 'concourse' prereqs" do
-      let(:prereqs_cats) { ["inactive-steps", "bucc"] }
+      let(:prereqs_cats) { %w[inactive-steps bucc] }
+
       it "asks bucc for the values"
     end
   end
@@ -52,6 +53,6 @@ end
 
 def prereqs_paths(categories)
   categories.map do |category|
-     File.absolute_path("spec/lib/fixtures/coa/env_bootstrapper/#{category}-prereqs.yml")
+    File.absolute_path("spec/lib/fixtures/coa/env_bootstrapper/#{category}-prereqs.yml")
   end
 end

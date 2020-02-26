@@ -8,7 +8,7 @@ options = CoaUpgrader::CommandLineParser.new.parse
 config_path = options[:config_path]
 
 COA_CONFIG_DIR = File.join("coa", "config")
-SLACK_CONFIG_FILENAME = "credentials-slack-config.yml"
+SLACK_CONFIG_FILENAME = "credentials-slack-config.yml".freeze
 
 raise "invalid config_path: <#{config_path}> does not exist" unless Dir.exist?(config_path)
 
@@ -28,6 +28,7 @@ def create_coa_config_readme(coa_config_dir)
   readme_filename = "Readme.md"
   readme_file = File.join(coa_config_dir, readme_filename)
   return if File.exist?(readme_file)
+
   content = <<~MARKDOWN
     # Cf-Ops-Automation Configuration directory
 
@@ -95,6 +96,7 @@ def insert_pipeline_config(ci_deployment_overview)
     details['pipelines']&.select { |name, _| name.end_with?('-init-generated') }
       &.each do |name, old_pipeline_config|
         next unless details['pipelines']&.select { |name, _| name.end_with?('depls-update-generated') }.empty?
+
         puts "\t>> INFO: checking #{name} configuration"
         pipeline_config = old_pipeline_config.dup
         update_pipeline_name = name.gsub(/(([a-z]|[A-Z]|[0-9])+)-depls-init-generated/, '\1-depls-update-generated')
@@ -108,16 +110,17 @@ def insert_pipeline_config(ci_deployment_overview)
 
     details['pipelines']&.select { |name, _| name =~ /(([a-z]|[A-Z]|[0-9])+)-depls-generated/ }
       &.each do |name, old_pipeline_config|
-        next unless details['pipelines']&.select { |name, _| name.end_with?('depls-bosh-generated') }.empty?
-        pipeline_config = old_pipeline_config.dup
-        puts "\t>> INFO: checking #{name} configuration"
-        update_pipeline_name = name.gsub(/(([a-z]|[A-Z]|[0-9])+)-depls-generated/, '\1-depls-bosh-generated')
-        vars_files = pipeline_config['vars_files'].map { |path| path.end_with?('-versions.yml') ? path : File.join(COA_CONFIG_DIR, File.basename(path)) }
-        vars_files.insert(-2, File.join(COA_CONFIG_DIR, SLACK_CONFIG_FILENAME))
-        pipeline_config['vars_files'] = vars_files
-        pipeline_config.delete_if { |key, _| key == 'config_file' }
-        additional_pipelines[update_pipeline_name] = pipeline_config
-        migrated = true
+      next unless details['pipelines']&.select { |name, _| name.end_with?('depls-bosh-generated') }.empty?
+
+      pipeline_config = old_pipeline_config.dup
+      puts "\t>> INFO: checking #{name} configuration"
+      update_pipeline_name = name.gsub(/(([a-z]|[A-Z]|[0-9])+)-depls-generated/, '\1-depls-bosh-generated')
+      vars_files = pipeline_config['vars_files'].map { |path| path.end_with?('-versions.yml') ? path : File.join(COA_CONFIG_DIR, File.basename(path)) }
+      vars_files.insert(-2, File.join(COA_CONFIG_DIR, SLACK_CONFIG_FILENAME))
+      pipeline_config['vars_files'] = vars_files
+      pipeline_config.delete_if { |key, _| key == 'config_file' }
+      additional_pipelines[update_pipeline_name] = pipeline_config
+      migrated = true
     end
     puts additional_pipelines
     details['pipelines']&.merge!(additional_pipelines)
@@ -150,6 +153,7 @@ end
 def create_empty_slack_proxy_config(coa_config)
   slack_config_file = File.join(coa_config, SLACK_CONFIG_FILENAME)
   return 0 if File.exist?(slack_config_file)
+
   puts "> INFO: generating new #{slack_config_file}. Please check it content"
   content = <<~YAML
     #  Optional. Connect to Slack using an HTTP(S) proxy. In the form: http://my.proxy:3128
@@ -164,7 +168,6 @@ def create_empty_slack_proxy_config(coa_config)
   File.open(slack_config_file, 'w') { |file| file.write content }
   1
 end
-
 
 coa_config = setup_coa_config(config_path)
 

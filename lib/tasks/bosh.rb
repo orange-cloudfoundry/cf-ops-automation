@@ -8,4 +8,3 @@ module Tasks
     require_relative './bosh/list_tasks'
   end
 end
-

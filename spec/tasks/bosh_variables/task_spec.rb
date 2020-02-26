@@ -12,23 +12,23 @@ describe 'bosh_variables task' do
 
   context 'when env vars are missing' do
     let(:env) { { "BOSH_TARGET" => nil } }
+
     it "exits with status 1 and write error in log" do
       expect(cancel_all_tasks[:status].exitstatus).to eq 1
     end
   end
 
   context 'when executed on concourse' do
-
     before(:context) do
       @result_dir = Dir.mktmpdir
       @secrets_dir = Dir.mktmpdir
 
       fly_cli_environment = {
-          'BOSH_TARGET' => 'https://dummy-bosh',
-          'BOSH_CLIENT' => 'aUser',
-          'BOSH_CLIENT_SECRET' => 'aPassword',
-          'BOSH_DEPLOYMENT' => 'aDeployment',
-          'BOSH_CA_CERT' => 'secrets/shared/certs/internal_paas-ca/server-ca.crt'
+        'BOSH_TARGET' => 'https://dummy-bosh',
+        'BOSH_CLIENT' => 'aUser',
+        'BOSH_CLIENT_SECRET' => 'aPassword',
+        'BOSH_DEPLOYMENT' => 'aDeployment',
+        'BOSH_CA_CERT' => 'secrets/shared/certs/internal_paas-ca/server-ca.crt'
       }
 
       @output = execute('-c concourse/tasks/bosh_variables/task.yml ' \
@@ -57,7 +57,7 @@ describe 'bosh_variables task' do
 
     it 'generates an error log file' do
       puts
-      expect(File).to exist(File.join(@result_dir,'error.log'))
+      expect(File).to exist(File.join(@result_dir, 'error.log'))
     end
 
     it 'returns with exit status 1' do
@@ -79,4 +79,3 @@ describe 'bosh_variables task' do
     end
   end
 end
-

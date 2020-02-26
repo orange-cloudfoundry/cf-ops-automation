@@ -21,13 +21,12 @@ describe BoshVariablesExecutor do
 
       it "error" do
         err_msg = "The environment is missing env vars for this task to be able to work properly."
-        expect {executor.execute }.
+        expect { executor.execute }.
           to raise_error(BoshVariablesExecutor::EnvVarMissing, err_msg)
       end
     end
 
     context "when the environment is complete" do
-
       before do
         %w[BOSH_TARGET BOSH_CLIENT BOSH_CLIENT_SECRET BOSH_CA_CERT BOSH_DEPLOYMENT].each do |arg|
           allow(ENV).to receive(:[]).with(arg).and_return(arg.downcase)
@@ -55,7 +54,6 @@ describe BoshVariablesExecutor do
           executor.execute
           expect(File).to be_zero(error_filepath)
         end
-
       end
 
       context "when a CLI commands fails" do

@@ -14,6 +14,5 @@ module Coa
       expanded_yaml = ERB.new(yaml_template).result(create_custom_binding_from(context))
       YAML.safe_load(expanded_yaml)
     end
-
   end
 end

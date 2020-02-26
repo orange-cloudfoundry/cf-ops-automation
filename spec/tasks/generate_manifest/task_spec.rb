@@ -1,4 +1,3 @@
-
 # require 'spec_helper.rb'
 require 'yaml'
 require 'tmpdir'
@@ -65,7 +64,7 @@ describe 'generate_manifest task' do
 
     it 'generates a file per valid template' do
       tpl_yml_files .map { |filename| File.basename(filename, '-tpl.yml') }
-                    .each do |base_filename|
+        .each do |base_filename|
         expected_filename = File.join(@generated_files, base_filename + '.yml')
         expect(File).to exist(expected_filename), 'expected ' + base_filename + '.yml'
       end
@@ -73,7 +72,7 @@ describe 'generate_manifest task' do
 
     it 'copies operators file to generated_files' do
       operators_yml_files .map { |filename| File.basename(filename) }
-                          .each do |base_filename|
+        .each do |base_filename|
         expected_filename = File.join(@generated_files, base_filename)
         expect(File).to exist(expected_filename), 'expected ' + base_filename + ' to exist'
       end
@@ -83,7 +82,7 @@ describe 'generate_manifest task' do
       generated_files_dir_content = Dir[File.join(@generated_files, '*')]&.map! { |filename| File.basename(filename, '.yml') }
       expected_content = tpl_yml_files + unspruced_yml_files
       expected_content.map! { |filename| File.basename(filename, '.yml') }
-                      .map! { |filename| filename.chomp('-tpl') }
+        .map! { |filename| filename.chomp('-tpl') }
 
       expect(generated_files_dir_content).to match_array(expected_content)
     end
@@ -210,7 +209,7 @@ describe 'generate_manifest task' do
       generated_files_dir_content = Dir[File.join(@generated_files, '*')]&.map! { |filename| File.basename(filename, '.yml') }
       expected_content = tpl_yml_files + unspruced_yml_files + iaas_tpl_yml_files + iaas_unspruced_yml_files
       expected_content.map! { |filename| File.basename(filename, '.yml') }
-                      .map! { |filename| filename.chomp('-tpl') }
+        .map! { |filename| filename.chomp('-tpl') }
 
       expect(generated_files_dir_content).to match_array(expected_content)
     end
@@ -219,7 +218,7 @@ describe 'generate_manifest task' do
       let(:expected_generated_iaas_filenames) { %w[iaas-operators.yml iaas.yml iaas-unspruced-vars.yml iaas-vars.yml].sort }
       let(:expected_generated_profile_a_filenames) { %w[iaas.yml profile-a-operators.yml profile-a.yml profile-b-unspruced-vars.yml].sort }
       let(:expected_generated_base_filenames) { %w[shared-operators.yml shared.yml shared-vars.yml] }
-      let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_iaas_filenames + expected_generated_profile_a_filenames).sort.uniq}
+      let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_iaas_filenames + expected_generated_profile_a_filenames).sort.uniq }
 
       before(:context) do
         @generated_files = Dir.mktmpdir
@@ -245,7 +244,7 @@ describe 'generate_manifest task' do
       end
 
       it 'processes only expected files' do
-        processed_files = Dir[File.join(@generated_files,'*')].map { |path| File.basename(path) }.sort
+        processed_files = Dir[File.join(@generated_files, '*')].map { |path| File.basename(path) }.sort
         expect(processed_files).to eq(expected_generated_filenames)
       end
     end
@@ -257,7 +256,7 @@ describe 'generate_manifest task' do
       @credentials_dir = Dir.mktmpdir
       @additional_resource = Dir.mktmpdir
 
-      File.open(File.join(@additional_resource,'dummy-tpl.yml'), 'w') do |file|
+      File.open(File.join(@additional_resource, 'dummy-tpl.yml'), 'w') do |file|
         file.write <<~YAML
           dummy_yaml:
             empty: true
@@ -307,7 +306,7 @@ describe 'generate_manifest task' do
       @additional_resource = Dir.mktmpdir
       @additional_resource_reference = 'spec/tasks/generate_manifest/additional-resource'
       FileUtils.cp_r(@additional_resource_reference + '/.', @additional_resource)
-      a_symlink = File.join(@additional_resource,"a-symlink-operators.yml")
+      a_symlink = File.join(@additional_resource, "a-symlink-operators.yml")
       File.symlink('../dummy_symlink', a_symlink) unless File.symlink?(a_symlink)
 
       @output = execute('-c concourse/tasks/generate_manifest/task.yml ' \
@@ -346,8 +345,7 @@ describe 'generate_manifest task' do
     let(:expected_generated_profile_b_filenames) { %w[profile-b.yml profile-b-unspruced-vars.yml second.yml profile-b-operators.yml].sort }
     let(:expected_generated_profile_a_filenames) { %w[first.yml profile-a.yml profile-b-unspruced-vars.yml second.yml profile-a-operators.yml].sort }
     let(:expected_generated_base_filenames) { %w[a-link-to-an-operators.yml an-operators.yml first.yml my-vars.yml second.yml unspruced-vars.yml] }
-    let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_profile_a_filenames + expected_generated_profile_b_filenames).sort.uniq}
-
+    let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_profile_a_filenames + expected_generated_profile_b_filenames).sort.uniq }
 
     before(:context) do
       @generated_files = Dir.mktmpdir
@@ -413,12 +411,11 @@ describe 'generate_manifest task' do
     end
 
     it 'processes only expected files' do
-      processed_files = Dir[File.join(@generated_files,'*')].map { |path| File.basename(path) }.sort
+      processed_files = Dir[File.join(@generated_files, '*')].map { |path| File.basename(path) }.sort
       expect(processed_files).to eq(expected_generated_filenames)
     end
 
     context 'when processing an invalid template' do
-
       before(:context) do
         @generated_files = Dir.mktmpdir
         @additional_resource = File.join(File.dirname(__FILE__), 'additional-resource')
@@ -467,8 +464,7 @@ describe 'generate_manifest task' do
     let(:expected_generated_profile_b_filenames) { %w[first.yml profile-b.yml profile-b-unspruced-vars.yml second.yml profile-b-operators.yml].sort }
     let(:expected_generated_profile_a_filenames) { %w[first.yml profile-a.yml profile-b-unspruced-vars.yml profile-a-operators.yml].sort }
     let(:expected_generated_base_filenames) { %w[a-link-to-an-operators.yml an-operators.yml first.yml my-vars.yml second.yml unspruced-vars.yml] }
-    let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_profile_a_filenames + expected_generated_profile_b_filenames).sort.uniq}
-
+    let(:expected_generated_filenames) { (expected_generated_base_filenames + expected_generated_profile_a_filenames + expected_generated_profile_b_filenames).sort.uniq }
 
     before(:context) do
       @generated_files = Dir.mktmpdir
@@ -535,7 +531,7 @@ describe 'generate_manifest task' do
     end
 
     it 'processes only expected files' do
-      processed_files = Dir[File.join(@generated_files,'*')].map { |path| File.basename(path) }.sort
+      processed_files = Dir[File.join(@generated_files, '*')].map { |path| File.basename(path) }.sort
       expect(processed_files).to eq(expected_generated_filenames)
     end
   end
@@ -580,7 +576,7 @@ describe 'generate_manifest task' do
       templates_files_processed_count = 6 # as 'another_file.yml' is ignored
       bosh_config_files_count = 3
       expected_files_count = templates_files_processed_count + bosh_config_files_count
-      processed_files = Dir[File.join(@generated_files,'*')]
+      processed_files = Dir[File.join(@generated_files, '*')]
       expect(processed_files.size).to eq(expected_files_count), "expected #{processed_files.size} to equals #{expected_files_count} - Generated files : #{processed_files}"
     end
   end

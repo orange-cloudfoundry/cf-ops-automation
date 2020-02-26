@@ -1,4 +1,3 @@
-# encoding: utf-8
 require 'yaml'
 require 'tmpdir'
 require_relative '../terraform_plan_cloudfoundry/task_spec'
@@ -65,8 +64,8 @@ describe 'terraform_apply_cloudfoundry task' do
     it 'ignores spec-resource error' do
       expect(@output).to include("Ignoring spec files in 'spec-resource/non-empty-spec-path': directory does not exist - Context: Specs from paas-templates").and \
         include("Ignoring spec files in 'secret-state-resource/non-empty-spec-path': directory does not exist - Context: Specs from secrets").and \
-        include("Ignoring spec files in 'spec-resource/non-empty-iaas-spec-path': directory does not exist - Context: Iaas Specs from paas-templates").and \
-        include("Ignoring spec files in 'secret-state-resource/non-empty-iaas-spec-path': directory does not exist - Context: Iaas Specs from secrets")
+          include("Ignoring spec files in 'spec-resource/non-empty-iaas-spec-path': directory does not exist - Context: Iaas Specs from paas-templates").and \
+            include("Ignoring spec files in 'secret-state-resource/non-empty-iaas-spec-path': directory does not exist - Context: Iaas Specs from secrets")
     end
   end
 
@@ -82,9 +81,9 @@ describe 'terraform_apply_cloudfoundry task' do
         "-i terraform-tfvars=#{@terraform_tfvars} " \
         "-o generated-files=#{@generated_files} " \
         "-o spec-applied=#{@spec_applied} ",
-        'SPEC_PATH' => 'spec-only',
-        'IAAS_SPEC_PATH' => 'spec-dummy-iaas',
-        'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
+                        'SPEC_PATH' => 'spec-only',
+                        'IAAS_SPEC_PATH' => 'spec-dummy-iaas',
+                        'SECRET_STATE_FILE_PATH' => 'no-tfstate-dir')
     end
 
     after(:context) do
@@ -96,11 +95,11 @@ describe 'terraform_apply_cloudfoundry task' do
 
     it 'applies to add only one resource' do
       expect(@output).to include('Apply complete!')
-        include('Resources: 1 to add, 0 to change, 0 to destroy.')
+      include('Resources: 1 to add, 0 to change, 0 to destroy.')
     end
 
     it 'processes spec file' do
-      expect(File).to exist(File.join(@generated_files,'spec-only.txt'))
+      expect(File).to exist(File.join(@generated_files, 'spec-only.txt'))
     end
 
     it 'contains only spec files in spec-applied' do
@@ -119,11 +118,9 @@ describe 'terraform_apply_cloudfoundry task' do
       expected_files = %w[. .. .gitkeep terraform.tfvars terraform.tfstate spec-only.txt].sort
       expect(Dir.entries(@generated_files).sort).to eq(expected_files)
     end
-
   end
 
   context 'when specs are in resource dirs' do
-
     before(:context) do
       @generated_files = Dir.mktmpdir
       @spec_applied = Dir.mktmpdir
@@ -155,13 +152,13 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'processes all spec files' do
-      expect(File).to exist(File.join(@generated_files,'spec.txt')).and \
-      exist(File.join(@generated_files,'secrets.txt'))
+      expect(File).to exist(File.join(@generated_files, 'spec.txt')).and \
+        exist(File.join(@generated_files, 'secrets.txt'))
     end
 
     it 'processes all iaas spec files' do
-      expect(File).to exist(File.join(@generated_files,'my-iaas-spec.txt')).and \
-      exist(File.join(@generated_files,'my-iaas-secret-spec.txt'))
+      expect(File).to exist(File.join(@generated_files, 'my-iaas-spec.txt')).and \
+        exist(File.join(@generated_files, 'my-iaas-secret-spec.txt'))
     end
 
     it 'copies all found spec files into spec-applied output' do
@@ -181,11 +178,9 @@ describe 'terraform_apply_cloudfoundry task' do
     it 'copies terraform-tfvars files in generated-files output' do
       expect(File).to exist(File.join(@generated_files, 'terraform.tfvars'))
     end
-
   end
 
   context 'when secrets specs overrides others' do
-
     before(:context) do
       @generated_files = Dir.mktmpdir
       @spec_applied = Dir.mktmpdir
@@ -219,11 +214,11 @@ describe 'terraform_apply_cloudfoundry task' do
     end
 
     it 'process secrets spec files' do
-      expect(File).to exist(File.join(@generated_files,'secrets.txt'))
+      expect(File).to exist(File.join(@generated_files, 'secrets.txt'))
     end
 
     it 'ignores specs from spec-resource' do
-      expect(File).not_to exist(File.join(@generated_files,'spec.txt'))
+      expect(File).not_to exist(File.join(@generated_files, 'spec.txt'))
     end
 
     it 'copies secret spec files into spec-applied output' do
@@ -303,8 +298,8 @@ describe 'terraform_apply_cloudfoundry task' do
     it 'does not fail on unexciting profile directories' do
       expect(@output).to \
         include('Ignoring spec files in \'spec-resource/spec-undef-profile\': directory does not exist - Context: undef-profile Specs from paas-templates').and \
-        include('Ignoring spec files in \'secret-state-resource/spec-undef-profile\': directory does not exist - Context: undef-profile Specs from secrets').and \
-        include('Ignoring spec files in \'secret-state-resource/spec-profile-2\': directory does not exist - Context: profile-2 Specs from secrets')
+          include('Ignoring spec files in \'secret-state-resource/spec-undef-profile\': directory does not exist - Context: undef-profile Specs from secrets').and \
+            include('Ignoring spec files in \'secret-state-resource/spec-profile-2\': directory does not exist - Context: profile-2 Specs from secrets')
     end
 
     it 'matches files in generated-files output' do
@@ -381,8 +376,8 @@ describe 'terraform_apply_cloudfoundry task' do
     it 'does not fail on unexciting profile directories' do
       expect(@output).to \
         include('Ignoring spec files in \'spec-resource/spec-undef-profile\': directory does not exist - Context: undef-profile Specs from paas-templates').and \
-        include('Ignoring spec files in \'secret-state-resource/spec-undef-profile\': directory does not exist - Context: undef-profile Specs from secrets').and \
-        include('Ignoring spec files in \'secret-state-resource/spec-autosort-profile-2\': directory does not exist - Context: autosort-profile-2 Specs from secrets')
+          include('Ignoring spec files in \'secret-state-resource/spec-undef-profile\': directory does not exist - Context: undef-profile Specs from secrets').and \
+            include('Ignoring spec files in \'secret-state-resource/spec-autosort-profile-2\': directory does not exist - Context: autosort-profile-2 Specs from secrets')
     end
 
     it 'matches files in generated-files output' do

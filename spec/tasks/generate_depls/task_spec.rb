@@ -29,7 +29,7 @@ describe 'generate_depls task' do
       reference_dataset = File.join(@root_dir, 'docs', 'reference_dataset')
       reference_dataset_template = File.join(reference_dataset, 'template_repository')
       reference_dataset_secrets = File.join(reference_dataset, 'config_repository')
-      @templates_dir =  Dir.mktmpdir
+      @templates_dir = Dir.mktmpdir
       @secrets_dir = Dir.mktmpdir
       @result_dir = Dir.mktmpdir
 
@@ -144,7 +144,6 @@ describe 'generate_depls task' do
       FileUtils.rm_rf @secrets_dir
       FileUtils.rm_rf @result_dir
     end
-
 
     it 'contains error messages' do
       missing_vars = @output.scan(/^ERROR: missing environment variable:.*\w+/)
