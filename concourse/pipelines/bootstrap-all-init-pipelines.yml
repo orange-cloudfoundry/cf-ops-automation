@@ -284,7 +284,7 @@ jobs:
           mkdir -p /usr/local/bin
           FLY=/usr/local/bin/fly
           echo "Fetching fly...";
-          curl -SsL "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
+          wget --no-check-certificate -O "$FLY" "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux"
           chmod +x $FLY;
 
           echo "Login to Concourse using extracted credentials (ATC_EXTERNAL_URL, FLY_USERNAME, FLY_PASSWORD)"

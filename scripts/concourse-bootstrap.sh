@@ -49,20 +49,18 @@ else
 fi
 echo "COA config directory detected: <${CONFIG_DIR}>"
 
-FILTERED_CONFIG_FILES=$(cd ${CONFIG_DIR} && ls -1 credentials-*.yml|grep -v pipeline)
+FILTERED_CONFIG_FILES=$(cd "${CONFIG_DIR}" && ls -1 credentials-*.yml|grep -v pipeline)
 VARS_FILES=""
 for config_file in ${FILTERED_CONFIG_FILES}; do
     VARS_FILES="${VARS_FILES}-l \"${CONFIG_DIR}/${config_file}\" "
 done
-echo ${VARS_FILES}
-set +e
-set -x
-${FLY_CMD} -t ${FLY_TARGET} set-pipeline ${FLY_SET_PIPELINE_OPTION} -p ${PIPELINE} -c ${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml  \
-            ${VARS_FILES}
-set +x
-set -e
-${FLY_CMD} -t ${FLY_TARGET} unpause-pipeline -p ${PIPELINE}
-if [ "$SKIP_TRIGGER" != "true" ]
-then
-    ${FLY_CMD} -t ${FLY_TARGET} trigger-job -j "${PIPELINE}/bootstrap-pipelines"
+echo "Selected var files: ${VARS_FILES}"
+
+set +e; set -x
+"${FLY_CMD}" -t "${FLY_TARGET}" set-pipeline ${FLY_SET_PIPELINE_OPTION} -p "${PIPELINE}" -c "${SCRIPT_DIR}/concourse/pipelines/${PIPELINE}.yml" ${VARS_FILES}
+set +x; set -e
+
+${FLY_CMD} -t ${FLY_TARGET} unpause-pipeline -p "${PIPELINE}"
+if [ "$SKIP_TRIGGER" != "true" ]; then
+    "${FLY_CMD}" -t "${FLY_TARGET}" trigger-job -j "${PIPELINE}/bootstrap-pipelines"
 fi
