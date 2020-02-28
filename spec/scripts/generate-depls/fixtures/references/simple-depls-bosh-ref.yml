@@ -1,4 +1,3 @@
-
 ---
 resource_types:
 - name: slack-notification
@@ -558,7 +557,7 @@ jobs:
     params:
       OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update - [skip ci]"
+      COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\n\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
@@ -778,7 +777,7 @@ jobs:
     params:
       OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update - [skip ci]"
+      COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\n\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
