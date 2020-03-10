@@ -160,6 +160,10 @@ describe 'generate-depls' do
       context 'when concourse pipeline is checked' do
         it_behaves_like 'pipeline checker', 'empty-depls-concourse-generated.yml', 'empty-concourse.yml'
       end
+
+      context 'when bosh-precompile pipeline is checked' do
+        it_behaves_like 'pipeline checker', 'empty-depls-bosh-precompile-generated.yml', 'empty-bosh-precompile.yml'
+      end
     end
   end
 end

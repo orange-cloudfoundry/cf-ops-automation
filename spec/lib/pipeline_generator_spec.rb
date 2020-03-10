@@ -178,9 +178,9 @@ describe PipelineGenerator::PipelineTemplatesFiltering do
   end
 
   context "when exclude filter is set" do
-    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: [], exclude_pipelines: %w[bosh update]) }
+    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: [], exclude_pipelines: %w[bosh-pipeline update-pipeline]) }
     let(:include_templates) { subject.filter }
-    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh') || path.include?('update') } }
+    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh-pipeline') || path.include?('update-pipeline') } }
 
     it 'contains only filtered templates' do
       expect(include_templates).to match_array(expected_excluded_templates)

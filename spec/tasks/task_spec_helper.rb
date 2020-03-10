@@ -36,6 +36,14 @@ class TaskSpecHelper
     governmentpaas_default_image_version
   end
 
+  def self.bosh_cf_cli_image
+    'orangecloudfoundry/bosh-cli-v2-cf-cli'
+  end
+
+  def self.bosh_cf_cli_image_version
+    orange_default_image_version
+  end
+
   def self.bosh_cli_v2_image
     'governmentpaas/bosh-cli-v2'
   end
