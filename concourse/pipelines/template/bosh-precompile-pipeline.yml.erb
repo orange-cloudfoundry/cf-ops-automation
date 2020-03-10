@@ -1,0 +1,646 @@
+<%
+  require "#{ops_automation_path}/lib/pipeline_helpers"
+
+  root_deployment_name = depls
+  disabled_deployments = all_dependencies.select do |_, deployment_info|
+    deployment_info['status'] == 'disabled'
+  end
+
+  enabled_deployments = all_dependencies.select do |_, deployment_info|
+    deployment_info['status'] == 'enabled' && deployment_info['bosh-deployment']
+  end
+
+  uniq_releases = {}
+  enabled_deployments&.sort&.each do |name, boshrelease|
+    boshrelease['releases']&.each do |release, info|
+      previous_info = uniq_releases[release]
+      raise "Inconsitency detected with '#{release}' boshrelease, in '#{name}' deployment: trying to replace\n#{previous_info} with \n#{info}" if previous_info && ! info.eql?(previous_info)
+      uniq_releases[release] = info
+    end
+  end
+
+  offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
+  boshrelease_offline_mode = config&.dig('offline-mode','boshreleases')
+  jobs = Hash.new {|h,k| h[k]=[]}
+
+  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
+  configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
+
+  current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated")
+
+  name = "#{root_deployment_name}-release-precompile-deployment"
+
+%>
+
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+    tag: v1.4.2
+- name: bosh-deployment-v2
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
+    tag: v2.12.0
+
+- name: meta
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))swce/metadata-resource
+    tag: release-v0.0.3
+
+resources:
+<% unless uniq_releases.empty? %>
+  - name: concourse-meta
+    icon: file-document-box-search-outline
+    type: meta
+
+  - name: failure-alert
+    icon: slack
+    type: slack-notification
+    source:
+      url: ((slack-webhook))
+      proxy: ((slack-proxy))
+      proxy_https_tunnel: ((slack-proxy-https-tunnel))
+      disable: ((slack-disable))
+
+  - name: secrets-<%= root_deployment_name %>-limited
+    icon: source-branch
+    type: git
+    source:
+      uri: ((secrets-uri))
+      paths: ["private-config.yml", "<%= root_deployment_name %>/ci-deployment-overview.yml", "<%= root_deployment_name %>/secrets", "shared"]
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+
+  - name: secrets-full-writer
+    icon: source-pull
+    type: git
+    source:
+      uri: ((secrets-uri))
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+
+  - name: paas-templates-<%= root_deployment_name %>-limited
+    icon: home-analytics
+    type: git
+    source:
+      uri: ((paas-templates-uri))
+      paths:
+        - ".gitmodules"
+        - "shared-config.yml"
+        - "meta-inf.yml"
+        - "<%= root_deployment_name %>/template"
+        - "<%= root_deployment_name %>/**/deployment-dependencies*.yml"
+        - "<%= root_deployment_name %>/<%= root_deployment_name %>-versions.yml"
+      branch: ((paas-templates-precompile-branch))
+      skip_ssl_verification: true
+
+  - name: cf-ops-automation
+    type: git
+    icon: rocket
+    source:
+      uri: ((cf-ops-automation-uri))
+      branch: ((cf-ops-automation-branch))
+      tag_filter: ((cf-ops-automation-tag-filter))
+      skip_ssl_verification: true
+
+  - name: ((stemcell-main-name))
+    <% if offline_stemcells_enabled %>
+    type: s3
+    icon: home-floor-l
+    source:
+      bucket: ((s3-stemcell-bucket))
+      region_name: ((s3-stemcell-region-name))
+      regexp: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-(.*)-((stemcell-main-name)).tgz
+      access_key_id: ((s3-stemcell-access-key-id))
+      secret_access_key: ((s3-stemcell-secret-key))
+      endpoint: ((s3-stemcell-endpoint))
+      skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+    version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
+    <% else %>
+    type: bosh-io-stemcell
+    icon: home-floor-g
+    source:
+      name: ((stemcell-name-prefix))((stemcell-main-name))
+    version: { version: "((stemcell-version))" }
+    <% end %>
+
+  - name: <%= name %>
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: <%= name %>
+      ca_cert: <%= bosh_cert[root_deployment_name]&.dump %>
+
+  - name: secrets-<%= root_deployment_name %>-trigger
+    icon: source-commit
+    type: git
+    source:
+      uri: ((secrets-uri))
+      paths: ["private-config.yml", "<%= root_deployment_name %>", "shared"]
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+
+  - name: paas-templates-<%= root_deployment_name %>-versions
+    icon: home-thermometer
+    type: git
+    source:
+      uri: ((paas-templates-uri))
+      paths: ["<%= root_deployment_name %>/<%= root_deployment_name %>-versions.yml"]
+      branch: ((paas-templates-precompile-branch))
+      skip_ssl_verification: true
+<% end %>
+
+<% uniq_releases.sort.each do |release, info| %>
+  - name: <%= release %>
+    <% if boshrelease_offline_mode %>
+    icon: home-floor-a
+    type: s3
+    source:
+      bucket: ((s3-br-bucket))
+      region_name: ((s3-br-region-name))
+      regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*).tgz
+      access_key_id: ((s3-br-access-key-id))
+      secret_access_key: ((s3-br-secret-key))
+      endpoint: ((s3-br-endpoint))
+      skip_ssl_verification: ((s3-br-skip-ssl-verification))
+    version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
+    <% else %>
+      <% if info['base_location'].include?('bosh.io') %>
+    icon:  home-floor-b
+    type: bosh-io-release
+    source:
+      repository: <%= info['repository'] %>
+    version: { version: ((<%= release %>-version)) }
+      <% else %>
+    icon: github-circle
+    type: github-release
+    source:
+      user: <%= info['repository'].split('/').first %>
+      repository: <%= info['repository'].split('/').last %>
+      access_token: ((bot-github-access-token))
+  #  version: tag:( (<%#= release %>-version) ) # FIXME https://github.com/concourse/concourse/issues/3990
+  # <%= release %>-version is pinned, see resource declaration. This is disabled for now...
+      <% end %>
+    <% end %>
+
+    <% if boshrelease_offline_mode %>
+  - name: compiled-<%= release %>
+    icon: home-floor-a
+    type: s3
+    source:
+      bucket: ((s3-compiled-release-bucket))
+      region_name: ((s3-compiled-release-region-name))
+      regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*)-(.*)-(.*)-((stemcell-version)).tgz
+      access_key_id: ((s3-compiled-release-access-key-id))
+      secret_access_key: ((s3-compiled-release-secret-key))
+      endpoint: ((s3-compiled-release-endpoint))
+      skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
+    version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version))-((s3-compiled-release-os))-((stemcell-version)).tgz }
+    <% end %>
+
+<% end %>
+
+jobs:
+<% if uniq_releases.empty? %>
+  - name: this-is-an-empty-pipeline
+<%else %>
+  - name: execute-deploy-script
+    <% jobs["Utils"] << "execute-deploy-script" %>
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+        - get: secrets-<%= root_deployment_name %>-limited
+          params: { submodules: none}
+          trigger: true
+        - get: paas-templates-<%= root_deployment_name %>-limited
+          params: { submodules: none}
+          trigger: true
+        - get: cf-ops-automation
+          params: { submodules: none}
+
+      - task: run-deploy.sh
+        input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-<%= root_deployment_name %>-limited, secrets: secrets-<%= root_deployment_name %>-limited}
+        file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
+        params:
+          CURRENT_DEPLS: <%= root_deployment_name %>/template
+          COMMON_SCRIPT_DIR: scripts-resource/scripts
+          SECRETS_DIR: secrets
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: "((bosh-password))"
+          BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+
+  - name: <%= name %>
+    <% jobs["Utils"] << "#{name}" %>
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - in_parallel:
+      - get: concourse-meta
+      - get: secrets-full-writer
+        params: { submodules: none}
+      - get: ((stemcell-main-name))
+        trigger: true
+        attempts: 2
+      - get: cf-ops-automation
+        params: { submodules: none}
+        trigger: true
+        passed: [ execute-deploy-script]
+    <% uniq_releases.each do |release, info| %>
+      - get: <%= release %>
+        trigger: true
+        attempts: 2
+    <% end %>
+      - get: paas-templates-<%= root_deployment_name %>-limited
+        params: { submodules: none}
+        passed: [ execute-deploy-script]
+        trigger: true
+    - task: generate-<%= name %>-manifest
+      <%
+        manifest = {'name' => name, 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
+        uniq_releases.each { |release, _info| manifest['releases'] << {'name' => release, 'version' => 'latest'}}
+
+        precompile_manifest = manifest
+       %>
+      input_mapping: {stemcell: ((stemcell-main-name))}
+      output_mapping: {generated-files: final-release-manifest}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+            tag: 0137f362db1fdd482668e899eb7638ff447b0856
+        inputs:
+          - name: stemcell
+        outputs:
+          - name: generated-files
+        run:
+          path: sh
+          args:
+            - -exc
+            - |
+              cd stemcell
+              STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+              export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+              cd ..
+
+              ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+              cat generated-files/${MANIFEST_NAME}
+        params:
+          MANIFEST_NAME: "<%= name %>.yml"
+          MANIFEST_CONTENT: '<%= precompile_manifest %>'
+    - task: protect-deployment
+      input_mapping: {reference-resource: secrets-full-writer}
+      output_mapping: {updated-git-resource: secrets-full-writer-<%= name %>}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: reference-resource
+        outputs:
+          - name: updated-git-resource
+        run:
+          path: sh
+          args:
+            - -exc
+            - |
+              git config --global user.email "$GIT_USER_EMAIL"
+              git config --global user.name "$GIT_USER_NAME"
+
+              git clone reference-resource updated-git-resource
+              cd updated-git-resource
+              mkdir -p ${TARGET_PATH}
+              touch ${TARGET_PATH}/protect-deployment.yml
+              git add .
+              CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
+              if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]; then
+                git commit -m "${COMMIT_MESSAGE}"
+              else
+                echo "No change detected, skip commit"
+              fi
+        params:
+          TARGET_PATH: <%= File.join(root_deployment_name, name) %>
+          GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+          GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+          COMMIT_MESSAGE: "Auto protect <%= name %> to avoid automatic cleanup"
+
+    - put: <%= name %>
+      attempts: 2
+      on_failure:
+        do:
+          - task: update-<%= name %>-files
+            input_mapping: {reference-resource: secrets-full-writer-<%= name %>, generated-resource: final-release-manifest}
+            output_mapping: {updated-git-resource: failed-<%= name %>-secrets}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+            params:
+              OLD_FILE: <%= root_deployment_name %>/<%= name %>/<%= name %>-last-deployment-failure.yml
+              NEW_FILE: "<%= name %>.yml"
+              COMMIT_MESSAGE: "Failed to deploy <%= name %> manifest - [skip ci]"
+          - put: secrets-full-writer
+            get_params: {submodules: none}
+            params:
+              repository: failed-<%= name %>-secrets
+              rebase: true
+      params:
+        manifest: final-release-manifest/<%= name %>.yml
+        stemcells:
+        <% if offline_stemcells_enabled %>
+        - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+        <% else %>
+        - ((stemcell-main-name))/stemcell.tgz
+        <% end %>
+        releases: <%= '[]' if uniq_releases&.empty? %>
+    <% uniq_releases.each do |release, _info| %>
+        - "<%= release %>/*.tgz"
+    <% end %>
+        cleanup: true
+    - task: bosh-variables
+      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer-<%= name %>}
+      output_mapping: {result-dir: bosh-variables-result}
+      file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
+      params:
+        BOSH_DEPLOYMENT: <%= name %>
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: "((bosh-password))"
+        BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+    - task: update-<%= name %>-fingerprints-file
+      input_mapping: {reference-resource: secrets-full-writer-<%= name %>, generated-resource: bosh-variables-result}
+      output_mapping: {updated-git-resource: updated-<%= name %>-fingerprints-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: <%= root_deployment_name %>/<%= name %>/<%= name %>-fingerprints.json
+        NEW_FILE: "credential_fingerprints.json"
+        COMMIT_MESSAGE: "<%= name %> variable fingerprints auto update - [skip ci]"
+    - task: update-<%= name %>-files
+      input_mapping: {reference-resource: updated-<%= name %>-fingerprints-secrets, generated-resource: <%= name %>}
+      output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
+      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
+      params:
+        OLD_FILE: <%= root_deployment_name %>/<%= name %>/<%= name %>.yml
+        NEW_FILE: "manifest.yml"
+        COMMIT_MESSAGE: "<%= name %> generated manifest auto update - [skip ci]"
+    - put: secrets-full-writer
+      get_params: {submodules: none}
+      params:
+        repository: updated-<%= name %>-secrets
+        rebase: true
+
+  <% uniq_releases.each do |release, _info| %>
+  - name: compile-and-export-<%= release %>
+    <% jobs["#{release[0]}*"] << "#{name}" unless jobs["#{release[0]}*"].include?("#{name}")
+       jobs["#{release[0]}*"] << "compile-and-export-#{release}"
+    %>
+
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: concourse-meta
+          - get: <%= release %>
+            passed:
+              - <%= name %>
+            trigger: true
+            attempts: 2
+          - get: secrets-full-writer
+            params: { submodules: none}
+          - get: ((stemcell-main-name))
+            passed:
+              - <%= name %>
+            trigger: true
+            attempts: 2
+
+      - task: compile-and-export-<%= release %>
+        input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
+        output_mapping: {exported-release: <%= release %>-exported-release}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+            - name: secrets
+          outputs:
+            - name: exported-release
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+          params:
+            BOSH_DEPLOYMENT: <%= name %>
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: "((bosh-password))"
+            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+            RELEASE_NAME: <%= release %>
+            RELEASE_VERSION: ((<%= release %>-version))
+    <% if boshrelease_offline_mode %>
+      - task: generate-<%= release %>-name
+        input_mapping: {release: <%= release %>-exported-release, stemcell: ((stemcell-main-name))}
+        output_mapping: {result-dir: compiled-<%= release %>}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: release
+            - name: stemcell
+          outputs:
+            - name: result-dir
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                RELEASE_INFO=$(bosh inspect-local-release --json release/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export RELEASE_NAME=$(echo ${RELEASE_INFO} | jq -r '.["name"]')
+                export RELEASE_VERSION=$(echo ${RELEASE_INFO} | jq -r '.["version"]')
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+
+                cp release/*.tgz result-dir/"${RELEASE_NAME}-${RELEASE_VERSION}-${STEMCELL_OS}-${STEMCELL_VERSION}.tgz"
+      - put: compiled-<%= release %>
+        params:
+          file: compiled-<%= release %>/*.tgz
+          acl: public-read
+  <% end %>
+
+
+    <% if boshrelease_offline_mode %>
+  - name: upload-compiled-<%= release %>
+    <% jobs["#{release[0]}*"] << "upload-compiled-#{release}" %>
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none}
+          attempts: 2
+          #trigger: true
+        - get: secrets-full-writer
+          params: { submodules: none}
+          attempts: 2
+        - get: paas-templates-<%= root_deployment_name %>-versions
+          params: { submodules: none}
+          attempts: 2
+        - get: compiled-<%= release %>
+          trigger: true
+        - get: ((stemcell-main-name))
+      - task: upload-<%= release %>
+        input_mapping: {secrets: secrets-full-writer, compiled-release: compiled-<%= release %>}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: compiled-release
+            - name: secrets
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                bosh inspect-local-release compiled-release/*.tgz
+                bosh upload-release compiled-release/*.tgz
+          params:
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: "((bosh-password))"
+            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+    <% end %>
+  <% end %>
+
+  <% if enabled_deployments.any? %>
+  - name: init-concourse-boshrelease-and-stemcell-for-<%= root_deployment_name %>
+    <% jobs["Utils"] << "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" %>
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none}
+          attempts: 2
+          #trigger: true
+        - get: secrets-<%= root_deployment_name %>-trigger
+          params: { submodules: none}
+          attempts: 2
+        - get: paas-templates-<%= root_deployment_name %>-versions
+          params: { submodules: none}
+          attempts: 2
+          trigger: true
+    - task: generate-<%= root_deployment_name %>-flight-plan
+      output_mapping: {result-dir: init-<%= root_deployment_name %>-plan}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -ec
+          - |
+    <% uniq_releases.sort.each do |name, info| %>
+      <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
+      <% if boshrelease_offline_mode %>
+            echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" | tee -a result-dir/flight-plan
+      <% else %>
+            echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:((<%= name %>-version))" | tee -a result-dir/flight-plan
+      <% end %>
+    <% end %>
+    <% if offline_stemcells_enabled %>
+            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
+    <% else %>
+            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
+    <% end %>
+        params:
+          BUILD_PIPELINE_NAME: <%= root_deployment_name %>-bosh-generated
+    - task: fly-into-concourse
+      input_mapping: {fly-cmd: init-<%= root_deployment_name %>-plan}
+      output_mapping: {flight-report: concourse-<%= root_deployment_name %>-init-report}
+      file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+      params:
+        ATC_EXTERNAL_URL: ((concourse-<%= root_deployment_name %>-target))
+        FLY_USERNAME: ((concourse-<%= root_deployment_name %>-username))
+        FLY_PASSWORD: "((concourse-<%= root_deployment_name %>-password))"
+        FLY_TEAM: <%= current_team || 'main' %>
+  <% end %>
+
+  - name: TODO-manage-cpi-config-cloud-config-and-runtime-config-for-<%= root_deployment_name %>
+    <% jobs["Utils"] << "TODO-manage-cpi-config-cloud-config-and-runtime-config-for-#{root_deployment_name}" %>
+    serial: true
+
+groups:
+  - name: <%= root_deployment_name.capitalize %>
+    jobs:
+      <% jobs.map {|_, job_names| job_names }.flatten.uniq.sort.each do |job_name| %>
+      - <%= job_name %>
+        <% end %>
+    <% jobs.sort.each do |group_name, job_names| %>
+  - name: <%= group_name.capitalize %>
+    jobs:
+      <% job_names&.sort.each do |job_name| %>
+      - <%= job_name %>
+        <% end %>
+    <% end %>
+<% end %>
