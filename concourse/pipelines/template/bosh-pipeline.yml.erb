@@ -773,7 +773,7 @@ jobs:
     params:
       OLD_FILE: <%= depls %>/<%= name %>/<%= name %>.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\n\n[skip ci]"
+      COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat reference-resource/deployment_information.txt)\n\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
