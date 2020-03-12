@@ -50,7 +50,7 @@ ${COMMON_SCRIPT_DIR}/generate-manifest.sh
 set +e
 generate_manifest "${IAAS_TYPE}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
 if [ $? -eq 3 ]; then
-    echo "ignoring Iaas customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${IAAS_TYPE}>"
+    echo "ignoring Iaas customization. IAAS_TYPE not defined set or ${YML_TEMPLATE_DIR}/<IAAS_TYPE> detected. Tag: <${IAAS_TYPE}>"
 fi
 
 echo "${PROFILES}"|sed -e 's/,/\n/g' > /tmp/profiles.txt
@@ -65,7 +65,7 @@ for profile in ${NEWLINE_DELIMITED_PROFILES}; do
     echo "-------------------------"
     generate_manifest "${profile}" "${YML_TEMPLATE_DIR}" "${OUTPUT_DIR}" "${COMMON_SCRIPT_DIR}"
     if [ $? -eq 3 ]; then
-        echo "ignoring ${profile} customization. Tag not defined set or ${YML_TEMPLATE_DIR}/<TAG_NAME> detected. Tag: <${profile}>"
+        echo "ignoring ${profile} customization. Profile not defined set or ${YML_TEMPLATE_DIR}/<PROFILE> detected. Tag: <${profile}>"
     fi
 done
 set -e
