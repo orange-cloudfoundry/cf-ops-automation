@@ -262,7 +262,8 @@ jobs:
           params:
             OLD_FILE: "simple-depls/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            COMMIT_MESSAGE: "simple-depls cloud-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "simple-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -299,7 +300,8 @@ jobs:
           params:
             OLD_FILE: "simple-depls/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            COMMIT_MESSAGE: "simple-depls runtime-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "simple-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -336,7 +338,8 @@ jobs:
           params:
             OLD_FILE: "simple-depls/cpi-config.yml"
             NEW_FILE: "cpi-config.yml"
-            COMMIT_MESSAGE: "simple-depls cpi-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "simple-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -506,7 +509,8 @@ jobs:
           params:
             OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan-last-deployment-failure.yml
             NEW_FILE: "interpolated-ntp-with-scan.yml"
-            COMMIT_MESSAGE: "Failed to deploy ntp-with-scan manifest - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "Failed to deploy ntp-with-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
           get_params: {submodules: none}
           params:
@@ -545,11 +549,8 @@ jobs:
     params:
       OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
-      COMMIT_MESSAGE: |-
-          ntp-with-scan variable fingerprints auto update.
-          Deployment information: $(cat generated-resource/deployment_information.txt)
-
-          [skip ci]
+      PROFILES: ((profiles))
+      COMMIT_MESSAGE: "ntp-with-scan variable fingerprints auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - task: update-ntp-with-scan-files
     input_mapping: {reference-resource: updated-ntp-with-scan-fingerprints-secrets, generated-resource: ntp-with-scan-deployment, additional-resource: bosh-variables-result}
     output_mapping: {updated-git-resource: updated-ntp-with-scan-secrets}
@@ -557,7 +558,8 @@ jobs:
     params:
       OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\n\n[skip ci]"
+      PROFILES: ((profiles))
+      COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
@@ -727,7 +729,8 @@ jobs:
           params:
             OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan-last-deployment-failure.yml
             NEW_FILE: "interpolated-zookeeper-without-scan.yml"
-            COMMIT_MESSAGE: "Failed to deploy zookeeper-without-scan manifest - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "Failed to deploy zookeeper-without-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
           get_params: {submodules: none}
           params:
@@ -765,10 +768,11 @@ jobs:
     params:
       OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
+      PROFILES: "((profiles))"
       COMMIT_MESSAGE: |-
         zookeeper-without-scan variable fingerprints auto update.
         Deployment information: $(cat generated-resource/deployment_information.txt)
-
+        Active profiles: ${PROFILES}
         [skip ci]
   - task: update-zookeeper-without-scan-files
     input_mapping: {reference-resource: updated-zookeeper-without-scan-fingerprints-secrets, generated-resource: zookeeper-without-scan-deployment, additional-resource: bosh-variables-result}
@@ -777,7 +781,8 @@ jobs:
     params:
       OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\n\n[skip ci]"
+      PROFILES: ((profiles))
+      COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
