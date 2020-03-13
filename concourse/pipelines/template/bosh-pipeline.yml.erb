@@ -767,13 +767,13 @@ jobs:
       NEW_FILE: "credential_fingerprints.json"
       COMMIT_MESSAGE: "<%= name %> variable fingerprints auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\n\n[skip ci]"
   - task: update-<%= name %>-files
-    input_mapping: {reference-resource: updated-<%= name %>-fingerprints-secrets, generated-resource: <%= name %>-deployment}
+    input_mapping: {reference-resource: updated-<%= name %>-fingerprints-secrets, generated-resource: <%= name %>-deployment, additional-resource: bosh-variables-result}
     output_mapping: {updated-git-resource: updated-<%= name %>-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: <%= depls %>/<%= name %>/<%= name %>.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat reference-resource/deployment_information.txt)\n\n[skip ci]"
+      COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\n\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:

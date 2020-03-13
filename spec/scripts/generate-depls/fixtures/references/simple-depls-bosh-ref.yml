@@ -551,13 +551,13 @@ jobs:
 
           [skip ci]
   - task: update-ntp-with-scan-files
-    input_mapping: {reference-resource: updated-ntp-with-scan-fingerprints-secrets, generated-resource: ntp-with-scan-deployment}
+    input_mapping: {reference-resource: updated-ntp-with-scan-fingerprints-secrets, generated-resource: ntp-with-scan-deployment, additional-resource: bosh-variables-result}
     output_mapping: {updated-git-resource: updated-ntp-with-scan-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat reference-resource/deployment_information.txt)\n\n[skip ci]"
+      COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\n\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
@@ -771,13 +771,13 @@ jobs:
 
         [skip ci]
   - task: update-zookeeper-without-scan-files
-    input_mapping: {reference-resource: updated-zookeeper-without-scan-fingerprints-secrets, generated-resource: zookeeper-without-scan-deployment}
+    input_mapping: {reference-resource: updated-zookeeper-without-scan-fingerprints-secrets, generated-resource: zookeeper-without-scan-deployment, additional-resource: bosh-variables-result}
     output_mapping: {updated-git-resource: updated-zookeeper-without-scan-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan.yml
       NEW_FILE: "manifest.yml"
-      COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat reference-resource/deployment_information.txt)\n\n[skip ci]"
+      COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\n\n[skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:

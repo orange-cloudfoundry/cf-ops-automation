@@ -23,6 +23,9 @@ inputs:
   - name: generated-resource
   - name: concourse-meta
     optional: true
+  - name: additional-resource
+    optional: true
+
 outputs:
   - name: updated-git-resource
 run:
