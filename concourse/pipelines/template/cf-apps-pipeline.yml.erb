@@ -187,7 +187,8 @@ jobs:
       params:
         OLD_FILE: <%= cf_app_info["base-dir"] %>/<%= app_name %>_manifest.yml
         NEW_FILE: "<%= app_name %>_manifest.yml"
-        COMMIT_MESSAGE: "<%= app_name %> generated CF manifest auto update - [skip ci]"
+        PROFILES: ((profiles))
+        COMMIT_MESSAGE: "<%= app_name %> generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
       get_params: {submodules: none}
       params:

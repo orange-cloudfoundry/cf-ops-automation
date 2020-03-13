@@ -17,7 +17,7 @@ describe 'generating new reference' do
   let(:depls_name) { 'simple-depls' }
   let(:iaas_type) { 'my-custom-iaas' }
   let(:include_exclude_pipelines) { "-e cf-apps-pipeline" }
-  let(:options) { "--automation-path #{ci_path} -d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
+  let(:options) { "--automation-path #{ci_path} -d #{depls_name} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
 
   before do
     unless cleanup_done

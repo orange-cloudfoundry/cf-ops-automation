@@ -255,7 +255,8 @@ jobs:
           params:
             OLD_FILE: "delete-depls/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            COMMIT_MESSAGE: "delete-depls cloud-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "delete-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -292,7 +293,8 @@ jobs:
           params:
             OLD_FILE: "delete-depls/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            COMMIT_MESSAGE: "delete-depls runtime-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "delete-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -329,7 +331,8 @@ jobs:
           params:
             OLD_FILE: "delete-depls/cpi-config.yml"
             NEW_FILE: "cpi-config.yml"
-            COMMIT_MESSAGE: "delete-depls cpi-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "delete-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
