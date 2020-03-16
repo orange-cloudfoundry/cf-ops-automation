@@ -459,6 +459,7 @@ jobs:
               RELEASE_VERSION=$(cat version/version)
               git clone cf-ops-automation cf-ops-automation-changelog
               cd cf-ops-automation-changelog/
+              echo "Github changelog generator version: $(bundle exec github_changelog_generator --version)"
               bundle exec github_changelog_generator --no-author --future-release "v${RELEASE_VERSION}"
               mkdir -p docs/features/
               bundle exec cucumber -f html --out docs/features/features.html -f pretty --out docs/features/features.md -f pretty --no-color --no-source
@@ -501,7 +502,8 @@ jobs:
               RELEASE_VERSION=$(cat ../version/version)
               OUTPUT_DIR="../github-info"
               OUTPUT_FILE="${OUTPUT_DIR}/github_release.md"
-              bundle exec github_changelog_generator --no-author  -o ${OUTPUT_FILE} --header-label "**Release notes**" --future-release "v${RELEASE_VERSION}" --since-tag "v${RELEASE_VERSION}"
+              echo "Github changelog generator version: $(bundle exec github_changelog_generator --version)"
+              bundle exec github_changelog_generator --no-author  -o ${OUTPUT_FILE} --header-label "**Release notes**" --future-release "v${RELEASE_VERSION}" --unreleased-only
               cd ${OUTPUT_DIR}
               tar czvf cf-ops-automation.tgz ../cf-ops-automation
           params:
