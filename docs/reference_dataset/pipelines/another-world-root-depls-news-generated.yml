@@ -13,8 +13,4 @@ resource_types:
       # use latest as no other recent tag available
 resources:
 jobs:
-#      - get: bosh-stemcell
-#        version: { version: ((stemcell-version)) }
-#        trigger: true
-#        attempts: 2
 - name: this-is-an-empty-pipeline
