@@ -87,7 +87,6 @@ jobs:
         YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/terraform-config/template
         CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
         SUFFIX: -tpl.tfvars.yml
-        PROFILES: ((profiles))
     - task: terraform-apply
       input_mapping: {secret-state-resource: secrets-hello-world-root-depls,spec-resource: paas-templates-full}
       output_mapping: {generated-files: terraform-cf}
@@ -96,8 +95,6 @@ jobs:
         SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
         SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
         IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
-        PROFILE_SPEC_PATH_PREFIX: "hello-world-root-depls/terraform-config/spec-"
-        PROFILES: ((profiles))
       ensure:
         task: update-terraform-state-file
         input_mapping: {reference-resource: secrets-hello-world-root-depls, generated-resource: terraform-cf}
@@ -106,8 +103,7 @@ jobs:
         params:
           OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
           NEW_FILE: "terraform.tfstate"
-          PROFILES: ((profiles))
-          COMMIT_MESSAGE: "Terraform Cloudfoundry auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          COMMIT_MESSAGE: "Terraform Cloudfoundry auto update - [skip ci]"
         on_failure:
           put: failure-alert
           params:

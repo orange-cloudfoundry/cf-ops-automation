@@ -153,7 +153,6 @@ jobs:
             ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/another-world-root-depls/template
         IAAS_TYPE: ((iaas-type))
-        PROFILES: ((profiles))
     - in_parallel:
       - task: update-cloud-config-for-another-world-root-depls
         attempts: 2
@@ -178,8 +177,7 @@ jobs:
           params:
             OLD_FILE: "another-world-root-depls/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "another-world-root-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "another-world-root-depls cloud-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -216,8 +214,7 @@ jobs:
           params:
             OLD_FILE: "another-world-root-depls/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "another-world-root-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "another-world-root-depls runtime-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -254,8 +251,7 @@ jobs:
           params:
             OLD_FILE: "another-world-root-depls/cpi-config.yml"
             NEW_FILE: "cpi-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "another-world-root-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "another-world-root-depls cpi-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:

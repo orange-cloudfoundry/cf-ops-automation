@@ -123,13 +123,19 @@ resources:
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/nginx-release
-  version: { version: ((nginx-version)) }
 - name: ntp
   icon:  home-floor-b
   type: bosh-io-release
   source:
     repository: cloudfoundry-community/ntp-release
-  version: { version: ((ntp-version)) }
+- name: vault
+  icon: github-circle
+  type: github-release
+  source:
+    user: cloudfoundry-community
+    repository: vault-boshrelease
+    access_token: ((bot-github-access-token))
+#  version: tag:( (-version) ) # FIXME https://github.com/concourse/concourse/issues/3990
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -281,7 +287,6 @@ jobs:
             ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/template
         IAAS_TYPE: ((iaas-type))
-        PROFILES: ((profiles))
     - in_parallel:
       - task: update-cloud-config-for-hello-world-root-depls
         attempts: 2
@@ -306,8 +311,7 @@ jobs:
           params:
             OLD_FILE: "hello-world-root-depls/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "hello-world-root-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "hello-world-root-depls cloud-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -344,8 +348,7 @@ jobs:
           params:
             OLD_FILE: "hello-world-root-depls/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "hello-world-root-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "hello-world-root-depls runtime-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -382,8 +385,7 @@ jobs:
           params:
             OLD_FILE: "hello-world-root-depls/cpi-config.yml"
             NEW_FILE: "cpi-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "hello-world-root-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "hello-world-root-depls cpi-config auto update - [skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -419,9 +421,15 @@ jobs:
       params: { submodules: none}
       trigger: true
     - get: nginx
+      version: { version: ((nginx-version)) }
       trigger: true
       attempts: 2
     - get: ntp
+      version: { version: ((ntp-version)) }
+      trigger: true
+      attempts: 2
+    - get: vault
+      # vault-version is pinned, see resource declaration. This is disabled for now...
       trigger: true
       attempts: 2
     - get: secrets-bosh-deployment-sample
@@ -461,7 +469,6 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/bosh-deployment-sample/template
       IAAS_TYPE: ((iaas-type))
-      PROFILES: ((profiles))
   - task: execute-bosh-deployment-sample-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -469,7 +476,7 @@ jobs:
       credentials-resource: secrets-bosh-deployment-sample
       additional-resource: release-manifest
     output_mapping: {generated-files: pre-bosh-deploy-resource}
-    file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
+    file: cf-ops-automation/concourse/tasks/spiff_pre_bosh_deploy.yml
     params:
       CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
       SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
@@ -556,8 +563,7 @@ jobs:
           params:
             OLD_FILE: hello-world-root-depls/bosh-deployment-sample/bosh-deployment-sample-last-deployment-failure.yml
             NEW_FILE: "interpolated-bosh-deployment-sample.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "Failed to deploy bosh-deployment-sample manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
+            COMMIT_MESSAGE: "Failed to deploy bosh-deployment-sample manifest - [skip ci]"
         - put: secrets-full-writer
           get_params: {submodules: none}
           params:
@@ -571,16 +577,12 @@ jobs:
       releases: 
       - "nginx/*.tgz"
       - "ntp/*.tgz"
+      - "vault/*.tgz"
       ops_files:
       - ops-and-vars-files/operators/*
       vars_files:
       - ops-and-vars-files/vars/*
       cleanup: true
-      no_redact: false
-      dry_run: false
-      fix: false
-      recreate: true
-      skip_drain: ["ngnix"]
   - task: bosh-variables
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer}
     output_mapping: {result-dir: bosh-variables-result}
@@ -598,17 +600,15 @@ jobs:
     params:
       OLD_FILE: hello-world-root-depls/bosh-deployment-sample/bosh-deployment-sample-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
-      PROFILES: ((profiles))
-      COMMIT_MESSAGE: "bosh-deployment-sample variable fingerprints auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
+      COMMIT_MESSAGE: "bosh-deployment-sample variable fingerprints auto update - [skip ci]"
   - task: update-bosh-deployment-sample-files
-    input_mapping: {reference-resource: updated-bosh-deployment-sample-fingerprints-secrets, generated-resource: bosh-deployment-sample-deployment, additional-resource: bosh-variables-result}
+    input_mapping: {reference-resource: updated-bosh-deployment-sample-fingerprints-secrets, generated-resource: bosh-deployment-sample-deployment}
     output_mapping: {updated-git-resource: updated-bosh-deployment-sample-secrets}
     file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
     params:
       OLD_FILE: hello-world-root-depls/bosh-deployment-sample/bosh-deployment-sample.yml
       NEW_FILE: "manifest.yml"
-      PROFILES: ((profiles))
-      COMMIT_MESSAGE: "bosh-deployment-sample generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
+      COMMIT_MESSAGE: "bosh-deployment-sample generated manifest auto update - [skip ci]"
   - put: secrets-full-writer
     get_params: {submodules: none}
     params:
@@ -774,6 +774,7 @@ jobs:
         - |
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:((vault-version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: hello-world-root-depls-bosh-generated
@@ -821,7 +822,6 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
-      PROFILES: ((profiles))
   - task: terraform-plan
     input_mapping: {secret-state-resource: secrets-hello-world-root-depls-limited,spec-resource: paas-templates-hello-world-root-depls}
     file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
@@ -829,8 +829,6 @@ jobs:
       SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
       SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
       IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
-      PROFILES_SPEC_PATH_PREFIX: "hello-world-root-depls/terraform-config/spec-"
-      PROFILES: ((profiles))
 - name: approve-and-enforce-terraform-consistency
   serial: true
   serial_groups: [terraform]
@@ -870,7 +868,6 @@ jobs:
       CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/terraform-config/template
       SUFFIX: -tpl.tfvars.yml
       IAAS_TYPE: ((iaas-type))
-      PROFILES: ((profiles))
   - task: terraform-apply
     input_mapping: {secret-state-resource: secrets-hello-world-root-depls-limited,spec-resource: paas-templates-hello-world-root-depls}
     output_mapping: {generated-files: terraform-cf}
@@ -879,8 +876,6 @@ jobs:
       SPEC_PATH: "hello-world-root-depls/terraform-config/spec"
       SECRET_STATE_FILE_PATH: "hello-world-root-depls/terraform-config"
       IAAS_SPEC_PATH: "hello-world-root-depls/terraform-config/spec-((iaas-type))"
-      PROFILES_SPEC_PATH_PREFIX: "hello-world-root-depls/terraform-config/spec-"
-      PROFILES: ((profiles))
     ensure:
       task: update-terraform-state-file
       input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}
@@ -889,8 +884,7 @@ jobs:
       params:
         OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
         NEW_FILE: "terraform.tfstate"
-        PROFILES: ((profiles))
-        COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+        COMMIT_MESSAGE: "Terraform TFState auto update"
       on_failure:
         put: failure-alert
         params:

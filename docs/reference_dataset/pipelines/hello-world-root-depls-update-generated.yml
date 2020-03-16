@@ -86,7 +86,6 @@ jobs:
       ROOT_DEPLOYMENT: hello-world-root-depls
       IAAS_TYPE: ((iaas-type))
       EXCLUDE_PIPELINES: depls
-      PROFILES: ((profiles))
   - task: copy-and-filter-generated-pipeline
     input_mapping: {templates: paas-templates-hello-world-root-depls,config: secrets-hello-world-root-depls-for-pipeline}
     config:
