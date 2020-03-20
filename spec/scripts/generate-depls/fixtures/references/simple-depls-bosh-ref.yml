@@ -561,6 +561,7 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
+    attempts: 2
     get_params: {submodules: none}
     params:
       repository: updated-ntp-with-scan-secrets
@@ -784,6 +785,7 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
+    attempts: 2
     get_params: {submodules: none}
     params:
       repository: updated-zookeeper-without-scan-secrets
