@@ -781,6 +781,7 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
+    attempts: 2
     get_params: {submodules: none}
     params:
       repository: updated-<%= name %>-secrets
