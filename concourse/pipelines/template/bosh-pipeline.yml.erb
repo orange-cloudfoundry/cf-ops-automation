@@ -1147,7 +1147,7 @@ jobs:
         OLD_FILE: "<%= terraform_config_path %>/terraform.tfstate"
         NEW_FILE: "terraform.tfstate"
         PROFILES: ((profiles))
-        COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+        COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}"
       on_failure:
         put: failure-alert
         params:
