@@ -43,7 +43,7 @@ run:
     cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
 
     GIT_COMMIT_MESSAGE=$(eval echo $(echo $COMMIT_MESSAGE))
-    echo "$GIT_COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
+    echo -e "$GIT_COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
     if [ -d concourse-meta ];then
       cd concourse-meta
       BUILD_TEAM=$(if [ -f build-team-name ];then cat build-team-name;fi)
@@ -53,8 +53,7 @@ run:
       BUILD_NAME=$(if [ -f build-name ];then cat build-name;fi)
       BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_NAME - $BUILD_ID")
       cd ..
-      echo "" >> ${FINAL_RELEASE_REPO}/.git/message
-      echo "Created by $BUILD_INFO" >> ${FINAL_RELEASE_REPO}/.git/message
+      echo -e "\nCreated by $BUILD_INFO" >> ${FINAL_RELEASE_REPO}/.git/message
     fi
 
     cd ${FINAL_RELEASE_REPO}
