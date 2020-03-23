@@ -510,6 +510,15 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML
         YAML.safe_load ci_deployments_yaml
       end
+      let(:expected_tf_ensure_step) do
+        {"file" => "cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml",
+         "input_mapping" => {"generated-resource"=>"terraform-cf", "reference-resource"=>"secrets-full-writer"},
+         "on_failure" => {"params"=>{"channel"=>"((slack-channel))", "icon_url"=>"http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png", "text"=>"Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].", "username"=>"Concourse"}, "put"=>"failure-alert"},
+         "on_success" => {"get_params"=>{"submodules"=>"none"}, "params"=>{"rebase"=>true, "repository"=>"updated-terraform-state-secrets"}, "put"=>"secrets-full-writer"},
+         "output_mapping" => {"updated-git-resource"=>"updated-terraform-state-secrets"},
+         "params" => {"COMMIT_MESSAGE"=>"Terraform TFState auto update\n\nActive profiles: ${PROFILES}", "NEW_FILE"=>"terraform.tfstate", "OLD_FILE"=>"my-tfstate-location/terraform.tfstate", "PROFILES"=>"((profiles))"},
+         "task" => "update-terraform-state-file" }
+      end
 
       it 'generates all resource_types' do
         expect(generated_pipeline['resource_types']).to match(expected_resource_types)
@@ -520,6 +529,17 @@ describe 'BoshPipelineTemplateProcessing' do
                               'jobs' => %w[approve-and-enforce-terraform-consistency check-terraform-consistency] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'Terraform' }.pop
         expect(generated).to match(expected_tf_group)
+      end
+
+      it 'ensures tfstate is commited' do
+        terraform_apply_task = generated_pipeline['jobs']
+                        .select { |job| job['name'] == "approve-and-enforce-terraform-consistency" }
+                        .flat_map { |job| job['plan'] }
+                        .select { |step| step['task'] == "terraform-apply" }
+                        .first
+        ensure_definition = terraform_apply_task['ensure']
+        expect(ensure_definition).to match(expected_tf_ensure_step)
+
       end
 
       it 'generates a valid check-terraform-consistency job' do
