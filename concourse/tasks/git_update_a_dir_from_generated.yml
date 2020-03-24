@@ -38,8 +38,8 @@ run:
     rm -rf ${FINAL_RELEASE_REPO}/${OLD_DIR}/*
     cp -vrp generated-resource/${NEW_DIR} ${FINAL_RELEASE_REPO}/${OLD_DIR}
 
-    GIT_COMMIT_MESSAGE=$(eval echo $(echo $COMMIT_MESSAGE))
-    echo "$GIT_COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
+    GIT_COMMIT_MESSAGE=$(eval echo -e $COMMIT_MESSAGE)
+    echo -e "$GIT_COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
     if [ -d concourse-meta ];then
       cd concourse-meta
       BUILD_TEAM=$(if [ -f build-team-name ];then cat build-team-name;fi)

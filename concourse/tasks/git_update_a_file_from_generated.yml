@@ -42,7 +42,7 @@ run:
     git clone reference-resource ${FINAL_RELEASE_REPO}
     cp generated-resource/${NEW_FILE} ${FINAL_RELEASE_REPO}/${OLD_FILE}
 
-    GIT_COMMIT_MESSAGE=$(eval echo $(echo $COMMIT_MESSAGE))
+    GIT_COMMIT_MESSAGE=$(eval echo -e $COMMIT_MESSAGE)
     echo -e "$GIT_COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
     if [ -d concourse-meta ];then
       cd concourse-meta
@@ -72,4 +72,3 @@ params:
   OLD_FILE:
   NEW_FILE:
   COMMIT_MESSAGE:
-  CUSTOM_VAR:
