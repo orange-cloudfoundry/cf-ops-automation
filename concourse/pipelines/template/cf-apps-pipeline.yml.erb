@@ -5,6 +5,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
+  git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
 
   current_team = CiDeployment.team(all_ci_deployments, depls, "#{depls}-cf-apps-generated")
 %>
@@ -88,9 +89,9 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: secrets-full
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - task: generate-<%= depls %>-pipeline
       output_mapping: {result-dir: trigger-<%= depls %>-plan}
       config:
@@ -141,16 +142,16 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-<%= app_name %>
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: secrets-full-writer
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: paas-template-<%= app_name %>
         trigger: true
-        params: { submodules: none }
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: cf-ops-automation
         trigger: true
-        params: { submodules: none }
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
 
     - task: generate-<%= app_name %>-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= app_name %>, additional-resource: paas-template-<%= app_name %>}
@@ -190,7 +191,7 @@ jobs:
         PROFILES: ((profiles))
         COMMIT_MESSAGE: "<%= app_name %> generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
-      get_params: {submodules: none}
+      get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       params:
         repository: updated-<%= app_name %>-secrets
         rebase: true

@@ -1,12 +1,13 @@
 module PipelineHelpers
   # this class configures some generation options instead of doing it in pipeline templates
   class PipelineConfigurer
-    attr_reader :serial_group_strategy, :parallel_execution_limit
+    attr_reader :serial_group_strategy, :parallel_execution_limit, :git_shallow_clone_depth
 
     def initialize(options)
       @options = options
       @parallel_execution_limit = ConfiguredParallelExecutionLimit.new(options.config, options.root_deployment_name)
       @serial_group_strategy = configure_serial_group_strategy
+      @git_shallow_clone_depth = ConfiguredGitShallowCloneDepth.new(options.config, options.root_deployment_name)
     end
 
     private

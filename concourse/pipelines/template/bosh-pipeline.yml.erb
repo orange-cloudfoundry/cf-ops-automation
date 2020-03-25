@@ -31,6 +31,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
+  git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
 
   current_team = CiDeployment.team(all_ci_deployments, depls, "#{depls}-bosh-generated")
 %>
@@ -270,9 +271,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none }
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get : secrets-<%= depls %>-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
   - task: cancel-all-bosh-tasks
     input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-<%= depls %>-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
@@ -295,14 +296,14 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: secrets-<%= depls %>-trigger
         version: every
         trigger: true
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - task: prepare_deployment_to_be_deleted
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-<%= depls %>-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
@@ -324,10 +325,10 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         passed: [delete-deployments-review]
       - get: secrets-<%= depls %>-trigger
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         passed: [delete-deployments-review]
       - get: concourse-meta
     - task: delete_deployments
@@ -343,7 +344,7 @@ jobs:
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
         put: secrets-full-writer
-        get_params: {submodules: none}
+        get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         params:
           repository: updated-config-resource
           rebase: true
@@ -362,13 +363,13 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-<%= depls %>-limited
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: paas-templates-<%= depls %>
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
 
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-<%= depls %>, secrets: secrets-<%= depls %>-limited}
@@ -395,15 +396,15 @@ jobs:
   plan:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: secrets-<%= depls %>-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
     - get: paas-templates-<%= depls %>
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
     - task: generate-<%= depls %>-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%= depls %>}
@@ -456,7 +457,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
             params:
               repository: updated-cloud-config
               rebase: true
@@ -495,7 +496,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
             params:
               repository: updated-runtime-config
               rebase: true
@@ -534,7 +535,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
             params:
               repository: updated-cpi-config
               rebase: true
@@ -558,12 +559,12 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: ((stemcell-main-name))
       trigger: true
       attempts: 2
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
   <% deployment_details.releases.each do |release, info| %>
     - get: <%= release %>
@@ -572,7 +573,7 @@ jobs:
   <% end %>
   <% if deployment_details.local_deployment_secrets_scan? %>
     - get: secrets-<%= name %>
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: <%= deployment_details.local_deployment_secrets_trigger? %>
   <% end %>
     - get: paas-templates-<%= name %>
@@ -595,6 +596,7 @@ jobs:
     )
   %>
         submodules: <%= submodules %>
+        depth: 1
   - task: check-configuration
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -723,7 +725,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy <%= name %> manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
-          get_params: {submodules: none}
+          get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
           params:
             repository: failed-<%= name %>-secrets
             rebase: true
@@ -782,7 +784,7 @@ jobs:
       COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
     attempts: 2
-    get_params: {submodules: none}
+    get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     params:
       repository: updated-<%= name %>-secrets
       rebase: true
@@ -861,9 +863,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: secrets-<%= depls %>-trigger
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
   - task: generate-<%= depls %>-pipeline
     output_mapping: {result-dir: trigger-<%= depls %>-plan}
     config:
@@ -910,11 +912,11 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-<%= depls %>-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
      - get: paas-templates-<%= depls %>
-       params: { submodules: none}
+       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
 
 <% enabled_deployments.sort.each do |name,boshrelease| %>
 - name: recreate-<%= name %>
@@ -931,15 +933,15 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-<%= depls %>-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
        passed: [recreate-all]
        trigger: true
      - get: paas-templates-<%= depls %>
-       params: { submodules: none}
+       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
        passed: [recreate-all]
        trigger: true
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
        passed: [recreate-all]
 
   - task: bosh-recreate-<%= name %>
@@ -985,14 +987,14 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       attempts: 2
 #      trigger: true
     - get: secrets-<%= depls %>-trigger
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       attempts: 2
     - get: paas-templates-<%= depls %>-versions
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       attempts: 2
       trigger: true
   - task: generate-<%= depls %>-flight-plan
@@ -1054,13 +1056,13 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
     - get: paas-templates-<%= depls %>
-      params: { submodules: none }
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
     - get: secrets-<%= depls %>-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%= depls %>}
@@ -1102,16 +1104,16 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       passed: [check-terraform-consistency]
     - get: paas-templates-<%= depls %>
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       passed: [check-terraform-consistency]
       trigger: false
     - get: secrets-<%= depls %>-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       passed: [check-terraform-consistency]
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= depls %>-limited, additional-resource: paas-templates-<%= depls %>}
@@ -1157,7 +1159,7 @@ jobs:
           username: Concourse
       on_success:
         put: secrets-full-writer
-        get_params: {submodules: none}
+        get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         params:
           repository: updated-terraform-state-secrets
           rebase: true

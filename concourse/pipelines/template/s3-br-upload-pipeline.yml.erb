@@ -14,6 +14,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
+  git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
 %>
 
 ---
@@ -100,7 +101,7 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       attempts: 2
     - get: weekday-morning
       trigger: true
@@ -150,7 +151,7 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
   - task: generate-<%= depls %>-pipeline
     output_mapping: {result-dir: trigger-<%= depls %>-plan}
     config:
@@ -206,7 +207,7 @@ jobs:
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         attempts: 2
         passed: [ init-concourse-boshrelease-for-<%= depls %> ]
     - task: generate-<%= release %>-name
@@ -260,7 +261,7 @@ jobs:
         trigger: true
         params: {tarball: true}
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         attempts: 2
         passed: [ upload-current-<%= release %> ]
     - task: generate-<%= release %>-name

@@ -15,6 +15,8 @@ class Config
   CONFIG_PARALLEL_EXECUTION_LIMIT_KEY = 'parallel_execution_limit'.freeze
   CONFIG_BOSH_OPTIONS_KEY = 'bosh-options'.freeze
   DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT = 5
+  CONFIG_GIT_KEY = 'git'.freeze
+  CONFIG_SHALLOW_CLONE_DEPTH_KEY = 'shallow-clone-depth'.freeze
   attr_reader :loaded_config
 
   def initialize(public_yaml_location = '', private_yaml_location = '', extended_config = ExtendedConfigBuilder.new.build)
