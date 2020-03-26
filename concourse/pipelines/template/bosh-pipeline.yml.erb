@@ -596,7 +596,7 @@ jobs:
     )
   %>
         submodules: <%= submodules %>
-        depth: 1
+        depth: <%= git_shallow_clone_depth %>
   - task: check-configuration
     input_mapping:
       scripts-resource: cf-ops-automation

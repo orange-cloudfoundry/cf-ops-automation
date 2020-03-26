@@ -87,9 +87,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
     - get : secrets-empty-depls-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
   - task: cancel-all-bosh-tasks
     input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-empty-depls-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
@@ -110,13 +110,13 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-empty-depls-limited
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-empty-depls
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-empty-depls, secrets: secrets-empty-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
@@ -140,15 +140,15 @@ jobs:
   plan:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: secrets-empty-depls-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-empty-depls
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - task: generate-empty-depls-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-empty-depls-limited, additional-resource: paas-templates-empty-depls}
@@ -198,7 +198,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
               rebase: true
@@ -235,7 +235,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
               rebase: true
@@ -272,7 +272,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
               rebase: true
@@ -288,11 +288,11 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-empty-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: paas-templates-empty-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
 groups:
 - name: Empty-depls
   jobs:

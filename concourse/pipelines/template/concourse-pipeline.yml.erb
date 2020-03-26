@@ -117,7 +117,7 @@ jobs:
   - in_parallel:
     - get: paas-templates-<%= name %>
       <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
-      params: { submodules: <%= current_git_submodule || 'none' %>, depth: 1 }
+      params: { submodules: <%= current_git_submodule || 'none' %>, depth: <%= git_shallow_clone_depth %> }
       attempts: 2
       trigger: true
     - get: secrets-<%= name %>

@@ -160,9 +160,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
     - get : secrets-simple-depls-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
   - task: cancel-all-bosh-tasks
     input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
@@ -183,13 +183,13 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-simple-depls-limited
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-simple-depls
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-simple-depls, secrets: secrets-simple-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
@@ -213,15 +213,15 @@ jobs:
   plan:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: secrets-simple-depls-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-simple-depls
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - task: generate-simple-depls-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-simple-depls-limited, additional-resource: paas-templates-simple-depls}
@@ -273,7 +273,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
               rebase: true
@@ -311,7 +311,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
               rebase: true
@@ -349,7 +349,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
               rebase: true
@@ -367,23 +367,24 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
       attempts: 2
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: ntp_boshrelease
       trigger: true
       attempts: 2
     - get: secrets-ntp-with-scan
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-ntp-with-scan
       trigger: true
       params:
         submodules: none
+        depth: 0
   - task: check-configuration
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -512,7 +513,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy ntp-with-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
-          get_params: {submodules: none}
+          get_params: { submodules: none, depth: 0 }
           params:
             repository: failed-ntp-with-scan-secrets
             rebase: true
@@ -562,7 +563,7 @@ jobs:
       COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
     attempts: 2
-    get_params: {submodules: none}
+    get_params: { submodules: none, depth: 0 }
     params:
       repository: updated-ntp-with-scan-secrets
       rebase: true
@@ -591,12 +592,12 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
       attempts: 2
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: zookeeper_boshrelease
       trigger: true
@@ -605,6 +606,7 @@ jobs:
       trigger: true
       params:
         submodules: none
+        depth: 0
   - task: check-configuration
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -733,7 +735,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy zookeeper-without-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
-          get_params: {submodules: none}
+          get_params: { submodules: none, depth: 0 }
           params:
             repository: failed-zookeeper-without-scan-secrets
             rebase: true
@@ -786,7 +788,7 @@ jobs:
       COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
     attempts: 2
-    get_params: {submodules: none}
+    get_params: { submodules: none, depth: 0 }
     params:
       repository: updated-zookeeper-without-scan-secrets
       rebase: true
@@ -812,9 +814,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: secrets-simple-depls-trigger
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
   - task: generate-simple-depls-pipeline
     output_mapping: {result-dir: trigger-simple-depls-plan}
     config:
@@ -856,11 +858,11 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-simple-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: paas-templates-simple-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
 - name: recreate-ntp-with-scan
   serial: true
   on_failure:
@@ -874,15 +876,15 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-simple-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
        trigger: true
      - get: paas-templates-simple-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
        trigger: true
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
   - task: bosh-recreate-ntp-with-scan
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
@@ -925,15 +927,15 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-simple-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
        trigger: true
      - get: paas-templates-simple-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
        trigger: true
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
   - task: bosh-recreate-zookeeper-without-scan
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
@@ -974,14 +976,14 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
 #      trigger: true
     - get: secrets-simple-depls-trigger
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
     - get: paas-templates-simple-depls-versions
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
   - task: generate-simple-depls-flight-plan
