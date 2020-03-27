@@ -20,6 +20,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
+  git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
 %>
 ---
 resource_types:
@@ -124,9 +125,9 @@ jobs:
         attempts: 2
         params: {tarball: false}
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
 
     - task: generate-update-message
       input_mapping: {boshrelease: <%= release %>}

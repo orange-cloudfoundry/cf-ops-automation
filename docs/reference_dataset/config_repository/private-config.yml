@@ -18,7 +18,13 @@
 #  concourse:
 #    parallel_execution_limit: 5 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
+#  git:
+#    shallow-clone-depth: 1 # Default: 0, ie disabled
+
+
 #<root-deployment-name>: # override per root-deployment
 #  concourse:
 #    parallel_execution_limit: 10 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
+#  git:
+#    shallow-clone-depth: 1 # Default: 0, ie disabled

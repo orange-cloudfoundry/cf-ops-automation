@@ -91,9 +91,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
     - get : secrets-delete-depls-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
   - task: cancel-all-bosh-tasks
     input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-delete-depls-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
@@ -113,14 +113,14 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: secrets-delete-depls-trigger
         version: every
         trigger: true
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: prepare_deployment_to_be_deleted
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-delete-depls-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
@@ -141,10 +141,10 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
       - get: secrets-delete-depls-trigger
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
       - get: concourse-meta
     - task: delete_deployments
@@ -160,7 +160,7 @@ jobs:
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
         put: secrets-full-writer
-        get_params: {submodules: none}
+        get_params: { submodules: none, depth: 0 }
         params:
           repository: updated-config-resource
           rebase: true
@@ -176,13 +176,13 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-delete-depls-limited
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-delete-depls
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-delete-depls, secrets: secrets-delete-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
@@ -206,15 +206,15 @@ jobs:
   plan:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: secrets-delete-depls-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-delete-depls
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - task: generate-delete-depls-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-delete-depls-limited, additional-resource: paas-templates-delete-depls}
@@ -266,7 +266,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
               rebase: true
@@ -304,7 +304,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
               rebase: true
@@ -342,7 +342,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
               rebase: true
@@ -358,11 +358,11 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-delete-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: paas-templates-delete-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
 groups:
 - name: Delete-depls
   jobs:

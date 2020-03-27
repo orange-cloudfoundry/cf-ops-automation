@@ -46,7 +46,7 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
     - get: weekday-morning
       trigger: true

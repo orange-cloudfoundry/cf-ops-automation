@@ -314,15 +314,15 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 1 }
       trigger: true
       passed: [ bootstrap-pipelines ]
     - get: secrets-full
-      params: { submodules: none}
+      params: { submodules: none, depth: 1 }
       passed: [ bootstrap-pipelines ]
       trigger: true
     - get: paas-templates-full
-      params: { submodules: none}
+      params: { submodules: none, depth: 1 }
       passed: [ bootstrap-pipelines ]
       trigger: true
   - task: get-pipeline-teams
@@ -388,15 +388,15 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 1 }
       trigger: true
       passed: [ create-teams ]
     - get: paas-templates-full
-      params: { submodules: none}
+      params: { submodules: none, depth: 1 }
       passed: [ create-teams ]
       trigger: true
     - get: secrets-full
-      params: { submodules: none}
+      params: { submodules: none, depth: 1 }
       passed: [ create-teams ]
       trigger: true
   - task: generate-all-update-pipelines

@@ -65,9 +65,9 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: secrets-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: generate-apps-depls-pipeline
       output_mapping: {result-dir: trigger-apps-depls-plan}
       config:
@@ -109,16 +109,16 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-test-app
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: secrets-full-writer
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: paas-template-test-app
         trigger: true
-        params: { submodules: none }
+        params: { submodules: none, depth: 0 }
       - get: cf-ops-automation
         trigger: true
-        params: { submodules: none }
+        params: { submodules: none, depth: 0 }
     - task: generate-test-app-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-test-app, additional-resource: paas-template-test-app}
       output_mapping: {generated-files: release-manifest}
@@ -156,7 +156,7 @@ jobs:
         PROFILES: ((profiles))
         COMMIT_MESSAGE: "test-app generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
-      get_params: {submodules: none}
+      get_params: { submodules: none, depth: 0 }
       params:
         repository: updated-test-app-secrets
         rebase: true
