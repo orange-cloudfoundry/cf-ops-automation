@@ -86,15 +86,15 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: paas-template-<%=depls %>
-        params: params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: paas-templates-full
-        params: params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: secrets-<%=depls %>
-        params: params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%=depls %>, additional-resource: paas-templates-full}
