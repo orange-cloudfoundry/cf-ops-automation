@@ -147,7 +147,6 @@ resources:
     repository: cppforlife/zookeeper-release
   version:
     version: "((zookeeper_boshrelease-version))"
-
 jobs:
 - name: cancel-all-bosh-tasks
   on_failure:
@@ -384,6 +383,7 @@ jobs:
       trigger: true
       params:
         submodules: none
+        submodule_recursive: false
         depth: 0
   - task: check-configuration
     input_mapping:
@@ -606,6 +606,7 @@ jobs:
       trigger: true
       params:
         submodules: none
+        submodule_recursive: false
         depth: 0
   - task: check-configuration
     input_mapping:

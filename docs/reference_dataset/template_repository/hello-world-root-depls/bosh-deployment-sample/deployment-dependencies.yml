@@ -37,3 +37,6 @@ deployment:
       recreate: true # Optional. Recreate all VMs in deployment. Defaults to false.
       skip_drain: # Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
         - ngnix
+    git-options: # Optional. Customization for git
+     # submodule_recursive: true # Optional. Default: false
+     # depth: 0 # Optional. Default: undefined
