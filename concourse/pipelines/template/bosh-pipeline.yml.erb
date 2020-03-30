@@ -596,7 +596,8 @@ jobs:
     )
   %>
         submodules: <%= submodules %>
-        depth: <%= git_shallow_clone_depth %>
+        submodule_recursive: <%= deployment_details.git_details.submodule_recursive %>
+        depth: <%= deployment_details.git_details.depth? ? deployment_details.git_details.depth : git_shallow_clone_depth %>
   - task: check-configuration
     input_mapping:
       scripts-resource: cf-ops-automation

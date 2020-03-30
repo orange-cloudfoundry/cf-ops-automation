@@ -7,12 +7,13 @@ module PipelineHelpers
 
   # this class helps parsing, and setting default values for deployments dependencies details instead of doing it in pipeline templates
   class DeploymentDetails
-    attr_reader :config, :deployment_name, :bosh_details
+    attr_reader :config, :deployment_name, :bosh_details, :git_details
 
     def initialize(deployment_name, raw_details = {})
       @details = raw_details || {}
       @deployment_name = deployment_name
       @bosh_details = BoshDeploymentDetails.new(deployment_name, @details.dig('bosh-options'))
+      @git_details = GitDeploymentDetails.new(deployment_name, @details.dig('git-options'))
     end
 
     def bosh_cli_version
@@ -119,6 +120,31 @@ module PipelineHelpers
 
     def max_in_flight?
       !(@max_in_flight.nil? || @max_in_flight.zero?)
+    end
+  end
+
+  class GitDeploymentDetails
+    attr_reader :deployment_name, :submodule_recursive
+
+    DEFAULT_DEPTH_VALUE = 0
+
+    def initialize(deployment_name, options = {})
+      @deployment_name = deployment_name
+      options ||= {}
+      @submodule_recursive = options.dig('submodule_recursive') || false
+      @depth = options.dig('depth') || nil
+    end
+
+    def depth?
+      !@depth.nil?
+    end
+
+    def depth
+      if @depth.nil? || @depth.negative?
+        DEFAULT_DEPTH_VALUE
+      else
+        @depth
+      end
     end
   end
 end

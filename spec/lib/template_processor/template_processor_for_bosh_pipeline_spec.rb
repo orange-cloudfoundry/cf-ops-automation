@@ -236,6 +236,141 @@ describe 'BoshPipelineTemplateProcessing' do
       end
     end
 
+    context 'when bosh-options are defined' do
+      let(:shield_dependencies_only_with_manual_errands_definition_only) do
+        shield_only = <<~YAML
+          shield-expe:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            manual-errands:
+              manual-import:
+              manual-smoke-tests:
+                display-name: my-smoke-tests
+            bosh-deployment:
+              active: true
+            status: enabled
+        YAML
+        YAML.safe_load(shield_only)
+      end
+      let(:all_dependencies) { shield_dependencies_only_with_manual_errands_definition_only }
+      let(:expected_shield_manual_errand) do
+        my_shield_errand_yaml = <<~YAML
+          - in_parallel:
+            - get: concourse-meta
+              passed: [ deploy-shield-expe ]
+              # Not triggered automatically as it is a manual errand
+          - put: errand-shield-expe
+            params:
+              name: manual-smoke-tests
+        YAML
+        YAML.safe_load(my_shield_errand_yaml)
+      end
+
+      it 'generates an manual errand resource for shield boshrelease' do
+        generated_errand_resource = generated_pipeline['resources'].select { |job| job['name'] == 'errand-shield-expe' }
+        expect(generated_errand_resource).to match(expected_shield_errand_resource)
+      end
+
+      it 'generates an errand job for shield boshrelease with custom name' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-my-smoke-tests' }.flat_map { |job| job['plan'] }
+        expect(generated_errand_job).to match(expected_shield_manual_errand)
+      end
+
+      it 'generates an errand job for shield boshrelease with default name' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'run-manual-errand-shield-expe-manual-import' }.flat_map { |job| job['plan'] }
+        expect(generated_errand_job).not_to be_nil
+      end
+
+      it 'generates a concourse job per manual errand for shield boshrelease' do
+        generated_errand_jobs = generated_pipeline['jobs'].select { |job| job['name'].start_with? 'run-manual-errand-shield-expe' }
+        expect(generated_errand_jobs.size).to eq(2)
+      end
+
+      it 'generates serialized manual errand job for shield boshrelease' do
+        serials = generated_pipeline['jobs'].select { |job| job['name'].start_with? 'run-manual-errand-shield-expe' }.map { |job| job['serial'] }.uniq.flatten
+        expect(serials).to be_truthy
+      end
+    end
+
+    context 'when git-options are defined' do
+      let(:shield_dependencies_with_git_options) do
+        shield_only = <<~YAML
+          custom-shield:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            git-options:
+              submodule_recursive: true
+              depth: 1024
+            bosh-deployment:
+              active: true
+            status: enabled
+          default-shield:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            bosh-deployment:
+              active: true
+            status: enabled
+
+        YAML
+        YAML.safe_load(shield_only)
+      end
+      let(:all_dependencies) { shield_dependencies_with_git_options }
+      let(:expected_custom_shield_resource_definition) do
+        my_shield_yaml = <<~YAML
+          - get: paas-templates-custom-shield
+            trigger: true
+            params:
+              submodules: none
+              submodule_recursive: true
+              depth: 1024
+        YAML
+        YAML.safe_load(my_shield_yaml)
+      end
+      let(:expected_default_shield_resource_definition) do
+        my_shield_yaml = <<~YAML
+          - get: paas-templates-default-shield
+            trigger: true
+            params:
+              submodules: none
+              submodule_recursive: false
+              depth: 0
+        YAML
+        YAML.safe_load(my_shield_yaml)
+      end
+
+
+      it 'generates default get step for paas-templates' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'deploy-default-shield' }
+                                   .flat_map { |job| job['plan'] }
+                                   .flat_map { |job| job['in_parallel'] }.compact
+                                   .select { |step| step['get'] == 'paas-templates-default-shield' }
+        expect(generated_errand_job).to match(expected_default_shield_resource_definition)
+      end
+
+      it 'generates customized get step forpaas-templates' do
+        generated_errand_job = generated_pipeline['jobs'].select { |job| job['name'] == 'deploy-custom-shield' }
+                                   .flat_map { |job| job['plan'] }
+                                   .flat_map { |job| job['in_parallel'] }.compact
+                                   .select { |step| step['get'] == 'paas-templates-custom-shield' }
+        expect(generated_errand_job).to match(expected_custom_shield_resource_definition)
+      end
+    end
+
     context 'when an manual errand job is defined' do
       let(:shield_dependencies_only_with_manual_errands_definition_only) do
         shield_only = <<~YAML
@@ -514,8 +649,8 @@ describe 'BoshPipelineTemplateProcessing' do
         {"file" => "cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml",
          "input_mapping" => { "generated-resource" => "terraform-cf", "reference-resource" => "secrets-full-writer" },
          "on_failure" => { "params" => { "channel" => "((slack-channel))", "icon_url" => "http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png", "text" => "Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].", "username" => "Concourse"}, "put" => "failure-alert"},
-         "on_success" => { "get_params" => { "depth"=>0, "submodules" => "none"}, "params" => { "rebase" => true, "repository" => "updated-terraform-state-secrets"}, "put" => "secrets-full-writer"},
-         "output_mapping" => {"updated-git-resource" => "updated-terraform-state-secrets"},
+         "on_success" => { "get_params" => { "depth" => 0, "submodules" => "none" }, "params" => { "rebase" => true, "repository" => "updated-terraform-state-secrets"}, "put" => "secrets-full-writer"},
+         "output_mapping" => { "updated-git-resource" => "updated-terraform-state-secrets" },
          "params" => {"COMMIT_MESSAGE" => "Terraform TFState auto update\n\nActive profiles: ${PROFILES}", "NEW_FILE" => "terraform.tfstate", "OLD_FILE" => "my-tfstate-location/terraform.tfstate", "PROFILES" => "((profiles))"},
          "task" => "update-terraform-state-file" }
       end

@@ -284,3 +284,82 @@ describe PipelineHelpers::BoshDeploymentDetails do
     end
   end
 end
+
+describe PipelineHelpers::GitDeploymentDetails do
+  subject(:git_deployment_details) { described_class.new(depl_name, options) }
+
+  let(:depl_name) { 'a-deployment' }
+  let(:options) { {} }
+  let(:empty_resources) { { 'resources' => {} } }
+  let(:empty_secrets) { { 'resources' => { 'secrets' => {} } } }
+
+  describe '#initialize' do
+    context 'when creating a deployment without details' do
+      it 'creates an new GitDeploymentDetails without details' do
+        expect(git_deployment_details.deployment_name).to eq(depl_name)
+      end
+    end
+  end
+
+  describe '.depth' do
+    subject(:current_depth) { git_deployment_details.depth }
+
+    let(:default_value) { 0 }
+
+    context 'when value is not set' do
+      it 'returns default_value' do
+        expect(current_depth).to eq(default_value)
+      end
+    end
+
+    context 'when value is negative' do
+      let(:options) { { 'depth' => -5 } }
+
+      it 'returns default_value' do
+        expect(current_depth).to eq(default_value)
+      end
+    end
+
+    context 'when value is set' do
+      let(:options) { { 'depth' => 1024 } }
+
+      it 'return the value' do
+        expect(current_depth).to eq(1024)
+      end
+    end
+  end
+
+  describe '.depth?' do
+    subject(:current_depth) { git_deployment_details.depth? }
+
+    context 'when value is not set' do
+      it 'is disabled by default' do
+        expect(current_depth).to be false
+      end
+    end
+
+    context 'when value is nil' do
+      let(:options) { { 'depth' => nil } }
+
+      it 'is disabled' do
+        expect(current_depth).to be false
+      end
+    end
+
+    context 'when value is zero' do
+      let(:options) { { 'depth' => 0 } }
+
+      it 'is enabled' do
+        expect(current_depth).to be true
+      end
+    end
+
+    context 'when value is enabled' do
+      let(:options) { { 'depth' => 10 } }
+
+      it 'is enabled' do
+        expect(current_depth).to be true
+      end
+    end
+  end
+end
