@@ -383,7 +383,7 @@ jobs:
       trigger: true
       params:
         submodules: none
-        submodule_recursive: false
+        submodule_recursive: "false" # This must be a string, not a boolean to be handle properly by git-resource
         depth: 0
   - task: check-configuration
     input_mapping:
@@ -606,7 +606,7 @@ jobs:
       trigger: true
       params:
         submodules: none
-        submodule_recursive: false
+        submodule_recursive: 'false' # This must be a string, not a boolean to be handle properly by git-resource
         depth: 0
   - task: check-configuration
     input_mapping:

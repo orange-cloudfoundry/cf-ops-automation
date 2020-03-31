@@ -301,6 +301,34 @@ describe PipelineHelpers::GitDeploymentDetails do
     end
   end
 
+  describe '.submodule_recursive' do
+    subject(:submodule_recursive) { git_deployment_details.submodule_recursive }
+
+    let(:default_value) { "false" }
+
+    context 'when value is not set' do
+      it 'returns default_value as string' do
+        expect(submodule_recursive).to eq(default_value).and be_a(String)
+      end
+    end
+
+    context 'when value is set as string' do
+      let(:options) { { 'submodule_recursive' => "false" } }
+
+      it 'return the value as string' do
+        expect(submodule_recursive).to eq('false').and be_a(String)
+      end
+    end
+
+    context 'when value is set as boolean' do
+      let(:options) { { 'submodule_recursive' => true } }
+
+      it 'return the value as string' do
+        expect(submodule_recursive).to eq('true').and be_a(String)
+      end
+    end
+
+  end
   describe '.depth' do
     subject(:current_depth) { git_deployment_details.depth }
 

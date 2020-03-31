@@ -336,7 +336,7 @@ describe 'BoshPipelineTemplateProcessing' do
             trigger: true
             params:
               submodules: none
-              submodule_recursive: true
+              submodule_recursive: 'true'
               depth: 1024
         YAML
         YAML.safe_load(my_shield_yaml)
@@ -347,7 +347,7 @@ describe 'BoshPipelineTemplateProcessing' do
             trigger: true
             params:
               submodules: none
-              submodule_recursive: false
+              submodule_recursive: "false"
               depth: 0
         YAML
         YAML.safe_load(my_shield_yaml)

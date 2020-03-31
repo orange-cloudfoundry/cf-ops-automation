@@ -596,7 +596,7 @@ jobs:
     )
   %>
         submodules: <%= submodules %>
-        submodule_recursive: <%= deployment_details.git_details.submodule_recursive %>
+        submodule_recursive: "<%= deployment_details.git_details.submodule_recursive %>" # this must be a string
         depth: <%= deployment_details.git_details.depth? ? deployment_details.git_details.depth : git_shallow_clone_depth %>
   - task: check-configuration
     input_mapping:

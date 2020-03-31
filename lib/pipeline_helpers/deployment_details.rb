@@ -131,7 +131,7 @@ module PipelineHelpers
     def initialize(deployment_name, options = {})
       @deployment_name = deployment_name
       options ||= {}
-      @submodule_recursive = options.dig('submodule_recursive') || false
+      @submodule_recursive = options.dig('submodule_recursive')&.to_s || "false"
       @depth = options.dig('depth') || nil
     end
 
