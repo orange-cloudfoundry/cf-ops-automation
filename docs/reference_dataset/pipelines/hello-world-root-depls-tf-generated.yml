@@ -1,3 +1,4 @@
+
 ---
 resource_types:
 - name: slack-notification
@@ -64,15 +65,15 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-template-hello-world-root-depls
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: secrets-hello-world-root-depls
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
     - task: generate-terraform-tfvars
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls, additional-resource: paas-templates-full}

@@ -65,9 +65,9 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: secrets-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: generate-hello-world-root-depls-pipeline
       output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
       config:
@@ -109,16 +109,16 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-generic-app
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: secrets-full-writer
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: paas-template-generic-app
         trigger: true
-        params: { submodules: none }
+        params: { submodules: none, depth: 0 }
       - get: cf-ops-automation
         trigger: true
-        params: { submodules: none }
+        params: { submodules: none, depth: 0 }
     - task: generate-generic-app-manifest
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-generic-app, additional-resource: paas-template-generic-app}
       output_mapping: {generated-files: release-manifest}
@@ -156,7 +156,7 @@ jobs:
         PROFILES: ((profiles))
         COMMIT_MESSAGE: "generic-app generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
-      get_params: {submodules: none}
+      get_params: { submodules: none, depth: 0 }
       params:
         repository: updated-generic-app-secrets
         rebase: true

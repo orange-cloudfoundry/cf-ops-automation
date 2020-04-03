@@ -142,9 +142,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
     - get : secrets-hello-world-root-depls-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
   - task: cancel-all-bosh-tasks
     input_mapping: { scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited }
     file:  cf-ops-automation/concourse/tasks/bosh_cancel_all_tasks/task.yml
@@ -164,14 +164,14 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: secrets-hello-world-root-depls-trigger
         version: every
         trigger: true
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: prepare_deployment_to_be_deleted
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-hello-world-root-depls-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
@@ -192,10 +192,10 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
       - get: secrets-hello-world-root-depls-trigger
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
       - get: concourse-meta
     - task: delete_deployments
@@ -211,7 +211,7 @@ jobs:
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
         put: secrets-full-writer
-        get_params: {submodules: none}
+        get_params: { submodules: none, depth: 0 }
         params:
           repository: updated-config-resource
           rebase: true
@@ -227,13 +227,13 @@ jobs:
   plan:
     - in_parallel:
       - get: secrets-hello-world-root-depls-limited
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-hello-world-root-depls
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         trigger: true
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: run-deploy.sh
       input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-hello-world-root-depls, secrets: secrets-hello-world-root-depls-limited}
       file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
@@ -257,15 +257,15 @@ jobs:
   plan:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: secrets-hello-world-root-depls-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-hello-world-root-depls
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - task: generate-hello-world-root-depls-all-config
       input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
@@ -317,7 +317,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
               rebase: true
@@ -355,7 +355,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
               rebase: true
@@ -393,7 +393,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
-            get_params: {submodules: none}
+            get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
               rebase: true
@@ -411,12 +411,12 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
       attempts: 2
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: nginx
       trigger: true
@@ -425,12 +425,14 @@ jobs:
       trigger: true
       attempts: 2
     - get: secrets-bosh-deployment-sample
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-bosh-deployment-sample
       trigger: true
       params:
         submodules: none
+        submodule_recursive: "false" # this must be a string
+        depth: 0
   - task: check-configuration
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -559,7 +561,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy bosh-deployment-sample manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
-          get_params: {submodules: none}
+          get_params: { submodules: none, depth: 0 }
           params:
             repository: failed-bosh-deployment-sample-secrets
             rebase: true
@@ -610,7 +612,8 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "bosh-deployment-sample generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
-    get_params: {submodules: none}
+    attempts: 2
+    get_params: { submodules: none, depth: 0 }
     params:
       repository: updated-bosh-deployment-sample-secrets
       rebase: true
@@ -636,9 +639,9 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: secrets-hello-world-root-depls-trigger
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
   - task: generate-hello-world-root-depls-pipeline
     output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
     config:
@@ -679,11 +682,11 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-hello-world-root-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: paas-templates-hello-world-root-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
 - name: recreate-bosh-deployment-sample
   serial: true
   on_failure:
@@ -697,15 +700,15 @@ jobs:
   plan:
   - in_parallel:
      - get: secrets-hello-world-root-depls-limited
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
        trigger: true
      - get: paas-templates-hello-world-root-depls
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
        trigger: true
      - get: cf-ops-automation
-       params: { submodules: none}
+       params: { submodules: none, depth: 0 }
        passed: [recreate-all]
   - task: bosh-recreate-bosh-deployment-sample
     input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-hello-world-root-depls-limited}
@@ -746,14 +749,14 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
 #      trigger: true
     - get: secrets-hello-world-root-depls-trigger
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
     - get: paas-templates-hello-world-root-depls-versions
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
   - task: generate-hello-world-root-depls-flight-plan
@@ -799,13 +802,13 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: paas-templates-hello-world-root-depls
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
       trigger: true
     - get: secrets-hello-world-root-depls-limited
-      params: { submodules: none }
+      params: { submodules: none, depth: 0 }
       trigger: true
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
@@ -845,16 +848,16 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: secrets-full-writer
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       passed: [check-terraform-consistency]
     - get: paas-templates-hello-world-root-depls
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       passed: [check-terraform-consistency]
       trigger: false
     - get: secrets-hello-world-root-depls-limited
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       passed: [check-terraform-consistency]
   - task: generate-terraform-tfvars
     input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-hello-world-root-depls-limited, additional-resource: paas-templates-hello-world-root-depls}
@@ -890,7 +893,7 @@ jobs:
         OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
         NEW_FILE: "terraform.tfstate"
         PROFILES: ((profiles))
-        COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+        COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}"
       on_failure:
         put: failure-alert
         params:
@@ -900,7 +903,7 @@ jobs:
           username: Concourse
       on_success:
         put: secrets-full-writer
-        get_params: {submodules: none}
+        get_params: { submodules: none, depth: 0 }
         params:
           repository: updated-terraform-state-secrets
           rebase: true

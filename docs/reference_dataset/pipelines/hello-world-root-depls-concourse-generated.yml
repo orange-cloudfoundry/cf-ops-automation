@@ -69,15 +69,15 @@ jobs:
   plan:
   - in_parallel:
     - get: paas-templates-pipeline-sample
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
     - get: secrets-pipeline-sample
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: false
   - task: spruce-processing-pipeline-sample

@@ -1,3 +1,4 @@
+
 ---
 resource_types:
   - name: slack-notification
@@ -63,7 +64,7 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
     - get: weekday-morning
       trigger: true
@@ -111,7 +112,7 @@ jobs:
         trigger: true
         params: {tarball: true, preserve_filename: true}
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         attempts: 2
         passed: [ init-concourse-stemcells-for-hello-world-root-depls ]
     - put: bosh-openstack-kvm-ubuntu-xenial-go_agent-s3
@@ -134,7 +135,7 @@ jobs:
         trigger: true
         params: {tarball: true, preserve_filename: true}
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
         attempts: 2
         passed: [ upload-current-bosh-openstack-kvm-ubuntu-xenial-go_agent ]
     - put: bosh-openstack-kvm-ubuntu-xenial-go_agent-s3

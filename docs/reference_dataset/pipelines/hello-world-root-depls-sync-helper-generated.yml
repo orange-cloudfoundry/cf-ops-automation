@@ -1,3 +1,4 @@
+
 ---
 resource_types:
   - name: slack-notification
@@ -67,10 +68,10 @@ jobs:
     - get: at-nine
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
     - get: secrets-full
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
     - get: anonymized-secrets
       attempts: 2
@@ -105,7 +106,7 @@ jobs:
     params:
       COMMIT_MESSAGE: "auto anonymized new secrets"
   - put: anonymized-secrets
-    get_params: {submodules: none}
+    get_params: {submodules: none, depth: 0}
     params:
       repository: updated-anonymized-secrets
       rebase: true

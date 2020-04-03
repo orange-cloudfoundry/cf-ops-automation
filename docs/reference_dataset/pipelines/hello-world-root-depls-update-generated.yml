@@ -1,3 +1,4 @@
+
 ---
 resource_types:
   - name: slack-notification
@@ -67,15 +68,15 @@ jobs:
   - in_parallel:
     - get: concourse-meta
     - get: paas-templates-hello-world-root-depls
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
     - get: secrets-hello-world-root-depls-for-pipeline
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
     - get: cf-ops-automation
-      params: { submodules: none}
+      params: { submodules: none, depth: 0 }
       attempts: 2
       trigger: true
   - task: generate-hello-world-root-depls-pipelines

@@ -78,9 +78,9 @@ jobs:
         attempts: 2
         params: {tarball: false}
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: generate-update-message
       input_mapping: {boshrelease: nginx}
       output_mapping: {message: nginx-message}
@@ -135,9 +135,9 @@ jobs:
         attempts: 2
         params: {tarball: false}
       - get: paas-templates-full
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
       - get: cf-ops-automation
-        params: { submodules: none}
+        params: { submodules: none, depth: 0 }
     - task: generate-update-message
       input_mapping: {boshrelease: ntp}
       output_mapping: {message: ntp-message}
