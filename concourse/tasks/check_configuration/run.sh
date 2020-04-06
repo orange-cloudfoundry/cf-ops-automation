@@ -26,13 +26,13 @@ CONFIG_PREFIX=${CONFIG_PREFIX:-config-resource}
 CONFIG_DEPLOYMENT_PATH=${CONFIG_PREFIX}/${ROOT_DEPLOYMENT}/${DEPLOYMENT}/secrets
 echo "Checking local scan consistency"
 if [[ "$LOCAL_SECRETS_SCAN" = "true" ]];then
-  echo "Local secrets scan enabled for ${DEPLOYMENT}"
+  echo "Local secrets scan enabled for ${DEPLOYMENT} Triggering on shared-secrets changes is active"
   if [[ ! -e "$CONFIG_DEPLOYMENT_PATH/secrets.yml" && ! -e "$CONFIG_DEPLOYMENT_PATH/meta.yml" ]];then
     echo "ERROR: inconsistency detected in ${DEPLOYMENT}"
     echo "ERROR: local_deployment_scan enabled in deployment-dependencies.yml for ${DEPLOYMENT}, but no config files (meta.yml, secrets.yml) detected at $CONFIG_DEPLOYMENT_PATH" >> ${LOG_FILE}
   fi
 else
-  echo "Local secrets scan disabled for ${DEPLOYMENT}"
+  echo "Local secrets scan disabled for ${DEPLOYMENT}. Triggering on shared-secrets changes is disabled"
   if [[ -e "$CONFIG_DEPLOYMENT_PATH/secrets.yml" || -e "$CONFIG_DEPLOYMENT_PATH/meta.yml" ]];then
     echo "ERROR: inconsistency detected in ${DEPLOYMENT}"
     echo "ERROR: local_deployment_scan disabled  in deployment-dependencies.yml for ${DEPLOYMENT}, but config files (meta.yml, secrets.yml) detected at $CONFIG_DEPLOYMENT_PATH" >> ${LOG_FILE}
