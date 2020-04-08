@@ -58,8 +58,8 @@ resource_types:
 - name: meta
   type: docker-image
   source:
-    repository: ((docker-registry-url))swce/metadata-resource
-    tag: release-v0.0.3
+    repository: ((docker-registry-url))olhtbr/metadata-resource
+    tag: 2.0.1
 
 resources:
 - name: concourse-meta
@@ -330,7 +330,7 @@ jobs:
       - get: secrets-<%= depls %>-trigger
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         passed: [delete-deployments-review]
-      - get: concourse-meta
+      - put: concourse-meta
     - task: delete_deployments
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-<%= depls %>-trigger}
       output_mapping: {output-config-resource: updated-config-resource}
@@ -394,7 +394,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: secrets-<%= depls %>-limited
@@ -557,7 +557,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: ((stemcell-main-name))
@@ -816,7 +816,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
       trigger: true
       passed: [deploy-<%= name %>]
 
@@ -842,7 +842,7 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-        - get: concourse-meta
+        - put: concourse-meta
           passed: [deploy-<%= name %>]
     - put: errand-<%= name %>
       params:
@@ -1103,7 +1103,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: cf-ops-automation

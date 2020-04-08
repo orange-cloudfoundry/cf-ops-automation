@@ -45,6 +45,16 @@ describe 'static concourse pipelines spec' do
       expect(resource_types).not_to be_empty
     end
 
+    it 'ensures resource-type use custom docker registry' do
+      invalid_resource_type = []
+      resource_types.each do |resource_type|
+        docker_image_raw = resource_type['source']['repository'].to_s
+        invalid_resource_type << docker_image_raw unless docker_image_raw.start_with?(DOCKER_REGISTRY_PREFIX)
+      end
+
+      expect(invalid_resource_type).to be_empty
+    end
+
     it 'uses an existing image on docker hub' do
       docker_images_from_resource_type.each do |image, files|
         puts "processing image #{image}"

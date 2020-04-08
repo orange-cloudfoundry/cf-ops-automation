@@ -13,9 +13,8 @@ resource_types:
   - name: meta
     type: docker-image
     source:
-      repository: swce/metadata-resource
-      tag: release-v0.0.3
-
+      repository: olhtbr/metadata-resource
+      tag: 2.0.1
 resources:
 - name: concourse-meta
   icon: file-document-box-search-outline
@@ -142,7 +141,7 @@ jobs:
     serial: true
     plan:
     - in_parallel:
-      - get: concourse-meta
+      - put: concourse-meta
       - get: cf-ops-automation-docker-image-develop
         passed: [build-cached-image]
         trigger: true
@@ -176,12 +175,12 @@ jobs:
             echo "---------------------------"
             echo "Setup Code Climate pre-requisites"
             cd ../concourse-meta
-            BUILD_TEAM=$(if [ -f build-team-name ];then cat build-team-name;fi)
-            BUILD_PIPELINE=$(if [ -f build-pipeline-name ];then cat build-pipeline-name;fi)
-            BUILD_JOB=$(if [ -f build-job-name ];then cat build-job-name;fi)
-            BUILD_ID=$(if [ -f build-id ];then cat build-id;fi)
-            BUILD_NAME=$(if [ -f build-name ];then cat build-name;fi)
-            ATC_EXTERNAL_URL=$(if [ -f atc-external-url ];then cat atc-external-url;fi)
+            BUILD_TEAM=$(if [ -f build_team_name ];then cat build_team_name;fi)
+            BUILD_PIPELINE=$(if [ -f build_pipeline_name ];then cat build_pipeline_name;fi)
+            BUILD_JOB=$(if [ -f build_job_name ];then cat build_job_name;fi)
+            BUILD_ID=$(if [ -f build_id ];then cat build_id;fi)
+            BUILD_NAME=$(if [ -f build_name ];then cat build_name;fi)
+            ATC_EXTERNAL_URL=$(if [ -f atc_external_url ];then cat atc_external_url;fi)
             BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_NAME - $BUILD_ID")
             cd -
             export GIT_COMMIT_SHA=$(eval $GIT_SHA_CMD)
@@ -569,7 +568,7 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: concourse-meta
+        - put: concourse-meta
         - get: cf-ops-automation-docker-image-PR
           passed: [PullRequests-build-cached-image]
           trigger: true
@@ -671,7 +670,7 @@ jobs:
   - name: run-tests-for-hotfix-branch
     plan:
     - in_parallel:
-      - get: concourse-meta
+      - put: concourse-meta
       - get: cf-ops-automation-docker-image-develop
         passed: [build-cached-image]
         trigger: true

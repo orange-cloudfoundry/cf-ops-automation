@@ -11,8 +11,8 @@ module Coa
         name: meta
         type: docker-image
         source:
-          repository: ((docker-registry-url))swce/metadata-resource
-          tag: release-v0.0.3
+          repository: ((docker-registry-url))olhtbr/metadata-resource
+          tag: 2.0.1
     YAML
   end
 end
