@@ -16,8 +16,8 @@ resource_types:
   - name: meta
     type: docker-image
     source:
-      repository: ((docker-registry-url))swce/metadata-resource
-      tag: release-v0.0.3
+      repository: ((docker-registry-url))olhtbr/metadata-resource
+      tag: 2.0.1
 resources:
 
 <% if all_ci_deployments&.any? %>
@@ -84,7 +84,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: paas-templates-<%= depls %>
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       attempts: 2

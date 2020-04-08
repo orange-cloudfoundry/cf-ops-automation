@@ -96,8 +96,8 @@ describe 'BoshPipelineTemplateProcessing' do
       - name: meta
         type: docker-image
         source:
-          repository: ((docker-registry-url))swce/metadata-resource
-          tag: release-v0.0.3
+          repository: ((docker-registry-url))olhtbr/metadata-resource
+          tag: 2.0.1
 
     YAML
     YAML.safe_load(resource_types_yaml)
@@ -200,7 +200,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - get: concourse-meta
+            - put: concourse-meta
               passed: [ deploy-shield-expe ]
               trigger: true
           - put: errand-shield-expe
@@ -261,7 +261,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_manual_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - get: concourse-meta
+            - put: concourse-meta
               passed: [ deploy-shield-expe ]
               # Not triggered automatically as it is a manual errand
           - put: errand-shield-expe
@@ -396,7 +396,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_manual_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - get: concourse-meta
+            - put: concourse-meta
               passed: [ deploy-shield-expe ]
               # Not triggered automatically as it is a manual errand
           - put: errand-shield-expe
@@ -719,13 +719,13 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:check_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('check-terraform-consistency') } }
       let(:check_terraform_plans) { check_terraform_jobs.flat_map { |job| job['plan'] } }
       let(:check_terraform_in_parallel) { check_terraform_plans.flat_map { |tasks| tasks['in_parallel'] }.compact }
-      let(:check_terraform_secrets_triggering) { check_terraform_in_parallel.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:check_terraform_paas_templates_triggering) { check_terraform_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+      let(:check_terraform_secrets_triggering) { check_terraform_in_parallel.select { |task| task['get']&.start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:check_terraform_paas_templates_triggering) { check_terraform_in_parallel.select { |task| task['get']&.start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
       let(:enforce_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('approve-and-enforce-terraform-consistency') } }
       let(:enforce_terraform_plans) { enforce_terraform_jobs.flat_map { |job| job['plan'] } }
       let(:enforce_terraform_in_parallel) { enforce_terraform_plans.flat_map { |tasks| tasks['in_parallel'] }.compact }
-      let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_in_parallel.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_in_parallel.select { |task| task['get']&.start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_in_parallel.select { |task| task['get']&.start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
       let(:all_ci_deployments) { enable_root_deployment_terraform }
 
       it 'triggers check-consistency automatically on each commit on secrets' do

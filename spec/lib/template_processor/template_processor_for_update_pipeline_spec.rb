@@ -213,10 +213,10 @@ describe 'UpdatePipelineTemplateProcessing' do
     end
 
     context 'when validating update-pipeline-hello-world-root-depls triggering' do
-      let(:secrets_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get'].start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
-      let(:paas_templates_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
-      let(:coa_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get'].start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
-      let(:concourse_meta_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get'].start_with?('concourse-meta') }.flat_map { |task| task['trigger'] } }
+      let(:secrets_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get']&.start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
+      let(:paas_templates_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get']&.start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+      let(:coa_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get']&.start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
+      let(:concourse_meta_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['put']&.start_with?('concourse-meta') }.flat_map { |task| task['trigger'] } }
 
       it 'triggers automatically on each commit on secrets' do
         expect(secrets_triggering.uniq).to match([true])

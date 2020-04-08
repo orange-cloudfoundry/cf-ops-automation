@@ -46,11 +46,11 @@ run:
     echo -e "$GIT_COMMIT_MESSAGE" > ${FINAL_RELEASE_REPO}/.git/message
     if [ -d concourse-meta ];then
       cd concourse-meta
-      BUILD_TEAM=$(if [ -f build-team-name ];then cat build-team-name;fi)
-      BUILD_PIPELINE=$(if [ -f build-pipeline-name ];then cat build-pipeline-name;fi)
-      BUILD_JOB=$(if [ -f build-job-name ];then cat build-job-name;fi)
-      BUILD_ID=$(if [ -f build-id ];then cat build-id;fi)
-      BUILD_NAME=$(if [ -f build-name ];then cat build-name;fi)
+      BUILD_TEAM=$(if [ -f build_team_name ];then cat build_team_name;fi)
+      BUILD_PIPELINE=$(if [ -f build_pipeline_name ];then cat build_pipeline_name;fi)
+      BUILD_JOB=$(if [ -f build_job_name ];then cat build_job_name;fi)
+      BUILD_ID=$(if [ -f build_id ];then cat build_id;fi)
+      BUILD_NAME=$(if [ -f build_name ];then cat build_name;fi)
       BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_NAME - $BUILD_ID")
       cd ..
       echo "" >> ${FINAL_RELEASE_REPO}/.git/message

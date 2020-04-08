@@ -12,7 +12,7 @@ describe 'all tasks' do
       tasks.each do |task_filename|
         puts "processing file #{task_filename}"
         task = YAML.load_file task_filename
-        docker_image = task['image_resource']&.fetch('source', [])&.fetch('repository', []).to_s
+        docker_image = task.dig('image_resource', 'source', 'repository').to_s
         if docker_image.empty?
           puts "No image detected, ignoring #{task_filename}"
           next
@@ -44,13 +44,25 @@ describe 'all tasks' do
       ]
     end
 
-    it 'ensures some tasks exist' do
+    it 'ensures some tasks exists' do
       expect(tasks).not_to be_empty
     end
 
     it 'ensures tasks' do
       puts docker_images_with_task.keys.sort
       expect(docker_images_with_task.keys).to match_array(expected_task_images)
+    end
+
+    it 'ensures image resource use custom docker registry' do
+      invalid_tasks = {}
+      tasks.each do |task_filename|
+        task = YAML.load_file task_filename
+        docker_image = task.dig('image_resource', 'source', 'repository').to_s
+        next if docker_image.empty?
+
+        invalid_tasks[task_filename] = docker_image unless docker_image.start_with?(DOCKER_REGISTRY_PREFIX)
+      end
+      expect(invalid_tasks).to be_empty
     end
 
     it 'uses an existing image on docker hub' do
