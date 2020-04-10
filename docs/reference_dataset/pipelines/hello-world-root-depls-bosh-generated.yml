@@ -197,7 +197,7 @@ jobs:
       - get: secrets-hello-world-root-depls-trigger
         params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
-      - get: concourse-meta
+      - put: concourse-meta
     - task: delete_deployments
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-hello-world-root-depls-trigger}
       output_mapping: {output-config-resource: updated-config-resource}
@@ -255,7 +255,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: 0 }
     - get: secrets-hello-world-root-depls-limited
@@ -409,7 +409,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
@@ -846,7 +846,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: 0 }
     - get: cf-ops-automation

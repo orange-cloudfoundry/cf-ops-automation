@@ -127,7 +127,7 @@ jobs:
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
   plan:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: 0 }
     - get: secrets-another-world-root-depls-limited

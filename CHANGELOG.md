@@ -1,22 +1,32 @@
 # Changelog
 
-## [v4.3.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.1) (2020-04-03)
+## [v4.3.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.2) (2020-04-10)
 
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.3.0...v4.3.1)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.3.1...v4.3.2)
 
-**Fixed bugs:**
+**Implemented enhancements:**
 
-- Improve secrets repository update robustness [\#320](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/320)
-
-**Closed issues:**
-
-- Tfstate changes not detected after tf apply [\#323](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/323)
+- fix\(git-shallow-clone\): automatically disable git shallow clone for concourse pipelines when submodules are used [\#328](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/328)
+- feature\(lower-concourse-database-usage\): switch metadata resource type [\#327](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/327)
 
 **Merged pull requests:**
 
+- feature: ease shared secrets triggering debug [\#326](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/326)
+
+## [v4.3.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.1) (2020-03-31)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.3.0...v4.3.1)
+
+**Implemented enhancements:**
+
 - feature\(disable-recursive-submodule-checkout\): implements this feature for bosh pipelines [\#325](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/325)
-- Fix tfstate change detection [\#324](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/324)
 - feature\(git-shallow-clone\): change git resource configuration to reduce git server workload [\#322](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/322)
+
+**Fixed bugs:**
+
+- Tfstate changes not detected after tf apply [\#323](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/323)
+- Improve secrets repository update robustness [\#320](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/320)
+- Fix tfstate change detection [\#324](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/324)
 - pipeline\(bosh\): add retry on secrets repository push [\#321](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/321)
 
 ## [v4.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.0) (2020-03-16)
@@ -155,7 +165,6 @@
 - chore\(build\): bump gems to latest \(docker\_registry2, rubocop, rspec and simplecov\) [\#270](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/270)
 - pipeline\(bosh\): execute deploy script on each commit [\#269](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/269)
 - pipeline\(concourse\): allow credentials sharing between generated pipelines and custom pipelines [\#268](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/268)
-- Bosh recreate fix [\#251](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/251)
 
 ## [v3.5.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.5.0) (2019-06-04)
 
@@ -177,6 +186,7 @@
 - doc\(reference-dataset\): document spruce file usage [\#258](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/258)
 - pipeline\(\*\): support proxy for slack-notification [\#253](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/253)
 - Optional secrets scans Fixes and supports a private docker registry [\#252](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/252)
+- Bosh recreate fix [\#251](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/251)
 
 ## [v3.4.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.4.1) (2019-03-28)
 

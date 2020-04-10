@@ -66,7 +66,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - get: concourse-meta
+    - put: concourse-meta
     - get: paas-templates-hello-world-root-depls
       params: { submodules: none, depth: 0 }
       attempts: 2
