@@ -516,7 +516,7 @@ jobs:
           globs:
            - github-info/cf-ops-automation.tgz
       - put: version
-        params: {bump: patch, pre: rc}
+        params: {bump: patch}
 
   - name: merge-changelog-to-develop
     on_failure: *on_failure_alert
@@ -730,7 +730,7 @@ jobs:
     serial_groups: [version]
     plan:
     - get: version
-      params: {bump: major, pre: rc}
+      params: {bump: major}
     - put: version
       params: {file: version/version}
 
@@ -739,7 +739,7 @@ jobs:
     serial_groups: [version]
     plan:
     - get: version
-      params: {bump: minor, pre: rc}
+      params: {bump: minor}
     - put: version
       params: {file: version/version}
 
@@ -748,7 +748,7 @@ jobs:
     serial_groups: [version]
     plan:
     - get: version
-      params: {bump: patch, pre: rc}
+      params: {bump: patch}
     - put: version
       params: {file: version/version}
 
