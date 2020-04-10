@@ -200,7 +200,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - put: concourse-meta
+            - get: concourse-meta
               passed: [ deploy-shield-expe ]
               trigger: true
           - put: errand-shield-expe
@@ -261,7 +261,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_manual_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - put: concourse-meta
+            - get: concourse-meta
               passed: [ deploy-shield-expe ]
               # Not triggered automatically as it is a manual errand
           - put: errand-shield-expe
@@ -396,7 +396,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:expected_shield_manual_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
-            - put: concourse-meta
+            - get: concourse-meta
               passed: [ deploy-shield-expe ]
               # Not triggered automatically as it is a manual errand
           - put: errand-shield-expe

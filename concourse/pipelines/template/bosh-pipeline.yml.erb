@@ -816,7 +816,7 @@ jobs:
       username: Concourse
   plan:
   - in_parallel:
-    - put: concourse-meta
+    - get: concourse-meta
       trigger: true
       passed: [deploy-<%= name %>]
 
@@ -842,7 +842,7 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-        - put: concourse-meta
+        - get: concourse-meta
           passed: [deploy-<%= name %>]
     - put: errand-<%= name %>
       params:
