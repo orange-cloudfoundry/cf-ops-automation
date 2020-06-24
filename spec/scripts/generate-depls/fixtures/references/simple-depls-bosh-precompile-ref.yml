@@ -330,6 +330,59 @@ jobs:
       params:
         repository: updated-simple-depls-release-precompile-deployment-secrets
         rebase: true
+  - name: delete-simple-depls-release-precompile-deployment
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none}
+            trigger: true
+          - get: ntp_boshrelease
+            passed: [compile-and-export-ntp_boshrelease]
+            trigger: true
+            attempts: 2
+          - get: zookeeper_boshrelease
+            passed: [compile-and-export-zookeeper_boshrelease]
+            trigger: true
+            attempts: 2
+          - get: paas-templates-simple-depls-limited
+            params: { submodules: none}
+            trigger: true
+      - task: generate-simple-depls-release-precompile-deployment-manifest
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+                ruby -ryaml -e 'ruby_manifest = {"name" => "simple-depls-release-precompile-deployment", "instance_groups" => [], "update" => { "canaries" => 1, "max_in_flight" => 1, "canary_watch_time" => "1000-90000", "update_watch_time" => "1000-90000" }, "releases" => [] }; File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "simple-depls-release-precompile-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"simple-depls-release-precompile-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}, {"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
+      - put: simple-depls-release-precompile-deployment
+        attempts: 2
+        params:
+          manifest: final-release-manifest/simple-depls-release-precompile-deployment.yml
+          delete:
+            enabled: true
+            force: true
   - name: compile-and-export-ntp_boshrelease
     serial: true
     on_failure:
@@ -500,12 +553,14 @@ groups:
     jobs:
       - compile-and-export-ntp_boshrelease
       - compile-and-export-zookeeper_boshrelease
+      - delete-simple-depls-release-precompile-deployment
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
       - push-stemcell
       - simple-depls-release-precompile-deployment
   - name: Utils
     jobs:
+      - delete-simple-depls-release-precompile-deployment
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
       - push-stemcell
