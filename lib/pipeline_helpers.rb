@@ -12,10 +12,21 @@ module PipelineHelpers
 
   TERRAFORM_CONFIG_DIRNAME_KEY = 'terraform_config'.freeze
   UNLIMITED_EXECUTION = -1
+  DEFAULT_TAG_PREFIX = 'v'.freeze
 
   class << self
     def bosh_io_hosted?(info)
       info["base_location"]&.include?("bosh.io")
+    end
+
+    def full_repository(info)
+      prefix = info.fetch('base_location', 'https://github.com').delete_suffix('/')
+      repo = info.dig('repository')
+      prefix.to_s + '/' + repo
+    end
+
+    def tag_prefix(info)
+      info.dig('tag_prefix') || DEFAULT_TAG_PREFIX
     end
 
     def generate_vars_files(templates_dir, config_dir, pipeline_name, root_deployment)
@@ -24,7 +35,7 @@ module PipelineHelpers
       vars_files.sort!
       puts "INFO - checking existence of #{current_pipeline_config_file}"
       vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
-      versions_file = File.join(templates_dir, root_deployment, "#{root_deployment}-versions.yml")
+      versions_file = File.join(templates_dir, root_deployment, "root-deployment.yml")
       raise "Missing version file: #{versions_file}" unless File.exist?(versions_file)
 
       vars_files << versions_file

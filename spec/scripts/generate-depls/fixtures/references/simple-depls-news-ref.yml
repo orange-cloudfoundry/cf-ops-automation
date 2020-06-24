@@ -12,10 +12,6 @@ resource_types:
       repository: ((docker-registry-url))cftoolsmiths/cron-resource
       # use latest as no other recent tag available
 resources:
-#- name: bosh-stemcell
-#  type: bosh-io-stemcell
-#  source:
-#    name: ((stemcell-name))
 - name: failure-alert
   icon: slack
   type: slack-notification
@@ -55,15 +51,19 @@ resources:
     location: "Europe/Paris"
     fire_immediately: true
 - name: ntp_boshrelease
-  icon: home-floor-b
-  type: bosh-io-release
+  icon: github-circle
+  type: github-release
   source:
-    repository: cloudfoundry-community/ntp-release
+    user: cloudfoundry-community
+    repository: ntp-release
+    access_token: ((bot-github-access-token))
 - name: zookeeper_boshrelease
-  icon: home-floor-b
-  type: bosh-io-release
+  icon: github-circle
+  type: github-release
   source:
-    repository: cppforlife/zookeeper-release
+    user: cppforlife
+    repository: zookeeper-release
+    access_token: ((bot-github-access-token))
 jobs:
 - name: check-ntp_boshrelease
   serial_groups: [concurrent-group-0]
@@ -115,7 +115,7 @@ jobs:
               echo "simple-depls is  running the latest ntp_boshrelease (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
             fi
       params:
-        CURRENT_VERSION: ((ntp_boshrelease-version))
+        CURRENT_VERSION: ((releases.ntp_boshrelease.version))
     - put: new-version-alert
       params:
         channel: ((slack-channel))
@@ -172,7 +172,7 @@ jobs:
               echo "simple-depls is  running the latest zookeeper_boshrelease (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
             fi
       params:
-        CURRENT_VERSION: ((zookeeper_boshrelease-version))
+        CURRENT_VERSION: ((releases.zookeeper_boshrelease.version))
     - put: new-version-alert
       params:
         channel: ((slack-channel))

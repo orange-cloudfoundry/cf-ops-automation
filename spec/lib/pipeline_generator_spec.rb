@@ -36,7 +36,7 @@ describe PipelineGenerator do
     let(:root_deployment_versions) do
       versions = {
         "deployment-name" => "rspec_hello_world",
-        "stemcell-version" => "rspec_stemcell_version",
+        "stemcell" => { "version" => "rspec_stemcell_version" },
         "stemcell-name" => "rspec_stemcell_name"
       }
       RootDeploymentVersion.new("rspec_hello_world", versions)
@@ -74,7 +74,7 @@ describe PipelineGenerator do
 
     it "collects properties, pass them onto a template processor and return the result" do
       expect(File).to receive(:exist?).
-        with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
+        with("#{paas_templates_path}/#{depls}/root-deployment.yml").
         and_return(true)
 
       expect(BoshCertificates).to receive(:new).
@@ -89,7 +89,7 @@ describe PipelineGenerator do
         and_return(secrets_dirs_overview)
 
       expect(RootDeploymentVersion).to receive(:load_file).
-        with("#{paas_templates_path}/#{depls}/#{depls}-versions.yml").
+        with("#{paas_templates_path}/#{depls}/root-deployment.yml").
         and_return(root_deployment_versions)
 
       expect(Config).to receive(:new).with(shared_config, private_config, extended_config).

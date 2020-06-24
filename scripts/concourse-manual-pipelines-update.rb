@@ -22,6 +22,7 @@ Customization using ENVIRONMENT_VARIABLE:
     DEBUG: enable debug message - Default: false
     PIPELINES_DIR: pipelines ready to be uploaded directory- Default: boostrap-generated/pipelines
     TARGET_NAME - Default: fe-int
+    PIPELINE_PREFIX - Add prefix to pipeline name -Default: ""
 '
 
   opts.on("--without=WITHOUT", "-wWITHOUT", "Don't update matched pipelines") do |without_string|
@@ -108,7 +109,7 @@ def generate_full_path_for_concourse_vars_files(vars_files)
   return vars_files_with_path if vars_files.nil?
 
   vars_files.each do |var_file|
-    vars_files_with_path << if var_file =~ /versions.yml/
+    vars_files_with_path << if var_file.match?(/root-deployment.yml/)
                               "#{PAAS_TEMPLATES}/#{var_file}"
                             else
                               "#{SECRETS}/#{var_file}"

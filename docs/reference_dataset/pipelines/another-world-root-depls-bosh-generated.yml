@@ -65,6 +65,66 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 jobs:
+- name: push-boshreleases
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+      - get : secrets-another-world-root-depls-limited
+        params: { submodules: none, depth: 0 }
+      - get: paas-templates-another-world-root-depls
+        params: { submodules: none, depth: 0 }
+        trigger: true
+    - task: repackage-releases
+      input_mapping: { templates-resource: paas-templates-another-world-root-depls, secrets: secrets-another-world-root-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ROOT_DEPLOYMENT_NAME: another-world-root-depls
+    - task: upload-to-director
+      input_mapping: { config-resource: secrets-another-world-root-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_ENVIRONMENT: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+- name: push-stemcell
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none, depth: 0 }
+        - get : secrets-another-world-root-depls-limited
+          params: { submodules: none, depth: 0 }
+          trigger: true
+        - get: ((stemcell-main-name))
+          trigger: true
+          attempts: 2
+    - task: upload-to-director
+      input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-another-world-root-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_ENVIRONMENT: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
 - name: cancel-all-bosh-tasks
   on_failure:
     put: failure-alert
@@ -292,6 +352,8 @@ groups:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls
     - execute-deploy-script
+    - push-boshreleases
+    - push-stemcell
     - recreate-all
 - name: Recreate
   jobs:
@@ -301,4 +363,6 @@ groups:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls
     - execute-deploy-script
+    - push-boshreleases
+    - push-stemcell
     - recreate-all

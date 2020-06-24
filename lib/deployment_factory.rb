@@ -17,8 +17,8 @@ class DeploymentFactory
     deployment_dependencies_basename = filename.gsub(deployment_dependencies_extension, '')
     deployment_dependencies_loaded = load_file(filename)
 
-    all_deployment_dependencies_loaded = load_and_merge(deployment_dependencies_basename, deployment_dependencies_loaded, @config.iaas_type)
-    profiles = @config.profiles
+    all_deployment_dependencies_loaded = load_and_merge(deployment_dependencies_basename, deployment_dependencies_loaded, @config.iaas_type(@root_deployment_name))
+    profiles = @config.profiles(root_deployment_name)
     profiles.each do |profile|
       current_deployment_dependencies_loaded = all_deployment_dependencies_loaded
       all_deployment_dependencies_loaded = load_and_merge(deployment_dependencies_basename, current_deployment_dependencies_loaded, profile)
@@ -43,11 +43,11 @@ class DeploymentFactory
   end
 
   def stemcell_name
-    @config.stemcell_name
+    @config.stemcell_name(@root_deployment_name)
   end
 
   def stemcell_version
-    @version_reference['stemcell-version']
+    @version_reference.dig('stemcell', 'version')
   end
 
   private
@@ -103,7 +103,7 @@ class DeploymentFactory
   def add_stemcell_info(deployment_details)
     return if deployment_details.nil?
 
-    deployment_details['stemcells'] = { stemcell_name => {} }
+    deployment_details['stemcells'] = { stemcell_name => {} } unless deployment_details['stemcells']
   end
 
   def update_boshrelease_version(deployment_details)
@@ -111,10 +111,12 @@ class DeploymentFactory
 
     boshrelease_list = deployment_details['releases']
     boshrelease_list&.each do |a_release, _|
-      version = version_reference[a_release + '-version']
-      raise "Missing boshrelease version: expecting '#{a_release}-version' key in #{@root_deployment_name}-versions.yml" if version.nil?
+      version = @version_reference.dig('releases', a_release, 'version')
+      raise "Missing boshrelease version: expecting 'releases.#{a_release}.version' key in #{@root_deployment_name}/root-deployment.yml. Data: #{@version_reference['releases']}" if version.nil?
 
-      deployment_details['releases'][a_release]['version'] = version
+      current_release = deployment_details['releases'][a_release] || {}
+      current_release['version'] = version
+      deployment_details['releases'][a_release] = current_release
     end
   end
 
@@ -131,10 +133,10 @@ class DeploymentFactory
 
   def validate_config
     raise 'invalid config: cannot be nil' if @config.nil?
-    raise 'invalid config: missing stemcell, expected: a config with a stemcell name defined' if @config.stemcell_name.to_s.empty?
+    raise 'invalid config: missing stemcell, expected: a config with a stemcell name defined' if @config.stemcell_name(@root_deployment_name).to_s.empty?
   end
 
   def validate_version_reference
-    raise 'invalid version: missing stemcell version' if @version_reference['stemcell-version'].to_s.empty?
+    raise 'invalid version: missing stemcell version' if @version_reference.dig('stemcell', 'version').to_s.empty?
   end
 end

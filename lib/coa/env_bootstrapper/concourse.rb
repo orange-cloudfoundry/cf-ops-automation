@@ -10,7 +10,7 @@ module Coa
     class Concourse < Coa::EnvBootstrapper::Base
       attr_reader :config
 
-      def initialize(config = Coa::Utils::Concourse::Config.new)
+      def initialize(config)
         @config = config
       end
 

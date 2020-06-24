@@ -51,7 +51,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["hello-world-root-depls/pipeline-sample/concourse-pipeline-config", "hello-world-root-depls/hello-world-root-depls-versions.yml"]
+    paths: ["hello-world-root-depls/pipeline-sample/concourse-pipeline-config", "hello-world-root-depls/root-deployment.yml"]
     # We trigger before pipeline-current-<paas-template> to update generated pipelines at first
     branch: ((paas-templates-branch))
     skip_ssl_verification: true

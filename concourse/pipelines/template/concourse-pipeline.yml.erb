@@ -70,7 +70,7 @@ resources:
     git_submodules: git_submodules,
     config: concourse_config,
     config_key: 'secrets',
-    defaults: ["#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}", "#{depls}/#{depls}-versions.yml"])
+    defaults: ["#{depls}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}", "#{depls}/root-deployment.yml"])
 %>
 
 - name: secrets-<%= name %>

@@ -105,9 +105,9 @@ describe 'generate-depls' do
     context 'when templates dir is empty' do
       let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path}" }
 
-      it 'failed because versions.yml is missing' do
+      it 'failed because root-deployment.yml is missing' do
         _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-        expect(stderr_str).to include('empty-depls-versions.yml: file not found')
+        expect(stderr_str).to include('root-deployment.yml: file not found')
       end
     end
 
@@ -143,18 +143,6 @@ describe 'generate-depls' do
 
       context 'when news pipeline is empty' do
         it_behaves_like 'pipeline checker', 'empty-depls-news-generated.yml', 'empty-news.yml'
-      end
-
-      context 'when sync_helper pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'empty-depls-sync-helper-generated.yml', 'empty-sync-helper.yml'
-      end
-
-      context 'when s3-stemcell-upload pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'empty-depls-s3-stemcell-upload-generated.yml', 'empty-s3-stemcell-upload.yml'
-      end
-
-      context 'when s3-br-upload pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'empty-depls-s3-br-upload-generated.yml', 'empty-s3-br-upload.yml'
       end
 
       context 'when concourse pipeline is checked' do

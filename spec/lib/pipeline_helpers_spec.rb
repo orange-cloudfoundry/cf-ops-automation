@@ -52,7 +52,7 @@ describe PipelineHelpers do
         [config_dir, 'credentials-a.yml'],
         [config_dir, 'credentials-b.yml'],
         [config_dir, 'credentials-my-pipeline.yml'],
-        [templates_dir, root_deployment, "#{root_deployment}-versions.yml"]
+        [templates_dir, root_deployment, "root-deployment.yml"]
       ].map { |paths| File.join(paths) }
     end
 

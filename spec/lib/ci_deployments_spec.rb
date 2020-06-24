@@ -14,11 +14,11 @@ describe CiDeployment do
           "target_name" => "rspec-fixture-target",
           "pipelines" => {
             "bosh-generated" => {
-              "vars_files" => ["bosh/bosh-versions.yml"],
+              "vars_files" => ["bosh/root-deployment.yml"],
               "config_file" => "concourse/pipelines/bosh-generated.yml"
             },
             "bosh-cf-apps-generated" => {
-              "vars_files" => ["bosh/bosh-versions.yml"],
+              "vars_files" => ["bosh/root-deployment.yml"],
               "config_file" => "concourse/pipelines/bosh-cf-apps-generated.yml"
             }
           }
@@ -27,11 +27,11 @@ describe CiDeployment do
           "target_name" => "rspec-fixture-target",
           "pipelines" => {
             "cf_apps-generated" => {
-              "vars_files" => ["cf_apps/cf_apps-versions.yml"],
+              "vars_files" => ["cf_apps/root-deployment.yml"],
               "config_file" => "concourse/pipelines/cf_apps-generated.yml"
             },
             "cf_apps-cf-apps-generated" => {
-              "vars_files" => ["cf_apps/cf_apps-versions.yml"],
+              "vars_files" => ["cf_apps/root-deployment.yml"],
               "config_file" => "concourse/pipelines/cf_apps-cf-apps-generated.yml"
             }
           }

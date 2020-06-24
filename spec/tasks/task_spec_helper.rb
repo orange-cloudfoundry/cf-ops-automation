@@ -95,4 +95,12 @@ class TaskSpecHelper
   def self.pre_deploy_image_version
     orange_default_image_version
   end
+
+  def self.awscli_image
+    'governmentpaas/awscli'
+  end
+
+  def self.awscli_image_version
+    governmentpaas_default_image_version
+  end
 end

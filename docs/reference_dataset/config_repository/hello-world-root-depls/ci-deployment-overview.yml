@@ -7,14 +7,11 @@ ci-deployment:
     pipelines:
       hello-world-root-depls-cf-apps-generated: {}
       hello-world-root-depls-update-generated: {}
+      hello-world-root-depls-bosh-precompile-generated: {}
       hello-world-root-depls-bosh-generated:
         team: main
         vars_files:
-          - hello-world-root-depls/hello-world-root-depls-versions.yml
+          - hello-world-root-depls/root-deployment.yml
           - shared/concourse-credentials.yml
-      hello-world-root-depls-s3-br-upload-generated:
-        team: upload
-      hello-world-root-depls-s3-stemcell-upload-generated:
-        team: upload
       hello-world-root-depls-concourse-generated:
         team: main

@@ -101,6 +101,7 @@ module Coa
 
       def templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
         return unless repo_path == TEMPLATES_REPO_DIR
+
         extract_submodule_commit_reference(coa_submodule_path)
       end
 

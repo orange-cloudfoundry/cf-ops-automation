@@ -31,10 +31,7 @@ describe RootDeployment do
   # end
 
   let(:deployment_factory) do
-    DeploymentFactory.new(
-     root_deployment_name,
-     { 'stemcell-name'=> 'bosh-openstack-kvm-ubuntu-xenial-go_agent', 'stemcell-version' => 12 }
-    )
+    DeploymentFactory.new(root_deployment_name, load_fixture(File.join('version-reference','default.yml')))
   end
 
   after do

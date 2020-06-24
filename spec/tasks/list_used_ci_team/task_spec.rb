@@ -18,17 +18,17 @@ describe 'list_used_ci_team task' do
               config_file: master-depls/concourse-ops/pipelines/ops-depls-generated.yml
               vars_files:
               - micro-depls/concourse-micro/pipelines/credentials-auto-init.yml
-              - ops-depls/ops-depls-versions.yml
+              - ops-depls/root-deployment.yml
             ops-depls-cf-apps-generated:
               config_file: master-depls/concourse-ops/pipelines/ops-depls-cf-apps-generated.yml
               vars_files:
               - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-              - ops-depls/ops-depls-versions.yml
+              - ops-depls/root-deployment.yml
             ops-depls-news-generated:
               config_file: master-depls/concourse-ops/pipelines/ops-depls-news-generated.yml
               vars_files:
               - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-              - ops-depls/ops-depls-versions.yml
+              - ops-depls/root-deployment.yml
             ops-depls-sync-helper-generated:
               config_file: master-depls/concourse-ops/pipelines/ops-depls-sync-helper-generated.yml
               team: my-custom-team-2
@@ -54,11 +54,11 @@ describe 'list_used_ci_team task' do
             master-depls-generated:
               config_file: micro-depls/concourse-master/pipelines/master-depls-generated.yml
               vars_files:
-              - master-depls/master-depls-versions.yml
+              - master-depls/root-deployment.yml
             master-depls-cf-apps-generated:
               config_file: micro-depls/concourse-master/pipelines/master-depls-cf-apps-generated.yml
               vars_files:
-              - master-depls/master-depls-versions.yml
+              - master-depls/root-deployment.yml
             master-depls-init-generated:
               config_file: micro-depls/concourse-master/pipelines/master-depls-init-generated.yml
               vars_files:

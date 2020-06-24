@@ -20,7 +20,8 @@
   end
 
   offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
-  boshrelease_offline_mode = config&.dig('offline-mode','boshreleases')
+  offline_boshreleases_enabled = config&.dig('offline-mode', 'boshreleases') && true
+
   jobs = Hash.new {|h,k| h[k]=[]}
 
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
@@ -66,15 +67,6 @@ resources:
       proxy_https_tunnel: ((slack-proxy-https-tunnel))
       disable: ((slack-disable))
 
-  - name: secrets-<%= root_deployment_name %>-limited
-    icon: source-branch
-    type: git
-    source:
-      uri: ((secrets-uri))
-      paths: ["private-config.yml", "<%= root_deployment_name %>/ci-deployment-overview.yml", "<%= root_deployment_name %>/secrets", "shared"]
-      branch: ((secrets-branch))
-      skip_ssl_verification: true
-
   - name: secrets-full-writer
     icon: source-pull
     type: git
@@ -94,7 +86,7 @@ resources:
         - "meta-inf.yml"
         - "<%= root_deployment_name %>/template"
         - "<%= root_deployment_name %>/**/deployment-dependencies*.yml"
-        - "<%= root_deployment_name %>/<%= root_deployment_name %>-versions.yml"
+        - "<%= root_deployment_name %>/root-deployment.yml"
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
 
@@ -119,13 +111,13 @@ resources:
       secret_access_key: ((s3-stemcell-secret-key))
       endpoint: ((s3-stemcell-endpoint))
       skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
-    version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
+    version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz }
     <% else %>
     type: bosh-io-stemcell
     icon: home-floor-g
     source:
       name: ((stemcell-name-prefix))((stemcell-main-name))
-    version: { version: "((stemcell-version))" }
+    version: { version: "((stemcell.version))" }
     <% end %>
 
   - name: <%= name %>
@@ -152,14 +144,14 @@ resources:
     type: git
     source:
       uri: ((paas-templates-uri))
-      paths: ["<%= root_deployment_name %>/<%= root_deployment_name %>-versions.yml"]
+      paths: ["<%= root_deployment_name %>/root-deployment.yml"]
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
 <% end %>
 
 <% uniq_releases.sort.each do |release, info| %>
   - name: <%= release %>
-    <% if boshrelease_offline_mode %>
+  <% if offline_boshreleases_enabled %>
     icon: home-floor-a
     type: s3
     source:
@@ -170,40 +162,32 @@ resources:
       secret_access_key: ((s3-br-secret-key))
       endpoint: ((s3-br-endpoint))
       skip_ssl_verification: ((s3-br-skip-ssl-verification))
-    version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version)).tgz }
-    <% else %>
-      <% if info['base_location'].include?('bosh.io') %>
-    icon:  home-floor-b
-    type: bosh-io-release
+    version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version)).tgz }
+  <% else %>
+    type: git
+    icon:  github-circle
     source:
-      repository: <%= info['repository'] %>
-    version: { version: ((<%= release %>-version)) }
-      <% else %>
-    icon: github-circle
-    type: github-release
-    source:
-      user: <%= info['repository'].split('/').first %>
-      repository: <%= info['repository'].split('/').last %>
-      access_token: ((bot-github-access-token))
-  #  version: tag:( (<%#= release %>-version) ) # FIXME https://github.com/concourse/concourse/issues/3990
-  # <%= release %>-version is pinned, see resource declaration. This is disabled for now...
-      <% end %>
-    <% end %>
+      uri: <%= PipelineHelpers.full_repository(info) %>
+      tag_filter: <%= PipelineHelpers.tag_prefix(info) %>((releases.<%= release %>.version))
+      skip_ssl_verification: false
+    #    access_token: ((bot-github-access-token))
+    version: { ref: <%= PipelineHelpers.tag_prefix(info) %>((releases.<%= release %>.version)) }
+  <% end %>
 
-    <% if boshrelease_offline_mode %>
+  <% if offline_boshreleases_enabled %>
   - name: compiled-<%= release %>
     icon: home-floor-a
     type: s3
     source:
       bucket: ((s3-compiled-release-bucket))
       region_name: ((s3-compiled-release-region-name))
-      regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*)-(.*)-(.*)-((stemcell-version)).tgz
+      regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*)-(.*)-(.*)-((stemcell.version)).tgz
       access_key_id: ((s3-compiled-release-access-key-id))
       secret_access_key: ((s3-compiled-release-secret-key))
       endpoint: ((s3-compiled-release-endpoint))
       skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
-    version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((<%= release %>-version))-((s3-compiled-release-os))-((stemcell-version)).tgz }
-    <% end %>
+    version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version))-((s3-compiled-release-os))-((stemcell.version)).tgz }
+  <% end %>
 
 <% end %>
 
@@ -211,9 +195,9 @@ jobs:
 <% if uniq_releases.empty? %>
   - name: this-is-an-empty-pipeline
 <%else %>
-  - name: execute-deploy-script
-    <% jobs["Utils"] << "execute-deploy-script" %>
-    serial: true
+
+  - name: push-boshreleases
+    <% jobs['Utils'] << 'push-boshreleases' %>
     on_failure:
       put: failure-alert
       params:
@@ -223,26 +207,124 @@ jobs:
         username: Concourse
     plan:
       - in_parallel:
-        - get: secrets-<%= root_deployment_name %>-limited
-          params: { submodules: none}
-          trigger: true
-        - get: paas-templates-<%= root_deployment_name %>-limited
-          params: { submodules: none}
-          trigger: true
-        - get: cf-ops-automation
-          params: { submodules: none}
-
-      - task: run-deploy.sh
-        input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-<%= root_deployment_name %>-limited, secrets: secrets-<%= root_deployment_name %>-limited}
-        file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: paas-templates-<%= root_deployment_name %>-limited
+            params: { submodules: none }
+            trigger: true
+        <% if offline_boshreleases_enabled %>
+      - task: reformat-root-deployment-yml
+        input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %>-limited }
+        output_mapping: { to-csv: expected-boshreleases }
+        file: cf-ops-automation/concourse/tasks/reformat_expected_boshreleases_list/task.yml
         params:
-          CURRENT_DEPLS: <%= root_deployment_name %>/template
-          COMMON_SCRIPT_DIR: scripts-resource/scripts
-          SECRETS_DIR: secrets
-          BOSH_TARGET: ((bosh-target))
+          ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
+      - task: missing-s3-boshreleases
+        input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %>-limited }
+        file:  cf-ops-automation/concourse/tasks/s3_missing_boshreleases/task.yml
+        params:
+          BUCKET: ((s3-br-bucket))
+          REGION_NAME: ((s3-br-region-name))
+          ACCESS_KEY_ID: ((s3-br-access-key-id))
+          SECRET_ACCESS_KEY: ((s3-br-secret-key))
+          ENDPOINT: ((s3-br-endpoint))
+          SKIP_SSL_VERIFICATION: ((s3-br-skip-ssl-verification))
+        <% end %>
+
+      - task: repackage-releases
+        input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %>-limited, secrets: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+        params:
           BOSH_CLIENT: ((bosh-username))
-          BOSH_CLIENT_SECRET: "((bosh-password))"
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_TARGET: ((bosh-target))
           BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+          ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
+
+        <% if offline_boshreleases_enabled %>
+      - task: upload-repackaged-releases
+        input_mapping: { local-files-dir: repackaged-releases, templates-resource: paas-templates-<%= root_deployment_name %>-limited }
+        file:  cf-ops-automation/concourse/tasks/s3_boshreleases_upload/task.yml
+        params:
+          BUCKET: ((s3-br-bucket))
+          REGION_NAME: ((s3-br-region-name))
+          ACCESS_KEY_ID: ((s3-br-access-key-id))
+          SECRET_ACCESS_KEY: ((s3-br-secret-key))
+          ENDPOINT: ((s3-br-endpoint))
+          SKIP_SSL_VERIFICATION: ((s3-br-skip-ssl-verification))
+        <% else %>
+      - task: upload-to-director
+        attempts: 2
+        input_mapping: { config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+    <% end %>
+
+  - name: push-stemcell
+    <% jobs['Utils'] << 'push-stemcell' %>
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: paas-templates-<%= root_deployment_name %>-limited
+            params: { submodules: none }
+            trigger: true
+        <% if offline_stemcells_enabled %>
+      - task: upload-stemcells
+        attempts: 2
+        input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %>-limited }
+        file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
+        params:
+          BUCKET: ((s3-stemcell-bucket))
+          REGION_NAME: ((s3-stemcell-region-name))
+          ACCESS_KEY_ID: ((s3-stemcell-access-key-id))
+          SECRET_ACCESS_KEY: ((s3-stemcell-secret-key))
+          ENDPOINT: ((s3-stemcell-endpoint))
+          SKIP_SSL_VERIFICATION: ((s3-stemcell-skip-ssl-verification))
+          STEMCELL_VERSION: ((stemcell.version))
+          STEMCELL_PREFIX: ((stemcell-name-prefix))
+          STEMCELL_MAIN_NAME: ((stemcell-main-name))
+          STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+
+        <% else %>
+      - task: download-stemcell
+        attempts: 2
+        output_mapping: { stemcell: ((stemcell-main-name)) }
+        file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
+        params:
+          STEMCELL_VERSION: ((stemcell.version))
+          STEMCELL_PREFIX: ((stemcell-name-prefix))
+          STEMCELL_MAIN_NAME: ((stemcell-main-name))
+          STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+
+      - task: upload-to-director
+        attempts: 2
+        input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+        <% end %>
+
 
   - name: <%= name %>
     <% jobs["Utils"] << "#{name}" %>
@@ -265,7 +347,6 @@ jobs:
       - get: cf-ops-automation
         params: { submodules: none}
         trigger: true
-        passed: [ execute-deploy-script]
     <% uniq_releases.each do |release, info| %>
       - get: <%= release %>
         trigger: true
@@ -273,12 +354,13 @@ jobs:
     <% end %>
       - get: paas-templates-<%= root_deployment_name %>-limited
         params: { submodules: none}
-        passed: [ execute-deploy-script]
+        passed: [push-stemcell, push-boshreleases]
         trigger: true
+
     - task: generate-<%= name %>-manifest
       <%
         manifest = {'name' => name, 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
-        uniq_releases.each { |release, _info| manifest['releases'] << {'name' => release, 'version' => 'latest'}}
+        uniq_releases.each { |release, info| manifest['releases'] << {'name' => release, 'version' => info.fetch('version', 'latest')}}
 
         precompile_manifest = manifest
        %>
@@ -351,6 +433,7 @@ jobs:
 
     - put: <%= name %>
       attempts: 2
+      
       on_failure:
         do:
           - task: update-<%= name %>-files
@@ -370,14 +453,10 @@ jobs:
         manifest: final-release-manifest/<%= name %>.yml
         stemcells:
         <% if offline_stemcells_enabled %>
-        - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
+        - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
         <% else %>
         - ((stemcell-main-name))/stemcell.tgz
         <% end %>
-        releases: <%= '[]' if uniq_releases&.empty? %>
-    <% uniq_releases.each do |release, _info| %>
-        - "<%= release %>/*.tgz"
-    <% end %>
         cleanup: true
     - task: bosh-variables
       input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer-<%= name %>}
@@ -442,6 +521,7 @@ jobs:
             attempts: 2
 
       - task: compile-and-export-<%= release %>
+        attempts: 2
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
         output_mapping: {exported-release: <%= release %>-exported-release}
         config:
@@ -472,9 +552,10 @@ jobs:
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
             RELEASE_NAME: <%= release %>
-            RELEASE_VERSION: ((<%= release %>-version))
-    <% if boshrelease_offline_mode %>
+            RELEASE_VERSION: ((releases.<%= release %>.version))
+    <% if offline_boshreleases_enabled %>
       - task: generate-<%= release %>-name
+        attempts: 2
         input_mapping: {release: <%= release %>-exported-release, stemcell: ((stemcell-main-name))}
         output_mapping: {result-dir: compiled-<%= release %>}
         config:
@@ -503,13 +584,14 @@ jobs:
 
                 cp release/*.tgz result-dir/"${RELEASE_NAME}-${RELEASE_VERSION}-${STEMCELL_OS}-${STEMCELL_VERSION}.tgz"
       - put: compiled-<%= release %>
+        attempts: 2
         params:
           file: compiled-<%= release %>/*.tgz
           acl: public-read
   <% end %>
 
 
-    <% if boshrelease_offline_mode %>
+    <% if offline_boshreleases_enabled %>
   - name: upload-compiled-<%= release %>
     <% jobs["#{release[0]}*"] << "upload-compiled-#{release}" %>
     on_failure:
@@ -528,13 +610,11 @@ jobs:
         - get: secrets-full-writer
           params: { submodules: none}
           attempts: 2
-        - get: paas-templates-<%= root_deployment_name %>-versions
-          params: { submodules: none}
-          attempts: 2
         - get: compiled-<%= release %>
           trigger: true
         - get: ((stemcell-main-name))
       - task: upload-<%= release %>
+        attempts: 2
         input_mapping: {secrets: secrets-full-writer, compiled-release: compiled-<%= release %>}
         config:
           platform: linux
@@ -602,16 +682,16 @@ jobs:
           - |
     <% uniq_releases.sort.each do |name, info| %>
       <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
-      <% if boshrelease_offline_mode %>
-            echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((<%= name %>-version)).tgz" | tee -a result-dir/flight-plan
+      <% if offline_boshreleases_enabled %>
+            echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((releases.<%= name %>.version)).tgz" | tee -a result-dir/flight-plan
       <% else %>
-            echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:((<%= name %>-version))" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= PipelineHelpers.tag_prefix(info) %>((releases.<%= name %>.version))" | tee -a result-dir/flight-plan
       <% end %>
     <% end %>
     <% if offline_stemcells_enabled %>
-            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
     <% else %>
-            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
     <% end %>
         params:
           BUILD_PIPELINE_NAME: <%= root_deployment_name %>-bosh-generated
@@ -626,9 +706,6 @@ jobs:
         FLY_TEAM: <%= current_team || 'main' %>
   <% end %>
 
-  - name: TODO-manage-cpi-config-cloud-config-and-runtime-config-for-<%= root_deployment_name %>
-    <% jobs["Utils"] << "TODO-manage-cpi-config-cloud-config-and-runtime-config-for-#{root_deployment_name}" %>
-    serial: true
 
 groups:
   - name: <%= root_deployment_name.capitalize %>

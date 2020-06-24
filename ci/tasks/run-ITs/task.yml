@@ -28,14 +28,32 @@ run:
     - |
       echo "Setup pre-requisites"
       cp cf-ops-automation/ci/bootstrap_coa_env/manual-ITs/*.* prereqs/
-      echo "  bot-github-access-token: ((cf-ops-automation-git-hub-token))" >> prereqs/pipeline-vars-prereqs.yml
-      echo "  slack-webhook: ((slack-webhook))" >> prereqs/pipeline-vars-prereqs.yml
-      echo "  slack-channel: ((slack-channel))" >> prereqs/pipeline-vars-prereqs.yml
-      echo "  slack-proxy:" >> prereqs/pipeline-vars-prereqs.yml
-      echo "  slack-disable: ((slack-disable-it))" >> prereqs/pipeline-vars-prereqs.yml
-      echo "  slack-proxy-https-tunnel:" >> prereqs/pipeline-vars-prereqs.yml
+      ls prereqs
+      PREREQS_FILE="prereqs/pipeline-dynamic-vars-prereqs.yml"
+      echo "pipeline_vars:" > ${PREREQS_FILE}
+      echo "  bot-github-access-token: ((cf-ops-automation-git-hub-token))" >> ${PREREQS_FILE}
+      echo "  slack-webhook: ((slack-webhook))" >> ${PREREQS_FILE}
+      echo "  slack-channel: ((slack-channel))" >> ${PREREQS_FILE}
+      echo "  slack-disable: ((slack-disable-it))" >> ${PREREQS_FILE}
       printenv INTEGRATION_TEST_PREREQS > prereqs/integration-test-prereqs.yml
+      cf-ops-automation/ci/scripts/deploy-bosh-releases.rb prereqs/bosh-deployment-manifest-prereqs.yml
+      cd cf-ops-automation
+      git config --global user.email "manual-IT@test.com"
+      git config --global user.name "Local IT execution"
+      git init .
+      git submodule update --init
+      git add .
+      git commit -m "Manual IT tests"
+      cd ..
+      echo "removing existing releases and deployment"
+      bosh delete-deployment --force -d bosh-deployment-sample --non-interactive
+      bosh delete-deployment --force -d hello-world-root-depls-release-precompile-deployment --non-interactive
+      bosh delete-release --non-interactive ntp
+      bosh deployments
+      bosh releases
+      bosh stemcells
       echo "Setup DONE"
+      echo "Starting intergation tests ($(TZ="Europe/Paris" date))"
       ./cf-ops-automation/scripts/run_integration_tests.rb
       if [ -f ./coa-logs/stdout.log ];then
         cat ./coa-logs/stdout.log
@@ -45,3 +63,7 @@ params:
   INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
   PREREQS_PATHS_RAW: "./prereqs/*.yml"
   COA_LOG_PATH: "../../../../coa-logs"
+  BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
+  BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
+  BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
+  BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))

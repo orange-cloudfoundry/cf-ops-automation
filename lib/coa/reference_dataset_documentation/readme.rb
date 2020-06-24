@@ -13,18 +13,19 @@ module Coa
         @docs_config = docs_config
       end
 
-      def rewrite_scructure_documentation
+      def rewrite_structure_documentation
+        puts "rewrite_structure_documentation"
         utils_writer.cleanup_readme
         utils_writer.write_intro
-        tree_writer.write
+        tree_writer.perform
         file_list_writer.write(
-          config_repo_name:   docs_config.config_repo_name,
+          config_repo_name: docs_config.config_repo_name,
           template_repo_name: docs_config.template_repo_name
         )
       end
 
       def write_pipeline_documentation
-        pipeline_list_writer.write
+        pipeline_list_writer.perform
       end
 
       def utils_writer

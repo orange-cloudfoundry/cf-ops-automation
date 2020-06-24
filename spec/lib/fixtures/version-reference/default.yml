@@ -1,0 +1,3 @@
+stemcell:
+  name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+  version: 12

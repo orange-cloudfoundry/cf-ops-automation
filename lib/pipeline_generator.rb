@@ -10,6 +10,7 @@ require_relative './secrets'
 require_relative './cf_apps'
 require_relative './root_deployment'
 require_relative './root_deployment_version'
+require_relative './root_deployment_overview_enhancer'
 
 class PipelineGenerator
   attr_reader :options, :warnings
@@ -61,8 +62,8 @@ class PipelineGenerator
   private
 
   def load_erb_context
-    deployment_versions_path = "#{options.paas_templates_path}/#{options.depls}/#{options.depls}-versions.yml"
-    raise "#{options.depls}-versions.yml: file not found. #{deployment_versions_path} does not exist" unless File.exist? deployment_versions_path
+    deployment_versions_path = "#{options.paas_templates_path}/#{options.depls}/root-deployment.yml"
+    raise "#{options.depls}/root-deployment.yml: file not found. #{deployment_versions_path} does not exist" unless File.exist? deployment_versions_path
 
     set_context
     check_warnings
@@ -78,14 +79,19 @@ class PipelineGenerator
                end
     extended_config = ExtendedConfigBuilder.new.with_iaas_type(options.iaas_type).with_profiles(profiles).build
     config = Config.new(shared_config, private_config, extended_config).load_config
-    root_deployment_versions = RootDeploymentVersion.load_file("#{options.paas_templates_path}/#{options.depls}/#{options.depls}-versions.yml")
-    deployment_factory = DeploymentFactory.new(options.depls, root_deployment_versions.versions, config)
+    root_deployment_name = options.depls
+    root_deployment_versions = RootDeploymentVersion.load_file("#{options.paas_templates_path}/#{root_deployment_name}/root-deployment.yml")
+    deployment_factory = DeploymentFactory.new(root_deployment_name, root_deployment_versions.versions, config)
 
-    ctxt.depls                 = options.depls
+    root_deployment_overview = RootDeployment.new(root_deployment_name, options.paas_templates_path, options.secrets_path).overview_from_hash(deployment_factory)
+    versions = root_deployment_versions.versions
+    enhanced_root_deployment = RootDeploymentOverviewEnhancer.new(root_deployment_name, root_deployment_overview, versions).enhance
+
+    ctxt.depls                 = root_deployment_name
     ctxt.bosh_cert             = BoshCertificates.new(options.secrets_path, BOSH_CERT_LOCATIONS).load_from_location.certs
     ctxt.secrets_dirs_overview = Secrets.new("#{options.secrets_path}/*").overview
-    ctxt.version_reference     = root_deployment_versions.versions
-    ctxt.all_dependencies      = RootDeployment.new(options.depls, options.paas_templates_path, options.secrets_path).overview_from_hash(deployment_factory)
+    ctxt.version_reference     = versions
+    ctxt.all_dependencies      = enhanced_root_deployment
     ctxt.all_ci_deployments    = CiDeployment.new(File.join(options.secrets_path, ctxt.depls)).overview
     ctxt.all_cf_apps           = CfApps.new(File.join(options.secrets_path, ctxt.depls, '/*'), ctxt.depls).overview
     ctxt.git_submodules        = GitModules.new(options.git_submodule_path).list

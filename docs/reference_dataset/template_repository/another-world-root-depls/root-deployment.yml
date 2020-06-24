@@ -1,0 +1,17 @@
+---
+name: another-world-root-depls
+
+stemcell:
+  version: "3468.25"
+  sha1:
+
+releases:
+  nginx:
+    version: "1.12.2"
+    base_location: https://github.com/
+    repository: cloudfoundry-community/nginx-release
+
+  ntp:
+    version: "4"
+    base_location: https://github.com/
+    repository: cloudfoundry-community/ntp-release

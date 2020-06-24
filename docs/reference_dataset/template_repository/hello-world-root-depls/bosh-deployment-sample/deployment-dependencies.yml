@@ -14,12 +14,13 @@ deployment:
         local_deployment_scan: true # Enable when `secrets.yml`, 'meta.yml' or any files in deployment secrets directory are required - Default: false
         local_deployment_trigger: true # Enable when a change in deployment secrets directory should trigger as build. This parameter is ignored when `local_deployment_scan`is `false`  - Default: true
 
-    # bosh-release required. Don't set version here, set it in paas-template/<depls>-versions.yml
+    # bosh-release required. Don't set version here, set it in paas-template/root-deployment.yml
     releases:
       #ngnix should be defined here but as sample it is defined in deployment-dependencies-<IAAS_TYPE>.yml
       ntp:
-        base_location: https://bosh.io/d/github.com/
+        base_location: https://github.com/
         repository: cloudfoundry-community/ntp-release
+        tag_prefix: ''
     errands: # errands to execute automatically after each deploy. Errand are executed one by one in random order.
       # errand-1:
         # display-name: my-custom-name   # => run-errand-bosh-deployment-sample-my-custom-name (ie: run-errand-<deployment-name>-<display-name>)

@@ -1,0 +1,41 @@
+---
+#
+# Copyright (C) 2015-2020 Orange
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))governmentpaas/awscli
+    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+outputs:
+  - name: logs-dir
+  - name: stemcell
+run:
+  path: sh
+  args:
+    - -ec
+    - |
+
+      STEMCELL_URL="${STEMCELL_BASE_LOCATION}/${STEMCELL_PREFIX}${STEMCELL_MAIN_NAME}?v=$STEMCELL_VERSION"
+      TGZ_NAME="${STEMCELL_PREFIX}stemcell-$STEMCELL_VERSION-$STEMCELL_MAIN_NAME.tgz"
+
+      echo "Processing stemcell ${TGZ_NAME}, version <${STEMCELL_VERSION}>"
+      mkdir -p stemcell
+      echo "Downloading ${TGZ_NAME%.tgz} from <$STEMCELL_URL>"
+      curl -SsL "$STEMCELL_URL" > stemcell/${TGZ_NAME}
+params:
+  STEMCELL_VERSION:
+  STEMCELL_PREFIX:
+  STEMCELL_MAIN_NAME:
+  STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells/

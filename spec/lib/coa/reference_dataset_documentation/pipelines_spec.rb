@@ -29,7 +29,7 @@ describe Coa::ReferenceDatasetDocumentation::Pipelines do
 
       pipelines.generate
 
-      expected_command = "ruby #{base_dir}/scripts/generate-depls.rb -o #{output_dir} -p #{docs_config.config_repo_path} -t #{docs_config.template_repo_path} -d #{root_deployment_name}"
+      expected_command = "ruby #{base_dir}/scripts/generate-depls.rb -o #{output_dir} -p #{docs_config.config_repo_path} -t #{docs_config.template_repo_path} -d #{root_deployment_name} --iaas openstack --profiles vault-profile"
       expect(pipelines).to have_received(:`).with(expected_command)
     end
   end

@@ -1,6 +1,0 @@
----
-deployment-name: simple-depls
-ntp_boshrelease-version: "4"
-zookeeper_boshrelease-version: "0.0.9"
-bosh-openstack-cpi-release-version: 39
-stemcell-version: "3468.1"

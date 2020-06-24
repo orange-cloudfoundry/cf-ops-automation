@@ -43,6 +43,16 @@ module Coa
             "cf-push-generic-app" => {}
           }
         },
+        "hello-world-root-depls-bosh-precompile-generated" => {
+            "team" => "main",
+            "jobs" => {
+                "hello-world-root-depls-release-precompile-deployment" => {},
+                "compile-and-export-ntp" => {},
+                "compile-and-export-nginx" => {},
+                "compile-and-export-vault" => {},
+                "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {}
+            }
+        },
         "hello-world-root-depls-bosh-generated" => {
           "team" => "main",
           "jobs" => {
@@ -56,7 +66,9 @@ module Coa
             "approve-and-enforce-terraform-consistency"                          => { "trigger" => true },
             "recreate-all"                                                       => { "trigger" => true },
             "recreate-bosh-deployment-sample"                                    => {},
-            "cancel-all-bosh-tasks"                                              => { "trigger" => true }
+            "cancel-all-bosh-tasks"                                              => { "trigger" => true },
+            "push-stemcell"                                                      => {},
+            "push-boshreleases"                                                  => {}
           }
         },
         "hello-world-root-depls-concourse-generated" => {
@@ -70,22 +82,6 @@ module Coa
           "jobs" => {
             "upload-latest-vault-boshrelease-to-s3" => { "pause" => true },
             "validate-secrets-injection-value-from-coa-config" => {}
-          }
-        },
-        "hello-world-root-depls-s3-br-upload-generated" => {
-          "team" => "upload",
-          "jobs" => {
-            "init-concourse-boshrelease-for-hello-world-root-depls" => { "trigger" => true },
-            "upload-current-ntp"                                    => { "pause" => true },
-            "upload-current-nginx"                                  => { "pause" => true },
-            "upload-current-vault"                                  => { "pause" => true }
-          }
-        },
-        "hello-world-root-depls-s3-stemcell-upload-generated" => {
-          "team" => "upload",
-          "jobs" => {
-            "init-concourse-stemcells-for-hello-world-root-depls" => { "trigger" => true },
-            "upload-current-bosh-openstack-kvm-ubuntu-xenial-go_agent" => { "pause" => true }
           }
         }
       }.freeze

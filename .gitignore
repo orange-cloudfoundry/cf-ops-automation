@@ -7,12 +7,12 @@
 #shared/
 bootstrap-generated/**/*-generated.yml
 
-/ci/private*.yml
+ci/private*.yml
 bin/
 .bundle/
 out/
 log/
-/coverage/
+coverage/
 
 spec/tasks/git_reset_wip/reference-resource/
 /Readme.md.toc.*

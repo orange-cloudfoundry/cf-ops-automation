@@ -18,12 +18,12 @@ class CiDeployment
   #         config_file: concourse/pipelines/ops-depls-generated.yml
   #         vars_files:
   #           - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-  #           - ops-depls/ops-depls-versions.yml
+  #           - ops-depls/root-deployment.yml
   #       ops-depls-cf-apps-generated:
   #         config_file: concourse/pipelines/ops-depls-cf-apps-generated.yml
   #         vars_files:
   #           - master-depls/concourse-ops/pipelines/credentials-ops-depls-pipeline.yml
-  #           - ops-depls/ops-depls-versions.yml
+  #           - ops-depls/root-deployment.yml
   # or
   # ci-deployment:
   #   ops-depls:

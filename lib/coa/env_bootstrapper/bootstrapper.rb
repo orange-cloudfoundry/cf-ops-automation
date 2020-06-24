@@ -22,7 +22,7 @@ module Coa
 
       def self.new_from_prereqs_paths(prereqs_paths)
         prereqs = Coa::EnvBootstrapper::Prereqs.new_from_paths(prereqs_paths)
-        logger.log_and_puts :debug, "Running Bootstrapper with config:\n#{prereqs.pretty_print}"
+        logger.log_and_puts :debug, "Running Bootstrapper with config:\n#{prereqs.to_s}"
         new(prereqs)
       end
 

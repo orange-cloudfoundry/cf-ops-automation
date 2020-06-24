@@ -22,8 +22,7 @@ describe DeploymentDeployersConfig do
   let(:deployment_factory) do
     DeploymentFactory.new(
       root_deployment_name,
-      'stemcell-name' => 'bosh-openstack-kvm-ubuntu-xenial-go_agent',
-      'stemcell-version' => 12
+      load_fixture(File.join('version-reference', 'default.yml'))
     )
   end
   let(:deployment_templates_path) { File.join(templates, root_deployment_name, deployment_name) }

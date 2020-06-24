@@ -6,17 +6,6 @@ resource_types:
   source:
     repository: ((docker-registry-url))cfcommunity/slack-notification-resource
     tag: v1.4.2
-
-- name: cron-resource
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))cftoolsmiths/cron-resource"
-- name: concourse-pipeline
-  type: docker-image
-  source:
-    repository: "((docker-registry-url))concourse/concourse-pipeline-resource"
-    tag: 2.1.1
-
 - name: bosh-deployment-v2
   type: docker-image
   source:
@@ -64,7 +53,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml", "empty-depls/template"]
+    paths: ["shared-config.yml", "meta-inf.yml", "empty-depls/root-deployment.yml", "empty-depls/template"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
@@ -76,6 +65,74 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 jobs:
+- name: push-boshreleases
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+      - get : secrets-empty-depls-limited
+        params: { submodules: none, depth: 0 }
+      - get: paas-templates-empty-depls
+        params: { submodules: none, depth: 0 }
+        trigger: true
+    - task: repackage-releases
+      input_mapping: { templates-resource: paas-templates-empty-depls, secrets: secrets-empty-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ROOT_DEPLOYMENT_NAME: empty-depls
+    - task: upload-to-director
+      input_mapping: { config-resource: secrets-empty-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_ENVIRONMENT: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+- name: push-stemcell
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get : secrets-empty-depls-limited
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get: paas-templates-empty-depls
+        params: { submodules: none }
+        trigger: true
+    - task: upload-stemcells
+      attempts: 2
+      input_mapping: { templates-resource: paas-templates-empty-depls }
+      file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
+      params:
+        BUCKET: ((s3-stemcell-bucket))
+        REGION_NAME: ((s3-stemcell-region-name))
+        ACCESS_KEY_ID: ((s3-stemcell-access-key-id))
+        SECRET_ACCESS_KEY: ((s3-stemcell-secret-key))
+        ENDPOINT: ((s3-stemcell-endpoint))
+        SKIP_SSL_VERIFICATION: ((s3-stemcell-skip-ssl-verification))
+        STEMCELL_VERSION: ((stemcell.version))
+        STEMCELL_PREFIX: ((stemcell-name-prefix))
+        STEMCELL_MAIN_NAME: ((stemcell-main-name))
+        STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
 - name: cancel-all-bosh-tasks
   on_failure:
     put: failure-alert
@@ -164,6 +221,7 @@ jobs:
             ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/empty-depls/template
         IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
     - in_parallel:
       - task: update-cloud-config-for-empty-depls
         attempts: 2
@@ -188,7 +246,8 @@ jobs:
           params:
             OLD_FILE: "empty-depls/cloud-config.yml"
             NEW_FILE: "cloud-config.yml"
-            COMMIT_MESSAGE: "empty-depls cloud-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "empty-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -225,7 +284,8 @@ jobs:
           params:
             OLD_FILE: "empty-depls/runtime-config.yml"
             NEW_FILE: "runtime-config.yml"
-            COMMIT_MESSAGE: "empty-depls runtime-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "empty-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -262,7 +322,8 @@ jobs:
           params:
             OLD_FILE: "empty-depls/cpi-config.yml"
             NEW_FILE: "cpi-config.yml"
-            COMMIT_MESSAGE: "empty-depls cpi-config auto update - [skip ci]"
+            PROFILES: ((profiles))
+            COMMIT_MESSAGE: "empty-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
           on_failure:
             put: failure-alert
             params:
@@ -299,6 +360,8 @@ groups:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-empty-depls
     - execute-deploy-script
+    - push-boshreleases
+    - push-stemcell
     - recreate-all
 - name: Recreate
   jobs:
@@ -308,4 +371,6 @@ groups:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-empty-depls
     - execute-deploy-script
+    - push-boshreleases
+    - push-stemcell
     - recreate-all

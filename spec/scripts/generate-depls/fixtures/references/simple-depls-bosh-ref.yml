@@ -1,3 +1,4 @@
+
 ---
 resource_types:
 - name: slack-notification
@@ -52,7 +53,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml", "simple-depls/template"]
+    paths: ["shared-config.yml", "meta-inf.yml", "simple-depls/root-deployment.yml", "simple-depls/template"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
@@ -74,7 +75,8 @@ resources:
     secret_access_key: ((s3-stemcell-secret-key))
     endpoint: ((s3-stemcell-endpoint))
     skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
-  version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz }
+    skip_download: true
+  version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz }
 - name: secrets-ntp-with-scan
   icon: source-merge
   type: git
@@ -88,7 +90,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/ntp-with-scan"]
+    paths: ["simple-depls/ntp-with-scan", "simple-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: ntp-with-scan-deployment
@@ -104,8 +106,8 @@ resources:
   icon: home-edit
   type: git
   source:
-    uri: "((paas-templates-uri))"
-    paths: ["simple-depls/zookeeper-without-scan"]
+    uri: ((paas-templates-uri))
+    paths: ["simple-depls/zookeeper-without-scan", "simple-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: zookeeper-without-scan-deployment
@@ -130,24 +132,96 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/simple-depls-versions.yml"]
+    paths: ["simple-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: ntp_boshrelease
-  icon:  home-floor-b
-  type: bosh-io-release
+  type: git
+  icon:  github-circle
   source:
-    repository: cloudfoundry-community/ntp-release
-  version:
-    version: "((ntp_boshrelease-version))"
+    uri: https://github.com/cloudfoundry-community/ntp-release
+    tag_filter: ((releases.ntp_boshrelease.version))
+    skip_ssl_verification: false
+#    access_token: ((bot-github-access-token))
+  version: { ref: ((releases.ntp_boshrelease.version)) }
 - name: zookeeper_boshrelease
-  icon:  home-floor-b
-  type: bosh-io-release
+  type: git
+  icon:  github-circle
   source:
-    repository: cppforlife/zookeeper-release
-  version:
-    version: "((zookeeper_boshrelease-version))"
+    uri: https://github.com/cppforlife/zookeeper-release
+    tag_filter: v((releases.zookeeper_boshrelease.version))
+    skip_ssl_verification: false
+#    access_token: ((bot-github-access-token))
+  version: { ref: v((releases.zookeeper_boshrelease.version)) }
 jobs:
+- name: push-boshreleases
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+      - get : secrets-simple-depls-limited
+        params: { submodules: none, depth: 0 }
+      - get: paas-templates-simple-depls
+        params: { submodules: none, depth: 0 }
+        trigger: true
+    - task: repackage-releases
+      input_mapping: { templates-resource: paas-templates-simple-depls, secrets: secrets-simple-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ROOT_DEPLOYMENT_NAME: simple-depls
+    - task: upload-to-director
+      input_mapping: { config-resource: secrets-simple-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_ENVIRONMENT: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+- name: push-stemcell
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get : secrets-simple-depls-limited
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get: paas-templates-simple-depls
+        params: { submodules: none }
+        trigger: true
+    - task: upload-stemcells
+      attempts: 2
+      input_mapping: { templates-resource: paas-templates-simple-depls }
+      file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
+      params:
+        BUCKET: ((s3-stemcell-bucket))
+        REGION_NAME: ((s3-stemcell-region-name))
+        ACCESS_KEY_ID: ((s3-stemcell-access-key-id))
+        SECRET_ACCESS_KEY: ((s3-stemcell-secret-key))
+        ENDPOINT: ((s3-stemcell-endpoint))
+        SKIP_SSL_VERIFICATION: ((s3-stemcell-skip-ssl-verification))
+        STEMCELL_VERSION: ((stemcell.version))
+        STEMCELL_PREFIX: ((stemcell-name-prefix))
+        STEMCELL_MAIN_NAME: ((stemcell-main-name))
+        STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
 - name: cancel-all-bosh-tasks
   on_failure:
     put: failure-alert
@@ -236,7 +310,7 @@ jobs:
             ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/template
         IAAS_TYPE: ((iaas-type))
-        PROFILES: "((profiles))"
+        PROFILES: ((profiles))
     - in_parallel:
       - task: update-cloud-config-for-simple-depls
         attempts: 2
@@ -369,12 +443,14 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
+      tarball: false
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
     - get: ntp_boshrelease
       trigger: true
+      tarball: false
       attempts: 2
     - get: secrets-ntp-with-scan
       params: { submodules: none, depth: 0 }
@@ -439,29 +515,6 @@ jobs:
       CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp-with-scan/template
       SECRETS_DIR: credentials-resource/simple-depls/ntp-with-scan
       MANIFEST_NAME: ntp-with-scan.yml
-  - task: convert-bosh-dns-to-ip
-    output_mapping: {result-dir: bosh-generated-config}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          export DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_TARGET%%:25555}
-          export DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|tail -n2|grep Address|cut -d':' -f2)
-          export DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
-          export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
-          echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
-      params:
-        BOSH_TARGET: ((bosh-target))
   - task: generate-empty-ops-and-vars-files
     # this task is required as long as all deployments still don't use ops/vars files
     output_mapping: {result-dir: ops-and-vars-files}
@@ -499,17 +552,30 @@ jobs:
        VARS_FILES_SUFFIX: "*/*vars.yml"
        OPS_FILES_SUFFIX:  "*/*operators.yml"
        BOSH_YAML_FILE: ntp-with-scan.yml
+  - task: resolve-manifest-latest-versions
+    input_mapping:
+      templates-resource: paas-templates-ntp-with-scan
+      manifest-dir: interpolated-manifest
+      scripts-resource: cf-ops-automation
+    output_mapping: { result-dir: resolved-manifest-versions }
+    file: cf-ops-automation/concourse/tasks/resolve_manifest_latest_versions/task.yml
+    params:
+      STEMCELL_NAME: ((stemcell-main-name))
+      STEMCELL_VERSION: ((stemcell.version))
+      VERSIONS_FILE:  templates-resource/simple-depls/root-deployment.yml
+      MANIFEST_YAML_FILE: manifest-dir/interpolated-ntp-with-scan.yml
+      DEPLOYMENT_NAME: ntp-with-scan
   - put: ntp-with-scan-deployment
     attempts: 2
     on_failure:
       do:
         - task: update-ntp-with-scan-files
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: interpolated-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: resolved-manifest-versions}
           output_mapping: {updated-git-resource: failed-ntp-with-scan-secrets}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: simple-depls/ntp-with-scan/ntp-with-scan-last-deployment-failure.yml
-            NEW_FILE: "interpolated-ntp-with-scan.yml"
+            NEW_FILE: "ntp-with-scan.yml"
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy ntp-with-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
@@ -518,16 +584,7 @@ jobs:
             repository: failed-ntp-with-scan-secrets
             rebase: true
     params:
-      manifest: final-release-manifest/ntp-with-scan.yml
-      # source_file: bosh-generated-config/bosh_config.json
-      stemcells:
-      - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
-      releases: 
-      - "ntp_boshrelease/*.tgz"
-      ops_files:
-      - ops-and-vars-files/operators/*
-      vars_files:
-      - ops-and-vars-files/vars/*
+      manifest: resolved-manifest-versions/ntp-with-scan.yml
       cleanup: true
       no_redact: false
       dry_run: false
@@ -595,12 +652,14 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
+      tarball: false
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
     - get: zookeeper_boshrelease
       trigger: true
+      tarball: false
       attempts: 2
     - get: paas-templates-zookeeper-without-scan
       trigger: true
@@ -638,7 +697,7 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/zookeeper-without-scan/template
       IAAS_TYPE: ((iaas-type))
-      PROFILES: "((profiles))"
+      PROFILES: ((profiles))
   - task: execute-zookeeper-without-scan-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -662,29 +721,6 @@ jobs:
       CUSTOM_SCRIPT_DIR: template-resource/simple-depls/zookeeper-without-scan/template
       SECRETS_DIR: credentials-resource/simple-depls/zookeeper-without-scan
       MANIFEST_NAME: zookeeper-without-scan.yml
-  - task: convert-bosh-dns-to-ip
-    output_mapping: {result-dir: bosh-generated-config}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          export DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_TARGET%%:25555}
-          export DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|tail -n2|grep Address|cut -d':' -f2)
-          export DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
-          export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
-          echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
-      params:
-        BOSH_TARGET: ((bosh-target))
   - task: generate-empty-ops-and-vars-files
     # this task is required as long as all deployments still don't use ops/vars files
     output_mapping: {result-dir: ops-and-vars-files}
@@ -722,17 +758,30 @@ jobs:
        VARS_FILES_SUFFIX: "*/*vars.yml"
        OPS_FILES_SUFFIX:  "*/*operators.yml"
        BOSH_YAML_FILE: zookeeper-without-scan.yml
+  - task: resolve-manifest-latest-versions
+    input_mapping:
+      templates-resource: paas-templates-zookeeper-without-scan
+      manifest-dir: interpolated-manifest
+      scripts-resource: cf-ops-automation
+    output_mapping: { result-dir: resolved-manifest-versions }
+    file: cf-ops-automation/concourse/tasks/resolve_manifest_latest_versions/task.yml
+    params:
+      STEMCELL_NAME: ((stemcell-main-name))
+      STEMCELL_VERSION: ((stemcell.version))
+      VERSIONS_FILE:  templates-resource/simple-depls/root-deployment.yml
+      MANIFEST_YAML_FILE: manifest-dir/interpolated-zookeeper-without-scan.yml
+      DEPLOYMENT_NAME: zookeeper-without-scan
   - put: zookeeper-without-scan-deployment
     attempts: 2
     on_failure:
       do:
         - task: update-zookeeper-without-scan-files
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: interpolated-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: resolved-manifest-versions}
           output_mapping: {updated-git-resource: failed-zookeeper-without-scan-secrets}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan-last-deployment-failure.yml
-            NEW_FILE: "interpolated-zookeeper-without-scan.yml"
+            NEW_FILE: "zookeeper-without-scan.yml"
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy zookeeper-without-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
@@ -741,15 +790,7 @@ jobs:
             repository: failed-zookeeper-without-scan-secrets
             rebase: true
     params:
-      manifest: final-release-manifest/zookeeper-without-scan.yml
-      stemcells:
-      - ((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz
-      releases: 
-      - "zookeeper_boshrelease/*.tgz"
-      ops_files:
-      - ops-and-vars-files/operators/*
-      vars_files:
-      - ops-and-vars-files/vars/*
+      manifest: resolved-manifest-versions/zookeeper-without-scan.yml
       cleanup: true
       no_redact: false
       dry_run: false
@@ -1003,9 +1044,9 @@ jobs:
         args:
         - -ec
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from version:((ntp_boshrelease-version))" | tee -a result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/zookeeper_boshrelease --from version:((zookeeper_boshrelease-version))" | tee -a result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell-version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp_boshrelease --from tag:((releases.ntp_boshrelease.version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/zookeeper_boshrelease --from tag:v((releases.zookeeper_boshrelease.version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: simple-depls-bosh-generated
   - task: fly-into-concourse
@@ -1026,6 +1067,8 @@ groups:
     - deploy-zookeeper-without-scan
     - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-simple-depls
+    - push-boshreleases
+    - push-stemcell
     - recreate-all
     - recreate-ntp-with-scan
     - recreate-zookeeper-without-scan
@@ -1047,5 +1090,7 @@ groups:
     - cloud-config-and-runtime-config-for-simple-depls
     - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-simple-depls
+    - push-boshreleases
+    - push-stemcell
     - recreate-all
     - retrigger-all-jobs

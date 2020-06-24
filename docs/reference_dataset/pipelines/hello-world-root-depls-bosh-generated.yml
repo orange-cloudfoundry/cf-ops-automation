@@ -69,7 +69,7 @@ resources:
   icon: home-floor-g
   source:
     name: ((stemcell-name-prefix))((stemcell-main-name))
-  version: { version: "((stemcell-version))" }
+  version: { version: "((stemcell.version))" }
 - name: secrets-bosh-deployment-sample
   icon: source-merge
   type: git
@@ -108,7 +108,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["hello-world-root-depls/hello-world-root-depls-versions.yml"]
+    paths: ["hello-world-root-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: paas-templates-full
@@ -119,18 +119,93 @@ resources:
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: nginx
-  icon:  home-floor-b
-  type: bosh-io-release
+  type: git
+  icon:  github-circle
   source:
-    repository: cloudfoundry-community/nginx-release
-  version: { version: ((nginx-version)) }
+    uri: https://github.com//cloudfoundry-community/nginx-release
+    tag_filter: ((releases.nginx.version))
+    skip_ssl_verification: false
+#    access_token: ((bot-github-access-token))
+  version: { ref: ((releases.nginx.version)) }
 - name: ntp
-  icon:  home-floor-b
-  type: bosh-io-release
+  type: git
+  icon:  github-circle
   source:
-    repository: cloudfoundry-community/ntp-release
-  version: { version: ((ntp-version)) }
+    uri: https://github.com//cloudfoundry-community/ntp-release
+    tag_filter: ((releases.ntp.version))
+    skip_ssl_verification: false
+#    access_token: ((bot-github-access-token))
+  version: { ref: ((releases.ntp.version)) }
+- name: vault
+  type: git
+  icon:  github-circle
+  source:
+    uri: https://github.com//cloudfoundry-community/vault-boshrelease
+    tag_filter: v((releases.vault.version))
+    skip_ssl_verification: false
+#    access_token: ((bot-github-access-token))
+  version: { ref: v((releases.vault.version)) }
 jobs:
+- name: push-boshreleases
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+      - get : secrets-hello-world-root-depls-limited
+        params: { submodules: none, depth: 0 }
+      - get: paas-templates-hello-world-root-depls
+        params: { submodules: none, depth: 0 }
+        trigger: true
+    - task: repackage-releases
+      input_mapping: { templates-resource: paas-templates-hello-world-root-depls, secrets: secrets-hello-world-root-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_TARGET: ((bosh-target))
+        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+        ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+    - task: upload-to-director
+      input_mapping: { config-resource: secrets-hello-world-root-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_ENVIRONMENT: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+- name: push-stemcell
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none, depth: 0 }
+        - get : secrets-hello-world-root-depls-limited
+          params: { submodules: none, depth: 0 }
+          trigger: true
+        - get: ((stemcell-main-name))
+          trigger: true
+          attempts: 2
+    - task: upload-to-director
+      input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-hello-world-root-depls-limited }
+      file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
+      params:
+        BOSH_CLIENT: ((bosh-username))
+        BOSH_CLIENT_SECRET: ((bosh-password))
+        BOSH_ENVIRONMENT: ((bosh-target))
+        BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
 - name: cancel-all-bosh-tasks
   on_failure:
     put: failure-alert
@@ -414,15 +489,22 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
+      tarball: false
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
     - get: nginx
       trigger: true
+      tarball: false
       attempts: 2
     - get: ntp
       trigger: true
+      tarball: false
+      attempts: 2
+    - get: vault
+      trigger: true
+      tarball: false
       attempts: 2
     - get: secrets-bosh-deployment-sample
       params: { submodules: none, depth: 0 }
@@ -487,29 +569,6 @@ jobs:
       CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
       SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
       MANIFEST_NAME: bosh-deployment-sample.yml
-  - task: convert-bosh-dns-to-ip
-    output_mapping: {result-dir: bosh-generated-config}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
-      outputs:
-        - name: result-dir
-      run:
-        path: sh
-        args:
-        - -exc
-        - |
-          export DIRECTOR_IP_URL_WITHOUT_PORT=${BOSH_TARGET%%:25555}
-          export DIRECTOR_IP=$(nslookup ${DIRECTOR_IP_URL_WITHOUT_PORT##https://} 2>/dev/null|tail -n2|grep Address|cut -d':' -f2)
-          export DIRECTOR_IP_NO_SPACE=$(echo $DIRECTOR_IP |tr -d [:blank:])
-          export BOSH_ENVIRONMENT="${DIRECTOR_IP_NO_SPACE}"
-          echo '{"target": "'"$BOSH_ENVIRONMENT"'"}' > result-dir/bosh_config.json
-      params:
-        BOSH_TARGET: ((bosh-target))
   - task: generate-empty-ops-and-vars-files
     # this task is required as long as all deployments still don't use ops/vars files
     output_mapping: {result-dir: ops-and-vars-files}
@@ -547,17 +606,30 @@ jobs:
        VARS_FILES_SUFFIX: "*/*vars.yml"
        OPS_FILES_SUFFIX:  "*/*operators.yml"
        BOSH_YAML_FILE: bosh-deployment-sample.yml
+  - task: resolve-manifest-latest-versions
+    input_mapping:
+      templates-resource: paas-templates-bosh-deployment-sample
+      manifest-dir: interpolated-manifest
+      scripts-resource: cf-ops-automation
+    output_mapping: { result-dir: resolved-manifest-versions }
+    file: cf-ops-automation/concourse/tasks/resolve_manifest_latest_versions/task.yml
+    params:
+      STEMCELL_NAME: ((stemcell-main-name))
+      STEMCELL_VERSION: ((stemcell.version))
+      VERSIONS_FILE:  templates-resource/hello-world-root-depls/root-deployment.yml
+      MANIFEST_YAML_FILE: manifest-dir/interpolated-bosh-deployment-sample.yml
+      DEPLOYMENT_NAME: bosh-deployment-sample
   - put: bosh-deployment-sample-deployment
     attempts: 2
     on_failure:
       do:
         - task: update-bosh-deployment-sample-files
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: interpolated-manifest}
+          input_mapping: {reference-resource: secrets-full-writer, generated-resource: resolved-manifest-versions}
           output_mapping: {updated-git-resource: failed-bosh-deployment-sample-secrets}
           file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
           params:
             OLD_FILE: hello-world-root-depls/bosh-deployment-sample/bosh-deployment-sample-last-deployment-failure.yml
-            NEW_FILE: "interpolated-bosh-deployment-sample.yml"
+            NEW_FILE: "bosh-deployment-sample.yml"
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy bosh-deployment-sample manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
@@ -566,17 +638,22 @@ jobs:
             repository: failed-bosh-deployment-sample-secrets
             rebase: true
     params:
-      manifest: final-release-manifest/bosh-deployment-sample.yml
+      manifest: resolved-manifest-versions/bosh-deployment-sample.yml
       # source_file: bosh-generated-config/bosh_config.json
-      stemcells:
-      - ((stemcell-main-name))/stemcell.tgz
-      releases: 
-      - "nginx/*.tgz"
-      - "ntp/*.tgz"
-      ops_files:
-      - ops-and-vars-files/operators/*
-      vars_files:
-      - ops-and-vars-files/vars/*
+#      stemcells:
+#      
+#      - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
+#      
+#      - ((stemcell-main-name))/stemcell.tgz
+#      
+#      releases: 
+#  
+#      - "/*.tgz"
+#  
+#      ops_files:
+#      - ops-and-vars-files/operators/*
+#      vars_files:
+#      - ops-and-vars-files/vars/*
       cleanup: true
       no_redact: false
       dry_run: false
@@ -775,9 +852,10 @@ jobs:
         args:
         - -ec
         - |
-          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from version:((nginx-version))" | tee -a result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from version:((ntp-version))" | tee -a result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from tag:((releases.nginx.version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from tag:((releases.ntp.version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:v((releases.vault.version))" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
       params:
         BUILD_PIPELINE_NAME: hello-world-root-depls-bosh-generated
   - task: fly-into-concourse
@@ -919,6 +997,8 @@ groups:
     - deploy-bosh-deployment-sample
     - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+    - push-boshreleases
+    - push-stemcell
     - recreate-all
     - recreate-bosh-deployment-sample
     - retrigger-all-jobs
@@ -941,5 +1021,7 @@ groups:
     - delete-deployments-review
     - execute-deploy-script
     - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+    - push-boshreleases
+    - push-stemcell
     - recreate-all
     - retrigger-all-jobs
