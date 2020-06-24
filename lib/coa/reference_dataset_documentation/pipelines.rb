@@ -26,15 +26,18 @@ module Coa
         config_option = "-p #{config_repo_path}"
         templates_option = "-t #{template_repo_path}"
         depls_option = "-d #{root_deployment_name}"
+        iaas_type_option = "--iaas openstack"
+        profiles_option = "--profiles vault-profile"
 
-        command = "ruby #{PROJECT_ROOT_DIR}/scripts/generate-depls.rb \
-#{output_option} #{config_option} #{templates_option} #{depls_option}"
+        command = "ruby #{PROJECT_ROOT_DIR}/scripts/generate-depls.rb #{output_option} "
+        command += "#{config_option} #{templates_option} #{depls_option} #{iaas_type_option} #{profiles_option}"
 
-        `#{command}`
+        puts`#{command}`
       end
 
       def validate
         generated_pipeline_list.each do |pipeline_filename|
+          puts "validating #{pipeline_filename}"
           command = "fly validate-pipeline -c #{pipeline_filename} --strict"
           stdout_str, stderr_str, = Open3.capture3(command)
           raise "Invalid generated pipeline (#{pipeline_filename}): #{stderr_str}" unless stderr_str.empty?

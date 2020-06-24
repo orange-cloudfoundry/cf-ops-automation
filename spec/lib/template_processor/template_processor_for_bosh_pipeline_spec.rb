@@ -114,6 +114,8 @@ describe 'BoshPipelineTemplateProcessing' do
           'deploy-shield-expe',
           'execute-deploy-script',
           'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
+          'push-boshreleases',
+          'push-stemcell',
           'recreate-all',
           'recreate-bui',
           'recreate-shield-expe',
@@ -134,6 +136,8 @@ describe 'BoshPipelineTemplateProcessing' do
          'delete-deployments-review',
          'execute-deploy-script',
          'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
+         'push-boshreleases',
+         'push-stemcell',
          'recreate-all',
          'retrigger-all-jobs'] }
     ]
@@ -149,7 +153,7 @@ describe 'BoshPipelineTemplateProcessing' do
             config_file: path/located/in/secrets-repo/pipelines/#{root_deployment_name}-generated.yml
             vars_files:
             - another/path/located/in/secrets-repo/pipelines/credentials-iaas-specific.yml
-            - #{root_deployment_name}/#{root_deployment_name}-versions.yml
+            - #{root_deployment_name}/root-deployment.yml
     YAML
     YAML.safe_load ci_deployments_yaml
   end
@@ -459,6 +463,11 @@ describe 'BoshPipelineTemplateProcessing' do
       end
     end
 
+    # context 'when stemcell offline mode is enabled' do
+    #   let(:expected_stemcell)
+    #
+    # end
+
     context 'when boshrelease offline mode is enabled' do
       let(:expected_boshreleases) do
         { 'cf-routing-release' => 'cloudfoundry-incubator',
@@ -479,8 +488,9 @@ describe 'BoshPipelineTemplateProcessing' do
                 secret_access_key: ((s3-br-secret-key))
                 endpoint: ((s3-br-endpoint))
                 skip_ssl_verification: ((s3-br-skip-ssl-verification))
+                skip_download: true
               version:
-                path: "#{br_repo}/#{br_name}-((#{br_name}-version)).tgz"
+                path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version)).tgz"
           YAML
           YAML.safe_load fragment
         end.flatten
@@ -498,9 +508,10 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML
         YAML.safe_load expected_yaml
       end
-
+      let(:expected_push_stemcell_tasks) { %w[upload-stemcells] }
+      let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases upload-repackaged-releases] }
       it 'generates s3 bosh release resource' do
-        s3_boshreleases = generated_pipeline['resources'].select { |resource| resource['type'] == 's3' }
+        s3_boshreleases = generated_pipeline['resources'].select { |resource| resource['type'] == 's3' && resource['name'] != "((stemcell-main-name))" }
         expect(s3_boshreleases).to include(*expected_s3_boshreleases)
       end
 
@@ -513,13 +524,22 @@ describe 'BoshPipelineTemplateProcessing' do
         expect(boshrelease_get_version).to all(satisfy { |_k, v| v.nil? })
       end
 
-      it 'generates s3 version using path on deployment put' do
-        s3_deployments = expected_s3_deployment_put.flat_map(&:keys)
-        deployment_put_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-          .select { |resource| s3_deployments.include?(resource['put']) }
-          .flat_map { |resource| { resource['put'] => resource['params']['releases'] } }
-        expect(deployment_put_version).to include(*expected_s3_deployment_put)
+      it 'generates push-stemcells tasks' do
+        push_stemcell_job_tasks = generated_pipeline['jobs']
+                                      .select { |job| job['name'] == "push-stemcell" }
+                                      .flat_map { |job| job['plan'] }
+                                      .flat_map { |step| step['task'] }.compact
+        expect(push_stemcell_job_tasks).to match(expected_push_stemcell_tasks)
       end
+
+      it 'generates push-boshreleases tasks' do
+        push_boshreleases_job_tasks = generated_pipeline['jobs']
+                                      .select { |job| job['name'] == "push-boshreleases" }
+                                      .flat_map { |job| job['plan'] }
+                                      .flat_map { |step| step['task'] }.compact
+        expect(push_boshreleases_job_tasks).to match(expected_push_boshreleases_tasks)
+      end
+
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
         expected_init_version = expected_boshreleases.values.flat_map { |get_version| "path:#{get_version}" }
@@ -529,6 +549,79 @@ describe 'BoshPipelineTemplateProcessing' do
           .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
           .flat_map { |task| task['config']['run']['args'] }
         expect(init_args[1]).to include(*expected_init_version)
+      end
+    end
+
+    context 'when precompile mode is disabled' do
+      let(:loaded_config) do
+        my_config_yaml = <<~YAML
+          offline-mode:
+            stemcells: true
+          precompile-mode: false
+        YAML
+        YAML.safe_load(my_config_yaml)
+      end
+      let(:expected_bosh_io_stemcell) do
+        expected_yaml = <<~YAML
+          - name: ((stemcell-main-name))
+            icon: home-floor-l
+            type: s3
+            source: 
+              access_key_id: ((s3-stemcell-access-key-id))
+              bucket: ((s3-stemcell-bucket))
+              endpoint: ((s3-stemcell-endpoint))
+              regexp: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-(.*)-((stemcell-main-name)).tgz
+              region_name: ((s3-stemcell-region-name))
+              secret_access_key: ((s3-stemcell-secret-key))
+              skip_download: true
+              skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+            version:
+              path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
+        YAML
+        YAML.safe_load expected_yaml
+      end
+      let(:expected_push_stemcell_tasks) { %w[upload-stemcells download-stemcell upload-to-director] }
+      let(:expected_push_boshreleases_tasks) { %w[repackage-releases upload-to-director] }
+      let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz' }
+
+      it 'generates bosh-io stemcell with pinned version' do
+        bosh_io_stemcell = generated_pipeline['resources'].select { |resource| resource['name'] == '((stemcell-main-name))' }
+        expect(bosh_io_stemcell).to eq(expected_bosh_io_stemcell)
+      end
+
+      it 'generates bosh_io version using path on get' do
+        stemcell_get_step = generated_pipeline['jobs']
+                                .select { |job| job['name'] == "push-stemcell" }
+                                .flat_map { |job| job['plan'] }
+                                .flat_map { |plan| plan['in_parallel'] }
+                                .compact
+                                .select { |resource| resource['get'] == '((stemcell-main-name))' }
+        expect(stemcell_get_step).to be_empty
+      end
+
+      it 'generates push-stemcell with stemcell upload to director' do
+        push_stemcell_job_tasks = generated_pipeline['jobs']
+                          .select { |job| job['name'] == "push-stemcell" }
+                          .flat_map { |job| job['plan'] }
+                          .flat_map { |step| step['task'] }.compact
+        expect(push_stemcell_job_tasks).to match(expected_push_stemcell_tasks)
+      end
+
+      it 'generates push-boshreleases tasks' do
+        push_boshreleases_job_tasks = generated_pipeline['jobs']
+                                          .select { |job| job['name'] == "push-boshreleases" }
+                                          .flat_map { |job| job['plan'] }
+                                          .flat_map { |step| step['task'] }.compact
+        expect(push_boshreleases_job_tasks).to match(expected_push_boshreleases_tasks)
+      end
+
+      it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
+        init_args = generated_pipeline['jobs']
+                        .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
+                        .flat_map { |job| job['plan'] }
+                        .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
+                        .flat_map { |task| task['config']['run']['args'] }
+        expect(init_args[1]).to include(*expected_stemcell_init)
       end
     end
 
@@ -550,15 +643,33 @@ describe 'BoshPipelineTemplateProcessing' do
             source:
               name: ((stemcell-name-prefix))((stemcell-main-name))
             version:
-              version: ((stemcell-version))
+              version: ((stemcell.version))
         YAML
         YAML.safe_load expected_yaml
       end
-      let(:expected_stemcell_deploy_get) do
-        [{ 'get' => '((stemcell-main-name))', 'trigger' => true, 'attempts' => 2 }] * 2
+      let(:expected_stemcell_upload_task) do
+        [{ "task"=>"download-stemcell",
+           "attempts"=>2,
+           "file"=>"cf-ops-automation/concourse/tasks/download_stemcell/task.yml",
+           "output_mapping"=>{"stemcell"=>"((stemcell-main-name))"},
+           "params"=>
+                 {"STEMCELL_BASE_LOCATION"=>"https://bosh.io/d/stemcells",
+                       "STEMCELL_MAIN_NAME"=>"((stemcell-main-name))",
+                       "STEMCELL_PREFIX"=>"((stemcell-name-prefix))",
+                       "STEMCELL_VERSION"=>"((stemcell.version))"},
+          },
+          {"task"=>"upload-to-director",
+          "file"=>"cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml",
+          "input_mapping"=> {"config-resource"=>"secrets-my-root-depls-limited", "stemcell"=>"((stemcell-main-name))"},
+          "attempts" => 2,
+          "params"=>
+             {"BOSH_CA_CERT"=> "config-resource/shared/certs/internal_paas-ca/server-ca.crt",
+              "BOSH_CLIENT"=>"((bosh-username))",
+              "BOSH_CLIENT_SECRET"=>"((bosh-password))",
+              "BOSH_ENVIRONMENT"=>"((bosh-target))"}
+        }]
       end
-      let(:expected_stemcell_deploy_put) { ['((stemcell-main-name))/stemcell.tgz'] * 2 }
-      let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell-version))" | tee -a result-dir/flight-plan' }
+      let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan' }
 
       it 'generates bosh-io stemcell with pinned version' do
         bosh_io_stemcell = generated_pipeline['resources'].select { |resource| resource['type'] == 'bosh-io-stemcell' }
@@ -566,18 +677,21 @@ describe 'BoshPipelineTemplateProcessing' do
       end
 
       it 'generates bosh_io version using path on get' do
-        stemcell_get_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
+        stemcell_get_step = generated_pipeline['jobs']
+          .select { |job| job['name'] == "push-stemcell" }
+          .flat_map { |job| job['plan'] }
           .flat_map { |plan| plan['in_parallel'] }
           .compact
           .select { |resource| resource['get'] == '((stemcell-main-name))' }
-        expect(stemcell_get_version).to match(expected_stemcell_deploy_get)
+        expect(stemcell_get_step).to be_empty
       end
 
-      it 'generates bosh-io stemcell on deployment put' do
-        deployment_put_version = generated_pipeline['jobs'].flat_map { |job| job['plan'] }
-          .select { |resource| resource['params']&.has_key?('stemcells') }
-          .flat_map { |resource| resource['params']['stemcells'] }
-        expect(deployment_put_version).to match(expected_stemcell_deploy_put)
+      it 'generates push-stemcell with stemcell upload to director' do
+        upload_task = generated_pipeline['jobs']
+          .select { |job| job['name'] == "push-stemcell" }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] }
+        expect(upload_task).to match(expected_stemcell_upload_task)
       end
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do

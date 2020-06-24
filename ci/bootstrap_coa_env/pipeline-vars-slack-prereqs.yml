@@ -1,0 +1,7 @@
+pipeline_vars:
+  slack-proxy:
+  slack-proxy-https-tunnel:
+
+  slack-webhook: https://example.slack.com/webhook
+  slack-channel: channel
+  slack-disable-it: true

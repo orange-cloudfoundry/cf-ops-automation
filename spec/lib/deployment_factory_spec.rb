@@ -6,9 +6,14 @@ describe DeploymentFactory do
   let(:deployment_name) { 'my_deployment' }
   let(:config) { instance_double(Config) }
   let(:versions) do
-    { 'deployment-name' => root_deployment_name, 'stemcell-version' => '10.0',
-      'bosh-version' => '264.10.0',
-      'bosh-openstack-cpi-release-version' => '37' }
+    {
+      'deployment-name' => root_deployment_name,
+      'stemcell' => { 'version' => '10.0' },
+      'releases' => {
+        'bosh' => { 'version' => '264.10.0' },
+        'bosh-openstack-cpi-release' => { 'version' => '37', 'repository' => 'cloudfoundry-incubator/bosh-openstack-cpi-release', 'base_location' => 'https://bosh.io/d/github.com/' }
+      }
+    }
   end
 
   before do
@@ -18,11 +23,11 @@ describe DeploymentFactory do
   end
 
   describe '#initialize' do
-    subject { described_class.new(root_deployment_name, versions, config) }
+    subject(:deployment_factory) { described_class.new(root_deployment_name, versions, config) }
 
     context 'when version is valid' do
       it 'contains a stemcell version' do
-        expect(subject.version_reference).to include('stemcell-version')
+        expect(deployment_factory.version_reference).to include("stemcell" => { "version" => "10.0" } )
       end
     end
 
@@ -30,13 +35,13 @@ describe DeploymentFactory do
       let(:versions) {}
 
       it 'raise an error about stemcell-version' do
-        expect { subject }.to raise_error(RuntimeError, 'invalid version: missing stemcell version')
+        expect { deployment_factory }.to raise_error(RuntimeError, 'invalid version: missing stemcell version')
       end
     end
 
     context 'when config is valid' do
       it 'contains a stemcell name' do
-        expect(subject.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
+        expect(deployment_factory.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
 
@@ -44,7 +49,7 @@ describe DeploymentFactory do
       let(:config) {}
 
       it 'complains about nil config' do
-        expect { subject }.to raise_error(RuntimeError, 'invalid config: cannot be nil')
+        expect { deployment_factory }.to raise_error(RuntimeError, 'invalid config: cannot be nil')
       end
     end
 
@@ -54,7 +59,7 @@ describe DeploymentFactory do
       it 'raises an error about stemcell-name' do
         allow(config).to receive(:stemcell_name).and_return('')
 
-        expect { subject }.to raise_error(RuntimeError, /invalid config: missing stemcell, expected: a config with a stemcell name defined/)
+        expect { deployment_factory }.to raise_error(RuntimeError, /invalid config: missing stemcell, expected: a config with a stemcell name defined/)
       end
     end
   end
@@ -391,11 +396,6 @@ describe DeploymentFactory do
     end
 
     context 'when a deployment is loaded' do
-      let(:versions) do
-        { 'deployment-name' => root_deployment_name, 'stemcell-version' => '10.0',
-          'bosh-version' => '264.10.0',
-          'bosh-openstack-cpi-release-version' => '37' }
-      end
       let(:deployment_factory) { described_class.new(root_deployment_name, versions, config) }
       let(:loaded_deployments) { deployment_factory.load(deployment_name, 'deployment' => bosh_master_deployment) }
       let(:bosh_master_deployment) do
@@ -405,9 +405,6 @@ describe DeploymentFactory do
               bosh:
                 base_location: https://bosh.io/d/github.com/
                 repository: cloudfoundry/bosh
-              bosh-openstack-cpi-release:
-                base_location: https://bosh.io/d/github.com/
-                repository: cloudfoundry-incubator/bosh-openstack-cpi-release
         YAML
         YAML.safe_load(my_yaml)
       end

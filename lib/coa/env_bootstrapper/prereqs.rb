@@ -1,5 +1,6 @@
 require 'yaml'
 require_relative '../utils/coa_logger'
+require_relative '../../active_support_copy_deep_merge'
 
 module Coa
   module EnvBootstrapper
@@ -26,7 +27,7 @@ module Coa
 
       def self.new_from_paths(prereqs_paths)
         prereqs_config = prereqs_paths.inject({}) do |ps, path|
-          ps.merge(YAML.load_file(path))
+          ps.deep_merge(YAML.load_file(path))
         end
         new(prereqs_config)
       end

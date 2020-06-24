@@ -193,9 +193,6 @@ This sections describes the pipelines that COA generates and loads into concours
 * [bosh-pipeline](concourse/pipelines/templates/bosh-pipeline.yml.erb): manages bosh deployments associated to a root-deployment
 * [update-pipeline](concourse/pipelines/templates/update-pipeline.yml.erb): generates updated pipelines related to a root-deployment
 * [news-pipeline](concourse/pipelines/templates/news-pipeline.yml.erb): notifies of new bosh release versions for a root-deployment
-* [s3-br-upload-pipeline](concourse/pipelines/template/s3-br-upload-pipeline.yml.erb): to upload bosh releases used by this root deployment to S3
-* [s3-stemcell-upload-pipeline](concourse/pipelines/template/s3-stemcell-upload-pipeline.yml.erb): to upload stemcells used by this root deployment to S3
-* [sync-helper-pipeline](concourse/pipelines/templates/sync-helper-pipeline.yml.erb): to ease secret repo management
 
 The following diagram illustrates the sequence of pipeline generation and loading
 
@@ -424,12 +421,12 @@ ci-deployment:
         config_file: xxxx/pipelines/ops-depls-generated.yml
         vars_files:
         - xxx/pipelines/credentials-ops-depls-pipeline.yml
-        - xxx/ops-depls-versions.yml
+        - xxx/root-deployment.yml
       ops-depls-cf-apps-generated:
         config_file: xxx/pipelines/ops-depls-cf-apps-generated.yml
         vars_files:
         - xxx/pipelines/credentials-ops-depls-pipeline.yml
-        - xxx/ops-depls-versions.yml
+        - xxx/root-deployment.yml
 ```
 
 ### delete lifecycle support
@@ -480,7 +477,7 @@ The same stemcell generation (currrently `ubuntu-trusty`) is used for all deploy
 or overloaded by operators in [private-config.yml](docs/reference_dataset/config_repository/private-config.yml).
 
 The exact stemcell version (say `3586.25`) is used within a root-deployment as defined by authors in
-[\<root-deployment\>-versions.yml](docs/reference_dataset/template_repository/hello-world-root-depls/hello-world-root-depls-versions.yml)
+[root-deployment.yml](docs/reference_dataset/template_repository/hello-world-root-depls/root-deployment.yml)
 
 # COA development
 

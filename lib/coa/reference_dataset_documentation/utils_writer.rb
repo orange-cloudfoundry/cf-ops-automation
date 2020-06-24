@@ -12,8 +12,7 @@ module Coa
       end
 
       def write_intro
-        write "# Directory structure '#{root_deployment_name}' for  example",
-              ""
+        write("# Directory structure '#{root_deployment_name}' for  example", "")
       end
     end
   end

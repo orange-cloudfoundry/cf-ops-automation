@@ -1,0 +1,114 @@
+---
+resources:
+  - name: templates-commit
+    type: mock
+  - name: secrets-commit
+    type: mock
+  - name: recurrent-trigger
+    type: mock
+
+jobs:
+  - name: bootstrap-all-init-pipelines
+    plan:
+      - get: recurrent-trigger
+        trigger: true
+      - get: templates-commit
+        passed: [sync-feature-branches]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: control-plane
+    plan:
+      - get: templates-commit
+        passed: [bootstrap-all-init-pipelines, sync-feature-branches, update-pipeline]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: sync-feature-branches
+    plan:
+      - get: templates-commit
+        trigger: true
+
+  - name: update-pipeline
+    plan:
+      - get: templates-commit
+        passed: [bootstrap-all-init-pipelines, sync-feature-branches]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+      - get: recurrent-trigger
+        trigger: true
+
+  - name: bosh-pipeline
+    plan:
+      - get: templates-commit
+        passed: [control-plane, s3-br-upload-pipeline, s3-stemcell-upload-pipeline, precompile-pipeline]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: cf-apps-pipeline
+    plan:
+      - get: templates-commit
+        passed: [control-plane]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: concourse-pipeline
+    plan:
+      - get: templates-commit
+        trigger: true
+        passed: [control-plane]
+      - get: secrets-commit
+        trigger: true
+
+  - name: news-pipeline
+    plan:
+      - get: templates-commit
+        passed: [control-plane]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: s3-br-upload-pipeline
+    plan:
+      - get: templates-commit
+        passed: [control-plane]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: s3-stemcell-upload-pipeline
+    plan:
+      - get: templates-commit
+        passed: [control-plane]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: sync-helper-pipeline
+    plan:
+      - get: templates-commit
+        passed: [control-plane]
+        trigger: true
+      - get: secrets-commit
+        trigger: true
+
+  - name: tf-pipeline
+    plan:
+      - get: secrets-commit
+        trigger: true
+      - get: templates-commit
+        passed: [control-plane]
+        trigger: true
+
+  - name: precompile-pipeline
+    plan:
+      - get: secrets-commit
+        trigger: true
+      - get: templates-commit
+        trigger: true
+        passed: [control-plane]

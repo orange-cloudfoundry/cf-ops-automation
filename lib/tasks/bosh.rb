@@ -6,5 +6,7 @@ module Tasks
     require_relative './bosh/delete_deployment'
     require_relative './bosh/cancel_task'
     require_relative './bosh/list_tasks'
+    require_relative './bosh/list_releases'
+    require_relative './bosh/create_release'
   end
 end

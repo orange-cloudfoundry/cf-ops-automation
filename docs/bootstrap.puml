@@ -7,14 +7,16 @@ state bootstrap_all_init_pipelines {
  }
 
 
-init_pipeline --> master_depls_init_generated
-init_pipeline --> ops_depls_init_generated
-init_pipeline --> xx_depls_init_generated
+init_pipeline --> master_depls_update_generated
+init_pipeline --> ops_depls_update_generated
+init_pipeline --> xx_depls_update_generated
 
-master_depls_init_generated --> master_depls_generated: load pipelines specified \n ci-deployment-overview.yml
-ops_depls_init_generated --> news_ops_depls_generated: loads
-ops_depls_init_generated --> sync_helper_ops_depls_generated: loads
-ops_depls_init_generated --> ops_depls_generated: loads
-xx_depls_init_generated --> xx_depls_generated: loads
+master_depls_update_generated --> master_depls_generated: loads pipelines specified \n ci-deployment-overview.yml
+ops_depls_update_generated --> news_ops_depls_generated: loads
+ops_depls_update_generated --> cf_apps_ops_depls_generated: loads
+ops_depls_update_generated --> concourse_ops_depls_generated: loads
+ops_depls_update_generated --> bosh_ops_depls_generated: loads
+ops_depls_update_generated --> bosh_precompile_ops_depls_generated: loads
+xx_depls_update_generated --> xx_depls_generated: loads pipelines specified \n ci-deployment-overview.yml
 
 @enduml

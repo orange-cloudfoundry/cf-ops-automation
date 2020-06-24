@@ -159,7 +159,7 @@ jobs:
               echo "<%= depls %> is  running the latest <%= release %> (ie [${NEW_VERSION}](${RELEASE_URL}))." >${MESSAGE_FILE}
             fi
       params:
-        CURRENT_VERSION: ((<%= release %>-version))
+        CURRENT_VERSION: ((releases.<%= release %>.version))
     - put: new-version-alert
       params:
         channel: ((slack-channel))

@@ -176,5 +176,13 @@ RSpec.configure do |config|
     DockerRegistry2.connect(docker_registry_url, open_timeout: 30, read_timeout: 30)
   end
 
+  def load_fixture(relative_path_from_fixture_dir)
+    base_dir = File.dirname(__FILE__)
+    path = File.join( base_dir, 'lib', 'fixtures', relative_path_from_fixture_dir)
+    raise "File not found: #{path}" unless File.exist?(path)
+
+    YAML.load_file(path)
+  end
+
   DOCKER_REGISTRY_PREFIX = "((docker-registry-url))".freeze
 end

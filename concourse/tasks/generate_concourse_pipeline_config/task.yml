@@ -26,8 +26,9 @@ run:
   path: bash
   args:
   - -ce
-  - ruby --version && cf-ops-automation/concourse/tasks/generate_concourse_pipeline_config/run.rb
-
+  - |
+    ruby --version
+    cf-ops-automation/concourse/tasks/generate_concourse_pipeline_config/run.rb
 params:
   PIPELINES_PATH: 'config-resource/coa/pipelines/generated'
   CONFIG_PATH: 'config-resource/coa/config'

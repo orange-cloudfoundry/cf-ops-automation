@@ -4,7 +4,7 @@ ci-deployment:
     pipelines:
       <%= depls %>-generated:
         vars_files:
-          - <%= depls %>/<%= depls %>-versions.yml
+          - <%= depls %>/root-deployment.yml
       <%= depls %>-cf-apps-generated:
         vars_files:
-          - <%= depls %>/<%= depls %>-versions.yml
+          - <%= depls %>/root-deployment.yml

@@ -76,15 +76,15 @@ describe DirectoryInitializer do
       expect(File.exist?("#{template_dir}/#{root_deployment_name}/template/deploy.sh")).to be_truthy
       expect(File.exist?("#{template_dir}/#{root_deployment_name}/template/cloud-config-tpl.yml")).to be_truthy
       expect(File.exist?("#{template_dir}/#{root_deployment_name}/template/runtime-config-tpl.yml")).to be_truthy
-      expect(File.exist?("#{template_dir}/#{root_deployment_name}/#{root_deployment_name}-versions.yml")).to be_truthy
+      expect(File.exist?("#{template_dir}/#{root_deployment_name}/root-deployment.yml")).to be_truthy
       # expect(File.exist? "#{template_dir}/.gitmodule").to be_truthy
     end
 
     context 'when files are generated with default value' do
-      it '<root_deployment>-versions.yml is valid' do
+      it 'root-deployment.yml is valid' do
         subject.setup_templates!
 
-        versions = RootDeploymentVersion.load_file("#{template_dir}/#{root_deployment_name}/#{root_deployment_name}-versions.yml")
+        versions = RootDeploymentVersion.load_file("#{template_dir}/#{root_deployment_name}/root-deployment.yml")
         expect(versions).not_to be_nil
       end
     end

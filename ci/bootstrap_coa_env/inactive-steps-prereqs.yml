@@ -1,6 +1,7 @@
 inactive_steps:
-- deploy_transient_infra
-- upload_stemcell
-- update_cloud_config
-# - deploy_git_server
-# - run_pipelines
+#  - deploy_git_server
+#  - destroy_pipelines
+  - deploy_transient_infra
+#  - run_pipelines
+  - update_cloud_config
+  - upload_stemcell

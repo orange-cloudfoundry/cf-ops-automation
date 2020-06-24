@@ -1,0 +1,9 @@
+---
+name: simple-depls
+
+releases:
+  ntp_boshrelease:
+    version: "4"
+
+stemcell:
+  version: "3468.1"

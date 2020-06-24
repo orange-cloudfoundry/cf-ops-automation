@@ -117,13 +117,13 @@ describe Config do
 
     before do
       File.open(shared_config_file, 'w') { |file| file.write shared_config_file_content.to_yaml }
+      config.load_config
     end
 
     context 'when default is empty' do
       let(:shared_config_file_content) { { 'default' => {} } }
 
       it 'returns the default stemcell name' do
-        config.load_config
         expect(config.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
@@ -132,7 +132,14 @@ describe Config do
       let(:shared_config_file_content) { { 'default' => { 'stemcell' => 'x' } } }
 
       it 'returns the default stemcell name' do
-        config.load_config
+        expect(config.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
+      end
+    end
+
+    context 'when stemcell is nil' do
+      let(:shared_config_file_content) { { 'default' => { 'stemcell' => nil } } }
+
+      it 'returns the default stemcell name' do
         expect(config.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
@@ -141,18 +148,31 @@ describe Config do
       let(:shared_config_file_content) { { 'default' => { 'stemcell' => {} } } }
 
       it 'returns the default stemcell name' do
-        config.load_config
         expect(config.stemcell_name).to eq(Config::DEFAULT_STEMCELL)
       end
     end
 
-    context 'when stemcell is redefined' do
+    context 'when stemcell is redefined in default' do
       let(:my_stemcell_name) { 'my_stemcell' }
       let(:shared_config_file_content) { { 'default' => { 'stemcell' => { 'name' => my_stemcell_name } } } }
 
       it 'returns the default stemcell name' do
-        config.load_config
         expect(config.stemcell_name).to eq(my_stemcell_name)
+      end
+    end
+
+    context 'when stemcell is redefined in root_deployment' do
+      let(:my_root_deployment_name) { 'my_root_deployment' }
+      let(:my_stemcell_name) { 'my_stemcell' }
+      let(:shared_config_file_content) do
+        {
+          'default' => { 'stemcell' => { 'name' => 'default_stemcell' } },
+          my_root_deployment_name => { 'stemcell' => { 'name' => my_stemcell_name } }
+        }
+      end
+
+      it 'returns overridden stemcell name' do
+        expect(config.stemcell_name(my_root_deployment_name)).to eq(my_stemcell_name)
       end
     end
   end
@@ -185,7 +205,7 @@ describe Config do
     end
   end
 
-  describe 'profiles' do
+  describe '.profiles' do
     subject(:config) { described_class.new('my-public-config.yml', 'private-config.yml', extended_config) }
 
     let(:extended_config) { instance_double(ExtendedConfig) }
@@ -210,6 +230,127 @@ describe Config do
 
       it "returns profiles loaded" do
         expect(config.profiles).to match(expected_profiles)
+      end
+    end
+
+    context "when profiles is overridden" do
+      subject(:config) { described_class.new(shared_config_file, 'not-existing-private-config.yml', extended_config) }
+
+      let(:extended_config_result) { { "default" => { "profiles" => %w[extended-profile] } } }
+      let(:root_deployment_name) { 'my_root' }
+      let(:shared_config_file) { File.join(config_dir, 'my-public-config.yml') }
+
+      before do
+        File.open(shared_config_file, 'w') { |file| file.write shared_config_file_content.to_yaml }
+        config.load_config
+      end
+
+      context "when only default is provided" do
+        let(:shared_config_file_content) { { 'default' => { "profiles" => %w[shared-profile] } } }
+        let(:extended_config_result) { { "default" => { "profiles" => [] } } }
+        let(:expected_profiles) { %w[] }
+
+        it "returns extended profiles default value " do
+          expect(config.profiles(root_deployment_name)).to match(expected_profiles)
+        end
+      end
+
+      context "when default and extended profiles are provided" do
+        let(:shared_config_file_content) { { 'default' => { "profiles" => %w[shared-profile] } } }
+        let(:expected_profiles) { %w[extended-profile] }
+
+        it "always returns extended profiles value" do
+          expect(config.profiles(root_deployment_name)).to match(expected_profiles)
+        end
+      end
+
+      context "when root_deployment, default and extended profiles are provided" do
+        let(:shared_config_file_content) { { 'default' => { "profiles" => %w[shared-profile] }, root_deployment_name => { "profiles" => %w[my-profile] } } }
+        let(:expected_profiles) { %w[my-profile] }
+
+        it "returns root profiles value" do
+          expect(config.profiles(root_deployment_name)).to match(expected_profiles)
+        end
+      end
+    end
+  end
+
+  describe '.bosh_options' do
+    subject(:config) { described_class.new(shared_config_file, 'not-existing-private-config.yml') }
+
+    let(:root_deployment_name) { 'my_root' }
+    let(:shared_config_file) { File.join(config_dir, 'my-public-config.yml') }
+    let(:expected_bosh_options) { { 'cleanup' => true, 'no_redact' => false, 'dry_run' => false, 'fix' => false, 'recreate' => false, 'max_in_flight' => nil, 'skip_drain' => [] } }
+
+    before do
+      File.open(shared_config_file, 'w') { |file| file.write shared_config_file_content.to_yaml }
+      config.load_config
+    end
+
+    context 'when default is empty' do
+      let(:shared_config_file_content) { { 'default' => {} } }
+
+      it 'returns the default bosh options' do
+        expect(config.bosh_options(root_deployment_name)).to eq(expected_bosh_options)
+      end
+    end
+
+    context 'when bosh options does not contain expected key' do
+      let(:shared_config_file_content) { { 'default' => { 'stemcell' => 'x' } } }
+
+      it 'returns the default bosh options' do
+        expect(config.bosh_options(root_deployment_name)).to eq(expected_bosh_options)
+      end
+    end
+
+    context 'when bosh_options is nil' do
+      let(:shared_config_file_content) { { 'default' => { 'bosh-options' => nil } } }
+
+      it 'returns empty options' do
+        expect(config.bosh_options(root_deployment_name)).to be_empty
+      end
+    end
+
+    context 'when bosh options is empty' do
+      let(:shared_config_file_content) { { 'default' => { 'bosh-options' => {} } } }
+
+      it 'returns the default stemcell name' do
+        expect(config.bosh_options(root_deployment_name)).to eq(expected_bosh_options)
+      end
+    end
+
+    context 'when bosh options are overridden by default' do
+      let(:shared_config_file_content) do
+        { 'default' => { 'stemcell' => 'x', 'bosh-options' => { 'fix' => true, 'no_redact' => true, 'max_in_flight' => 5 } } }
+      end
+      let(:expected_bosh_options) { { 'cleanup' => true, 'no_redact' => true, 'dry_run' => false, 'fix' => true, 'recreate' => false, 'max_in_flight' => 5, 'skip_drain' => [] } }
+
+      it 'returns the default bosh options' do
+        expect(config.bosh_options(root_deployment_name)).to eq(expected_bosh_options)
+      end
+    end
+
+    context 'when bosh options are overridden by root_deployment' do
+      let(:shared_config_file_content) do
+        { 'default' => { 'stemcell' => 'x', 'bosh-options' => { 'fix' => true, 'no_redact' => true, 'max_in_flight' => 5 } },
+          root_deployment_name => { 'bosh-options' => { 'cleanup' => false, 'max_in_flight' => 10 } } }
+      end
+      let(:expected_bosh_options) { { 'cleanup' => false, 'no_redact' => true, 'dry_run' => false, 'fix' => true, 'recreate' => false, 'max_in_flight' => 10, 'skip_drain' => [] } }
+
+      it 'returns the default bosh options' do
+        expect(config.bosh_options(root_deployment_name)).to eq(expected_bosh_options)
+      end
+    end
+
+    context 'when bosh options are overridden by nil root_deployment' do
+      let(:shared_config_file_content) do
+        { 'default' => { 'stemcell' => 'x', 'bosh-options' => { 'fix' => true, 'no_redact' => true, 'max_in_flight' => 5 } },
+          root_deployment_name => { 'bosh-options' => nil } }
+      end
+      let(:expected_bosh_options) { { 'cleanup' => true, 'no_redact' => true, 'dry_run' => false, 'fix' => true, 'recreate' => false, 'max_in_flight' => 5, 'skip_drain' => [] } }
+
+      it 'returns the default bosh options' do
+        expect(config.bosh_options(root_deployment_name)).to eq(expected_bosh_options)
       end
     end
   end

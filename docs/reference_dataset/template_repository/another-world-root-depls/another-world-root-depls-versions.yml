@@ -1,7 +1,0 @@
----
-deployment-name: delete-lifecycle-sample
-
-stemcell-version: "3468.25"
-
-nginx-boshrelease-version: "1.12.2"
-ntp-boshrelease-version: "4"

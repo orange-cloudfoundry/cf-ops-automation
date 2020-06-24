@@ -35,7 +35,7 @@ echo "set pipeline"
 "${FLY_CMD}" -t "${FLY_TARGET}" set-pipeline -p "${PREFIX}${PIPELINE_NAME}"  -c "${PIPELINE_FILE_PATH}" \
   ${VAR_FILES} \
   ${PIPELINE_VAR} \
-  -l "${PAAS_TEMPLATES}/${DEPLS}-depls/${DEPLS}-depls-versions.yml"
+  -l "${PAAS_TEMPLATES}/${DEPLS}-depls/root-deployment.yml"
 "${FLY_CMD}" -t ${FLY_TARGET} unpause-pipeline -p "${PIPELINE_NAME}"
 
 

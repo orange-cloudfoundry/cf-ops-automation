@@ -1,0 +1,6 @@
+pipeline_vars:
+  secrets-branch: master
+  paas-templates-branch: master
+  paas-templates-precompile-branch: master
+  cf-ops-automation-branch: master
+  cf-ops-automation-tag-filter: ""

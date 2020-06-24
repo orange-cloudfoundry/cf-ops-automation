@@ -1,4 +1,3 @@
-require 'find'
 require_relative '../../lib/coa/reference_dataset_documentation'
 
 Given("a config repository called {string}") do |string|
@@ -16,13 +15,13 @@ end
 When("with the structures shown in {string} in the {string} readme") do |string1, string2|
   @docs_config = Coa::ReferenceDatasetDocumentation::DocsConfig.new(
     root_deployment_name: @root_deployment_name,
-    config_repo_name:     @config_repo_name,
-    template_repo_name:   @template_repo_name,
-    documentation_path:   string1,
-    readme_filename:      string2
+    config_repo_name: @config_repo_name,
+    template_repo_name: @template_repo_name,
+    documentation_path: string1,
+    readme_filename: string2
   )
   @readme = @docs_config.readme
-  @readme.rewrite_scructure_documentation
+  @readme.rewrite_structure_documentation
 end
 
 Then("the COA creates a set of pipelines") do

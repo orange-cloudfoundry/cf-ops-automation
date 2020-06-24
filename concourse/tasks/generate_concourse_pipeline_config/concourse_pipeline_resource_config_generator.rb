@@ -68,7 +68,7 @@ class ConcoursePipelineResourceConfigGenerator
     current_pipeline_config_file = File.join(@config_dir, "credentials-#{config_file_suffix}.yml")
     puts "INFO - checking existence of #{current_pipeline_config_file}"
     vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
-    versions_file = File.join(@templates_dir, root_deployment, "#{root_deployment}-versions.yml")
+    versions_file = File.join(@templates_dir, root_deployment, "root-deployment.yml")
     raise "Missing version file: #{versions_file}" unless File.exist?(versions_file)
 
     vars_files << versions_file

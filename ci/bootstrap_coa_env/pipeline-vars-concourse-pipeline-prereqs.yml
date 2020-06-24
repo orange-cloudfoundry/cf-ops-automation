@@ -1,0 +1,2 @@
+pipeline_vars:
+  coa-config-key: value-from-coa-config

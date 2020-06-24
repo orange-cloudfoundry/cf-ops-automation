@@ -85,8 +85,7 @@ resources:
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
     disable_forks: true
 
-
-- name: cf-ops-automation-dependencies
+- name: cf-ops-automation-docker-image-source
   icon: github-circle
   type: git
   source:
@@ -130,12 +129,13 @@ jobs:
     plan:
     - get: cf-ops-automation
       resource: ci-develop
-    - get: cf-ops-automation-dependencies
+    - get: cf-ops-automation-docker-image-source
       trigger: true
     - put: cf-ops-automation-docker-image-develop
       attempts: 5
       params:
-        build: cf-ops-automation-dependencies
+        build: cf-ops-automation-docker-image-source
+      get_params: {skip_download: true}
   - name: unit-tests
     on_failure: *on_failure_alert
     serial: true
@@ -267,9 +267,22 @@ jobs:
               echo "  slack-proxy-https-tunnel:" >> prereqs/pipeline-vars-prereqs.yml
               printenv INTEGRATION_TEST_PREREQS > prereqs/integration-test-prereqs.yml
               cf-ops-automation/ci/scripts/deploy-bosh-releases.rb prereqs/bosh-deployment-manifest-prereqs.yml
+              echo "removing 'ntp' release and 'bosh-deployment-sample' deployment"
+              bosh delete-deployment --force -d bosh-deployment-sample --non-interactive
+              bosh delete-deployment --force -d hello-world-root-depls-release-precompile-deployment --non-interactive
+              bosh delete-release --non-interactive ntp
+              bosh deployments
+              bosh releases
+              bosh stemcells
+              echo "Setup DONE"
+
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
+            BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
+            BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
+            BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
+            BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: &integration_tests_setup_credhub_pre_requisites_task_config
@@ -479,7 +492,7 @@ jobs:
           repository: cf-ops-automation-changelog
           rebase: true
       - task: generate-release
-#        image: cf-ops-automation-docker-image
+#        image: cf-ops-automation-docker-image-source
         config:
           platform: linux
           image_resource:
@@ -553,11 +566,12 @@ jobs:
           status: pending
       - put: cf-ops-automation-docker-image-PR
         attempts: 5
+        get_params: {skip_download: true}
         params:
           build: PR-develop
           tag: PR-develop/.git/resource/pr
           tag_prefix: PR-
-        on_failure: &PR_failure
+        on_failure:
           put: PR-develop
           params:
             path: PR-develop
@@ -576,7 +590,6 @@ jobs:
           resource: PR-develop
           trigger: true
           version: every
-          passed: [PullRequests-build-cached-image]
       - put: PR-develop
         params:
           path: cf-ops-automation
@@ -589,7 +602,11 @@ jobs:
         params:
           GIT_SHA_CMD: cat .git/resource/head_sha
           GIT_BRANCH_CMD: cat .git/resource/head_name
-        on_failure: *PR_failure
+        on_failure:
+          put: PR-develop
+          params:
+            path: PR-develop
+            status: failure
 
   - name: PullRequests-AcceptanceTests
     on_failure: *PR_on_failure_alert
@@ -627,7 +644,6 @@ jobs:
           resource: PR-develop
           trigger: true
           version: every
-          passed: [PullRequests-build-cached-image]
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image-PR
@@ -636,6 +652,10 @@ jobs:
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params:
           INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
+          BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
+          BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
+          BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
+          BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: *integration_tests_setup_credhub_pre_requisites_task_config

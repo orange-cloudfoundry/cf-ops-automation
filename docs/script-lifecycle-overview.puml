@@ -11,7 +11,6 @@ box "Ruby ERB template" #LightBlue
 	participant "cf-apps"
 	participant concourse
 	participant news
-	participant "sync-helper"
 	participant init
 end box
 
@@ -87,7 +86,6 @@ autonumber 1
         no specific script support
     end note
 generator -> news: generate pipeline
-generator -> "sync-helper": generate pipeline
 generator -> "init": generate pipeline
 
 

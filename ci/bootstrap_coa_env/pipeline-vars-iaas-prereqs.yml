@@ -1,0 +1,6 @@
+pipeline_vars:
+  iaas-type: openstack
+  stemcell-name-prefix: ""
+  stemcell-main-name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+  stemcell-version: "456.1"
+  bosh-openstack-cpi-release-version: "39"

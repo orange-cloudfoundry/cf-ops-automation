@@ -1,0 +1,707 @@
+---
+guardian-uaa-prod:
+  resources:
+    secrets:
+      local_deployment_scan: true
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    uaa:
+      base_location: https://my-git.com/
+      repository: cloudfoundry/uaa-release
+      version: '17'
+    routing:
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    import:
+      display-name: shield-provisioning
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: &1 []
+  bosh-deployment:
+    active: true
+  status: enabled
+cloudfoundry:
+  status: disabled
+static-brokers:
+  status: disabled
+mongodb:
+  resources:
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    prometheus:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/prometheus-boshrelease
+      version: 26.2.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    broker-smoke-tests:
+    import:
+      display-name: shield-provisioning
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+kafka:
+  releases:
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    kafka:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/kafka-boshrelease
+      version: 2.3.0
+    kafka-service-broker:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/kafka-service-broker-boshrelease
+      version: 2.2.0
+    zookeeper:
+      base_location: https://bosh.io/d/github.com/
+      repository: cppforlife/zookeeper-release
+      version: 0.0.10
+  errands:
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+io-bench:
+  releases:
+  errands:
+    vm_to_benchmark:
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+vault:
+  resources:
+    secrets:
+      local_deployment_scan: true
+  releases:
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    prometheus:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/prometheus-boshrelease
+      version: 26.2.0
+    haproxy:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/haproxy-boshrelease
+      version: 9.8.0
+    broker-registrar:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/broker-registrar-boshrelease
+      version: 3.4.0
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+cf-redis:
+  resources:
+    secrets: {}
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    cf-cli:
+      base_location: https://bosh.io/d/github.com/
+      repository: bosh-packages/cf-cli-release
+      version: 1.5.0
+    cf-redis:
+      base_location: https://bosh.io/d/github.com/
+      repository: pivotal-cf/cf-redis-release
+      version: 434.3.12
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    import:
+      display-name: shield-provisioning
+  manual-errands:
+    deprecate-dedicated-vm-plan:
+    cleanup-metadata-if-dedicated-disabled:
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+cf-rabbit37:
+  resources:
+    secrets:
+      local_deployment_scan: true
+    templates:
+      extended_scan_path:
+        - shared-operators/cf-rabbit
+        - shared-operators/shield
+  releases:
+    cf-cli:
+      base_location: https://bosh.io/d/github.com/
+      repository: bosh-packages/cf-cli-release
+      version: 1.5.0
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    haproxy:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/haproxy-boshrelease
+      version: 9.8.0
+    prometheus:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/prometheus-boshrelease
+      version: 26.2.0
+    cron:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/cron-boshrelease
+      version: 1.3.0
+    cf-rabbitmq:
+      base_location: https://bosh.io/d/github.com/
+      repository: pivotal-cf/cf-rabbitmq-release
+      version: 279.0.0
+    cf-rabbitmq-multitenant-broker:
+      base_location: https://bosh.io/d/github.com/
+      repository: pivotal-cf/cf-rabbitmq-multitenant-broker-release
+      version: 59.0.0
+    cf-rabbitmq-smoke-tests:
+      base_location: https://bosh.io/d/github.com/
+      repository: pivotal-cf/cf-rabbitmq-smoke-tests-release
+      version: 37.0.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  manual-errands:
+    errand-scripting:
+  errands:
+    smoke-tests:
+    import:
+      display-name: shield-provisioning
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+guardian-uaa:
+  resources:
+    secrets:
+      local_deployment_scan: true
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    uaa:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/uaa-release
+      version: '17'
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    import:
+      display-name: shield-provisioning
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+cf-redis-osb:
+  resources:
+    secrets: {}
+    templates:
+      extended_scan_path:
+        - ops-depls/cf-redis
+        - shared-operators/shield
+  releases:
+    cf-cli:
+      base_location: https://bosh.io/d/github.com/
+      repository: bosh-packages/cf-cli-release
+      version: 1.5.0
+    cf-redis:
+      base_location: https://bosh.io/d/github.com/
+      repository: pivotal-cf/cf-redis-release
+      version: 434.3.12
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    import:
+      display-name: shield-provisioning
+  manual-errands:
+    deprecate-dedicated-vm-plan:
+    cleanup-metadata-if-dedicated-disabled:
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+cloudfoundry-mysql:
+  resources:
+    secrets: {}
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    cf-mysql:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/cf-mysql-release
+      version: 36.19.0
+    bpm:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/bpm-release
+      version: 1.1.5
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    prometheus:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/prometheus-boshrelease
+      version: 26.2.0
+    haproxy:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/haproxy-boshrelease
+      version: 9.8.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    smoke-tests:
+    import:
+      display-name: shield-provisioning
+  manual-errands:
+    bootstrap:
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+nfs-volume:
+  resources:
+    secrets:
+      local_deployment_scan: true
+  releases:
+    nfs-volume:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/nfs-volume-release
+      version: 1.1.0
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+ops-depls-release-precompile-deployment:
+  status: disabled
+cloudfoundry-mysql-osb:
+  resources:
+    secrets: {}
+    templates:
+      extended_scan_path:
+        - ops-depls/cloudfoundry-mysql
+        - shared-operators/shield
+  releases:
+    cf-mysql:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/cf-mysql-release
+      version: 36.19.0
+    bpm:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/bpm-release
+      version: 1.1.5
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    prometheus:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/prometheus-boshrelease
+      version: 26.2.0
+    haproxy:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/haproxy-boshrelease
+      version: 9.8.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    import:
+      display-name: shield-provisioning
+  manual-errands:
+    bootstrap:
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+cassandra:
+  resources:
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    bpm:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/bpm-release
+      version: 1.1.5
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    broker-smoke-tests:
+    import:
+      display-name: shield-provisioning
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+memcache:
+  resources:
+    secrets:
+      local_deployment_scan: false
+  releases:
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    memcache:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/memcache-release
+      version: 6.0.0
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+postgresql-docker:
+  resources:
+    templates:
+      extended_scan_path:
+        - shared-operators/shield
+  releases:
+    docker:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-incubator/docker-boshrelease
+      version: 35.3.4
+    prometheus:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-community/prometheus-boshrelease
+      version: 26.2.0
+    shield:
+      base_location: https://bosh.io/d/github.com/
+      repository: starkandwayne/shield-boshrelease
+      version: 8.6.3
+    minio:
+      base_location: https://bosh.io/d/github.com/
+      repository: minio/minio-boshrelease
+      version: 2019-06-27T21-13-50Z
+    generic-scripting:
+      base_location: https://bosh.io/d/github.com/
+      repository: orange-cloudfoundry/generic-scripting-release
+      version: '3'
+  errands:
+    import:
+      display-name: shield-provisioning
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+concourse-dev:
+  releases:
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    concourse:
+      base_location: https://bosh.io/d/github.com/
+      repository: concourse/concourse-bosh-release
+      version: 5.8.1
+    postgres:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/postgres-release
+      version: '40'
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled
+recurrent-tasks:
+  concourse:
+    active: true
+  status: enabled
+osb-cmdb-pipeline:
+  status: disabled
+ops-depls-precompile-deployments:
+  status: disabled
+neo4j-docker:
+  resources:
+    secrets:
+      local_deployment_scan: true
+  releases:
+    routing:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry/routing-release
+      version: 0.197.0
+    docker:
+      base_location: https://bosh.io/d/github.com/
+      repository: cloudfoundry-incubator/docker-boshrelease
+      version: 35.3.4
+  stemcells:
+    bosh-openstack-kvm-ubuntu-xenial-go_agent: {}
+  bosh-options:
+    cleanup: true
+    no_redact: false
+    dry_run: false
+    fix: false
+    recreate: false
+    max_in_flight:
+    skip_drain: *1
+  bosh-deployment:
+    active: true
+  status: enabled

@@ -16,14 +16,14 @@ describe 'generate_concourse_pipeline_config task' do
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
         - config-resource/coa/config/credentials-sample-a-pipeline.yml
-        - templates-resource/a-root-depls/a-root-depls-versions.yml
+        - templates-resource/a-root-depls/root-deployment.yml
       - name: sample-b-generated
         team: upload
         config_file: config-resource/coa/pipelines/generated/upload/a-root-depls/sample-b-generated.yml
         vars_files:
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
-        - templates-resource/a-root-depls/a-root-depls-versions.yml
+        - templates-resource/a-root-depls/root-deployment.yml
       - name: sync-feature-branches
         team: main
         config_file: config-resource/coa/pipelines/generated/main/a-root-depls/sync-feature-branches.yml
@@ -31,7 +31,7 @@ describe 'generate_concourse_pipeline_config task' do
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
         - config-resource/coa/config/credentials-sync-feature-branches-pipeline.yml
-        - templates-resource/a-root-depls/a-root-depls-versions.yml
+        - templates-resource/a-root-depls/root-deployment.yml
     YAML
     YAML.safe_load(expected_yaml)
   end
@@ -44,10 +44,11 @@ describe 'generate_concourse_pipeline_config task' do
       @templates_resource = Dir.mktmpdir
 
       # With concourse (at least 3.14.1) or our proxy, to avoid error like "Put /volumes/63af0bf8-1570-47a8-62be-4c823867b0b2/stream-in?path=.: unexpected EOF"
-      # when tests are executed on local machine, we have to avoid using test datas in current directory, some we copy
+      # when tests are executed on local machine, we have to avoid using test datas in current directory, so we copy
       # to a tmp directory before executing tests.
       current_dir = File.dirname(__FILE__)
       FileUtils.cp_r(current_dir + '/../../../concourse', @coa)
+      FileUtils.cp_r(current_dir + '/../../../lib', @coa)
       @config_resource_source = File.join(current_dir, 'config-resource')
       @templates_resource_source = File.join(current_dir, 'templates-resource')
       FileUtils.cp_r(@config_resource_source + '/.', @config_resource)

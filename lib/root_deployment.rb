@@ -45,6 +45,7 @@ class RootDeployment
   def extract_deployment(name, overview)
     details = overview[name]
     raise "cannot extract deployment #{name} from overview" if details.nil?
+
     Deployment.new(name, details)
   end
 

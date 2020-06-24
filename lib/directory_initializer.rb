@@ -37,7 +37,7 @@ class DirectoryInitializer
     dirs_to_create << "#{@template_dir}/#{@root_deployment_name}/template"
     create_non_existing_dirs dirs_to_create
 
-    files_to_create << "#{@template_dir}/#{@root_deployment_name}/#{@root_deployment_name}-versions.yml"
+    files_to_create << "#{@template_dir}/#{@root_deployment_name}/root-deployment.yml"
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/deploy.sh"
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/cloud-config-tpl.yml"
     files_to_create << "#{@template_dir}/#{@root_deployment_name}/template/runtime-config-tpl.yml"
@@ -95,9 +95,9 @@ class DirectoryInitializer
         'target_name' => 'TO_BE_DEFINED',
         'pipelines' => {
           "#{@root_deployment_name}-generated" =>
-            { 'vars_files' => ["#{@root_deployment_name}/#{@root_deployment_name}-versions.yml"] },
+            { 'vars_files' => ["#{@root_deployment_name}/root-deployment.yml"] },
           "#{@root_deployment_name}-cf-apps-generated" =>
-            { 'vars_files' => ["#{@root_deployment_name}/#{@root_deployment_name}-versions.yml"] }
+            { 'vars_files' => ["#{@root_deployment_name}/root-deployment.yml"] }
         }
       }
     }

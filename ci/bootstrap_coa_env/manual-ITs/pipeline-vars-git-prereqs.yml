@@ -1,12 +1,1 @@
-pipeline_vars:
-  secrets-branch: master
-  paas-templates-branch: master
-  cf-ops-automation-branch: master
-  cf-ops-automation-tag-filter: ""
-
-  iaas-type: openstack-hws
-
-  stemcell-name-prefix: ""
-  stemcell-main-name: bosh-openstack-kvm-ubuntu-xenial-go_agent
-  stemcell-version: "456.1"
-  bosh-openstack-cpi-release-version: "39"
+../pipeline-vars-git-prereqs.yml

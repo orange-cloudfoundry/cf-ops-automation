@@ -23,7 +23,6 @@ module Coa
 
       def write_repo_root_level_tree(repo_path, name)
         list = ""
-
         Dir.chdir(repo_path) do
           list = `tree --noreport -L 1`
         end
