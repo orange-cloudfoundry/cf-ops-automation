@@ -433,7 +433,6 @@ jobs:
 
     - put: <%= name %>
       attempts: 2
-      
       on_failure:
         do:
           - task: update-<%= name %>-files
@@ -489,6 +488,61 @@ jobs:
       params:
         repository: updated-<%= name %>-secrets
         rebase: true
+
+  - name: delete-<%= name %>
+    <% jobs["Utils"] << "delete-#{name}" %>
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none}
+            trigger: true
+            <% uniq_releases.each do |release, info| %>
+          - get: <%= release %>
+            passed: [compile-and-export-<%= release %>]
+            trigger: true
+            attempts: 2
+            <% end %>
+          - get: paas-templates-<%= root_deployment_name %>-limited
+            params: { submodules: none}
+            trigger: true
+      - task: generate-<%= name %>-manifest
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -exc
+              - |
+
+                ruby -ryaml -e 'ruby_manifest = {"name" => "<%= name %>", "instance_groups" => [], "update" => { "canaries" => 1, "max_in_flight" => 1, "canary_watch_time" => "1000-90000", "update_watch_time" => "1000-90000" }, "releases" => [] }; File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "<%= name %>.yml"
+            MANIFEST_CONTENT: '<%= precompile_manifest %>'
+      - put: <%= name %>
+        attempts: 2
+        params:
+          manifest: final-release-manifest/<%= name %>.yml
+          delete:
+            enabled: true
+            force: true
+
 
   <% uniq_releases.each do |release, _info| %>
   - name: compile-and-export-<%= release %>

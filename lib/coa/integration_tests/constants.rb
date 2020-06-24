@@ -50,7 +50,8 @@ module Coa
                 "compile-and-export-ntp" => {},
                 "compile-and-export-nginx" => {},
                 "compile-and-export-vault" => {},
-                "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {}
+                "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
+                "delete-hello-world-root-depls-release-precompile-deployment" => {}
             }
         },
         "hello-world-root-depls-bosh-generated" => {
