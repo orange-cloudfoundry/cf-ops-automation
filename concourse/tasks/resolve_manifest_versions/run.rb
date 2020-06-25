@@ -11,7 +11,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-require_relative './resolve_manifest_latest_versions'
+require_relative './resolve_manifest_versions'
 require_relative '../../../lib/tasks'
 require 'yaml'
 
@@ -29,5 +29,5 @@ manifest = YAML.load_file(manifest_file) || {} if File.exist?(manifest_file)
 puts "Warning: no version detected !" if versions.empty?
 puts "Warning: no manifest detected !" if manifest.empty?
 
-resolve_manifest = ResolveManifestLatestVersions.new(deployment_name, manifest)
+resolve_manifest = ResolveManifestVersions.new(deployment_name, manifest)
 resolve_manifest.process(versions, stemcell_name)

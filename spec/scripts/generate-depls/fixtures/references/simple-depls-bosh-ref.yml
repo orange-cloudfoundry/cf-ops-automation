@@ -558,7 +558,7 @@ jobs:
       manifest-dir: interpolated-manifest
       scripts-resource: cf-ops-automation
     output_mapping: { result-dir: resolved-manifest-versions }
-    file: cf-ops-automation/concourse/tasks/resolve_manifest_latest_versions/task.yml
+    file: cf-ops-automation/concourse/tasks/resolve_manifest_versions/task.yml
     params:
       STEMCELL_NAME: ((stemcell-main-name))
       STEMCELL_VERSION: ((stemcell.version))
@@ -764,7 +764,7 @@ jobs:
       manifest-dir: interpolated-manifest
       scripts-resource: cf-ops-automation
     output_mapping: { result-dir: resolved-manifest-versions }
-    file: cf-ops-automation/concourse/tasks/resolve_manifest_latest_versions/task.yml
+    file: cf-ops-automation/concourse/tasks/resolve_manifest_versions/task.yml
     params:
       STEMCELL_NAME: ((stemcell-main-name))
       STEMCELL_VERSION: ((stemcell.version))
