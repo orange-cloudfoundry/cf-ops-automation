@@ -232,16 +232,16 @@ resources:
 <% uniq_releases.sort.each do |release, info| %>
 - name: <%= release %>
   <% if offline_boshreleases_enabled %>
-  icon: home-floor-a
+  icon: home-floor-<%= precompile_pipeline_enabled ? "b" : "a" %>
   type: s3
   source:
-    bucket: ((s3-br-bucket))
-    region_name: ((s3-br-region-name))
+    bucket: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-bucket))
+    region_name: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-region-name))
     regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*).tgz
-    access_key_id: ((s3-br-access-key-id))
-    secret_access_key: ((s3-br-secret-key))
-    endpoint: ((s3-br-endpoint))
-    skip_ssl_verification: ((s3-br-skip-ssl-verification))
+    access_key_id: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-access-key-id))
+    secret_access_key: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-secret-key))
+    endpoint: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-endpoint))
+    skip_ssl_verification: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-skip-ssl-verification))
     skip_download: true
   version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version)).tgz }
   <% else %>

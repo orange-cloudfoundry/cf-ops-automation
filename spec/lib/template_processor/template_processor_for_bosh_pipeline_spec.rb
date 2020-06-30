@@ -463,31 +463,26 @@ describe 'BoshPipelineTemplateProcessing' do
       end
     end
 
-    # context 'when stemcell offline mode is enabled' do
-    #   let(:expected_stemcell)
-    #
-    # end
-
     context 'when boshrelease offline mode is enabled' do
       let(:expected_boshreleases) do
         { 'cf-routing-release' => 'cloudfoundry-incubator',
           'route-registrar-boshrelease' => 'cloudfoundry-community',
           'haproxy-boshrelease' => 'cloudfoundry-community' }
       end
-      let(:expected_s3_boshreleases) do
+      let(:expected_s3_precompiled_boshreleases) do
         expected_boshreleases.map do |br_name, br_repo|
           fragment = <<~YAML
             - name: #{br_name}
-              icon: home-floor-a
+              icon: home-floor-b
               type: s3
               source:
-                bucket: ((s3-br-bucket))
-                region_name: ((s3-br-region-name))
+                bucket: ((s3-compiled-release-bucket))
+                region_name: ((s3-compiled-release-region-name))
                 regexp: #{br_repo}/#{br_name}-(.*).tgz
-                access_key_id: ((s3-br-access-key-id))
-                secret_access_key: ((s3-br-secret-key))
-                endpoint: ((s3-br-endpoint))
-                skip_ssl_verification: ((s3-br-skip-ssl-verification))
+                access_key_id: ((s3-compiled-release-access-key-id))
+                secret_access_key: ((s3-compiled-release-secret-key))
+                endpoint: ((s3-compiled-release-endpoint))
+                skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
                 skip_download: true
               version:
                 path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version)).tgz"
@@ -510,9 +505,9 @@ describe 'BoshPipelineTemplateProcessing' do
       end
       let(:expected_push_stemcell_tasks) { %w[upload-stemcells] }
       let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases upload-repackaged-releases] }
-      it 'generates s3 bosh release resource' do
+      it 'generates s3 precompiled bosh release resource' do
         s3_boshreleases = generated_pipeline['resources'].select { |resource| resource['type'] == 's3' && resource['name'] != "((stemcell-main-name))" }
-        expect(s3_boshreleases).to include(*expected_s3_boshreleases)
+        expect(s3_boshreleases).to include(*expected_s3_precompiled_boshreleases)
       end
 
       it 'does not generate s3 version using path on get' do
@@ -552,7 +547,51 @@ describe 'BoshPipelineTemplateProcessing' do
       end
     end
 
-    context 'when precompile mode is disabled' do
+
+    context 'when precompile mode is disabled with offline boshreleases' do
+      let(:loaded_config) do
+        my_config_yaml = <<~YAML
+          offline-mode:
+            stemcells: true
+            boshreleases: true
+          precompile-mode: false
+        YAML
+        YAML.safe_load(my_config_yaml)
+      end
+      let(:expected_boshreleases) do
+        { 'cf-routing-release' => 'cloudfoundry-incubator',
+          'route-registrar-boshrelease' => 'cloudfoundry-community',
+          'haproxy-boshrelease' => 'cloudfoundry-community' }
+      end
+      let(:expected_s3_boshreleases) do
+        expected_boshreleases.map do |br_name, br_repo|
+          fragment = <<~YAML
+            - name: #{br_name}
+              icon: home-floor-a
+              type: s3
+              source:
+                bucket: ((s3-br-bucket))
+                region_name: ((s3-br-region-name))
+                regexp: #{br_repo}/#{br_name}-(.*).tgz
+                access_key_id: ((s3-br-access-key-id))
+                secret_access_key: ((s3-br-secret-key))
+                endpoint: ((s3-br-endpoint))
+                skip_ssl_verification: ((s3-br-skip-ssl-verification))
+                skip_download: true
+              version:
+                path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version)).tgz"
+          YAML
+          YAML.safe_load fragment
+        end.flatten
+      end
+
+      it 'generates s3 bosh release resource' do
+        s3_boshreleases = generated_pipeline['resources'].select { |resource| resource['type'] == 's3' && resource['name'] != "((stemcell-main-name))" }
+        expect(s3_boshreleases).to include(*expected_s3_boshreleases)
+      end
+    end
+
+    context 'when precompile mode is disabled without offline boshreleases' do
       let(:loaded_config) do
         my_config_yaml = <<~YAML
           offline-mode:
@@ -566,7 +605,7 @@ describe 'BoshPipelineTemplateProcessing' do
           - name: ((stemcell-main-name))
             icon: home-floor-l
             type: s3
-            source: 
+            source:
               access_key_id: ((s3-stemcell-access-key-id))
               bucket: ((s3-stemcell-bucket))
               endpoint: ((s3-stemcell-endpoint))
@@ -580,6 +619,7 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML
         YAML.safe_load expected_yaml
       end
+
       let(:expected_push_stemcell_tasks) { %w[upload-stemcells download-stemcell upload-to-director] }
       let(:expected_push_boshreleases_tasks) { %w[repackage-releases upload-to-director] }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz' }
