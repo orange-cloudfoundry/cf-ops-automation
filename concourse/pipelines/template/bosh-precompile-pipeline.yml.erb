@@ -176,7 +176,7 @@ resources:
 
   <% if offline_boshreleases_enabled %>
   - name: compiled-<%= release %>
-    icon: home-floor-a
+    icon: home-floor-b
     type: s3
     source:
       bucket: ((s3-compiled-release-bucket))
@@ -255,7 +255,7 @@ jobs:
           SECRET_ACCESS_KEY: ((s3-br-secret-key))
           ENDPOINT: ((s3-br-endpoint))
           SKIP_SSL_VERIFICATION: ((s3-br-skip-ssl-verification))
-        <% else %>
+        <% end %>
       - task: upload-to-director
         attempts: 2
         input_mapping: { config-resource: secrets-full-writer }
@@ -265,7 +265,6 @@ jobs:
           BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_ENVIRONMENT: ((bosh-target))
           BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
-    <% end %>
 
   - name: push-stemcell
     <% jobs['Utils'] << 'push-stemcell' %>
