@@ -237,13 +237,14 @@ resources:
   source:
     bucket: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-bucket))
     region_name: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-region-name))
-    regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*).tgz
+    regexp: <%= info['repository']&.split('/')&.first %>/<%= release %>-(.*)<%= precompile_pipeline_enabled ? "-(.*)-(.*)-((stemcell.version))" : "" %>.tgz
     access_key_id: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-access-key-id))
     secret_access_key: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-secret-key))
     endpoint: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-endpoint))
     skip_ssl_verification: ((s3-<%= precompile_pipeline_enabled ? "compiled-release" : "br" %>-skip-ssl-verification))
     skip_download: true
-  version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version)).tgz }
+  version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version))<%= precompile_pipeline_enabled ? "-((s3-compiled-release-os))-((stemcell.version))" : "" %>.tgz }
+
   <% else %>
   type: git
   icon:  github-circle
@@ -1124,7 +1125,7 @@ jobs:
   <% uniq_releases.sort.each do |name, info| %>
     <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
     <% if offline_boshreleases_enabled %>
-          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((releases.<%= name %>.version)).tgz" | tee -a result-dir/flight-plan
+          echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((releases.<%= name %>.version))<%= precompile_pipeline_enabled ? "-((s3-compiled-release-os))-((stemcell.version))" : "" %>.tgz" | tee -a result-dir/flight-plan
     <% else %>
           echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= PipelineHelpers.tag_prefix(info) %>((releases.<%= name %>.version))" | tee -a result-dir/flight-plan
     <% end %>

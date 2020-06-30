@@ -463,7 +463,7 @@ describe 'BoshPipelineTemplateProcessing' do
       end
     end
 
-    context 'when boshrelease offline mode is enabled' do
+    context 'when boshrelease offline mode is enabled with precompilation' do
       let(:expected_boshreleases) do
         { 'cf-routing-release' => 'cloudfoundry-incubator',
           'route-registrar-boshrelease' => 'cloudfoundry-community',
@@ -478,14 +478,14 @@ describe 'BoshPipelineTemplateProcessing' do
               source:
                 bucket: ((s3-compiled-release-bucket))
                 region_name: ((s3-compiled-release-region-name))
-                regexp: #{br_repo}/#{br_name}-(.*).tgz
+                regexp: #{br_repo}/#{br_name}-(.*)-(.*)-(.*)-((stemcell.version)).tgz
                 access_key_id: ((s3-compiled-release-access-key-id))
                 secret_access_key: ((s3-compiled-release-secret-key))
                 endpoint: ((s3-compiled-release-endpoint))
                 skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
                 skip_download: true
               version:
-                path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version)).tgz"
+                path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version))-((s3-compiled-release-os))-((stemcell.version)).tgz"
           YAML
           YAML.safe_load fragment
         end.flatten
