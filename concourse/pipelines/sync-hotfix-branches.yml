@@ -10,6 +10,7 @@ resource_types:
     type: docker-image
     source:
       repository: ((docker-registry-url))orangecloudfoundry/git-branch-heads-resource
+      tag: 1.1.0
 
 resources:
 
