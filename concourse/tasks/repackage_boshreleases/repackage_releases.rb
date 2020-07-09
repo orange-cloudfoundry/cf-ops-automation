@@ -37,9 +37,21 @@ class RepackageReleases
         clean_git_clone(git_clone_path, logs_path)
         successfully_processed << name
       rescue CloneError, Tasks::Bosh::BoshCliError => e
+        puts "Error detected while processing #{name}"
         errors.store(name, e)
       end
     end
+    generate_boshrelease_namespaces(repackaged_releases_path, successfully_processed)
+
+    unless errors.empty?
+      File.open(File.join(repackaged_releases_path, 'errors.yml'), 'w+') { |file| file.write(YAML.dump(errors)) }
+      raise errors.to_s
+    end
+  end
+
+  private
+
+  def generate_boshrelease_namespaces(repackaged_releases_path, successfully_processed)
     File.open(File.join(repackaged_releases_path, 'boshreleases-namespaces.csv'), 'w+') do |file|
       successfully_processed.each do |name|
         version = @root_deployment.release_version(name)
@@ -53,11 +65,7 @@ class RepackageReleases
         file.write(namespace_reference)
       end
     end
-
-    raise errors.to_s unless errors.empty?
   end
-
-  private
 
   def clean_git_clone(git_clone_path, logs_path)
     raise "Invalid git_clone_path: #{git_clone_path}" if git_clone_path.to_s.empty? || git_clone_path == '/' || git_clone_path == '*'

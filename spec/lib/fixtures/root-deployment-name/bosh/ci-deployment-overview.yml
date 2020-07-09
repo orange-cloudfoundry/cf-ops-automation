@@ -9,4 +9,3 @@ ci-deployment:
       bosh-cf-apps-generated:
         vars_files:
         - bosh/root-deployment.yml
-

@@ -9,4 +9,3 @@ ci-deployment:
       cf_apps-cf-apps-generated:
         vars_files:
         - cf_apps/root-deployment.yml
-

@@ -265,7 +265,28 @@ jobs:
           BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_ENVIRONMENT: ((bosh-target))
           BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
-
+      - task: check-repackaging-errors
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))governmentpaas/curl-ssl
+              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          inputs:
+            - name: repackaged-releases
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd repackaged-releases
+                if [ -e errors.yml ]; then
+                  cat errors.yml
+                  exit 1
+                else
+                  echo "No errors detected"
+                fi
   - name: push-stemcell
     <% jobs['Utils'] << 'push-stemcell' %>
     on_failure:
@@ -379,7 +400,7 @@ jobs:
         run:
           path: sh
           args:
-            - -exc
+            - -ec
             - |
               cd stemcell
               STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
@@ -408,7 +429,7 @@ jobs:
         run:
           path: sh
           args:
-            - -exc
+            - -ec
             - |
               git config --global user.email "$GIT_USER_EMAIL"
               git config --global user.name "$GIT_USER_NAME"
@@ -526,7 +547,7 @@ jobs:
           run:
             path: sh
             args:
-              - -exc
+              - -ec
               - |
 
                 ruby -ryaml -e 'ruby_manifest = {"name" => "<%= name %>", "instance_groups" => [], "update" => { "canaries" => 1, "max_in_flight" => 1, "canary_watch_time" => "1000-90000", "update_watch_time" => "1000-90000" }, "releases" => [] }; File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
@@ -626,7 +647,7 @@ jobs:
           run:
             path: sh
             args:
-              - -exc
+              - -ec
               - |
                 RELEASE_INFO=$(bosh inspect-local-release --json release/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export RELEASE_NAME=$(echo ${RELEASE_INFO} | jq -r '.["name"]')
@@ -682,7 +703,7 @@ jobs:
           run:
             path: sh
             args:
-              - -exc
+              - -ec
               - |
                 bosh inspect-local-release compiled-release/*.tgz
                 bosh upload-release compiled-release/*.tgz

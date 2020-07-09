@@ -328,6 +328,28 @@ jobs:
         BOSH_ENVIRONMENT: ((bosh-target))
         BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
     <% end %>
+    - task: check-repackaging-errors
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: repackaged-releases
+        run:
+          path: sh
+          args:
+            - -ec
+            - |
+              cd repackaged-releases
+              if [ -e errors.yml ]; then
+                cat errors.yml
+                exit 1
+              else
+                echo "No errors detected"
+              fi
 
 - name: push-stemcell
     <% jobs['utils'] << 'push-stemcell' %>

@@ -44,7 +44,9 @@ run:
       ruby cf-ops-automation/concourse/tasks/repackage_boshreleases/run.rb missing-s3-boshreleases/missing-s3-releases.yml
       exit_code=$?
       ls -l ${REPACKAGED_RELEASES_PATH}
-      exit ${exit_code}
+      if [ ${exit_code} -ne 0 ]; then
+        echo "WARNING: fail to repackage all releases, please check ${REPACKAGED_RELEASES_PATH}/errors.yml"
+      fi
 params:
   GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
   GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"

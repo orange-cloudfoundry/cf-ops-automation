@@ -125,15 +125,22 @@ describe RepackageReleases do
 
       context "when fail to clone postgres" do
         it "repackages other boshreleases (ie one without errors)" do
-          expect { repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path) }.
-            to raise_error(RuntimeError) do |error|
-                expect(error.message).to start_with('{"postgres"=>#<CloneError: Error xxx. Failed to clone \'postgres\'')
-            end
+          expect { run_process }.to raise_error(RuntimeError) do |error|
+            expect(error.message).to start_with('{"postgres"=>#<CloneError: Error xxx. Failed to clone \'postgres\'')
+          end
 
           expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("prometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\n")
           expect(bosh_list_releases).to have_received(:execute).once.times
           expect(Open3).to have_received(:popen2e).exactly(3).times
           expect(bosh_create_release).to have_received(:execute).exactly(2).times # only for prometheus and shield, cloning failure for postgres and
+        end
+
+        it "creates an error log" do
+          begin
+            run_process
+          rescue RuntimeError
+          end
+          expect(File.size?(File.join(repackaged_releases_path, 'errors.yml'))).to be > 100
         end
       end
 
