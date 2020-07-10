@@ -39,13 +39,13 @@ describe 'repackage_releases task' do
       expect(@output).to include("no address for dummy-bosh")
     end
 
-    xit 'generates an error log file' do
+    it 'generates an error log file' do
       puts
-      expect(File).to exist(File.join(@logs_dir, 'error.log'))
+      expect(File).to exist(File.join(@repackaged_releases_dir, 'errors.yml'))
     end
 
-    it 'returns with exit status 1' do
-      expect(@fly_status.exitstatus).to eq(1)
+    it 'exits without errors as it should be check by another task' do
+      expect(@fly_status).to be_nil
     end
 
     it 'does not generate fly error' do
@@ -86,6 +86,5 @@ describe 'repackage_releases task' do
                           "ROOT_DEPLOYMENT_NAME" => nil }
       expect(task['params']).to eq(expected_params)
     end
-
   end
 end

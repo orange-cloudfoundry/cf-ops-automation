@@ -63,11 +63,11 @@ describe RepackageReleases do
   end
   let(:defined_releases_versions) do
     {
-      'postgres' => { 'version' => '1.17.2', 'repository' => 'cloudfoundry/postgres-release' },
+      'postgres' => { 'version' => '1.17.2', 'repository' => 'cloudfoundry/postgres-release', 'tag_prefix' => 'v' },
       'prometheus' => { 'version' => '270.11.0', 'repository' => 'cloudfoundry-community/prometheus-boshrelease' },
       'routing' => { 'version' => '0.195.0', 'repository' => 'cloudfoundry/routing-release' },
-      'shield' => { 'version' => '8.6.3', 'repository' => 'starkandwayne/shield-boshrelease' },
-      'uaa' => { 'version' => '74.13.0', 'repository' => 'cloudfoundry/uaa-release' }
+      'shield' => { 'version' => '8.6.3', 'repository' => 'starkandwayne/shield-boshrelease', 'tag_prefix' => 'my_prefix' },
+      'uaa' => { 'version' => '74.13.0', 'repository' => 'cloudfoundry/uaa-release', 'tag_prefix' => '' }
     }
   end
 
@@ -75,6 +75,7 @@ describe RepackageReleases do
     allow(root_deployment).to receive(:releases_git_urls).and_return(root_deployment_git_urls_response)
     allow(root_deployment).to receive(:release_version) { |name| defined_releases_versions.dig(name, 'version') }
     allow(root_deployment).to receive(:release) { |name| defined_releases_versions.dig(name) }
+    allow(root_deployment).to receive(:release_tag_prefix) { |name| defined_releases_versions.dig(name, 'tag_prefix') }
     allow(bosh_list_releases).to receive(:execute).and_return(list_releases_response)
     allow(bosh_create_release).to receive(:execute).and_return(create_release_response)
   end
@@ -117,6 +118,9 @@ describe RepackageReleases do
 
         allow(stdout_and_stderr_failure).to receive(:gets).and_return('Error xxx. ', nil)
         allow(Open3).to receive(:popen2e).with("git clone \"https://my-private-github.com/cloudfoundry/postgres-release\" \"#{File.join(base_git_clones_path, 'postgres')}\"").and_yield(nil, stdout_and_stderr_failure, wait_thr_failure)
+
+        allow(Open3).to receive(:capture2).and_return(["HEAD is now at 3e5c885r... My commit", instance_double(Process::Status, success?: true)])
+
 
         allow(Dir).to receive(:exist?) { |git_clone_path| git_clone_path.start_with?(base_git_clones_path) }
         allow(FileUtils).to receive(:rm_rf)
@@ -176,7 +180,7 @@ describe RepackageReleases do
 
         it "raises an error" do
           expect { repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path) }.
-            to raise_error(Tasks::Bosh::BoshCliError, error_message)
+            to raise_error(RuntimeError, /"Bosh director"=>#<Tasks::Bosh::BoshCliError: Stderr: \(Tasks::Bosh::BoshCliError\).*/)
         end
       end
     end
@@ -194,21 +198,25 @@ describe RepackageReleases do
         allow(stdout_and_stderr).to receive(:gets).and_return('Cloned git repository', nil)
         allow(Open3).to receive(:popen2e).and_yield(nil, stdout_and_stderr, wait_thr)
 
+        allow(Open3).to receive(:capture2).and_return(["HEAD is now at 3e5c885r... My commit", instance_double(Process::Status, success?: true)])
+
         allow(Dir).to receive(:exist?) { |git_clone_path| git_clone_path.start_with?(base_git_clones_path) }
         allow(FileUtils).to receive(:rm_rf)
 
       end
 
-        it "repackages other boshreleases (ie one without errors)" do
-          expect(repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path)).to be_nil
+      it "repackages other boshreleases (ie one without errors)" do
+        expect(repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path)).to be_nil
 
-          expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("postgres-1.17.2,cloudfoundry\nprometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\nuaa-74.13.0,cloudfoundry\n")
-          expect(bosh_list_releases).to have_received(:execute).once.times
-          expect(Open3).to have_received(:popen2e).exactly(4).times
-          expect(bosh_create_release).to have_received(:execute).exactly(4).times # for all deployment except shield
-        end
-
+        expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("postgres-1.17.2,cloudfoundry\nprometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\nuaa-74.13.0,cloudfoundry\n")
+        expect(bosh_list_releases).to have_received(:execute).once.times
+        expect(Open3).to have_received(:popen2e).exactly(4).times
+        expect(bosh_create_release).to have_received(:execute).exactly(4).times # for all deployment except shield
+        expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/postgres && git checkout v1.17.2")
+        expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/prometheus && git checkout 270.11.0")
+        expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/shield && git checkout my_prefix8.6.3")
+        expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/uaa && git checkout 74.13.0")
+      end
     end
-
   end
 end

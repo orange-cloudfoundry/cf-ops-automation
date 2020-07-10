@@ -11,7 +11,7 @@ ci-deployment:
       hello-world-root-depls-bosh-generated:
         team: main
         vars_files:
-          - hello-world-root-depls/root-deployment.yml
-          - shared/concourse-credentials.yml
+        - hello-world-root-depls/root-deployment.yml
+        - shared/concourse-credentials.yml
       hello-world-root-depls-concourse-generated:
         team: main

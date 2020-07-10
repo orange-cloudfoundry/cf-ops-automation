@@ -28,7 +28,14 @@ class RepackageReleases
   def process(repackaged_releases_path, base_git_clones_path, logs_path)
     errors = {}
     successfully_processed = []
-    filter_releases.each do |name, git_url|
+    begin
+      releases_not_uploaded_to_director = filter_releases
+    rescue Tasks::Bosh::BoshCliError, Resolv::ResolvError => e
+      puts "Error detected while filtering bosh director releases"
+      errors.store("Bosh director", e)
+      releases_not_uploaded_to_director = {}
+    end
+    releases_not_uploaded_to_director.each do |name, git_url|
       puts "Processing #{name} boshrelease from #{git_url}"
       begin
         git_clone_path = clone_git_repository(name, git_url, base_git_clones_path, logs_path)
@@ -101,6 +108,13 @@ class RepackageReleases
       error_message += "Failed to clone '#{boshrelease_name}' from '#{git_url}'" unless status.success?
     end
     raise CloneError, error_message unless status&.success? && Dir.exist?(git_clone_path)
+
+    git_tag_name = "#{@root_deployment.release_tag_prefix(boshrelease_name)}#{@root_deployment.release_version(boshrelease_name)}"
+    puts "Checkout #{git_tag_name}"
+    cmd_line = "cd #{git_clone_path} && git checkout #{git_tag_name}"
+    stdout_and_stderr, status = Open3.capture2(cmd_line)
+    puts stdout_and_stderr
+    raise CloneError, stdout_and_stderr unless status&.success?
 
     git_clone_path
   end

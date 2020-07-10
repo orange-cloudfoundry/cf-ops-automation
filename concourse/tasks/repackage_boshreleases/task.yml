@@ -33,6 +33,7 @@ run:
   args:
     - -c
     - |
+      git config --global advice.detachedHead false
       git config --global user.email "$GIT_USER_EMAIL"
       git config --global user.name "$GIT_USER_NAME"
       export TEMPLATES_PATH="${PWD}/templates-resource"
@@ -46,6 +47,7 @@ run:
       ls -l ${REPACKAGED_RELEASES_PATH}
       if [ ${exit_code} -ne 0 ]; then
         echo "WARNING: fail to repackage all releases, please check ${REPACKAGED_RELEASES_PATH}/errors.yml"
+        cat ${REPACKAGED_RELEASES_PATH}/errors.yml
       fi
 params:
   GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
