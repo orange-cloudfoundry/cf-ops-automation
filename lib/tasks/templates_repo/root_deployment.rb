@@ -8,6 +8,7 @@ module Tasks
 
       DEFAULT_GIT_URL = 'https://github.com/'.freeze
       DEFAULT_TAG_PREFIX = 'v'.freeze
+      DEFAULT_SKIP_CHECKOUT = true
 
       def initialize(name, basedir)
         raise InvalidTaskParameter, "Error: missing root deployment name ('#{name}') or base_dir ('#{basedir}')" if name.to_s.empty? || basedir.to_s.empty?
@@ -42,15 +43,20 @@ module Tasks
         @releases.dig(name, 'tag_prefix') || DEFAULT_TAG_PREFIX
       end
 
+      def release_skip_branch_checkout(name)
+        value = @releases.dig(name, 'skip_branch_checkout')
+        value.nil? ? DEFAULT_SKIP_CHECKOUT : value
+      end
+
       private
 
       def load_root_deployment_yml(basedir, name)
         root_deployment_file = File.join(basedir, name, 'root-deployment.yml')
-        root_deployment_loaded = if File.exist?(root_deployment_file)
-                                   YAML.load_file(root_deployment_file) || {}
-                                 else
-                                   {}
-                                 end
+        if File.exist?(root_deployment_file)
+          YAML.load_file(root_deployment_file) || {}
+        else
+          {}
+        end
       end
 
       def add_default_base_location

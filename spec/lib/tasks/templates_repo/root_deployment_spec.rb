@@ -4,9 +4,10 @@ require 'fileutils'
 require 'tasks'
 
 describe Tasks::TemplatesRepo::RootDeployment do
+  subject(:root_deployment) { described_class.new(my_root_deployment_name, my_root_deployment_base_dir) }
+
   let(:my_root_deployment_name) { 'my-root-deployment' }
   let(:my_root_deployment_base_dir) { 'templates-repo-dir' }
-  let(:root_deployment) { described_class.new(my_root_deployment_name, my_root_deployment_base_dir) }
 
   before do
     allow(File).to receive(:exist?).with(File.join(my_root_deployment_base_dir, my_root_deployment_name, 'root-deployment.yml')).and_return(true)
@@ -116,6 +117,61 @@ describe Tasks::TemplatesRepo::RootDeployment do
       it "removes uncomplete boshrelease" do
         expected_size = root_deployment.releases.size - 2 # no_repo and os-conf
         expect(root_deployment.releases_git_urls.size).to eq(expected_size)
+      end
+    end
+  end
+
+  describe ".release_skip_branch_checkout" do
+    let(:loaded_yaml) { YAML.safe_load(yaml) }
+
+    before do
+      allow(YAML).to receive(:load_file).and_return(loaded_yaml)
+    end
+
+    context "when not defined" do
+      let(:yaml) do
+        <<~YAML
+          name: #{my_root_deployment_name}
+          releases:
+            postgres:
+              version: '40'
+              repository: cloudfoundry/postgres-release
+              base_location: https://my-private-github.com
+        YAML
+      end
+      let(:skip_branch_checkout) { root_deployment.release_skip_branch_checkout('postgres')}
+      it "returns default value" do
+        expect(skip_branch_checkout).to eq(Tasks::TemplatesRepo::RootDeployment::DEFAULT_SKIP_CHECKOUT)
+      end
+    end
+
+    context "when defined as true" do
+      let(:yaml) do
+        <<~YAML
+          name: #{my_root_deployment_name}
+          releases:
+            postgres:
+              skip_branch_checkout: true
+        YAML
+      end
+      let(:skip_branch_checkout) { root_deployment.release_skip_branch_checkout('postgres')}
+      it "returns true" do
+        expect(skip_branch_checkout).to be_truthy
+      end
+    end
+
+    context "when defined as false" do
+      let(:yaml) do
+        <<~YAML
+          name: #{my_root_deployment_name}
+          releases:
+            postgres:
+              skip_branch_checkout: false
+        YAML
+      end
+      let(:skip_branch_checkout) { root_deployment.release_skip_branch_checkout('postgres')}
+      it "returns true" do
+        expect(skip_branch_checkout).to be_falsey
       end
     end
   end

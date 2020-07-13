@@ -39,6 +39,7 @@ class RepackageReleases
       puts "Processing #{name} boshrelease from #{git_url}"
       begin
         git_clone_path = clone_git_repository(name, git_url, base_git_clones_path, logs_path)
+        git_checkout_branch(name, git_clone_path)
         repackage_release(name, repackaged_releases_path, git_clone_path, logs_path)
         clean_bosh_files(logs_path)
         clean_git_clone(git_clone_path, logs_path)
@@ -109,14 +110,21 @@ class RepackageReleases
     end
     raise CloneError, error_message unless status&.success? && Dir.exist?(git_clone_path)
 
+    git_clone_path
+  end
+
+  def git_checkout_branch(boshrelease_name, git_clone_path)
+    if @root_deployment.release_skip_branch_checkout(boshrelease_name)
+      puts "Skipping branch checkout for #{boshrelease_name}. Disable 'skip_branch_checkout' to switch it off"
+      return
+    end
+
     git_tag_name = "#{@root_deployment.release_tag_prefix(boshrelease_name)}#{@root_deployment.release_version(boshrelease_name)}"
     puts "Checkout #{git_tag_name}"
     cmd_line = "cd #{git_clone_path} && git checkout #{git_tag_name}"
     stdout_and_stderr, status = Open3.capture2(cmd_line)
     puts stdout_and_stderr
-    raise CloneError, stdout_and_stderr unless status&.success?
-
-    git_clone_path
+    raise CloneError, "Ensure #{git_tag_name} exist, "+ stdout_and_stderr.to_s unless status&.success?
   end
 
   def filter_releases

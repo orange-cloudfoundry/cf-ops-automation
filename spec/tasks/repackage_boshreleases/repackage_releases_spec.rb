@@ -73,6 +73,7 @@ describe RepackageReleases do
 
   before do
     allow(root_deployment).to receive(:releases_git_urls).and_return(root_deployment_git_urls_response)
+    allow(root_deployment).to receive(:release_skip_branch_checkout).and_return(false)
     allow(root_deployment).to receive(:release_version) { |name| defined_releases_versions.dig(name, 'version') }
     allow(root_deployment).to receive(:release) { |name| defined_releases_versions.dig(name) }
     allow(root_deployment).to receive(:release_tag_prefix) { |name| defined_releases_versions.dig(name, 'tag_prefix') }
