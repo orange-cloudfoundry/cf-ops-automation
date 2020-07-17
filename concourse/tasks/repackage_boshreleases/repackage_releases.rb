@@ -132,7 +132,7 @@ class RepackageReleases
     puts "Filtering releases"
     boshreleases_git_urls = @root_deployment.releases_git_urls
     boshreleases_git_urls.delete_if do |name, _url|
-      target_version = @root_deployment.release_version(name)
+      target_version = @root_deployment.release_version(name).to_s
       version_details = active_releases.dig(name, target_version)
       bosh_uploaded = version_details.nil? ? false : true
       s3_uploaded = !missing_boshrelease?(name, target_version)

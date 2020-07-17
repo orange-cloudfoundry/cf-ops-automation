@@ -30,9 +30,12 @@ raise 'FATAL: Missing logs_path' if logs_path.to_s.empty?
 base_git_clones_path = ENV['BASE_GIT_CLONES_PATH']
 raise 'FATAL: Missing base_git_clones_path' if base_git_clones_path.to_s.empty?
 
-missing_s3_releases = {}
 missing_s3_releases_filepath = ARGV[0]
-missing_s3_releases = YAML.load_file(missing_s3_releases_filepath) if File.exist?(missing_s3_releases_filepath)
+missing_s3_releases = if File.exist?(missing_s3_releases_filepath)
+                        YAML.load_file(missing_s3_releases_filepath) || {}
+                      else
+                        {}
+                      end
 
 root_deployment = Tasks::TemplatesRepo::RootDeployment.new(root_deployment_name, templates_path)
 repackage_releases = RepackageReleases.new(root_deployment, missing_s3_releases)

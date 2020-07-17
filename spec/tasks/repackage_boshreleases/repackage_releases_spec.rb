@@ -21,7 +21,7 @@ describe RepackageReleases do
       "shell" => { "3.2.0" => { commit_hash: "265671b5", deployed: false, uncommitted_changes: false } },
       "shield" => { "8.6.2" => { commit_hash: "1c68eea", deployed: false, uncommitted_changes: false } },
       "store" => { "0+dev.1" => { commit_hash: "a88e5e0+", deployed: false, uncommitted_changes: false }, "0+dev.2" => { commit_hash: "a88e5e0+", deployed: true, uncommitted_changes: false } },
-      "uaa" => { "74.13.0" => { commit_hash: "f5a81d2", deployed: true, uncommitted_changes: false }, "74.16.0"     => { commit_hash: "05c4109", deployed: true, uncommitted_changes: false }, "74.8.0" => { commit_hash: "c0f662e", deployed: false, uncommitted_changes: false } }
+      "uaa" => { "74" => { commit_hash: "f5a81d2", deployed: true, uncommitted_changes: false }, "74.16.0"     => { commit_hash: "05c4109", deployed: true, uncommitted_changes: false }, "74.8.0" => { commit_hash: "c0f662e", deployed: false, uncommitted_changes: false } }
     }
   end
   let(:root_deployment_git_urls_response) do
@@ -67,7 +67,7 @@ describe RepackageReleases do
       'prometheus' => { 'version' => '270.11.0', 'repository' => 'cloudfoundry-community/prometheus-boshrelease' },
       'routing' => { 'version' => '0.195.0', 'repository' => 'cloudfoundry/routing-release' },
       'shield' => { 'version' => '8.6.3', 'repository' => 'starkandwayne/shield-boshrelease', 'tag_prefix' => 'my_prefix' },
-      'uaa' => { 'version' => '74.13.0', 'repository' => 'cloudfoundry/uaa-release', 'tag_prefix' => '' }
+      'uaa' => { 'version' => 74, 'repository' => 'cloudfoundry/uaa-release', 'tag_prefix' => '' }
     }
   end
 
@@ -189,7 +189,7 @@ describe RepackageReleases do
     context "when missing s3 bosh releases" do
       let(:wait_thr) { instance_double(Thread, value: instance_double(Process::Status, success?: true)) }
       let(:stdout_and_stderr) { double }
-      let(:missing_s3_releases) { { 'uaa' => { 'version' => '74.13.0' } } }
+      let(:missing_s3_releases) { { 'uaa' => { 'version' => 74 } } }
 
 
       before do
@@ -209,14 +209,14 @@ describe RepackageReleases do
       it "repackages other boshreleases (ie one without errors)" do
         expect(repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path)).to be_nil
 
-        expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("postgres-1.17.2,cloudfoundry\nprometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\nuaa-74.13.0,cloudfoundry\n")
+        expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("postgres-1.17.2,cloudfoundry\nprometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\nuaa-74,cloudfoundry\n")
         expect(bosh_list_releases).to have_received(:execute).once.times
         expect(Open3).to have_received(:popen2e).exactly(4).times
         expect(bosh_create_release).to have_received(:execute).exactly(4).times # for all deployment except shield
         expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/postgres && git checkout v1.17.2")
         expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/prometheus && git checkout 270.11.0")
         expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/shield && git checkout my_prefix8.6.3")
-        expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/uaa && git checkout 74.13.0")
+        expect(Open3).to have_received(:capture2).once.with("cd #{base_git_clones_path}/uaa && git checkout 74")
       end
     end
   end
