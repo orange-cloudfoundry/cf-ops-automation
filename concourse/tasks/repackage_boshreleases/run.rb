@@ -35,5 +35,5 @@ missing_s3_releases_filepath = ARGV[0]
 missing_s3_releases = YAML.load_file(missing_s3_releases_filepath) if File.exist?(missing_s3_releases_filepath)
 
 root_deployment = Tasks::TemplatesRepo::RootDeployment.new(root_deployment_name, templates_path)
-repackage_releases = RepackageReleases.new(root_deployment,missing_s3_releases)
+repackage_releases = RepackageReleases.new(root_deployment, missing_s3_releases)
 repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path)

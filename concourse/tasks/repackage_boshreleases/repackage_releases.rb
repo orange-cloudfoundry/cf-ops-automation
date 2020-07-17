@@ -135,13 +135,19 @@ class RepackageReleases
       target_version = @root_deployment.release_version(name)
       version_details = active_releases.dig(name, target_version)
       bosh_uploaded = version_details.nil? ? false : true
-      s3_uploaded = @missing_s3_releases.dig(name, 'version') != target_version
+      s3_uploaded = !missing_boshrelease?(name, target_version)
       already_deployed = bosh_uploaded && s3_uploaded
       puts "Release #{name} upload status, bosh director: #{bosh_uploaded} - S3: #{s3_uploaded}"
       puts "Skipping #{name}, version #{target_version} already deployed" if already_deployed
       already_deployed
     end
   end
+
+  def missing_boshrelease?(name, target_version)
+    v = @missing_s3_releases.dig(name, 'version').to_s
+    return v == target_version.to_s
+  end
+
 end
 
 class CloneError < RuntimeError; end
