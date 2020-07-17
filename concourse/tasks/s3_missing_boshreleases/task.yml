@@ -56,7 +56,7 @@ run:
           echo "Adding to S3, missing release detected: $release"
           echo "$release" >> ${S3_MISSING_RELEASES_CSV}
           echo "$name:" >> ${S3_MISSING_RELEASES_YML}
-          echo "  version: $version" >> ${S3_MISSING_RELEASES_YML}
+          echo "  version: \"$version\"" >> ${S3_MISSING_RELEASES_YML}
           echo "  namespace: $namespace" >> ${S3_MISSING_RELEASES_YML}
         else
           echo "Skipping release $release, already exists on S3"
