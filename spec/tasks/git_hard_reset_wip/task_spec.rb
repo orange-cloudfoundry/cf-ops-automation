@@ -9,7 +9,12 @@ describe 'git_hard reset_wip task' do
     out, err, status = Open3.capture3("git clone #{@git_test_reference_repo} #{@reference_repo_dir}")
     expect(err).to eq("Cloning into '#{@reference_repo_dir}'...\n")
     @coa_dir = Dir.mktmpdir
-    FileUtils.cp_r('concourse', @coa_dir)
+    tasks_dir = File.join('concourse', 'tasks')
+    current_task_dir = File.join(tasks_dir, 'git_hard_reset_wip')
+    FileUtils.mkdir_p(File.join(@coa_dir, tasks_dir), verbose: true)
+    FileUtils.cp_r(current_task_dir, File.join(@coa_dir, tasks_dir), verbose: true)
+    workaround_to_ensure_cp_is_finished = Dir[@coa_dir+'/**/*'].size
+    puts "Coa files count: #{workaround_to_ensure_cp_is_finished}"
   end
 
   after(:context) do

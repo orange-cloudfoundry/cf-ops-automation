@@ -180,8 +180,10 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ROOT_DEPLOYMENT_NAME: simple-depls
+    - task: repackage-releases-fallback
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
     - task: upload-to-director
-      input_mapping: { config-resource: secrets-simple-depls-limited }
+      input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-simple-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
       params:
         BOSH_CLIENT: ((bosh-username))
@@ -197,15 +199,30 @@ jobs:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
             tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
-          - name: repackaged-releases
+          - name: repackaged-releases-fallback
         run:
           path: sh
           args:
             - -ec
             - |
-              cd repackaged-releases
-              if [ -e errors.yml ]; then
+              cd repackaged-releases-fallback
+              if [ -e fallback-fixes.yml ]; then
+              echo "=========================================================="
+                echo "Dump fallback-fixes"
+                cat fallback-fixes.yml
+              fi
+              echo "=========================================================="
+              if [ -e fallback-errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "Dump fallback-errors"
+                cat fallback-errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                exit 1
+              elif [ -e errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "Dump errors"
                 cat errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
                 exit 1
               else
                 echo "No errors detected"
@@ -481,7 +498,7 @@ jobs:
       trigger: true
       params:
         submodules: none
-        submodule_recursive: "false" # This must be a string, not a boolean to be handle properly by git-resource
+        submodule_recursive: "false" # this must be a string
         depth: 0
   - task: check-configuration
     input_mapping:
@@ -513,7 +530,7 @@ jobs:
           ./additional-resource/meta-inf.yml
       CUSTOM_SCRIPT_DIR: additional-resource/simple-depls/ntp-with-scan/template
       IAAS_TYPE: ((iaas-type))
-      PROFILES: "((profiles))"
+      PROFILES: ((profiles))
   - task: execute-ntp-with-scan-pre-bosh-deploy
     input_mapping:
       scripts-resource: cf-ops-automation
@@ -687,7 +704,7 @@ jobs:
       trigger: true
       params:
         submodules: none
-        submodule_recursive: 'false' # This must be a string, not a boolean to be handle properly by git-resource
+        submodule_recursive: "false" # this must be a string
         depth: 0
   - task: check-configuration
     input_mapping:
@@ -835,12 +852,8 @@ jobs:
     params:
       OLD_FILE: simple-depls/zookeeper-without-scan/zookeeper-without-scan-fingerprints.json
       NEW_FILE: "credential_fingerprints.json"
-      PROFILES: "((profiles))"
-      COMMIT_MESSAGE: |-
-        zookeeper-without-scan variable fingerprints auto update.
-        Deployment information: $(cat generated-resource/deployment_information.txt)
-        Active profiles: ${PROFILES}
-        [skip ci]
+      PROFILES: ((profiles))
+      COMMIT_MESSAGE: "zookeeper-without-scan variable fingerprints auto update.\nDeployment information: $(cat generated-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - task: update-zookeeper-without-scan-files
     input_mapping: {reference-resource: updated-zookeeper-without-scan-fingerprints-secrets, generated-resource: zookeeper-without-scan-deployment, additional-resource: bosh-variables-result}
     output_mapping: {updated-git-resource: updated-zookeeper-without-scan-secrets}

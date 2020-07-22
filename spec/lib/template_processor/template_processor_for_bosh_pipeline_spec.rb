@@ -504,7 +504,7 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML.safe_load expected_yaml
       end
       let(:expected_push_stemcell_tasks) { %w[upload-stemcells] }
-      let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases upload-repackaged-releases check-repackaging-errors] }
+      let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases repackage-releases-fallback upload-repackaged-releases check-repackaging-errors] }
       it 'generates s3 precompiled bosh release resource' do
         s3_boshreleases = generated_pipeline['resources'].select { |resource| resource['type'] == 's3' && resource['name'] != "((stemcell-main-name))" }
         expect(s3_boshreleases).to include(*expected_s3_precompiled_boshreleases)
@@ -621,7 +621,7 @@ describe 'BoshPipelineTemplateProcessing' do
       end
 
       let(:expected_push_stemcell_tasks) { %w[upload-stemcells download-stemcell upload-to-director] }
-      let(:expected_push_boshreleases_tasks) { %w[repackage-releases upload-to-director check-repackaging-errors] }
+      let(:expected_push_boshreleases_tasks) { %w[repackage-releases repackage-releases-fallback upload-to-director check-repackaging-errors] }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz' }
 
       it 'generates bosh-io stemcell with pinned version' do
