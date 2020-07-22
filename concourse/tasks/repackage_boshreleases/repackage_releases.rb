@@ -46,7 +46,9 @@ class RepackageReleases
         successfully_processed << name
       rescue CloneError, Tasks::Bosh::BoshCliError => e
         puts "Error detected while processing #{name}"
-        errors.store(name, e)
+        error_details = @root_deployment.release(name).dup
+        error_details['error'] = e.to_s
+        errors.store(name, error_details)
       end
     end
     generate_boshrelease_namespaces(repackaged_releases_path, successfully_processed)
@@ -124,7 +126,7 @@ class RepackageReleases
     cmd_line = "cd #{git_clone_path} && git checkout #{git_tag_name}"
     stdout_and_stderr, status = Open3.capture2(cmd_line)
     puts stdout_and_stderr
-    raise CloneError, "Ensure #{git_tag_name} exist, "+ stdout_and_stderr.to_s unless status&.success?
+    raise CloneError, "Ensure #{git_tag_name} exist, " + stdout_and_stderr.to_s unless status&.success?
   end
 
   def filter_releases
