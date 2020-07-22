@@ -109,6 +109,7 @@ describe RepackageReleases do
       let(:stdout_and_stderr) { double }
       let(:wait_thr_failure) { instance_double(Thread, value: instance_double(Process::Status, success?: false)) }
       let(:stdout_and_stderr_failure) { double }
+      let(:loaded_errors) { YAML.load_file(File.join(repackaged_releases_path, 'errors.yml')) }
 
       before do
         allow(bosh_list_releases).to receive(:execute).and_return(list_releases_response)
@@ -131,7 +132,7 @@ describe RepackageReleases do
       context "when fail to clone postgres" do
         it "repackages other boshreleases (ie one without errors)" do
           expect { run_process }.to raise_error(RuntimeError) do |error|
-            expect(error.message).to start_with('{"postgres"=>#<CloneError: Error xxx. Failed to clone \'postgres\'')
+            expect(error.message).to eq('{"postgres"=>{"version"=>"1.17.2", "repository"=>"cloudfoundry/postgres-release", "tag_prefix"=>"v", "error"=>"Error xxx. Failed to clone \'postgres\' from \'https://my-private-github.com/cloudfoundry/postgres-release\'"}}')
           end
 
           expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("prometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\n")
@@ -146,6 +147,14 @@ describe RepackageReleases do
           rescue RuntimeError
           end
           expect(File.size?(File.join(repackaged_releases_path, 'errors.yml'))).to be > 100
+        end
+
+        it "creates a valid yaml error log" do
+          begin
+            run_process
+          rescue RuntimeError
+          end
+          expect(loaded_errors).to match({ "postgres" => { "error" => "Error xxx. Failed to clone 'postgres' from 'https://my-private-github.com/cloudfoundry/postgres-release'", "repository" => "cloudfoundry/postgres-release", "tag_prefix" => "v", "version" => "1.17.2" } })
         end
       end
 

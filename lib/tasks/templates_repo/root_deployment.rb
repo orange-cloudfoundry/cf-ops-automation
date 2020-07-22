@@ -15,7 +15,7 @@ module Tasks
 
         root_deployment_loaded = load_root_deployment_yml(basedir, name)
         @releases = root_deployment_loaded.dig('releases') || {}
-        add_default_base_location
+        add_default_values
         @stemcell = root_deployment_loaded.dig('stemcell') || {}
       end
 
@@ -59,11 +59,26 @@ module Tasks
         end
       end
 
-      def add_default_base_location
+      def add_default_values
         @releases.map do |_name, details|
-          details.store('base_location', DEFAULT_GIT_URL) unless details['base_location']
-          details
+          add_default_base_location(details)
+          add_default_tag_prefix(details)
+          add_default_skip_checkout(details)
         end
+      end
+
+      def add_default_base_location(details)
+        details.store('base_location', DEFAULT_GIT_URL) unless details['base_location']
+      end
+
+      def add_default_tag_prefix(details)
+        details.store('tag_prefix', DEFAULT_TAG_PREFIX) unless details['tag_prefix']
+        details
+      end
+
+      def add_default_skip_checkout(details)
+        details.store('skip_branch_checkout', DEFAULT_SKIP_CHECKOUT) unless details.include?('skip_branch_checkout')
+        details
       end
     end
   end
