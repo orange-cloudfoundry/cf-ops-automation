@@ -1,14 +1,14 @@
 module PipelineHelpers
   require_relative 'config'
-  require_relative './pipeline_helpers/pipeline_configurer'
   require_relative './pipeline_helpers/config_getter'
+  require_relative './pipeline_helpers/configured_git_shallow_clone_depth'
   require_relative './pipeline_helpers/configured_parallel_execution_limit'
   require_relative './pipeline_helpers/configured_serial_group_naming_strategy'
+  require_relative './pipeline_helpers/deployment_details'
+  require_relative './pipeline_helpers/pipeline_configurer'
   require_relative './pipeline_helpers/serial_group_naming_strategy'
   require_relative './pipeline_helpers/serial_group_md5_naming_strategy'
   require_relative './pipeline_helpers/serial_group_round_robin_naming_strategy'
-  require_relative './pipeline_helpers/deployment_details'
-  require_relative './pipeline_helpers/configured_git_shallow_clone_depth'
 
   TERRAFORM_CONFIG_DIRNAME_KEY = 'terraform_config'.freeze
   UNLIMITED_EXECUTION = -1

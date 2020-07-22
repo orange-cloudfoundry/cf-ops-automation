@@ -19,14 +19,14 @@ image_resource:
     repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
     tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
 inputs:
-  - name: repackaged-releases
+  - name: releases-to-upload
   - name: config-resource
 run:
   path: bash
   args:
     - -c
     - |
-      find repackaged-releases/ -name "*.tgz" -exec bosh upload-release {} \;
+      find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
 params:
   BOSH_ENVIRONMENT:
   BOSH_CLIENT:

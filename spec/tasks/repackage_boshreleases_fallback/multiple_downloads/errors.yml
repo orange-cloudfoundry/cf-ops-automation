@@ -1,0 +1,19 @@
+---
+minio:
+  tag_prefix: RELEASE_
+  repository: minio/minio-boshrelease
+  #  public_name: minio-boshrelease
+  version: 2020-06-18T02-23-35Z
+  error: |-
+    Stderr:
+    Stdout:
+    {xxx }
+os-conf:
+  tag_prefix: v
+  repository: cloudfoundry/os-conf-release
+  #  public_name: minio-boshrelease
+  version: 21.0.0
+  error: |-
+    Stderr:
+    Stdout:
+    {yyy }

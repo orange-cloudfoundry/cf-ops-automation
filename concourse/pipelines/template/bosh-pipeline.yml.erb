@@ -305,10 +305,12 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
         ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
+    - task: repackage-releases-fallback
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
 
     <% if offline_boshreleases_enabled %>
     - task: upload-repackaged-releases
-      input_mapping: { local-files-dir: repackaged-releases, templates-resource: paas-templates-<%= root_deployment_name %> }
+      input_mapping: { local-files-dir: repackaged-releases-fallback, templates-resource: paas-templates-<%= root_deployment_name %> }
       file:  cf-ops-automation/concourse/tasks/s3_boshreleases_upload/task.yml
       params:
         BUCKET: ((s3-br-bucket))
@@ -320,7 +322,7 @@ jobs:
     <% end %>
     <% if !offline_boshreleases_enabled || !precompile_pipeline_enabled %>
     - task: upload-to-director
-      input_mapping: { config-resource: secrets-<%= root_deployment_name %>-limited }
+      input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-<%= root_deployment_name %>-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
       params:
         BOSH_CLIENT: ((bosh-username))
@@ -337,15 +339,30 @@ jobs:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
             tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
-          - name: repackaged-releases
+          - name: repackaged-releases-fallback
         run:
           path: sh
           args:
             - -ec
             - |
-              cd repackaged-releases
-              if [ -e errors.yml ]; then
+              cd repackaged-releases-fallback
+              if [ -e fallback-fixes.yml ]; then
+              echo "=========================================================="
+                echo "Dump fallback-fixes"
+                cat fallback-fixes.yml
+              fi
+              echo "=========================================================="
+              if [ -e fallback-errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "Dump fallback-errors"
+                cat fallback-errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                exit 1
+              elif [ -e errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "Dump errors"
                 cat errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
                 exit 1
               else
                 echo "No errors detected"

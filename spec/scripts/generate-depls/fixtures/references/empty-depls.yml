@@ -91,8 +91,10 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ROOT_DEPLOYMENT_NAME: empty-depls
+    - task: repackage-releases-fallback
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
     - task: upload-to-director
-      input_mapping: { config-resource: secrets-empty-depls-limited }
+      input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-empty-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
       params:
         BOSH_CLIENT: ((bosh-username))
@@ -108,15 +110,30 @@ jobs:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
             tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
         inputs:
-          - name: repackaged-releases
+          - name: repackaged-releases-fallback
         run:
           path: sh
           args:
             - -ec
             - |
-              cd repackaged-releases
-              if [ -e errors.yml ]; then
+              cd repackaged-releases-fallback
+              if [ -e fallback-fixes.yml ]; then
+              echo "=========================================================="
+                echo "Dump fallback-fixes"
+                cat fallback-fixes.yml
+              fi
+              echo "=========================================================="
+              if [ -e fallback-errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "Dump fallback-errors"
+                cat fallback-errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                exit 1
+              elif [ -e errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "Dump errors"
                 cat errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
                 exit 1
               else
                 echo "No errors detected"

@@ -1,0 +1,35 @@
+---
+minio:
+  tag_prefix: RELEASE_
+  repository: minio/minio-boshrelease
+#  public_name: minio-boshrelease
+  version: 2020-06-18T02-23-35Z
+  error: |-
+      Stderr:
+      Stdout:
+      {
+          "Tables": null,
+          "Blocks": null,
+          "Lines": [
+              "-- Started downloading 'minio-azure/76ef4115959254d456c046b117d85f070b7aed41941255ce417323eb8546f312' (sha1=sha256:23b0bd77e3fc3112b021da9d15dea4812dad7d209485e7db708279fcc4168887)\n",
+              "-- Started downloading 'mc/dbc7d4cb9f8c8bc064a1b4df464a421c5790ada44b72d92796901e72a9aca3dc' (sha1=sha256:aea9cf9f16b9d921a5163279dafc65fd53f003871f8410d78bc29f161d5c746f)\n",
+              "-- Started downloading 'minio-nas/159804d3619ccf3afd7abce6b41194db06f03787c5ed62e831502b7852a065ad' (sha1=sha256:db35ff12274370927c1073dfebdcc4001aaa6c1bfdc1c06a2559bb5d09ebb63b)\n",
+              "-- Started downloading 'minio-server/2afdd8b57d83124be7b1a623a10761e6bff8953c0f8433fa62c6723812818cac' (sha1=sha256:f6165097a650aebc547872a8f21b05ff369577aadba61962b0844f82c78310ec)\n",
+              "-- Started downloading 'minio-gcs/37ea79781bb54dbcc80465aac0368161732034be3816eea9fa6f61ee069875f2' (sha1=sha256:92914df56fde6e77adca696355209dab40a1295898af9ade4dca6953cc559ba0)\n",
+              "-- Failed downloading 'mc/dbc7d4cb9f8c8bc064a1b4df464a421c5790ada44b72d92796901e72a9aca3dc' (sha1=sha256:aea9cf9f16b9d921a5163279dafc65fd53f003871f8410d78bc29f161d5c746f)\n",
+              "-- Failed downloading 'minio-gcs/37ea79781bb54dbcc80465aac0368161732034be3816eea9fa6f61ee069875f2' (sha1=sha256:92914df56fde6e77adca696355209dab40a1295898af9ade4dca6953cc559ba0)\n",
+              "-- Failed downloading 'minio-azure/76ef4115959254d456c046b117d85f070b7aed41941255ce417323eb8546f312' (sha1=sha256:23b0bd77e3fc3112b021da9d15dea4812dad7d209485e7db708279fcc4168887)\n",
+              "-- Failed downloading 'minio-nas/159804d3619ccf3afd7abce6b41194db06f03787c5ed62e831502b7852a065ad' (sha1=sha256:db35ff12274370927c1073dfebdcc4001aaa6c1bfdc1c06a2559bb5d09ebb63b)\n",
+              "-- Failed downloading 'minio-server/2afdd8b57d83124be7b1a623a10761e6bff8953c0f8433fa62c6723812818cac' (sha1=sha256:f6165097a650aebc547872a8f21b05ff369577aadba61962b0844f82c78310ec)\n",
+              "- Downloading blob '0df1d543-3004-4ae1-54dd-333d583dad1e' with digest string 'sha256:aea9cf9f16b9d921a5163279dafc65fd53f003871f8410d78bc29f161d5c746f':\n    Getting blob from inner blobstore:\n      Getting blob from inner blobstore:\n        RequestError: send request failed\ncaused by: Get https:/minio-bosh-blobs/0df1d543-3004-4ae1-54dd-333d583dad1e: Forbidden\n- Downloading blob '9f6bcf07-5702-4ae5-6605-e9236dba6f64' with digest string 'sha256:92914df56fde6e77adca696355209dab40a1295898af9ade4dca6953cc559ba0':\n    Getting blob from inner blobstore:\n      Getting blob from inner blobstore:\n        RequestError: send request failed\ncaused by: Get https:/minio-bosh-blobs/9f6bcf07-5702-4ae5-6605-e9236dba6f64: Forbidden\n- Downloading blob 'a77f916c-b488-46c2-788b-87ef8d32ce81' with digest string 'sha256:23b0bd77e3fc3112b021da9d15dea4812dad7d209485e7db708279fcc4168887':\n    Getting blob from inner blobstore:\n      Getting blob from inner blobstore:\n        RequestError: send request failed\ncaused by: Get https:/minio-bosh-blobs/a77f916c-b488-46c2-788b-87ef8d32ce81: Forbidden\n- Downloading blob 'f1ad99ca-da50-4563-6e59-df25032a18be' with digest string 'sha256:db35ff12274370927c1073dfebdcc4001aaa6c1bfdc1c06a2559bb5d09ebb63b':\n    Getting blob from inner blobstore:\n      Getting blob from inner blobstore:\n        RequestError: send request failed\ncaused by: Get https:/minio-bosh-blobs/f1ad99ca-da50-4563-6e59-df25032a18be: Forbidden\n- Downloading blob '72e26697-0e91-4cd7-5a3e-fd1c21d25808' with digest string 'sha256:f6165097a650aebc547872a8f21b05ff369577aadba61962b0844f82c78310ec':\n    Getting blob from inner blobstore:\n      Getting blob from inner blobstore:\n        RequestError: send request failed\ncaused by: Get https:/minio-bosh-blobs/72e26697-0e91-4cd7-5a3e-fd1c21d25808: Forbidden",
+              "Exit code 1"
+          ]
+      }
+shield-addon-bbr:
+    tag_prefix: v
+    repository: shieldproject/shield-addon-bbr-boshrelease
+    version: 0.2.1
+    error: |-
+        Stderr:
+        Stdout:
+        {        }
