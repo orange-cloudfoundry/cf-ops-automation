@@ -2,7 +2,7 @@
 name: hello-world-root-depls
 
 stemcell:
-  version: "456.1" # Mandatory
+  version: "621.76" # Mandatory
   sha1: # Optional
 
 releases:
@@ -17,7 +17,7 @@ releases:
     tag_prefix: ''
 
   bosh-openstack-cpi:
-    version: "37"
+    version: "41"
     repository: cloudfoundry/bosh-openstack-cpi-release
 
   vault:
