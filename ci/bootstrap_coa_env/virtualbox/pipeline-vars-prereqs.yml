@@ -15,7 +15,7 @@ pipeline_vars:
   stemcell-version: "3586.25"
   s3-stemcell-endpoint: https://s3.amazonaws.com
   s3-stemcell-skip-ssl-verification: false
-  bosh-openstack-cpi-release-version: "37"
+  bosh-openstack-cpi-release-version: "41"
   secrets-branch: master
   paas-templates-branch: master
   cf-ops-automation-branch: master
