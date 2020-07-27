@@ -44,9 +44,7 @@ class RepackageReleasesFallback
       File.open(File.join(repackaged_releases_fallback_path, 'fallback-errors.yml'), 'w+') { |file| file.write(YAML.dump(errors)) }
       raise errors.to_s
     end
-
     File.open(File.join(repackaged_releases_fallback_path, 'fallback-fixes.yml'), 'w+') { |file| file.write(YAML.dump(fallback_fixes)) } unless fallback_fixes.empty?
-
   end
 
   private
@@ -84,7 +82,6 @@ class RepackageReleasesFallback
       end
     end
     generate_boshrelease_namespaces(repackaged_releases_fallback_path, successfully_processed)
-
   end
 
   def init_fallback_dir_with_repackaged_dir(target, origin)
@@ -112,8 +109,10 @@ class RepackageReleasesFallback
     rescue Net::ReadTimeout => e
       puts "Retrying (#{retries += 1}/#{max_retry}: #{e.class}) downloading #{boshrelease_filename} from #{url}"
       retry if retries < max_retry
+      File.delete(download_path) if File.exist?(download_path)
       raise RepackageFallbackError, e
-    rescue Exception => e
+    rescue StandardError => e
+      File.delete(download_path) if File.exist?(download_path)
       raise RepackageFallbackError, e
     end
     puts "Downloaded #{boshrelease_filename} from #{url}"
@@ -141,7 +140,7 @@ class RepackageReleasesFallback
     url = "#{GITHUB_PREFIX}/#{repo}/releases/download/#{tag_prefix}#{version}/#{name}-#{version}.tgz"
     puts "trying to download release #{name} from #{url}"
     boshrelease_filename = "#{name}-#{version}.tgz"
-    return boshrelease_filename, url
+    [boshrelease_filename, url]
   end
 
   def create_bosh_io_download_info(name, details)
@@ -150,9 +149,8 @@ class RepackageReleasesFallback
     url = "#{BOSH_IO_PREFIX}/#{repo}?v=#{version}"
     puts "trying to download release #{name} from #{url}"
     boshrelease_filename = "#{name}-#{version}.tgz"
-    return boshrelease_filename, url
+    [boshrelease_filename, url]
   end
-
 
   def generate_boshrelease_namespaces(repackaged_releases_path, successfully_processed)
     File.open(File.join(repackaged_releases_path, 'boshreleases-namespaces.csv'), 'a') do |file|
