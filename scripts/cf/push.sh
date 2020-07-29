@@ -3,30 +3,26 @@
 set -e
 set -o pipefail
 
-validate(){
-    FAILURE=0
-    if [ -z "$CF_API_URL" ]
-    then
-        echo "missing CF_API_URL"
-        FAILURE=$((1 + $FAILURE))
-    fi
+validate() {
+  FAILURE=0
+  if   [ -z "$CF_API_URL" ]; then
+    echo     "missing CF_API_URL"
+    FAILURE=$((1 + $FAILURE))
+  fi
 
-    if [ -z "$CF_USERNAME" ]
-    then
-        echo "missing CF_USERNAME"
-        FAILURE=$((2 + $FAILURE))
-    fi
+  if   [ -z "$CF_USERNAME" ]; then
+    echo     "missing CF_USERNAME"
+    FAILURE=$((2 + $FAILURE))
+  fi
 
-    if [ -z "$CF_PASSWORD" ]
-    then
-        echo "missing CF_PASSWORD"
-        FAILURE=$((4 + $FAILURE))
-    fi
+  if   [ -z "$CF_PASSWORD" ]; then
+    echo     "missing CF_PASSWORD"
+    FAILURE=$((4 + $FAILURE))
+  fi
 
-    if [ $FAILURE -ne 0 ]
-    then
-        exit $FAILURE
-    fi
+  if   [ $FAILURE -ne 0 ]; then
+    exit     $FAILURE
+  fi
 }
 
 validate
@@ -49,23 +45,21 @@ cf auth "$CF_USERNAME" "$CF_PASSWORD"
 echo "copying file from $ADDITIONAL_RESSOURCE to $OUTPUT_DIR"
 cp -r $ADDITIONAL_RESSOURCE/. $OUTPUT_DIR/
 
-if [ -n "$CUSTOM_SCRIPT_DIR" -a  -f "$CUSTOM_SCRIPT_DIR/pre-cf-push.sh" ]
-then
-    echo "pre CF push script detected"
-    chmod +x $CUSTOM_SCRIPT_DIR/pre-cf-push.sh
-    GENERATE_DIR=$OUTPUT_DIR BASE_TEMPLATE_DIR=$CUSTOM_SCRIPT_DIR $CUSTOM_SCRIPT_DIR/pre-cf-push.sh
+if [ -n "$CUSTOM_SCRIPT_DIR" ] && [ -f "$CUSTOM_SCRIPT_DIR/pre-cf-push.sh" ]; then
+  echo   "pre CF push script detected - Available Environment variables: GENERATE_DIR: <$OUTPUT_DIR> | BASE_TEMPLATE_DIR: <$CUSTOM_SCRIPT_DIR>"
+  chmod   +x "${CUSTOM_SCRIPT_DIR}"/pre-cf-push.sh
+  GENERATE_DIR=$OUTPUT_DIR   BASE_TEMPLATE_DIR=$CUSTOM_SCRIPT_DIR "$CUSTOM_SCRIPT_DIR"/pre-cf-push.sh
 else
-    echo "ignoring pre CF push. No $CUSTOM_SCRIPT_DIR/pre-cf-push.sh detected"
+  echo   "ignoring pre CF push. No $CUSTOM_SCRIPT_DIR/pre-cf-push.sh detected"
 fi
 
 cf target -o "$CF_ORG" -s "$CF_SPACE"
 
 set +e
-cf push -f ${CF_MANIFEST} 2>&1 |tee /tmp/cf-push.log
+cf push -f ${CF_MANIFEST} --strategy rolling 2>&1 | tee /tmp/cf-push.log
 ret_code=$?
-if [ $ret_code -ne 0 ]
-then
-    DISPLAY_LOG_CMD=$(grep "TIP: use 'cf logs" /tmp/cf-push.log |cut -d\' -f2)
-    eval $DISPLAY_LOG_CMD
-    exit $ret_code
+if [ $ret_code -ne 0 ]; then
+  DISPLAY_LOG_CMD=$(  grep "TIP: use 'cf logs" /tmp/cf-push.log | cut -d\' -f2)
+  eval   $DISPLAY_LOG_CMD
+  exit   $ret_code
 fi
