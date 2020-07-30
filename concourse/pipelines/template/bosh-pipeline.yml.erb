@@ -731,7 +731,7 @@ jobs:
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: ((stemcell-main-name))
       trigger: true
-      tarball: false
+      <%= "tarball: false" unless offline_stemcells_enabled %>
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
@@ -739,7 +739,7 @@ jobs:
   <% deployment_details.releases.each do |release, _info| %>
     - get: <%= release %>
       trigger: true
-      tarball: false
+      <%= "tarball: false" unless offline_boshreleases_enabled %>
       attempts: 2
   <% end %>
   <% if deployment_details.local_deployment_secrets_scan? %>

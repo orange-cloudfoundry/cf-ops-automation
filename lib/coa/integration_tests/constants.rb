@@ -34,7 +34,7 @@ module Coa
             "on-git-commit"            => {},
             "load-generated-pipelines" => {},
             "push-changes"             => {},
-            "save-deployed-pipelines"  => {}
+            "save-deployed-pipelines-legacy"  => {}
           }
         },
         "hello-world-root-depls-cf-apps-generated" => {
