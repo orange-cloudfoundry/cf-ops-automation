@@ -129,6 +129,17 @@ jobs:
               content += "    username: #{fly_username}\n"
               content += "    password: \"#{fly_password}\"\n"
             end
+            content =  "- type: remove\n"
+            content += "  path: /resources/name=concourse-5-micro/source/teams\n"
+            content +=  "- type: replace\n"
+            content += "  path: /resources/name=concourse-5-micro/source/teams?\n"
+            content += "  value:\n"
+            teams_list.each do |team_name|
+              content += "  - name: #{team_name}\n"
+              content += "    username: #{fly_username}\n"
+              content += "    password: \"#{fly_password}\"\n"
+            end
+
             File.open(operator_file, 'w') { |file| file.write content }
             EOF
             cat generate_team_operator.rb

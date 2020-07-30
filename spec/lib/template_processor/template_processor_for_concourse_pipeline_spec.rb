@@ -80,11 +80,16 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         source:
           repository: ((docker-registry-url))cfcommunity/slack-notification-resource
           tag: v1.4.2
+      - name: concourse-5-pipeline
+        type: docker-image
+        source:
+          repository: ((docker-registry-url))concourse/concourse-pipeline-resource
+          tag: 5.0.0
       - name: concourse-pipeline
         type: docker-image
         source:
           repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-          tag: 2.1.1
+          tag: 6.0.0
     YAML
     YAML.safe_load(resource_types_yaml)
   end
@@ -271,7 +276,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
 
   context 'when a deploy-concourse job is correct' do
     let(:expected_defined_tasks) do
-      tasks = %w[bosh-interpolate-pipeline-with-ops-and-vars-files concourse-for-my-root-depls]
+      tasks = %w[bosh-interpolate-pipeline-with-ops-and-vars-files]
       concourse_active_deployments.each_key do |name|
         tasks << "spruce-processing-#{name}"
         tasks << "execute-#{name}-pre-deploy"
@@ -279,7 +284,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         tasks << "execute-#{name}-post-deploy"
         tasks << 'bosh-interpolate-pipeline-with-ops-and-vars-files'
         tasks << 'generate-concourse-pipeline-config'
-        tasks << 'concourse-for-my-root-depls'
+        tasks << 'check-success-tag'
       end
       tasks
     end
@@ -428,10 +433,50 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         my_yaml = ''
         concourse_active_deployments.each_key do
           my_yaml += <<~YAML
-            - put: concourse-for-#{root_deployment_name}
-              attempts: 3
-              params:
-                pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+            - try:
+                put: concourse-for-#{root_deployment_name}
+                attempts: 3
+                params:
+                  pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+                on_success:
+                  task: set-success-tag
+                  output_mapping: { success-tag: concourse-micro-success}
+                  config:
+                    platform: linux
+                    image_resource:
+                      type: docker-image
+                      source:
+                        repository: ((docker-registry-url))governmentpaas/git-ssh
+                        tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+                    outputs:
+                      - name: success-tag
+                    run:
+                      path: sh
+                      args:
+                        - -ec
+                        - touch success-tag/task.ok
+                on_failure:
+                  put: concourse-5-legacy-for-#{root_deployment_name}
+                  attempts: 3
+                  params:
+                    pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+                  on_success:
+                    task: set-success-tag
+                    output_mapping: { success-tag: concourse-5-micro-success}
+                    config:
+                      platform: linux
+                      image_resource:
+                        type: docker-image
+                        source:
+                          repository: ((docker-registry-url))governmentpaas/git-ssh
+                          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+                      outputs:
+                        - name: success-tag
+                      run:
+                        path: sh
+                        args:
+                          - -ec
+                          - touch success-tag/task.ok
           YAML
         end
         YAML.safe_load my_yaml
@@ -439,7 +484,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
 
       it 'is valid' do
         # generated_concourse_tasks = deploy_concourse_tasks.select { |task| task['put']&.start_with?('concourse-for-') }
-        generated_concourse_tasks = deploy_concourse_tasks.flat_map { |task| task if task['put']&.start_with?('concourse-for-') }.compact
+        generated_concourse_tasks = deploy_concourse_tasks.flat_map { |task| task if task['try'] }.compact
         expect(generated_concourse_tasks).to match(expected_concourse_tasks)
       end
     end

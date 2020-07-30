@@ -1,10 +1,15 @@
 ---
 resource_types:
+  - name: concourse-5-pipeline
+    type: docker-image
+    source:
+      repository: ((docker-registry-url))concourse/concourse-pipeline-resource
+      tag: 5.0.0
   - name: concourse-pipeline
     type: docker-image
     source:
       repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-      tag: 2.1.1
+      tag: 6.0.0
   - name: slack-notification
     type: docker-image
     source:
@@ -83,13 +88,19 @@ resources:
 - name: concourse-micro
   icon: concourse-ci
   type: concourse-pipeline
-  source:
+  source: &concourse_config
     target: ((concourse-micro-depls-target))
     insecure: "true"
     teams:
     - name: main
       username: ((concourse-micro-depls-username))
       password: "((concourse-micro-depls-password))"
+
+- name: concourse-5-micro
+  icon: concourse-ci
+  type: concourse-5-pipeline
+  source: *concourse_config
+
 jobs:
 - name: save-deployed-pipelines
   build_log_retention:
@@ -162,6 +173,59 @@ jobs:
       repository: updated-pipelines
       rebase: true
 
+- name: save-deployed-pipelines-legacy
+  build_log_retention:
+    builds: 30
+  serial: true
+  on_failure: &failure_alert
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+        - put: concourse-meta
+        - get: cf-ops-automation
+          params: { submodules: none}
+        - get: secrets-writer
+          params: { submodules: none}
+        - get: concourse-5-micro
+          trigger: true
+    - task: sort-pipelines
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))library/ruby
+            tag: 2.6.3
+        inputs:
+          - name: concourse-5-micro
+        outputs:
+          - name: sorted-pipelines
+        run:
+          path: /bin/bash
+          args:
+            - -ec
+            - |
+              cp -p concourse-5-micro/*.yml sorted-pipelines/
+              cd sorted-pipelines
+              ruby -ryaml -e 'Dir["*.yml"].each { |yaml_file| puts "processing #{yaml_file}"; yaml = YAML.load_file(yaml_file); yaml["resources"] = yaml["resources"]&.sort_by { |x| x["name"]}; yaml["resource_types"] = yaml["resource_types"]&.sort_by { |x| x["name"]}; puts "rewriting #{yaml_file}"; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) } }'
+
+    - task: update-git-deployed-pipelines
+      input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
+      output_mapping: {updated-git-resource: updated-pipelines}
+      file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
+      params:
+        COMMIT_MESSAGE: "Deployed pipelines update - [skip ci]"
+        OLD_DIR: "coa/pipelines/deployed"
+    - put: secrets-writer
+      params:
+        repository: updated-pipelines
+        rebase: true
+
 - name: on-git-commit
   build_log_retention:
     builds: 30
@@ -232,10 +296,66 @@ jobs:
           du -a config-resource/coa/pipelines/generated|wc -l
   - task: generate-concourse-pipeline-config
     file: cf-ops-automation/concourse/tasks/generate_concourse_pipeline_config/task.yml
-  - put: concourse-micro
-    attempts: 3
-    params:
-      pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+  - try:
+      put: concourse-micro
+      attempts: 3
+      params:
+        pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+      on_success:
+        task: set-success-tag
+        output_mapping: { success-tag: concourse-micro-success}
+        config: &success_tag
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))governmentpaas/git-ssh
+              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          outputs:
+            - name: success-tag
+          run:
+            path: sh
+            args:
+              - -ec
+              - touch success-tag/task.ok
+      on_failure:
+        put: concourse-5-micro
+        attempts: 3
+        params:
+          pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+        on_success:
+          task: set-success-tag
+          output_mapping: { success-tag: concourse-5-micro-success}
+          config: *success_tag
+
+  - task: check-success-tag
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-registry-url))governmentpaas/git-ssh
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+      inputs:
+        - name: concourse-micro-success
+          optional: true
+        - name: concourse-5-micro-success
+          optional: true
+      run:
+        path: sh
+        args:
+          - -ec
+          - |
+            if [ -e concourse-micro-success/task.ok ];then
+              echo "Task concourse-micro successfull"
+              exit 0
+            fi
+            if [ -e concourse-5-micro-success/task.ok ];then
+              echo "Task concourse-5-micro successfull"
+              exit 0
+            fi
+            echo "Failed to update pipelines, please check logs"
+            exit 1
 
 - name: push-changes
   build_log_retention:
