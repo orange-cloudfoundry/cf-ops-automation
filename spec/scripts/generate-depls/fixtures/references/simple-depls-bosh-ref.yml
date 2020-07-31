@@ -482,13 +482,15 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
+      params:
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
     - get: ntp_boshrelease
       trigger: true
-      tarball: false
+      params:
+        tarball: false
       attempts: 2
     - get: secrets-ntp-with-scan
       params: { submodules: none, depth: 0 }
@@ -690,13 +692,15 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
+      params:
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
     - get: zookeeper_boshrelease
       trigger: true
-      tarball: false
+      params:
+        tarball: false
       attempts: 2
     - get: paas-templates-zookeeper-without-scan
       trigger: true
