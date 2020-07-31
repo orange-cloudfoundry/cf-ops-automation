@@ -1,10 +1,12 @@
 FROM ruby:2.6.3
 
 # 3791e5703717a074429311d2d218c234a270f5b358210b6bb722b684dc1b5153  fly-5.8.1-linux-amd64.tgz
-# 3df15b9c3e342eb41d6b3192e89459e304e996af2a61e5788418f8d74645e665  fly-5.8.0-linux-amd64.tgz
-# d9b93f792b5ed77d785f192da9710d5da788d042a52f352e52e310f32a9f8e87  fly-5.3.0-linux-amd64.tgz
-ARG CONCOURSE_VERSION=5.8.1
-ARG CONCOURSE_SHA=3791e5703717a074429311d2d218c234a270f5b358210b6bb722b684dc1b5153
+# 28d59035d87157f3e87496c2350deefebbe050baed3fcc7f968605fa144bb11e  fly-6.4.0-linux-amd64.tgz
+ARG CONCOURSE_VERSION=6.4.0
+ARG CONCOURSE_SHA256=28d59035d87157f3e87496c2350deefebbe050baed3fcc7f968605fa144bb11e
+
+ARG BOSH_CLI_VERSION=6.2.1
+ARG BOSH_CLI_SHA256=ca7580008abfd4942dcb1dd6218bde04d35f727717a7d08a2bc9f7d346bce0f6
 
 RUN apt-get update && \
  apt-get -y install tree vim netcat dnsutils jq
@@ -21,7 +23,7 @@ RUN cd /usr/local && bundle install --retry 5
 ARG FLY_DOWNLOAD_URL="https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly-${CONCOURSE_VERSION}-linux-amd64.tgz"
 RUN echo "Prepare FLY downloading at $FLY_DOWNLOAD_URL"
 RUN curl --retry 30 -SL "$FLY_DOWNLOAD_URL" -o /tmp/fly.tgz \
-  && [ ${CONCOURSE_SHA} = $(sha256sum /tmp/fly.tgz | cut -d' ' -f1) ] \
+  && [ ${CONCOURSE_SHA256} = $(sha256sum /tmp/fly.tgz | cut -d' ' -f1) ] \
   && cd /tmp \
   && tar xzvf /tmp/fly.tgz \
   && mv /tmp/fly /usr/local/bin/fly \
@@ -34,8 +36,8 @@ RUN curl --retry 30 -SL "https://raw.githubusercontent.com/ekalinin/github-markd
   && chmod a+x /usr/local/bin/gh-md-toc
 
 # Download BOSH v2 CLI
-RUN curl --retry 30 -SLo /usr/local/bin/bosh https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-3.0.1-linux-amd64 \
-  && echo "58e6853291c3535e77e5128af9f0e8e4303dd57e5a329aa976f197c010517975 */usr/local/bin/bosh" | shasum -a 256 -c - \
+RUN curl --retry 30 -SLo /usr/local/bin/bosh https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 \
+  && echo "${BOSH_CLI_SHA256} */usr/local/bin/bosh" | shasum -a 256 -c - \
   && chmod +x /usr/local/bin/bosh
 
 # remove old version of bundler to avoid confusion between bundler and bundle cmd
