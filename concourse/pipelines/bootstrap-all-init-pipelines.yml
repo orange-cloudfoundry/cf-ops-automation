@@ -129,7 +129,7 @@ jobs:
               content += "    username: #{fly_username}\n"
               content += "    password: \"#{fly_password}\"\n"
             end
-            content =  "- type: remove\n"
+            content +=  "- type: remove\n"
             content += "  path: /resources/name=concourse-5-micro/source/teams\n"
             content +=  "- type: replace\n"
             content += "  path: /resources/name=concourse-5-micro/source/teams?\n"
