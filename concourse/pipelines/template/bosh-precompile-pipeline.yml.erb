@@ -786,7 +786,7 @@ jobs:
             echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
     <% end %>
         params:
-          BUILD_PIPELINE_NAME: <%= root_deployment_name %>-bosh-generated
+          BUILD_PIPELINE_NAME: <%= root_deployment_name %>-bosh-precompile-generated
     - task: fly-into-concourse
       input_mapping: {fly-cmd: init-<%= root_deployment_name %>-plan}
       output_mapping: {flight-report: concourse-<%= root_deployment_name %>-init-report}

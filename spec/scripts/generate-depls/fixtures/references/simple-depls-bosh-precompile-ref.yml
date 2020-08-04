@@ -577,7 +577,7 @@ jobs:
             echo "check-resource -r $BUILD_PIPELINE_NAME/zookeeper_boshrelease --from tag:v((releases.zookeeper_boshrelease.version))" | tee -a result-dir/flight-plan
             echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz" | tee -a result-dir/flight-plan
         params:
-          BUILD_PIPELINE_NAME: simple-depls-bosh-generated
+          BUILD_PIPELINE_NAME: simple-depls-bosh-precompile-generated
     - task: fly-into-concourse
       input_mapping: {fly-cmd: init-simple-depls-plan}
       output_mapping: {flight-report: concourse-simple-depls-init-report}
