@@ -167,6 +167,7 @@ jobs:
           - |
             echo "Testing environment config:"
             echo "---------------------------"
+            echo "System: $(uname -a)"
             echo "fly $(fly --version)"
             ruby --version
             bundle --version
@@ -300,7 +301,6 @@ jobs:
             CREDHUB_SECRET: "((integration-test-prereqs.credhub.secret))"
             CREDHUB_CA_CERT: ((integration-test-prereqs.credhub.ca-cert))
             CREHUB_CONCOURSE_NAMESPACE: concourse-IT
-            CONCOURSE_TEAMS: main upload
           run:
             path: /bin/bash
             args:
@@ -320,6 +320,10 @@ jobs:
                 credhub f
                 #credhub set -n
                 ruby --version
+                cd cf-ops-automation
+                CURRENT_TEAMS=$(grep -E "^[[:space:]]*team:" docs/reference_dataset/config_repository/hello-world-root-depls/ci-deployment-overview.yml|sort|uniq|cut -d':' -f2|cut -c2-)
+                CONCOURSE_TEAMS="main $CURRENT_TEAMS"
+                echo "Teams to process: ${CONCOURSE_TEAMS}"
                 for team in ${CONCOURSE_TEAMS};do
                   credhub set --type value -n "/${CREHUB_CONCOURSE_NAMESPACE}/${team}/docker-registry-url" -v "registry.hub.docker.com/"
                 done

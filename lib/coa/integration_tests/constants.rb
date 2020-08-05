@@ -15,11 +15,11 @@ module Coa
         "bootstrap-all-init-pipelines" => {
           "team" => "main",
           "jobs" => {
-            "bootstrap-pipelines"            => { "trigger" => true },
-            "reload-this-pipeline-from-git"  => { "trigger" => true },
-            "create-teams"                   => {},
-            "bootstrap-control-plane"        => {},
-            "bootstrap-update-pipelines"     => {}
+            "bootstrap-pipelines" => { "trigger" => true },
+            "reload-this-pipeline-from-git" => { "trigger" => true },
+            "create-teams" => {},
+            "bootstrap-control-plane" => {},
+            "bootstrap-update-pipelines" => {}
           }
         },
         "hello-world-root-depls-update-generated" => {
@@ -31,49 +31,49 @@ module Coa
         "control-plane" => {
           "team" => "main",
           "jobs" => {
-            "on-git-commit"            => {},
+            "on-git-commit" => {},
             "load-generated-pipelines" => {},
-            "push-changes"             => {},
-            "save-deployed-pipelines"  => {}
+            "push-changes" => {},
+            "save-deployed-pipelines" => {}
           }
         },
         "hello-world-root-depls-cf-apps-generated" => {
-          "team" => "main",
+          "team" => "hello-world-root-depls",
           "jobs" => {
             "cf-push-generic-app" => {}
           }
         },
         "hello-world-root-depls-bosh-precompile-generated" => {
-            "team" => "main",
-            "jobs" => {
-                "hello-world-root-depls-release-precompile-deployment" => {},
-                "compile-and-export-ntp" => {},
-                "compile-and-export-nginx" => {},
-                "compile-and-export-vault" => {},
-                "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
-                "delete-hello-world-root-depls-release-precompile-deployment" => {}
-            }
+          "team" => "hello-world-root-depls",
+          "jobs" => {
+              "hello-world-root-depls-release-precompile-deployment" => {},
+              "compile-and-export-ntp" => {},
+              "compile-and-export-nginx" => {},
+              "compile-and-export-vault" => {},
+              "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
+              "delete-hello-world-root-depls-release-precompile-deployment" => {}
+          }
         },
         "hello-world-root-depls-bosh-generated" => {
-          "team" => "main",
+          "team" => "hello-world-root-depls",
           "jobs" => {
-            "delete-deployments-review"                                          => {},
-            "approve-and-delete-disabled-deployments"                            => { "trigger" => true },
+            "delete-deployments-review" => {},
+            "approve-and-delete-disabled-deployments" => { "trigger" => true },
             "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
-            "cloud-config-and-runtime-config-for-hello-world-root-depls"         => { "pause" => true },
-            "execute-deploy-script"                                              => {},
-            "deploy-bosh-deployment-sample"                                      => {},
-            "check-terraform-consistency"                                        => {},
-            "approve-and-enforce-terraform-consistency"                          => { "trigger" => true },
-            "recreate-all"                                                       => { "trigger" => true },
-            "recreate-bosh-deployment-sample"                                    => {},
-            "cancel-all-bosh-tasks"                                              => { "trigger" => true },
-            "push-stemcell"                                                      => {},
-            "push-boshreleases"                                                  => {}
+            "cloud-config-and-runtime-config-for-hello-world-root-depls" => { "pause" => true },
+            "execute-deploy-script" => {},
+            "deploy-bosh-deployment-sample" => {},
+            "check-terraform-consistency" => {},
+            "approve-and-enforce-terraform-consistency" => { "trigger" => true },
+            "recreate-all" => { "trigger" => true },
+            "recreate-bosh-deployment-sample" => {},
+            "cancel-all-bosh-tasks" => { "trigger" => true },
+            "push-stemcell" => {},
+            "push-boshreleases" => {}
           }
         },
         "hello-world-root-depls-concourse-generated" => {
-          "team" => "main",
+          "team" => "hello-world-root-depls",
           "jobs" => {
             "deploy-concourse-pipeline-sample-pipeline" => {}
           }
