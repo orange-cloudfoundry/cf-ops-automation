@@ -27,7 +27,7 @@
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
-  current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated")
+  current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated") || root_deployment_name
 
   name = "#{root_deployment_name}-release-precompile-deployment"
 
@@ -776,6 +776,7 @@ jobs:
       <% from_prefix = PipelineHelpers.bosh_io_hosted?(info) ? "version" : "tag" %>
       <% if offline_boshreleases_enabled %>
             echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((releases.<%= name %>.version)).tgz" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/compiled-<%= name %> --from path:<%= info['repository']&.split('/')&.first %>/<%= name %>-((releases.<%= name %>.version))-((s3-compiled-release-os))-((stemcell.version)).tgz" | tee -a result-dir/flight-plan
       <% else %>
             echo "check-resource -r $BUILD_PIPELINE_NAME/<%= name %> --from <%= from_prefix %>:<%= PipelineHelpers.tag_prefix(info) %>((releases.<%= name %>.version))" | tee -a result-dir/flight-plan
       <% end %>
@@ -795,7 +796,7 @@ jobs:
         ATC_EXTERNAL_URL: ((concourse-<%= root_deployment_name %>-target))
         FLY_USERNAME: ((concourse-<%= root_deployment_name %>-username))
         FLY_PASSWORD: "((concourse-<%= root_deployment_name %>-password))"
-        FLY_TEAM: <%= current_team || 'main' %>
+        FLY_TEAM: <%= current_team %>
   <% end %>
 
 
