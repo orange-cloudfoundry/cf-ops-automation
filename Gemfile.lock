@@ -70,7 +70,8 @@ GEM
     ice_nine (0.11.2)
     jaro_winkler (1.5.4)
     json (2.3.0)
-    kramdown (2.1.0)
+    kramdown (2.3.0)
+      rexml
     kramdown-parser-gfm (1.1.0)
       kramdown (~> 2.0)
     kwalify (0.7.2)
