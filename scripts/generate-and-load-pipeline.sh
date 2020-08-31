@@ -12,9 +12,20 @@ OUTPUT_DIR=${OUTPUT_DIR:-$(realpath ${COA_DIR}/bootstrap-generated)}
 PIPELINE_NAME=${PIPELINE_NAME:-${DEPLS}-bosh}
 TEAM=${TEAM:-${DEPLS}}
 
+IAAS_TYPE_OPTION=""
+if [ -n "${IAAS_TYPE}" ]; then
+  IAAS_TYPE_OPTION="--iaas ${IAAS_TYPE}"
+fi
+
+PROFILES_OPTION=""
+if [ -n "${PROFILES}" ]; then
+  PROFILES_OPTION="--profiles ${PROFILES}"
+fi
+
 FLY_CMD=${FLY_CMD:=fly}
 FLY_TARGET=${FLY_TARGET:=int}
-${CURRENT_SCRIPT_DIR}/generate-depls.rb --depls "${DEPLS}" -p "${SECRETS}" -t "${PAAS_TEMPLATES}" -a "${COA_DIR}" -o "${OUTPUT_DIR}" --no-dump
+${CURRENT_SCRIPT_DIR}/generate-depls.rb --depls "${DEPLS}" -p "${SECRETS}" -t "${PAAS_TEMPLATES}" -a "${COA_DIR}" -o "${OUTPUT_DIR}" ${IAAS_TYPE_OPTION} ${PROFILES_OPTION} --no-dump
+
 echo "Removing empty pipelines"
 set +e
 EMPTY_PIPELINES=$(grep -l '\- name: this-is-an-empty-pipeline' "${OUTPUT_DIR}/pipelines/${DEPLS}"-*.yml)
