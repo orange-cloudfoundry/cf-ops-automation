@@ -26,7 +26,8 @@ run:
   args:
     - -c
     - |
-      find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+      # --fix is usefull to override existing release with another sha1
+      find releases-to-upload/ -name "*.tgz" -exec bosh upload-release --fix {} \;
 params:
   BOSH_ENVIRONMENT:
   BOSH_CLIENT:
