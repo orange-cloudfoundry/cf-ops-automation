@@ -462,7 +462,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                     pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
                   on_success:
                     task: set-success-tag
-                    output_mapping: { success-tag: concourse-5-micro-success}
+                    output_mapping: { success-tag: concourse-micro-legacy-success}
                     config:
                       platform: linux
                       image_resource:

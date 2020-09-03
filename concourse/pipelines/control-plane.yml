@@ -96,7 +96,7 @@ resources:
       username: ((concourse-micro-depls-username))
       password: "((concourse-micro-depls-password))"
 
-- name: concourse-5-micro
+- name: concourse-micro-legacy
   icon: concourse-ci
   type: concourse-5-pipeline
   source: *concourse_config
@@ -191,7 +191,7 @@ jobs:
           params: { submodules: none}
         - get: secrets-writer
           params: { submodules: none}
-        - get: concourse-5-micro
+        - get: concourse-micro-legacy
           trigger: true
     - task: sort-pipelines
       config:
@@ -202,7 +202,7 @@ jobs:
             repository: ((docker-registry-url))library/ruby
             tag: 2.6.3
         inputs:
-          - name: concourse-5-micro
+          - name: concourse-micro-legacy
         outputs:
           - name: sorted-pipelines
         run:
@@ -210,7 +210,7 @@ jobs:
           args:
             - -ec
             - |
-              cp -p concourse-5-micro/*.yml sorted-pipelines/
+              cp -p concourse-micro-legacy/*.yml sorted-pipelines/
               cd sorted-pipelines
               ruby -ryaml -e 'Dir["*.yml"].each { |yaml_file| puts "processing #{yaml_file}"; yaml = YAML.load_file(yaml_file); yaml["resources"] = yaml["resources"]&.sort_by { |x| x["name"]}; yaml["resource_types"] = yaml["resource_types"]&.sort_by { |x| x["name"]}; puts "rewriting #{yaml_file}"; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) } }'
 
@@ -319,13 +319,13 @@ jobs:
               - -ec
               - touch success-tag/task.ok
       on_failure:
-        put: concourse-5-micro
+        put: concourse-micro-legacy
         attempts: 3
         params:
           pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
         on_success:
           task: set-success-tag
-          output_mapping: { success-tag: concourse-5-micro-success}
+          output_mapping: { success-tag: concourse-micro-legacy-success}
           config: *success_tag
 
   - task: check-success-tag
@@ -339,7 +339,7 @@ jobs:
       inputs:
         - name: concourse-micro-success
           optional: true
-        - name: concourse-5-micro-success
+        - name: concourse-micro-legacy-success
           optional: true
       run:
         path: sh
@@ -350,8 +350,8 @@ jobs:
               echo "Task concourse-micro successfull"
               exit 0
             fi
-            if [ -e concourse-5-micro-success/task.ok ];then
-              echo "Task concourse-5-micro successfull"
+            if [ -e concourse-micro-legacy-success/task.ok ];then
+              echo "Task concourse-micro-legacy successfull"
               exit 0
             fi
             echo "Failed to update pipelines, please check logs"
