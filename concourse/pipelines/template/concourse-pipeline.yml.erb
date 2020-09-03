@@ -229,7 +229,7 @@ jobs:
           pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
         on_success:
           task: set-success-tag
-          output_mapping: { success-tag: concourse-5-micro-success}
+          output_mapping: { success-tag: concourse-micro-legacy-success}
           config: *success_tag
 
   - task: check-success-tag
@@ -243,7 +243,7 @@ jobs:
       inputs:
         - name: concourse-micro-success
           optional: true
-        - name: concourse-5-micro-success
+        - name: concourse-micro-legacy-success
           optional: true
       run:
         path: sh
@@ -254,8 +254,8 @@ jobs:
               echo "Task concourse-micro successfull"
               exit 0
             fi
-            if [ -e concourse-5-micro-success/task.ok ];then
-              echo "Task concourse-5-micro successfull"
+            if [ -e concourse-micro-legacy-success/task.ok ];then
+              echo "Task concourse-micro-legacy successfull"
               exit 0
             fi
             echo "Failed to update pipelines, please check logs"
