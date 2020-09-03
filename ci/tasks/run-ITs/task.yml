@@ -47,7 +47,6 @@ run:
       cd ..
       echo "removing existing releases and deployment"
       bosh delete-deployment --force -d bosh-deployment-sample --non-interactive
-      bosh delete-deployment --force -d hello-world-root-depls-release-precompile-deployment --non-interactive
       bosh delete-release --non-interactive ntp
       bosh deployments
       bosh releases
