@@ -52,7 +52,7 @@ class RepackageReleasesFallback
   def fallback_to_bosh_io(errors, fallback_fixes, repackaged_releases_fallback_path)
     successfully_processed = []
     @repackaged_errors.each do |name, details|
-      puts "Processing #{name} boshrelease"
+      puts "Failed to repackage #{name} boshrelease, trying direct download from bosh.io"
       begin
         download_from_bosh_io(name, details, repackaged_releases_fallback_path)
         update_errors_and_warnings(errors, fallback_fixes, name, successfully_processed)
@@ -70,7 +70,7 @@ class RepackageReleasesFallback
     successfully_processed = []
     remaining_errors = errors.dup
     remaining_errors.each do |name, details|
-      puts "Processing #{name} boshrelease"
+      puts "Failed to repackage #{name} boshrelease, trying direct download from github release"
       begin
         download_from_github(name, details, repackaged_releases_fallback_path)
         update_errors_and_warnings(errors, fallback_fixes, name, successfully_processed)
