@@ -46,12 +46,10 @@ module Coa
         "hello-world-root-depls-bosh-precompile-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
-              "hello-world-root-depls-release-precompile-deployment" => {},
               "compile-and-export-ntp" => {},
               "compile-and-export-nginx" => {},
               "compile-and-export-vault" => {},
-              "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {},
-              "delete-hello-world-root-depls-release-precompile-deployment" => {}
+              "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {}
           }
         },
         "hello-world-root-depls-bosh-generated" => {

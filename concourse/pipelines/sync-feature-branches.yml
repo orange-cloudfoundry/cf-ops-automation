@@ -63,6 +63,22 @@ resources:
     skip_ssl_verification: true
 
 jobs:
+- name: init-wip-from-reference
+  build_log_retention:
+    builds: 30
+  serial_groups: [git]
+  plan:
+    - in_parallel:
+        - get: paas-templates-reference
+          attempts: 2
+          params: { submodules: none }
+    - put: features-or-wip-merged
+      attempts: 2
+      get_params: { submodules: none, depth: 1 }
+      params:
+        repository: paas-templates-reference
+        rebase: true
+        force: true
 
 - name: update-merged-wip-features
   build_log_retention:
@@ -75,12 +91,86 @@ jobs:
         params: { submodules: none }
         trigger: true
         version: every
-    - put: features-or-wip-merged
-      attempts: 2
-      get_params: {submodules: none }
+      - get: features-or-wip-merged
+        attempts: 2
+        params: { submodules: none }
+    - task: merge-commit
+      config:
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/git-ssh
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        platform: linux
+        inputs:
+          - name: paas-templates-features
+          - name: features-or-wip-merged
+        outputs:
+          - name: rebased-wip
+        run:
+          path: /bin/ash
+          args:
+            - -ce
+            - |
+              echo "============================="
+              echo "Details about latest commit on $(cat paas-templates-features/.git/git-branch-heads-resource/branch)"
+              echo "Ref: $(cat paas-templates-features/.git/ref)"
+              echo "Message: $(cat paas-templates-features/.git/commit_message)"
+              echo "Committer: $(cat paas-templates-features/.git/committer)"
+              echo "============================="
+              cd paas-templates-features
+              echo "Latest commit on WIP branch (last 5 commits)"
+              git --no-pager log --oneline -n 5
+              cd ..
+              echo "============================="
+              cd features-or-wip-merged
+              echo "Details about latest commit on features-or-wip-merged"
+              echo "Ref: $(cat .git/ref)"
+              echo "Message: $(cat .git/commit_message)"
+              echo "Committer: $(cat .git/committer)"
+              echo "============================="
+              #git fetch
+              git fetch origin $(cat ../paas-templates-features/.git/ref)
+              cd ..
+              git clone features-or-wip-merged rebased-wip
+              cd rebased-wip
+              echo "Cherry picking change"
+              #git cherry-pick --allow-empty --keep-redundant-commits -x $(cat ../paas-templates-features/.git/ref)
+              for i in $(git cherry HEAD $(cat ../paas-templates-features/.git/ref)|grep "+ "|cut -c3-); do
+                applied="0"
+                if [ -e commits-applied.lst ]; then
+                  applied=$(grep $i commits-applied.lst|wc -l)
+                else
+                  echo "commits-applied.lst does not exist"
+                fi
+                if [ "$applied" = "0" ]; then
+                  echo "Appling missing commit: $i"
+                  git cherry-pick --allow-empty --keep-redundant-commits -x $i
+                  if [ "$?" = "0" ]; then
+                    touch commits-applied.lst
+                    echo "+ $i" >> commits-applied.lst
+                    git add commits-applied.lst
+                    git commit --amend --no-edit
+                  else
+                    echo "Cherry-pick error detected, skipping 'commits-applied.lst' update"
+                  fi
+                else
+                  echo "Already applied commit: $i"
+                fi
+              done
+              echo "============================="
+              echo "Latest commit on WIP branch (last 10 commits)"
+              git --no-pager log --oneline -n 10
+              echo "Checking diff with origin/$WIP_BRANCH"
+              diff_count=$(git diff origin/${WIP_BRANCH} |wc -l)
+              if [ "$diff_count" = "0" ]; then
+                echo "No difference detected with origin/$WIP_BRANCH, resetting"
+                git reset --hard origin/${WIP_BRANCH}
+              else
+                echo "Diff detected, keeping changes"
+              fi
       params:
-        repository: paas-templates-features
-        rebase: true
+          WIP_BRANCH: ((paas-templates-merged-branch))
       on_failure:
         do:
           - task: display-conficts
@@ -92,36 +182,54 @@ jobs:
                   tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
               platform: linux
               inputs:
+                - name: rebased-wip
                 - name: paas-templates-features
+                - name: features-or-wip-merged
               outputs:
                 - name: slack-message
               run:
                 path: /bin/ash
                 args:
-                  - -ce
+                  - -c
                   - |
-                    #ls -l paas-templates-features/.git
-                    echo "HEAD: "
-                    cat paas-templates-features/.git/HEAD
-                    echo "Short ref: "
-                    cat paas-templates-features/.git/short_ref
-                    echo "Committer"
-                    cat paas-templates-features/.git/committer
-                    echo
-                    cd paas-templates-features
-                    git --no-pager log -15 --pretty="tformat:%h %s / %an - %ar"
-                    git --no-pager log -15 --pretty="tformat:%h %s / %an - %ar" > ../slack-message/git-diff
+                    echo "============================="
+                    echo "Details about latest commit on $(cat paas-templates-features/.git/git-branch-heads-resource/branch)"
+                    echo "Ref: $(cat paas-templates-features/.git/ref)"
+                    echo "Message: $(cat paas-templates-features/.git/commit_message)"
+                    echo "Committer: $(cat paas-templates-features/.git/committer)"
+                    echo "============================="
+                    cd features-or-wip-merged
+                    echo "Details about latest commit on features-or-wip-merged"
+                    echo "Ref: $(cat .git/ref)"
+                    echo "Message: $(cat .git/commit_message)"
+                    echo "Committer: $(cat .git/committer)"
+                    cd ..
+                    cd rebased-wip
+                    echo "============================="
+                    echo "Latest commit on WIP branch (last 10 commits)"
+                    git --no-pager log --oneline -n 10
+                    echo "============================="
+
+                    git --no-pager diff --diff-filter=U --exit-code
+                    git --no-pager diff --diff-filter=U --exit-code > ../slack-message/git-diff
           - put: failure-alert
             params:
               channel: ((slack-channel))
               text: |
-                @here Cannot merge feature branch, please check [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+                @here Branches conflict detected please check [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
                 ```
                 $TEXT_FILE_CONTENT
                 ```
               text_file: slack-message/git-diff
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
+    - put: features-or-wip-merged
+      attempts: 2
+      get_params: { submodules: none, depth: 1 }
+      params:
+        repository: rebased-wip
+        rebase: true
+
 
 - name: check-feature-branches-for-conflicts
   build_log_retention:
@@ -185,7 +293,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
 
-- name: apply-merged-wip-features-reset
+- name: recreate-features-wip-merged-branch
   build_log_retention:
     builds: 30
   serial_groups: [git]
@@ -200,80 +308,117 @@ jobs:
     - in_parallel:
       - get: paas-templates-reference
         params: { submodules: none }
-        passed: [check-feature-branches-for-conflicts]
       - get: cf-ops-automation
         params: { submodules: none }
-    - task: reset-wip
-      file: cf-ops-automation/concourse/tasks/git_reset_wip.yml
-      input_mapping: {reference-resource: paas-templates-reference}
-      output_mapping: {updated-git-resource: paas-templates-features-reseted}
-      params:
-        GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
-        SKIP_SSL_VERIFICATION: true
-        GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
-
-    - put: features-or-wip-merged
-      get_params: {submodules: none}
-      attempts: 2
-      params:
-        repository: paas-templates-features-reseted
-        force: true
-
-
-- name: check-all-feature-branches-are-rebased
-  build_log_retention:
-    builds: 30
-  plan:
-    - in_parallel:
-        - get: paas-templates-reference
-          params: { submodules: none }
-        - get: features-or-wip-merged
-          passed: [apply-merged-wip-features-reset]
-          params: { submodules: none }
-          trigger: true
-        - get: cf-ops-automation
-          params: { submodules: none }
-    - task: list-outdated-branches
-      input_mapping: {reference-resource: paas-templates-reference}
-      output_mapping: {updated-git-resource: paas-templates-features-reseted}
-      file: cf-ops-automation/concourse/tasks/git_rebase_status/task.yml
-      params:
-        GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
-        SKIP_SSL_VERIFICATION: true
-
-
-- name: hard-reset-features-merged
-  build_log_retention:
-    builds: 30
-  serial_groups: [git]
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-    - in_parallel:
-        - get: paas-templates-reference
-          params: { submodules: none }
-        - get: cf-ops-automation
-          params: { submodules: none }
-    - task: reset-wip
-      file: cf-ops-automation/concourse/tasks/git_hard_reset_wip/task.yml
+    - task: reset-and-squash-wip
       input_mapping: {reference-resource: paas-templates-reference}
       output_mapping: {updated-git-resource: paas-templates-features-hard-reseted}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/git-ssh
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: reference-resource
+          - name: cf-ops-automation
+        outputs:
+          - name: updated-git-resource
+          - name: logs
+        run:
+          path: sh
+          args:
+            - -c
+            - |
+              set -o pipefail
+              set -e
+
+              git config --global user.email "$GIT_USER_EMAIL"
+              git config --global user.name "$GIT_USER_NAME"
+              git config --global merge.renamelimit "$GIT_MERGE_RENAMELIMIT"
+              git config --global advice.detachedHead false
+
+              FINAL_RELEASE_REPO=updated-git-resource
+
+              if [ "$SKIP_SSL_VERIFICATION" = "true" ]; then
+              export GIT_SSL_NO_VERIFY=true
+              echo "Skipping ssl verification"
+              fi
+
+              cd reference-resource || exit 1
+              URI=$(git remote get-url origin)
+
+              # shellcheck disable=SC2086
+              # we need GIT_BRANCH_FILTER to be expanded with spaces
+              current_heads=$(git ls-remote -h "$URI" ${GIT_BRANCH_FILTER} | sed 's/refs\/heads\///' | awk '{print $2, $1}' | sort)
+              cd ..
+
+              echo "selected branches list with associated commit id:"
+              DISPLAY_SEPARATOR="=================="
+              echo ${DISPLAY_SEPARATOR}
+              echo "${current_heads}"
+              echo ${DISPLAY_SEPARATOR}
+              git clone "${URI}" "${FINAL_RELEASE_REPO}"
+              cd ${FINAL_RELEASE_REPO} || exit 1
+              git checkout -B "${GIT_CHECKOUT_BRANCH}" -t "origin/${GIT_CHECKOUT_BRANCH}"
+
+              git_br=$(echo "${current_heads}" |awk '{ for (i=2;i<=NF;i+=2) $i=""; print}' )
+              echo "WIP Reset Complete" > .git/reset_branches
+              {
+                echo ""
+                echo "Restored branches:"
+                echo "${current_heads}"
+              } >> .git/reset_branches
+
+              echo "Commits applied:" > commits-applied.lst
+              for branch_name in ${git_br}; do
+                echo ${DISPLAY_SEPARATOR}
+                echo "Processing $branch_name"
+                git cherry HEAD "origin/${branch_name}" >> commits-applied.lst
+                git merge -m "Merge branch '$branch_name' after WIP reset [skip ci]" "origin/${branch_name}" 2>&1| tee -a ../logs/"$branch_name.log"
+              done
+              git reset origin/${GIT_CHECKOUT_BRANCH}
+
+              find . -maxdepth 5 -not \( -path "*.git" -prune \) -type d > .git/all_changed_dirs
+              echo "Changed dirs:"
+              cat .git/all_changed_dirs
+
+
+              # add timestamp to force triggering
+              cat .git/all_changed_dirs|sort |uniq > .git/changed_dirs
+              echo "Changed detected in the following dirs:"
+              cat .git/changed_dirs
+              echo ${DISPLAY_SEPARATOR}
+
+              date +'%Y-%m-%d-%H-%M-%S'|tee .git/.last-reset
+              while IFS= read -r aDir; do
+                if [ -d "${aDir}" ]; then
+                  cp .git/.last-reset "${aDir}"
+                fi
+              done < .git/changed_dirs
+
+              echo "Adding changes to git"
+              git add .
+              git commit --file .git/reset_branches
+        params:
+          GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
+          GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+          GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
+          GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
+          SKIP_SSL_VERIFICATION:
+          GIT_MERGE_RENAMELIMIT: 10000
+
       params:
         GIT_BRANCH_FILTER: WIP-* wip-* feature-* Feature-*
         SKIP_SSL_VERIFICATION: true
         GIT_CHECKOUT_BRANCH: ((paas-templates-reference-branch))
 
     - put: features-or-wip-merged
-      get_params: {submodules: none}
+      get_params: { submodules: none, depth: 1 }
       params:
         repository: paas-templates-features-hard-reseted
         force: true
-
 
 - name: check-all-feature-branches-are-rebased-hard-reset
   build_log_retention:
@@ -283,7 +428,7 @@ jobs:
         - get: paas-templates-reference
           params: { submodules: none }
         - get: features-or-wip-merged
-          passed: [hard-reset-features-merged]
+          passed: [recreate-features-wip-merged-branch]
           trigger: true
           params: { submodules: none }
         - get: cf-ops-automation
