@@ -62,7 +62,7 @@ class ResolveManifestVersions
     resolved_manifest['releases']&.each do |release|
       name, version = extract_release_manifest_info(release)
       lock_version, release_versions_details = extract_expected_info(name, versions)
-      puts "WARNING: inconsistent versions detected. Release: #{name} - Manifest version: #{version}) - COA expected version: #{lock_version}" if version != 'latest' && lock_version && version != lock_version
+      puts "WARNING: inconsistent versions detected. Release: #{name} - Manifest version: #{version} - COA expected version: #{lock_version}. Using COA version." if version != 'latest' && lock_version && version != lock_version
 
       if release_versions_details
         lock_release_version(lock_version, name, release)
