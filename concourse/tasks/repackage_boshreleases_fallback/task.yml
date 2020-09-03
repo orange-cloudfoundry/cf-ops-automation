@@ -38,8 +38,8 @@ run:
       exit_code=$?
       ls -l ${REPACKAGED_RELEASES_FALLBACK_PATH}
       if [ ${exit_code} -ne 0 ]; then
-        echo "WARNING: fail to repackage all releases, please check ${REPACKAGED_RELEASES_FALLBACK_PATH}/errors.yml"
-        cat ${REPACKAGED_RELEASES_FALLBACK_PATH}/errors.yml
+        echo "WARNING: fail to repackage all releases, please check ${REPACKAGED_RELEASES_FALLBACK_PATH}/fallback-errors.yml"
+        cat ${REPACKAGED_RELEASES_FALLBACK_PATH}/fallback-errors.yml
       fi
 params:
   GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"

@@ -11,15 +11,7 @@ resource_types:
   source:
     repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
-- name: meta
-  type: docker-image
-  source:
-    repository: ((docker-registry-url))swce/metadata-resource
-    tag: release-v0.0.3
 resources:
-  - name: concourse-meta
-    icon: file-document-box-search-outline
-    type: meta
   - name: failure-alert
     icon: slack
     type: slack-notification
@@ -69,15 +61,6 @@ resources:
       endpoint: ((s3-stemcell-endpoint))
       skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
     version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz }
-  - name: simple-depls-release-precompile-deployment
-    icon: cube-send
-    type: bosh-deployment-v2
-    source:
-      target: ((bosh-target))
-      client: ((bosh-username))
-      client_secret: "((bosh-password))"
-      deployment: simple-depls-release-precompile-deployment
-      ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
   - name: secrets-simple-depls-trigger
     icon: source-commit
     type: git
@@ -94,6 +77,15 @@ resources:
       paths: ["simple-depls/root-deployment.yml"]
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
+  - name: ntp_boshrelease-deployment
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: ntp_boshrelease-deployment
+      ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
   - name: ntp_boshrelease
     type: git
     icon:  github-circle
@@ -103,6 +95,15 @@ resources:
       skip_ssl_verification: false
     #    access_token: ((bot-github-access-token))
     version: { ref: ((releases.ntp_boshrelease.version)) }
+  - name: zookeeper_boshrelease-deployment
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: zookeeper_boshrelease-deployment
+      ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
   - name: zookeeper_boshrelease
     type: git
     icon:  github-circle
@@ -143,6 +144,7 @@ jobs:
       - task: repackage-releases-fallback
         file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
       - task: upload-to-director
+        # this is required to manage runtime config bosh release upload
         attempts: 2
         input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
         file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
@@ -221,207 +223,6 @@ jobs:
           STEMCELL_PREFIX: ((stemcell-name-prefix))
           STEMCELL_MAIN_NAME: ((stemcell-main-name))
           STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
-  - name: simple-depls-release-precompile-deployment
-    serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
-    plan:
-    - in_parallel:
-      - get: concourse-meta
-      - get: secrets-full-writer
-        params: { submodules: none}
-      - get: ((stemcell-main-name))
-        trigger: true
-        attempts: 2
-      - get: cf-ops-automation
-        params: { submodules: none}
-        trigger: true
-      - get: ntp_boshrelease
-        trigger: true
-        attempts: 2
-      - get: zookeeper_boshrelease
-        trigger: true
-        attempts: 2
-      - get: paas-templates-simple-depls-limited
-        params: { submodules: none}
-        passed: [push-stemcell, push-boshreleases]
-        trigger: true
-    - task: generate-simple-depls-release-precompile-deployment-manifest
-      input_mapping: {stemcell: ((stemcell-main-name))}
-      output_mapping: {generated-files: final-release-manifest}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-            tag: 0137f362db1fdd482668e899eb7638ff447b0856
-        inputs:
-          - name: stemcell
-        outputs:
-          - name: generated-files
-        run:
-          path: sh
-          args:
-            - -ec
-            - |
-              cd stemcell
-              STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
-              export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
-              cd ..
-              ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
-              cat generated-files/${MANIFEST_NAME}
-        params:
-          MANIFEST_NAME: "simple-depls-release-precompile-deployment.yml"
-          MANIFEST_CONTENT: '{"name"=>"simple-depls-release-precompile-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}, {"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
-    - task: protect-deployment
-      input_mapping: {reference-resource: secrets-full-writer}
-      output_mapping: {updated-git-resource: secrets-full-writer-simple-depls-release-precompile-deployment}
-      config:
-        platform: linux
-        image_resource:
-          type: docker-image
-          source:
-            repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
-            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
-        inputs:
-          - name: reference-resource
-        outputs:
-          - name: updated-git-resource
-        run:
-          path: sh
-          args:
-            - -ec
-            - |
-              git config --global user.email "$GIT_USER_EMAIL"
-              git config --global user.name "$GIT_USER_NAME"
-              git clone reference-resource updated-git-resource
-              cd updated-git-resource
-              mkdir -p ${TARGET_PATH}
-              touch ${TARGET_PATH}/protect-deployment.yml
-              git add .
-              CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
-              if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]; then
-                git commit -m "${COMMIT_MESSAGE}"
-              else
-                echo "No change detected, skip commit"
-              fi
-        params:
-          TARGET_PATH: simple-depls/simple-depls-release-precompile-deployment
-          GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
-          GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
-          COMMIT_MESSAGE: "Auto protect simple-depls-release-precompile-deployment to avoid automatic cleanup"
-    - put: simple-depls-release-precompile-deployment
-      attempts: 2
-      on_failure:
-        do:
-          - task: update-simple-depls-release-precompile-deployment-files
-            input_mapping: {reference-resource: secrets-full-writer-simple-depls-release-precompile-deployment, generated-resource: final-release-manifest}
-            output_mapping: {updated-git-resource: failed-simple-depls-release-precompile-deployment-secrets}
-            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-            params:
-              OLD_FILE: simple-depls/simple-depls-release-precompile-deployment/simple-depls-release-precompile-deployment-last-deployment-failure.yml
-              NEW_FILE: "simple-depls-release-precompile-deployment.yml"
-              COMMIT_MESSAGE: "Failed to deploy simple-depls-release-precompile-deployment manifest - [skip ci]"
-          - put: secrets-full-writer
-            get_params: {submodules: none}
-            params:
-              repository: failed-simple-depls-release-precompile-deployment-secrets
-              rebase: true
-      params:
-        manifest: final-release-manifest/simple-depls-release-precompile-deployment.yml
-        stemcells:
-        - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
-        cleanup: true
-    - task: bosh-variables
-      input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-full-writer-simple-depls-release-precompile-deployment}
-      output_mapping: {result-dir: bosh-variables-result}
-      file: cf-ops-automation/concourse/tasks/bosh_variables/task.yml
-      params:
-        BOSH_DEPLOYMENT: simple-depls-release-precompile-deployment
-        BOSH_TARGET: ((bosh-target))
-        BOSH_CLIENT: ((bosh-username))
-        BOSH_CLIENT_SECRET: "((bosh-password))"
-        BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-    - task: update-simple-depls-release-precompile-deployment-fingerprints-file
-      input_mapping: {reference-resource: secrets-full-writer-simple-depls-release-precompile-deployment, generated-resource: bosh-variables-result}
-      output_mapping: {updated-git-resource: updated-simple-depls-release-precompile-deployment-fingerprints-secrets}
-      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-      params:
-        OLD_FILE: simple-depls/simple-depls-release-precompile-deployment/simple-depls-release-precompile-deployment-fingerprints.json
-        NEW_FILE: "credential_fingerprints.json"
-        COMMIT_MESSAGE: "simple-depls-release-precompile-deployment variable fingerprints auto update - [skip ci]"
-    - task: update-simple-depls-release-precompile-deployment-files
-      input_mapping: {reference-resource: updated-simple-depls-release-precompile-deployment-fingerprints-secrets, generated-resource: simple-depls-release-precompile-deployment}
-      output_mapping: {updated-git-resource: updated-simple-depls-release-precompile-deployment-secrets}
-      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-      params:
-        OLD_FILE: simple-depls/simple-depls-release-precompile-deployment/simple-depls-release-precompile-deployment.yml
-        NEW_FILE: "manifest.yml"
-        COMMIT_MESSAGE: "simple-depls-release-precompile-deployment generated manifest auto update - [skip ci]"
-    - put: secrets-full-writer
-      get_params: {submodules: none}
-      params:
-        repository: updated-simple-depls-release-precompile-deployment-secrets
-        rebase: true
-  - name: delete-simple-depls-release-precompile-deployment
-    serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
-    plan:
-      - in_parallel:
-          - get: cf-ops-automation
-            params: { submodules: none}
-            trigger: true
-          - get: ntp_boshrelease
-            passed: [compile-and-export-ntp_boshrelease]
-            trigger: true
-            attempts: 2
-          - get: zookeeper_boshrelease
-            passed: [compile-and-export-zookeeper_boshrelease]
-            trigger: true
-            attempts: 2
-          - get: paas-templates-simple-depls-limited
-            params: { submodules: none}
-            trigger: true
-      - task: generate-simple-depls-release-precompile-deployment-manifest
-        output_mapping: {generated-files: final-release-manifest}
-        config:
-          platform: linux
-          image_resource:
-            type: docker-image
-            source:
-              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 0137f362db1fdd482668e899eb7638ff447b0856
-          outputs:
-            - name: generated-files
-          run:
-            path: sh
-            args:
-              - -ec
-              - |
-                ruby -ryaml -e 'ruby_manifest = {"name" => "simple-depls-release-precompile-deployment", "instance_groups" => [], "update" => { "canaries" => 1, "max_in_flight" => 1, "canary_watch_time" => "1000-90000", "update_watch_time" => "1000-90000" }, "releases" => [] }; File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
-                cat generated-files/${MANIFEST_NAME}
-          params:
-            MANIFEST_NAME: "simple-depls-release-precompile-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"simple-depls-release-precompile-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}, {"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
-      - put: simple-depls-release-precompile-deployment
-        attempts: 2
-        params:
-          manifest: final-release-manifest/simple-depls-release-precompile-deployment.yml
-          delete:
-            enabled: true
-            force: true
   - name: compile-and-export-ntp_boshrelease
     serial: true
     on_failure:
@@ -433,19 +234,75 @@ jobs:
         username: Concourse
     plan:
       - in_parallel:
-          - get: concourse-meta
           - get: ntp_boshrelease
-            passed:
-              - simple-depls-release-precompile-deployment
             trigger: true
             attempts: 2
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
-            passed:
-              - simple-depls-release-precompile-deployment
             trigger: true
             attempts: 2
+      - task: generate-ntp_boshrelease-deployment-manifest
+        input_mapping: {stemcell: ((stemcell-main-name))}
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd stemcell
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                cd ..
+                ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "ntp_boshrelease-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"ntp_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}]}'
+      - try:
+          # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
+          task: upload-to-director
+          attempts: 2
+          input_mapping: { releases-to-upload: ntp_boshrelease, config-resource: secrets-full-writer }
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+            inputs:
+              - name: releases-to-upload
+              - name: config-resource
+            run:
+              path: bash
+              args:
+                - -c
+                - |
+                  find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+          params:
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: ((bosh-password))
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - put: ntp_boshrelease-deployment
+        attempts: 2
+        params:
+          manifest: final-release-manifest/ntp_boshrelease-deployment.yml
+          stemcells:
+            - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
+          cleanup: true
       - task: compile-and-export-ntp_boshrelease
         attempts: 2
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
@@ -472,13 +329,19 @@ jobs:
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
-            BOSH_DEPLOYMENT: simple-depls-release-precompile-deployment
+            BOSH_DEPLOYMENT: ntp_boshrelease-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: ntp_boshrelease
             RELEASE_VERSION: ((releases.ntp_boshrelease.version))
+      - put: ntp_boshrelease-deployment
+        params:
+          manifest: final-release-manifest/ntp_boshrelease-deployment.yml.yml
+          delete:
+            enabled: true
+            force: true
   - name: compile-and-export-zookeeper_boshrelease
     serial: true
     on_failure:
@@ -490,19 +353,75 @@ jobs:
         username: Concourse
     plan:
       - in_parallel:
-          - get: concourse-meta
           - get: zookeeper_boshrelease
-            passed:
-              - simple-depls-release-precompile-deployment
             trigger: true
             attempts: 2
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
-            passed:
-              - simple-depls-release-precompile-deployment
             trigger: true
             attempts: 2
+      - task: generate-zookeeper_boshrelease-deployment-manifest
+        input_mapping: {stemcell: ((stemcell-main-name))}
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd stemcell
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                cd ..
+                ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "zookeeper_boshrelease-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"zookeeper_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
+      - try:
+          # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
+          task: upload-to-director
+          attempts: 2
+          input_mapping: { releases-to-upload: zookeeper_boshrelease, config-resource: secrets-full-writer }
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+            inputs:
+              - name: releases-to-upload
+              - name: config-resource
+            run:
+              path: bash
+              args:
+                - -c
+                - |
+                  find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+          params:
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: ((bosh-password))
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - put: zookeeper_boshrelease-deployment
+        attempts: 2
+        params:
+          manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml
+          stemcells:
+            - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
+          cleanup: true
       - task: compile-and-export-zookeeper_boshrelease
         attempts: 2
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
@@ -529,13 +448,19 @@ jobs:
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
-            BOSH_DEPLOYMENT: simple-depls-release-precompile-deployment
+            BOSH_DEPLOYMENT: zookeeper_boshrelease-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: zookeeper_boshrelease
             RELEASE_VERSION: ((releases.zookeeper_boshrelease.version))
+      - put: zookeeper_boshrelease-deployment
+        params:
+          manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml.yml
+          delete:
+            enabled: true
+            force: true
   - name: init-concourse-boshrelease-and-stemcell-for-simple-depls
     on_failure:
       put: failure-alert
@@ -592,23 +517,21 @@ groups:
     jobs:
       - compile-and-export-ntp_boshrelease
       - compile-and-export-zookeeper_boshrelease
-      - delete-simple-depls-release-precompile-deployment
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
       - push-stemcell
-      - simple-depls-release-precompile-deployment
+  - name: Releases
+    jobs:
+      - compile-and-export-ntp_boshrelease
+      - compile-and-export-zookeeper_boshrelease
   - name: Utils
     jobs:
-      - delete-simple-depls-release-precompile-deployment
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
       - push-stemcell
-      - simple-depls-release-precompile-deployment
   - name: N*
     jobs:
       - compile-and-export-ntp_boshrelease
-      - simple-depls-release-precompile-deployment
   - name: Z*
     jobs:
       - compile-and-export-zookeeper_boshrelease
-      - simple-depls-release-precompile-deployment
