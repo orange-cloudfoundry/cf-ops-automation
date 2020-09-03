@@ -22,9 +22,16 @@ if [ -n "${PROFILES}" ]; then
   PROFILES_OPTION="--profiles ${PROFILES}"
 fi
 
+PIPELINE_FILTERS_OPTION=""
+if [ -n "${PIPELINE_FILTERS}" ]; then
+  PIPELINE_FILTERS_OPTION="-i ${PIPELINE_FILTERS}"
+fi
+
+
+
 FLY_CMD=${FLY_CMD:=fly}
 FLY_TARGET=${FLY_TARGET:=int}
-${CURRENT_SCRIPT_DIR}/generate-depls.rb --depls "${DEPLS}" -p "${SECRETS}" -t "${PAAS_TEMPLATES}" -a "${COA_DIR}" -o "${OUTPUT_DIR}" ${IAAS_TYPE_OPTION} ${PROFILES_OPTION} --no-dump
+${CURRENT_SCRIPT_DIR}/generate-depls.rb --depls "${DEPLS}" -p "${SECRETS}" -t "${PAAS_TEMPLATES}" -a "${COA_DIR}" -o "${OUTPUT_DIR}" ${IAAS_TYPE_OPTION} ${PROFILES_OPTION} --no-dump ${PIPELINE_FILTERS_OPTION}
 
 echo "Removing empty pipelines"
 set +e
