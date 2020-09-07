@@ -38,7 +38,7 @@ module Coa
       def validate
         generated_pipeline_list.each do |pipeline_filename|
           puts "validating #{pipeline_filename}"
-          command = "fly validate-pipeline -c #{pipeline_filename} --strict"
+          command = "fly validate-pipeline -c #{pipeline_filename} --var=stemcell-main-name=my-stemcell-name"
           stdout_str, stderr_str, = Open3.capture3(command)
           raise "Invalid generated pipeline (#{pipeline_filename}): #{stderr_str}" unless stderr_str.empty?
           raise "Invalid generated pipeline (#{pipeline_filename}): #{stdout_str}" unless stdout_str == "looks good\n"

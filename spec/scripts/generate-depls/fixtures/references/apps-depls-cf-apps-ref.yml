@@ -173,13 +173,13 @@ jobs:
         CF_USERNAME: "\"a-test-User"
         CF_PASSWORD: "'a-test-Password"
 groups:
-- name: Apps-depls
+- name: apps-depls
   jobs:
       - retrigger-all-jobs
       - cf-push-test-app
-- name: App-t*
+- name: app-t
   jobs:
     - cf-push-test-app
-- name: Utils
+- name: utils
   jobs:
     - retrigger-all-jobs

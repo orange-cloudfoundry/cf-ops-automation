@@ -84,13 +84,13 @@ describe 'CfAppsPipelineTemplateProcessing' do
   end
   let(:groups) do
     [
-      { 'name' => 'My-root-depls',
+      { 'name' => 'my-root-depls',
         'jobs' => %w[retrigger-all-jobs cf-push-elpaaso-sandbox cf-push-log-broker cf-push-mattermost cf-push-ops-dataflow] },
-      { "name" => "App-e*", "jobs" => ["cf-push-elpaaso-sandbox"] },
-      { "name" => "App-l*", "jobs" => ["cf-push-log-broker"] },
-      { "name" => "App-m*", "jobs" => ["cf-push-mattermost"] },
-      { "name" => "App-o*", "jobs" => ["cf-push-ops-dataflow"] },
-      { "name" => "Utils", "jobs" => ["retrigger-all-jobs"] }
+      { "name" => "app-e", "jobs" => ["cf-push-elpaaso-sandbox"] },
+      { "name" => "app-l", "jobs" => ["cf-push-log-broker"] },
+      { "name" => "app-m", "jobs" => ["cf-push-mattermost"] },
+      { "name" => "app-o", "jobs" => ["cf-push-ops-dataflow"] },
+      { "name" => "utils", "jobs" => ["retrigger-all-jobs"] }
     ]
   end
 
@@ -148,7 +148,7 @@ describe 'CfAppsPipelineTemplateProcessing' do
       end
 
       it 'generates a group using root deployment name ' do
-        generated_groups = generated_pipeline['groups'].select { |concourse_group| concourse_group['name'] == root_deployment_name.capitalize }
+        generated_groups = generated_pipeline['groups'].select { |concourse_group| concourse_group['name'] == root_deployment_name.downcase }
         expect(generated_groups).not_to be_empty
       end
 

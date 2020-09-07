@@ -1096,7 +1096,7 @@ jobs:
       FLY_PASSWORD: "((concourse-simple-depls-password))"
       FLY_TEAM: main
 groups:
-- name: Simple-depls
+- name: simple-depls
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-simple-depls
@@ -1110,18 +1110,18 @@ groups:
     - recreate-ntp-with-scan
     - recreate-zookeeper-without-scan
     - retrigger-all-jobs
-- name: Deploy-n*
+- name: deploy-n
   jobs:
     - deploy-ntp-with-scan
-- name: Deploy-z*
+- name: deploy-z
   jobs:
     - deploy-zookeeper-without-scan
-- name: Recreate
+- name: recreate
   jobs:
     - recreate-all
     - recreate-ntp-with-scan
     - recreate-zookeeper-without-scan
-- name: Utils
+- name: utils
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-simple-depls

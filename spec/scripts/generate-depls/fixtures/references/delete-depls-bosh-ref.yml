@@ -228,7 +228,7 @@ jobs:
         version: every
         trigger: true
         params: { submodules: none, depth: 0 }
-    - task: prepare_deployment_to_be_deleted
+    - task: prepare-deployment-to-be-deleted
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-delete-depls-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
@@ -254,7 +254,7 @@ jobs:
         params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
       - put: concourse-meta
-    - task: delete_deployments
+    - task: delete-deployments
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-delete-depls-trigger}
       output_mapping: {output-config-resource: updated-config-resource}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
@@ -471,7 +471,7 @@ jobs:
      - get: cf-ops-automation
        params: { submodules: none, depth: 0 }
 groups:
-- name: Delete-depls
+- name: delete-depls
   jobs:
     - approve-and-delete-disabled-deployments
     - cancel-all-bosh-tasks
@@ -481,10 +481,10 @@ groups:
     - push-boshreleases
     - push-stemcell
     - recreate-all
-- name: Recreate
+- name: recreate
   jobs:
     - recreate-all
-- name: Utils
+- name: utils
   jobs:
     - approve-and-delete-disabled-deployments
     - cancel-all-bosh-tasks

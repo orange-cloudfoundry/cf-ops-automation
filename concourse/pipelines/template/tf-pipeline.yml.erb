@@ -145,7 +145,7 @@ jobs:
             rebase: true
 
 groups:
-- name: <%= depls.capitalize %>
+- name: <%= depls.downcase %>
   jobs:
   <% jobs.each_value do |jobs_list| %>
     <% jobs_list.each do |job| %>
@@ -154,7 +154,7 @@ groups:
   <% end %>
 
   <% jobs.sort.each do |group_name, jobs_list| %>
-- name: <%= group_name.capitalize %>
+- name: <%= group_name.downcase %>
   jobs:
     <% jobs_list&.each do |job| %>
     - <%= job %>

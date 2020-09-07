@@ -394,7 +394,7 @@ jobs:
      - get: cf-ops-automation
        params: { submodules: none, depth: 0 }
 groups:
-- name: Empty-depls
+- name: empty-depls
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-empty-depls
@@ -402,10 +402,10 @@ groups:
     - push-boshreleases
     - push-stemcell
     - recreate-all
-- name: Recreate
+- name: recreate
   jobs:
     - recreate-all
-- name: Utils
+- name: utils
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-empty-depls

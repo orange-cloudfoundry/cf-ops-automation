@@ -473,7 +473,7 @@ jobs:
         version: every
         trigger: true
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-    - task: prepare_deployment_to_be_deleted
+    - task: prepare-deployment-to-be-deleted
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-<%= root_deployment_name %>-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
@@ -500,7 +500,7 @@ jobs:
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         passed: [delete-deployments-review]
       - put: concourse-meta
-    - task: delete_deployments
+    - task: delete-deployments
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-<%= root_deployment_name %>-trigger}
       output_mapping: {output-config-resource: updated-config-resource}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
@@ -714,7 +714,7 @@ jobs:
 <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
 <% deployment_details = PipelineHelpers::DeploymentDetails.new(name, boshrelease) %>
 - name: deploy-<%= name %>
-  <% jobs["deploy-#{name[0]}*"] << "deploy-#{name}" %>
+  <% jobs["deploy-#{name[0]}"] << "deploy-#{name}" %>
   serial: true
   <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
   on_failure:
@@ -954,7 +954,7 @@ jobs:
     <% deployment_details.errands.each do |errand_name, errand_info| %>
     <% errand_display_name = errand_info&.dig('display-name') || errand_name %>
 - name: run-errand-<%= name %>-<%= errand_display_name %>
-  <% jobs["deploy-#{name[0]}*"] << "run-errand-#{name}-#{errand_display_name}" %>
+  <% jobs["deploy-#{name[0]}"] << "run-errand-#{name}-#{errand_display_name}" %>
   serial_groups: [auto-errand-<%= name %>]
   on_failure:
     put: failure-alert
@@ -979,7 +979,7 @@ jobs:
     <% deployment_details.manual_errands.each do |errand_name, errand_info| %>
     <% errand_display_name = errand_info&.dig('display-name') || errand_name %>
 - name: run-manual-errand-<%= name %>-<%= errand_display_name %>
-  <% jobs["deploy-#{name[0]}*"] << "run-manual-errand-#{name}-#{errand_display_name}" %>
+  <% jobs["deploy-#{name[0]}"] << "run-manual-errand-#{name}-#{errand_display_name}" %>
 
   serial: true
   on_failure:
@@ -1317,13 +1317,13 @@ jobs:
 <% end  %>
 
 groups:
-- name: <%= root_deployment_name.capitalize %>
+- name: <%= root_deployment_name.downcase %>
   jobs:
 <% jobs.map {|_, job_names| job_names }.flatten.uniq.sort.each do |job_name| %>
     - <%= job_name %>
 <% end %>
 <% jobs.sort.each do |group_name, job_names| %>
-- name: <%= group_name.capitalize %>
+- name: <%= group_name.downcase %>
   jobs:
   <% job_names&.sort.each do |job_name| %>
     - <%= job_name %>
