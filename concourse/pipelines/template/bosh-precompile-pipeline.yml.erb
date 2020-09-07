@@ -358,7 +358,7 @@ jobs:
   <% uniq_releases.each do |release, info| %>
   - name: compile-and-export-<%= release %>
     <% jobs["Releases"] << "compile-and-export-#{release}" %>
-    <% jobs["#{release[0]}*"] << "compile-and-export-#{release}" %>
+    <% jobs["#{release[0]}"] << "compile-and-export-#{release}" %>
 
     serial: true
     on_failure:
@@ -533,7 +533,7 @@ jobs:
     <% if offline_boshreleases_enabled %>
   - name: upload-compiled-<%= release %>
     <% jobs["Compiled-releases"] << "upload-compiled-#{release}" %>
-    <% jobs["#{release[0]}*"] << "upload-compiled-#{release}" %>
+    <% jobs["#{release[0]}"] << "upload-compiled-#{release}" %>
     on_failure:
       put: failure-alert
       params:
@@ -649,13 +649,13 @@ jobs:
 
 
 groups:
-  - name: <%= root_deployment_name.capitalize %>
+  - name: <%= root_deployment_name.downcase %>
     jobs:
       <% jobs.map {|_, job_names| job_names }.flatten.uniq.sort.each do |job_name| %>
       - <%= job_name %>
         <% end %>
   <% jobs.sort.each do |group_name, job_names| %>
-  - name: <%= group_name.capitalize %>
+  - name: <%= group_name.downcase %>
     jobs:
       <% job_names&.sort.each do |job_name| %>
       - <%= job_name %>

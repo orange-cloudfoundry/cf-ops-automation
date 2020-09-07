@@ -134,14 +134,14 @@ describe 'generate-depls for bosh pipeline' do
 
     it 'generates delete-deployments-review job with valid task' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'delete-deployments-review' }&.first
-      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'prepare_deployment_to_be_deleted' }&.first
+      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'prepare-deployment-to-be-deleted' }&.first
       expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml').and \
         include('params' => { 'ROOT_DEPLOYMENT_NAME' => depls_name, "BOSH_TARGET" => "((bosh-target))", "BOSH_CLIENT" => "((bosh-username))", "BOSH_CLIENT_SECRET" => "((bosh-password))", "BOSH_CA_CERT" => "config-resource/shared/certs/internal_paas-ca/server-ca.crt" })
     end
 
     it 'generates approve-and-delete-disabled-deployments job with valid task' do
       current_job = pipeline['jobs'].select { |job| job['name'] == 'approve-and-delete-disabled-deployments' }&.first
-      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete_deployments' }&.first
+      current_task = current_job.select { |item| item['plan'] }['plan'].select { |item| item['task'] == 'delete-deployments' }&.first
       expect(current_task).to include('file' => 'cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml').and \
         include('params' => { 'ROOT_DEPLOYMENT_NAME' => depls_name, "BOSH_TARGET" => "((bosh-target))", "BOSH_CLIENT" => "((bosh-username))", "BOSH_CLIENT_SECRET" => "((bosh-password))", "BOSH_CA_CERT" => "config-resource/shared/certs/internal_paas-ca/server-ca.crt", "COMMIT_MESSAGE" => "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup" }).and \
           include('ensure' => { 'get_params' => { 'submodules' => 'none', 'depth' => 0 }, 'params' => { 'rebase' => true, 'repository' => 'updated-config-resource' }, 'put' => 'secrets-full-writer' })

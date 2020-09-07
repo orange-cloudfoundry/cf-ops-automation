@@ -513,25 +513,25 @@ jobs:
         FLY_PASSWORD: "((concourse-simple-depls-password))"
         FLY_TEAM: simple-depls
 groups:
-  - name: Simple-depls
+  - name: simple-depls
     jobs:
       - compile-and-export-ntp_boshrelease
       - compile-and-export-zookeeper_boshrelease
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
       - push-stemcell
-  - name: Releases
+  - name: releases
     jobs:
       - compile-and-export-ntp_boshrelease
       - compile-and-export-zookeeper_boshrelease
-  - name: Utils
+  - name: utils
     jobs:
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
       - push-stemcell
-  - name: N*
+  - name: n
     jobs:
       - compile-and-export-ntp_boshrelease
-  - name: Z*
+  - name: z
     jobs:
       - compile-and-export-zookeeper_boshrelease

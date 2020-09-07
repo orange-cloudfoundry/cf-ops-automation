@@ -88,8 +88,8 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       - name: concourse-pipeline
         type: docker-image
         source:
-          repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-          tag: 6.0.0
+          repository: ((docker-registry-url))orangecloudfoundry/concourse-pipeline-resource
+          tag: 6.5.0
     YAML
     YAML.safe_load(resource_types_yaml)
   end
