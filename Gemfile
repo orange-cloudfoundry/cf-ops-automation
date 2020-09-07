@@ -16,7 +16,7 @@ group :development do
 end
 
 group :test do
-  gem 'cucumber'
+  gem 'cucumber', '>= 4.0.0'
   gem 'rspec', '>= 3.9.0'
   gem 'rspec-rerun'
   gem 'simplecov', '~> 0.16.1'
