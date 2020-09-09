@@ -655,7 +655,7 @@ groups:
       - <%= job_name %>
         <% end %>
   <% jobs.sort.each do |group_name, job_names| %>
-  - name: <%= group_name.downcase %>
+  - name: "<%= group_name.downcase.to_s %>"
     jobs:
       <% job_names&.sort.each do |job_name| %>
       - <%= job_name %>
