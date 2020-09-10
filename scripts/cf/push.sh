@@ -61,7 +61,7 @@ fi
 cf target -o "$CF_ORG" -s "$CF_SPACE"
 
 set +e
-cf push -f ${CF_MANIFEST} |tee /tmp/cf-push.log
+cf push -f ${CF_MANIFEST} 2>&1 |tee /tmp/cf-push.log
 ret_code=$?
 if [ $ret_code -ne 0 ]
 then
