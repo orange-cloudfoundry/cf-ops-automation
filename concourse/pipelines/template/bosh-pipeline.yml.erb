@@ -353,16 +353,16 @@ jobs:
               fi
               echo "=========================================================="
               if [ -e fallback-errors.yml ]; then
-                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
                 echo "Dump fallback-errors"
                 cat fallback-errors.yml
-                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
                 exit 1
               elif [ -e errors.yml ]; then
-                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
                 echo "Dump errors"
                 cat errors.yml
-                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
                 exit 1
               else
                 echo "No errors detected"
@@ -484,6 +484,7 @@ jobs:
         BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
 - name: approve-and-delete-disabled-deployments
   <% jobs['utils'] << 'approve-and-delete-disabled-deployments' %>
+  serial: true
   on_failure:
     put: failure-alert
     params:

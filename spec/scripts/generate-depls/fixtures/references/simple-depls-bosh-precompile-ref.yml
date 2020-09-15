@@ -176,16 +176,16 @@ jobs:
                 fi
                 echo "=========================================================="
                   if [ -e fallback-errors.yml ]; then
-                  echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
-                  echo "Dump fallback-errors"
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    echo "Dump fallback-errors"
                     cat fallback-errors.yml
-                  echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
                     exit 1
                   elif [ -e errors.yml ]; then
-                  echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
-                  echo "Dump errors"
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    echo "Dump errors"
                     cat errors.yml
-                  echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\"
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
                     exit 1
                   else
                     echo "No errors detected"
