@@ -1,11 +1,16 @@
 
 ---
 resource_types:
-  - name: concourse-pipeline
+  - name: concourse-5-pipeline
     type: docker-image
     source:
       repository: ((docker-registry-url))concourse/concourse-pipeline-resource
-      tag: 2.1.1
+      tag: 5.0.0
+  - name: concourse-pipeline
+    type: docker-image
+    source:
+      repository: ((docker-registry-url))orangecloudfoundry/concourse-pipeline-resource
+      tag: 6.5.0
   - name: slack-notification
     type: docker-image
     source:
@@ -30,6 +35,16 @@ resources:
     - name: main
       username: ((concourse-hello-world-root-depls-username))
       password: ((concourse-hello-world-root-depls-password))
+- name: concourse-5-legacy-for-hello-world-root-depls
+  icon: concourse-ci
+  type: concourse-5-pipeline
+  source:
+    target: ((concourse-hello-world-root-depls-target))
+    insecure: ((concourse-hello-world-root-depls-insecure))
+    teams:
+      - name: main
+        username: ((concourse-hello-world-root-depls-username))
+        password: ((concourse-hello-world-root-depls-password))
 - name: cf-ops-automation
   icon: rocket
   type: git
@@ -133,10 +148,65 @@ jobs:
       CONFIG_PATH: config-resource/coa/config
       OUTPUT_CONFIG_PATH: secrets-pipeline-sample/coa/config
       OUTPUT_PIPELINE_PATH: final-pipeline-sample-pipeline
-  - put: concourse-for-hello-world-root-depls
-    attempts: 3
-    params:
-      pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+  - try:
+      put: concourse-for-hello-world-root-depls
+      attempts: 3
+      params:
+        pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+      on_success:
+        task: set-success-tag
+        output_mapping: { success-tag: concourse-micro-success}
+        config: &success_tag
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))governmentpaas/git-ssh
+              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          outputs:
+            - name: success-tag
+          run:
+            path: sh
+            args:
+              - -ec
+              - touch success-tag/task.ok
+      on_failure:
+        put: concourse-5-legacy-for-hello-world-root-depls
+        attempts: 3
+        params:
+          pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+        on_success:
+          task: set-success-tag
+          output_mapping: { success-tag: concourse-micro-legacy-success}
+          config: *success_tag
+  - task: check-success-tag
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-registry-url))governmentpaas/git-ssh
+          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+      inputs:
+        - name: concourse-micro-success
+          optional: true
+        - name: concourse-micro-legacy-success
+          optional: true
+      run:
+        path: sh
+        args:
+          - -ec
+          - |
+            if [ -e concourse-micro-success/task.ok ];then
+              echo "Task concourse-micro successfull"
+              exit 0
+            fi
+            if [ -e concourse-micro-legacy-success/task.ok ];then
+              echo "Task concourse-micro-legacy successfull"
+              exit 0
+            fi
+            echo "Failed to update pipelines, please check logs"
+            exit 1
   - task: execute-pipeline-sample-post-deploy
     input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-pipeline-sample, credentials-resource: secrets-pipeline-sample, additional-resource: final-pipeline-sample-pipeline}
     output_mapping: {generated-files: post-deploy-result}

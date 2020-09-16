@@ -6,11 +6,11 @@
 
 ```bash
 .
-├── coa
-├── concourse
-├── hello-world-root-depls
-├── private-config.yml
-└── shared
+|-- coa
+|-- concourse
+|-- hello-world-root-depls
+|-- private-config.yml
+`-- shared
 ```
 
 ### another-world-root-depls overview
@@ -25,34 +25,34 @@ Inactive deployment: config dir for another-world-root-depls does not exist.
 
 ```bash
 .
-├── another-world-root-depls
-├── hello-world-root-depls
-├── meta-inf.yml
-├── shared-config.yml
-└── shared-files
+|-- another-world-root-depls
+|-- hello-world-root-depls
+|-- meta-inf.yml
+|-- shared-config.yml
+`-- shared-files
 ```
 
 ### another-world-root-depls overview
 
 ```bash
 another-world-root-depls
-├── another-bosh-deployment-sample
-│   ├── deployment-dependencies.yml
-│   └── template
-│       ├── adding-ntp-release-operators.yml
-│       ├── another-bosh-deployment-sample-tpl.yml
-│       ├── ntp-release-vars.yml
-│       ├── openstack
-│       │   └── nginx-operators.yml
-│       ├── post-deploy.sh
-│       └── pre-deploy.sh
-├── root-deployment.yml
-└── template
-    ├── cloud-config-tpl.yml
-    ├── deploy.sh
-    ├── openstack
-    │   └── disk-types-cloud-operators.yml
-    └── runtime-config-tpl.yml
+|-- another-bosh-deployment-sample
+|   |-- deployment-dependencies.yml
+|   `-- template
+|       |-- adding-ntp-release-operators.yml
+|       |-- another-bosh-deployment-sample-tpl.yml
+|       |-- ntp-release-vars.yml
+|       |-- openstack
+|       |   `-- nginx-operators.yml
+|       |-- post-deploy.sh
+|       `-- pre-deploy.sh
+|-- root-deployment.yml
+`-- template
+    |-- cloud-config-tpl.yml
+    |-- deploy.sh
+    |-- openstack
+    |   `-- disk-types-cloud-operators.yml
+    `-- runtime-config-tpl.yml
 ```
 
 {:config_repo_name=>"config_repository", :template_repo_name=>"template_repository"}
@@ -152,6 +152,10 @@ another-world-root-depls
 
 * another-world-root-depls-bosh-generated.yml
 
+### stemcell-name-prefix
+
+* another-world-root-depls-bosh-generated.yml
+
 ## Required pipeline credentials for another-world-root-depls
 
 ### another-world-root-depls-bosh-generated.yml
@@ -178,6 +182,7 @@ another-world-root-depls
 * slack-proxy-https-tunnel
 * slack-webhook
 * stemcell-main-name
+* stemcell-name-prefix
 
 ### another-world-root-depls-bosh-precompile-generated.yml
 

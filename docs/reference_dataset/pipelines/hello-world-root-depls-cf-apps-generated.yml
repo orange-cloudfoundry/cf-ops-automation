@@ -95,7 +95,7 @@ jobs:
         ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
         FLY_USERNAME: ((concourse-hello-world-root-depls-username))
         FLY_PASSWORD: ((concourse-hello-world-root-depls-password))
-        FLY_TEAM: main
+        FLY_TEAM: hello-world-root-depls
 - name: cf-push-generic-app
   serial: true
   serial_groups: [concurrent-group-0]
@@ -173,13 +173,13 @@ jobs:
         CF_USERNAME: "a-test-User"
         CF_PASSWORD: "a-test-Password"
 groups:
-- name: Hello-world-root-depls
+- name: hello-world-root-depls
   jobs:
       - retrigger-all-jobs
       - cf-push-generic-app
-- name: App-g*
+- name: app-g
   jobs:
     - cf-push-generic-app
-- name: Utils
+- name: utils
   jobs:
     - retrigger-all-jobs

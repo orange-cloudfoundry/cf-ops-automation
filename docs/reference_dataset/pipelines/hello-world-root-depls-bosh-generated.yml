@@ -53,7 +53,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml", "hello-world-root-depls/template", "hello-world-root-depls/terraform-config"]
+    paths: ["shared-config.yml", "meta-inf.yml", "hello-world-root-depls/root-deployment.yml", "hello-world-root-depls/template", "hello-world-root-depls/terraform-config"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
@@ -83,7 +83,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["hello-world-root-depls/bosh-deployment-sample", "shared-files"]
+    paths: ["hello-world-root-depls/bosh-deployment-sample", "shared-files", "hello-world-root-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: bosh-deployment-sample-deployment
@@ -122,7 +122,7 @@ resources:
   type: git
   icon:  github-circle
   source:
-    uri: https://github.com//cloudfoundry-community/nginx-release
+    uri: https://github.com/cloudfoundry-community/nginx-release
     tag_filter: ((releases.nginx.version))
     skip_ssl_verification: false
 #    access_token: ((bot-github-access-token))
@@ -131,7 +131,7 @@ resources:
   type: git
   icon:  github-circle
   source:
-    uri: https://github.com//cloudfoundry-community/ntp-release
+    uri: https://github.com/cloudfoundry-community/ntp-release
     tag_filter: ((releases.ntp.version))
     skip_ssl_verification: false
 #    access_token: ((bot-github-access-token))
@@ -140,7 +140,7 @@ resources:
   type: git
   icon:  github-circle
   source:
-    uri: https://github.com//cloudfoundry-community/vault-boshrelease
+    uri: https://github.com/cloudfoundry-community/vault-boshrelease
     tag_filter: v((releases.vault.version))
     skip_ssl_verification: false
 #    access_token: ((bot-github-access-token))
@@ -172,14 +172,53 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+    - task: repackage-releases-fallback
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
     - task: upload-to-director
-      input_mapping: { config-resource: secrets-hello-world-root-depls-limited }
+      input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-hello-world-root-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
       params:
         BOSH_CLIENT: ((bosh-username))
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_ENVIRONMENT: ((bosh-target))
         BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+    - task: check-repackaging-errors
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: repackaged-releases-fallback
+        run:
+          path: sh
+          args:
+            - -ec
+            - |
+              cd repackaged-releases-fallback
+              if [ -e fallback-fixes.yml ]; then
+              echo "=========================================================="
+                echo "Dump fallback-fixes"
+                cat fallback-fixes.yml
+              fi
+              echo "=========================================================="
+              if [ -e fallback-errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                echo "Dump fallback-errors"
+                cat fallback-errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                exit 1
+              elif [ -e errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                echo "Dump errors"
+                cat errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                exit 1
+              else
+                echo "No errors detected"
+              fi
 - name: push-stemcell
   on_failure:
     put: failure-alert
@@ -190,15 +229,26 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-        - get: cf-ops-automation
-          params: { submodules: none, depth: 0 }
-        - get : secrets-hello-world-root-depls-limited
-          params: { submodules: none, depth: 0 }
-          trigger: true
-        - get: ((stemcell-main-name))
-          trigger: true
-          attempts: 2
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get : secrets-hello-world-root-depls-limited
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get: paas-templates-hello-world-root-depls
+        params: { submodules: none }
+        trigger: true
+    - task: download-stemcell
+      attempts: 2
+      output_mapping: { stemcell: ((stemcell-main-name)) }
+      file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
+      params:
+        STEMCELL_VERSION: ((stemcell.version))
+        STEMCELL_PREFIX: ((stemcell-name-prefix))
+        STEMCELL_MAIN_NAME: ((stemcell-main-name))
+        STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
     - task: upload-to-director
+      attempts: 2
       input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-hello-world-root-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
       params:
@@ -247,7 +297,7 @@ jobs:
         version: every
         trigger: true
         params: { submodules: none, depth: 0 }
-    - task: prepare_deployment_to_be_deleted
+    - task: prepare-deployment-to-be-deleted
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-hello-world-root-depls-trigger}
       file: cf-ops-automation/concourse/tasks/bosh_delete_plan/task.yml
       params:
@@ -257,6 +307,7 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
 - name: approve-and-delete-disabled-deployments
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -273,7 +324,7 @@ jobs:
         params: { submodules: none, depth: 0 }
         passed: [delete-deployments-review]
       - put: concourse-meta
-    - task: delete_deployments
+    - task: delete-deployments
       input_mapping: {scripts-resource: cf-ops-automation, config-resource: secrets-hello-world-root-depls-trigger}
       output_mapping: {output-config-resource: updated-config-resource}
       file: cf-ops-automation/concourse/tasks/bosh_delete_apply/task.yml
@@ -489,22 +540,26 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: ((stemcell-main-name))
       trigger: true
-      tarball: false
+      params:
+        tarball: false
       attempts: 2
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
     - get: nginx
       trigger: true
-      tarball: false
+      params:
+        tarball: false
       attempts: 2
     - get: ntp
       trigger: true
-      tarball: false
+      params:
+        tarball: false
       attempts: 2
     - get: vault
       trigger: true
-      tarball: false
+      params:
+        tarball: false
       attempts: 2
     - get: secrets-bosh-deployment-sample
       params: { submodules: none, depth: 0 }
@@ -639,21 +694,6 @@ jobs:
             rebase: true
     params:
       manifest: resolved-manifest-versions/bosh-deployment-sample.yml
-      # source_file: bosh-generated-config/bosh_config.json
-#      stemcells:
-#      
-#      - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
-#      
-#      - ((stemcell-main-name))/stemcell.tgz
-#      
-#      releases: 
-#  
-#      - "/*.tgz"
-#  
-#      ops_files:
-#      - ops-and-vars-files/operators/*
-#      vars_files:
-#      - ops-and-vars-files/vars/*
       cleanup: true
       no_redact: false
       dry_run: false
@@ -746,7 +786,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
-      FLY_TEAM: main
+      FLY_TEAM: hello-world-root-depls
 - name: recreate-all
   on_failure:
     put: failure-alert
@@ -866,7 +906,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
-      FLY_TEAM: main
+      FLY_TEAM: hello-world-root-depls
 - name: check-terraform-consistency
   serial: true
   serial_groups: [terraform]
@@ -986,7 +1026,7 @@ jobs:
           repository: updated-terraform-state-secrets
           rebase: true
 groups:
-- name: Hello-world-root-depls
+- name: hello-world-root-depls
   jobs:
     - approve-and-delete-disabled-deployments
     - approve-and-enforce-terraform-consistency
@@ -1002,18 +1042,18 @@ groups:
     - recreate-all
     - recreate-bosh-deployment-sample
     - retrigger-all-jobs
-- name: Deploy-b*
+- name: deploy-b
   jobs:
     - deploy-bosh-deployment-sample
-- name: Recreate
+- name: recreate
   jobs:
     - recreate-all
     - recreate-bosh-deployment-sample
-- name: Terraform
+- name: terraform
   jobs:
     - approve-and-enforce-terraform-consistency
     - check-terraform-consistency
-- name: Utils
+- name: utils
   jobs:
     - approve-and-delete-disabled-deployments
     - cancel-all-bosh-tasks

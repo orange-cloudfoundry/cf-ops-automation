@@ -1,5 +1,31 @@
 # Changelog
 
+## [v5.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.0) (2020-09-16)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.3.2...v5.0.0)
+
+**Implemented enhancements:**
+
+- cloud-config and runtime-config credhub interpolation should not block [\#331](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/331)
+
+**Fixed bugs:**
+
+- precompilation should manage per iaas-type bosh release [\#345](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/345)
+- Fix tfstate change detection [\#324](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/324)
+
+**Merged pull requests:**
+
+- feature\(concourse-6.5.0-support\): bump concourse pipeline resource [\#348](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/348)
+- pipeline\(bosh-precompile\): split single deployment into dedicated deployments [\#346](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/346)
+- pipeline\(bosh-precompile\): fix pipeline team [\#342](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/342)
+- chore\(ci\): bump to concourse 6.4 and bosh-cli 6.2.1 [\#341](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/341)
+- feature\(multi-concourse-version-compliant-pipelines\): update pipelines to be able to run it on concourse 5.8.x and concourse 6.4.x [\#340](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/340)
+- feature\(support-release-repackaging-fallback\): direct download from bosh.io for releases with repackaging errors [\#339](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/339)
+- restrict managed versions [\#336](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/336)
+- feature\(allow-incomplete-crehub-interpolation\): [\#332](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/332)
+- feature\(boshrelease-offline-support-rework\) [\#330](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/330)
+- Generate compiled release [\#319](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/319)
+
 ## [v4.3.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.2) (2020-04-10)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.3.1...v4.3.2)
@@ -26,7 +52,6 @@
 
 - Tfstate changes not detected after tf apply [\#323](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/323)
 - Improve secrets repository update robustness [\#320](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/320)
-- Fix tfstate change detection [\#324](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/324)
 - pipeline\(bosh\): add retry on secrets repository push [\#321](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/321)
 
 ## [v4.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.0) (2020-03-16)

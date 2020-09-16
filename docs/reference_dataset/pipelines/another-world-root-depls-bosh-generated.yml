@@ -53,7 +53,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml", "another-world-root-depls/template"]
+    paths: ["shared-config.yml", "meta-inf.yml", "another-world-root-depls/root-deployment.yml", "another-world-root-depls/template"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
@@ -91,14 +91,53 @@ jobs:
         BOSH_TARGET: ((bosh-target))
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ROOT_DEPLOYMENT_NAME: another-world-root-depls
+    - task: repackage-releases-fallback
+      file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
     - task: upload-to-director
-      input_mapping: { config-resource: secrets-another-world-root-depls-limited }
+      input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-another-world-root-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
       params:
         BOSH_CLIENT: ((bosh-username))
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_ENVIRONMENT: ((bosh-target))
         BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+    - task: check-repackaging-errors
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        inputs:
+          - name: repackaged-releases-fallback
+        run:
+          path: sh
+          args:
+            - -ec
+            - |
+              cd repackaged-releases-fallback
+              if [ -e fallback-fixes.yml ]; then
+              echo "=========================================================="
+                echo "Dump fallback-fixes"
+                cat fallback-fixes.yml
+              fi
+              echo "=========================================================="
+              if [ -e fallback-errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                echo "Dump fallback-errors"
+                cat fallback-errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                exit 1
+              elif [ -e errors.yml ]; then
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                echo "Dump errors"
+                cat errors.yml
+                echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                exit 1
+              else
+                echo "No errors detected"
+              fi
 - name: push-stemcell
   on_failure:
     put: failure-alert
@@ -109,15 +148,26 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-        - get: cf-ops-automation
-          params: { submodules: none, depth: 0 }
-        - get : secrets-another-world-root-depls-limited
-          params: { submodules: none, depth: 0 }
-          trigger: true
-        - get: ((stemcell-main-name))
-          trigger: true
-          attempts: 2
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get : secrets-another-world-root-depls-limited
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get: paas-templates-another-world-root-depls
+        params: { submodules: none }
+        trigger: true
+    - task: download-stemcell
+      attempts: 2
+      output_mapping: { stemcell: ((stemcell-main-name)) }
+      file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
+      params:
+        STEMCELL_VERSION: ((stemcell.version))
+        STEMCELL_PREFIX: ((stemcell-name-prefix))
+        STEMCELL_MAIN_NAME: ((stemcell-main-name))
+        STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
     - task: upload-to-director
+      attempts: 2
       input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-another-world-root-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
       params:
@@ -347,7 +397,7 @@ jobs:
      - get: cf-ops-automation
        params: { submodules: none, depth: 0 }
 groups:
-- name: Another-world-root-depls
+- name: another-world-root-depls
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls
@@ -355,10 +405,10 @@ groups:
     - push-boshreleases
     - push-stemcell
     - recreate-all
-- name: Recreate
+- name: recreate
   jobs:
     - recreate-all
-- name: Utils
+- name: utils
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls

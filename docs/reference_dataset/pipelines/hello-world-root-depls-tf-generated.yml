@@ -123,9 +123,9 @@ jobs:
             repository: updated-terraform-state-secrets
             rebase: true
 groups:
-- name: Hello-world-root-depls
+- name: hello-world-root-depls
   jobs:
     - terraform-apply
-- name: Terraform
+- name: terraform
   jobs:
     - terraform-apply

@@ -1,0 +1,675 @@
+
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+    tag: v1.4.2
+- name: bosh-deployment-v2
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
+    tag: v2.12.0
+resources:
+  - name: failure-alert
+    icon: slack
+    type: slack-notification
+    source:
+      url: ((slack-webhook))
+      proxy: ((slack-proxy))
+      proxy_https_tunnel: ((slack-proxy-https-tunnel))
+      disable: ((slack-disable))
+  - name: secrets-full-writer
+    icon: source-pull
+    type: git
+    source:
+      uri: ((secrets-uri))
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+  - name: paas-templates-hello-world-root-depls-limited
+    icon: home-analytics
+    type: git
+    source:
+      uri: ((paas-templates-uri))
+      paths:
+        - ".gitmodules"
+        - "shared-config.yml"
+        - "meta-inf.yml"
+        - "hello-world-root-depls/template"
+        - "hello-world-root-depls/**/deployment-dependencies*.yml"
+        - "hello-world-root-depls/root-deployment.yml"
+      branch: ((paas-templates-precompile-branch))
+      skip_ssl_verification: true
+  - name: cf-ops-automation
+    type: git
+    icon: rocket
+    source:
+      uri: ((cf-ops-automation-uri))
+      branch: ((cf-ops-automation-branch))
+      tag_filter: ((cf-ops-automation-tag-filter))
+      skip_ssl_verification: true
+  - name: ((stemcell-main-name))
+    type: bosh-io-stemcell
+    icon: home-floor-g
+    source:
+      name: ((stemcell-name-prefix))((stemcell-main-name))
+    version: { version: "((stemcell.version))" }
+  - name: secrets-hello-world-root-depls-trigger
+    icon: source-commit
+    type: git
+    source:
+      uri: ((secrets-uri))
+      paths: ["private-config.yml", "hello-world-root-depls", "shared"]
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+  - name: paas-templates-hello-world-root-depls-versions
+    icon: home-thermometer
+    type: git
+    source:
+      uri: ((paas-templates-uri))
+      paths: ["hello-world-root-depls/root-deployment.yml"]
+      branch: ((paas-templates-precompile-branch))
+      skip_ssl_verification: true
+  - name: nginx-deployment
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: nginx-deployment
+      ca_cert: 
+  - name: nginx
+    type: git
+    icon:  github-circle
+    source:
+      uri: https://github.com/cloudfoundry-community/nginx-release
+      tag_filter: ((releases.nginx.version))
+      skip_ssl_verification: false
+    #    access_token: ((bot-github-access-token))
+    version: { ref: ((releases.nginx.version)) }
+  - name: ntp-deployment
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: ntp-deployment
+      ca_cert: 
+  - name: ntp
+    type: git
+    icon:  github-circle
+    source:
+      uri: https://github.com/cloudfoundry-community/ntp-release
+      tag_filter: ((releases.ntp.version))
+      skip_ssl_verification: false
+    #    access_token: ((bot-github-access-token))
+    version: { ref: ((releases.ntp.version)) }
+  - name: vault-deployment
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: vault-deployment
+      ca_cert: 
+  - name: vault
+    type: git
+    icon:  github-circle
+    source:
+      uri: https://github.com/cloudfoundry-community/vault-boshrelease
+      tag_filter: v((releases.vault.version))
+      skip_ssl_verification: false
+    #    access_token: ((bot-github-access-token))
+    version: { ref: v((releases.vault.version)) }
+jobs:
+  - name: push-boshreleases
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: paas-templates-hello-world-root-depls-limited
+            params: { submodules: none }
+            trigger: true
+      - task: repackage-releases
+        input_mapping: { templates-resource: paas-templates-hello-world-root-depls-limited, secrets: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+      - task: repackage-releases-fallback
+        file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
+      - task: upload-to-director
+        # this is required to manage runtime config bosh release upload
+        attempts: 2
+        input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - task: check-repackaging-errors
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))governmentpaas/curl-ssl
+              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          inputs:
+            - name: repackaged-releases-fallback
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd repackaged-releases-fallback
+                if [ -e fallback-fixes.yml ]; then
+                echo "=========================================================="
+                  echo "Dump fallback-fixes"
+                  cat fallback-fixes.yml
+                fi
+                echo "=========================================================="
+                  if [ -e fallback-errors.yml ]; then
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    echo "Dump fallback-errors"
+                    cat fallback-errors.yml
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    exit 1
+                  elif [ -e errors.yml ]; then
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    echo "Dump errors"
+                    cat errors.yml
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    exit 1
+                  else
+                    echo "No errors detected"
+                  fi
+  - name: push-stemcell
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: paas-templates-hello-world-root-depls-limited
+            params: { submodules: none }
+            trigger: true
+      - task: download-stemcell
+        attempts: 2
+        output_mapping: { stemcell: ((stemcell-main-name)) }
+        file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
+        params:
+          STEMCELL_VERSION: ((stemcell.version))
+          STEMCELL_PREFIX: ((stemcell-name-prefix))
+          STEMCELL_MAIN_NAME: ((stemcell-main-name))
+          STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+      - task: upload-to-director
+        attempts: 2
+        input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+  - name: compile-and-export-ntp
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: ntp
+            trigger: true
+            attempts: 2
+          - get: secrets-full-writer
+            params: { submodules: none}
+          - get: ((stemcell-main-name))
+            trigger: true
+            attempts: 2
+      - task: generate-ntp-deployment-manifest
+        input_mapping: {stemcell: ((stemcell-main-name))}
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd stemcell
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                cd ..
+                ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "ntp-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"ntp-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp", "version"=>"4.2.8p11"}]}'
+      - try:
+          # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
+          task: upload-to-director
+          attempts: 2
+          input_mapping: { releases-to-upload: ntp, config-resource: secrets-full-writer }
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+            inputs:
+              - name: releases-to-upload
+              - name: config-resource
+            run:
+              path: bash
+              args:
+                - -c
+                - |
+                  find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+          params:
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: ((bosh-password))
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - put: ntp-deployment
+        attempts: 2
+        params:
+          manifest: final-release-manifest/ntp-deployment.yml
+          stemcells:
+            - ((stemcell-main-name))/stemcell.tgz
+          cleanup: true
+      - task: compile-and-export-ntp
+        attempts: 2
+        input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
+        output_mapping: {exported-release: ntp-exported-release}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+            - name: secrets
+          outputs:
+            - name: exported-release
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+          params:
+            BOSH_DEPLOYMENT: ntp-deployment
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: "((bosh-password))"
+            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+            RELEASE_NAME: ntp
+            RELEASE_VERSION: ((releases.ntp.version))
+      - put: ntp-deployment
+        params:
+          manifest: final-release-manifest/ntp-deployment.yml.yml
+          delete:
+            enabled: true
+            force: true
+  - name: compile-and-export-nginx
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: nginx
+            trigger: true
+            attempts: 2
+          - get: secrets-full-writer
+            params: { submodules: none}
+          - get: ((stemcell-main-name))
+            trigger: true
+            attempts: 2
+      - task: generate-nginx-deployment-manifest
+        input_mapping: {stemcell: ((stemcell-main-name))}
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd stemcell
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                cd ..
+                ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "nginx-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.13.12"}]}'
+      - try:
+          # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
+          task: upload-to-director
+          attempts: 2
+          input_mapping: { releases-to-upload: nginx, config-resource: secrets-full-writer }
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+            inputs:
+              - name: releases-to-upload
+              - name: config-resource
+            run:
+              path: bash
+              args:
+                - -c
+                - |
+                  find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+          params:
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: ((bosh-password))
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - put: nginx-deployment
+        attempts: 2
+        params:
+          manifest: final-release-manifest/nginx-deployment.yml
+          stemcells:
+            - ((stemcell-main-name))/stemcell.tgz
+          cleanup: true
+      - task: compile-and-export-nginx
+        attempts: 2
+        input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
+        output_mapping: {exported-release: nginx-exported-release}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+            - name: secrets
+          outputs:
+            - name: exported-release
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+          params:
+            BOSH_DEPLOYMENT: nginx-deployment
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: "((bosh-password))"
+            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+            RELEASE_NAME: nginx
+            RELEASE_VERSION: ((releases.nginx.version))
+      - put: nginx-deployment
+        params:
+          manifest: final-release-manifest/nginx-deployment.yml.yml
+          delete:
+            enabled: true
+            force: true
+  - name: compile-and-export-vault
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+      - in_parallel:
+          - get: vault
+            trigger: true
+            attempts: 2
+          - get: secrets-full-writer
+            params: { submodules: none}
+          - get: ((stemcell-main-name))
+            trigger: true
+            attempts: 2
+      - task: generate-vault-deployment-manifest
+        input_mapping: {stemcell: ((stemcell-main-name))}
+        output_mapping: {generated-files: final-release-manifest}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+          outputs:
+            - name: generated-files
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd stemcell
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json *.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                cd ..
+                ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
+                cat generated-files/${MANIFEST_NAME}
+          params:
+            MANIFEST_NAME: "vault-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.3"}]}'
+      - try:
+          # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
+          task: upload-to-director
+          attempts: 2
+          input_mapping: { releases-to-upload: vault, config-resource: secrets-full-writer }
+          config:
+            platform: linux
+            image_resource:
+              type: docker-image
+              source:
+                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+            inputs:
+              - name: releases-to-upload
+              - name: config-resource
+            run:
+              path: bash
+              args:
+                - -c
+                - |
+                  find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+          params:
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: ((bosh-password))
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - put: vault-deployment
+        attempts: 2
+        params:
+          manifest: final-release-manifest/vault-deployment.yml
+          stemcells:
+            - ((stemcell-main-name))/stemcell.tgz
+          cleanup: true
+      - task: compile-and-export-vault
+        attempts: 2
+        input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
+        output_mapping: {exported-release: vault-exported-release}
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+          inputs:
+            - name: stemcell
+            - name: secrets
+          outputs:
+            - name: exported-release
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
+                export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
+                export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+          params:
+            BOSH_DEPLOYMENT: vault-deployment
+            BOSH_ENVIRONMENT: ((bosh-target))
+            BOSH_CLIENT: ((bosh-username))
+            BOSH_CLIENT_SECRET: "((bosh-password))"
+            BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+            RELEASE_NAME: vault
+            RELEASE_VERSION: ((releases.vault.version))
+      - put: vault-deployment
+        params:
+          manifest: final-release-manifest/vault-deployment.yml.yml
+          delete:
+            enabled: true
+            force: true
+  - name: init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+    plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none}
+          attempts: 2
+          #trigger: true
+        - get: secrets-hello-world-root-depls-trigger
+          params: { submodules: none}
+          attempts: 2
+        - get: paas-templates-hello-world-root-depls-versions
+          params: { submodules: none}
+          attempts: 2
+          trigger: true
+    - task: generate-hello-world-root-depls-flight-plan
+      output_mapping: {result-dir: init-hello-world-root-depls-plan}
+      config:
+        platform: linux
+        image_resource:
+          type: docker-image
+          source:
+            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -ec
+          - |
+            echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from tag:((releases.nginx.version))" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from tag:((releases.ntp.version))" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:v((releases.vault.version))" | tee -a result-dir/flight-plan
+            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
+        params:
+          BUILD_PIPELINE_NAME: hello-world-root-depls-bosh-precompile-generated
+    - task: fly-into-concourse
+      input_mapping: {fly-cmd: init-hello-world-root-depls-plan}
+      output_mapping: {flight-report: concourse-hello-world-root-depls-init-report}
+      file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+      params:
+        ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
+        FLY_USERNAME: ((concourse-hello-world-root-depls-username))
+        FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
+        FLY_TEAM: hello-world-root-depls
+groups:
+  - name: hello-world-root-depls
+    jobs:
+      - compile-and-export-nginx
+      - compile-and-export-ntp
+      - compile-and-export-vault
+      - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+      - push-boshreleases
+      - push-stemcell
+  - name: "releases"
+    jobs:
+      - compile-and-export-nginx
+      - compile-and-export-ntp
+      - compile-and-export-vault
+  - name: "utils"
+    jobs:
+      - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
+      - push-boshreleases
+      - push-stemcell
+  - name: "n"
+    jobs:
+      - compile-and-export-nginx
+      - compile-and-export-ntp
+  - name: "v"
+    jobs:
+      - compile-and-export-vault
