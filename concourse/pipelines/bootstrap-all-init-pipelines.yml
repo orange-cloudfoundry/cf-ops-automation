@@ -57,6 +57,7 @@ resources:
 
 jobs:
 - name: bootstrap-pipelines
+  serial: true
   plan:
   - in_parallel:
     - get: weekday-morning
@@ -70,6 +71,7 @@ jobs:
       params: { submodules: none}
 
 - name: bootstrap-control-plane
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -232,6 +234,7 @@ jobs:
         PIPELINE_FILE_PATH: "final-control-plane-pipeline/interpolated-control-plane.yml"
 
 - name: reload-this-pipeline-from-git
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -315,6 +318,7 @@ jobs:
 
 
 - name: create-teams
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -325,15 +329,15 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none, depth: 1 }
+      params: { submodules: none, depth: 5 }
       trigger: true
       passed: [ bootstrap-pipelines ]
     - get: secrets-full
-      params: { submodules: none, depth: 1 }
+      params: { submodules: none, depth: 5 }
       passed: [ bootstrap-pipelines ]
       trigger: true
     - get: paas-templates-full
-      params: { submodules: none, depth: 1 }
+      params: { submodules: none, depth: 5 }
       passed: [ bootstrap-pipelines ]
       trigger: true
   - task: get-pipeline-teams
@@ -389,6 +393,7 @@ jobs:
 
 
 - name: bootstrap-update-pipelines
+  serial: true
   on_failure:
     put: failure-alert
     params:
@@ -399,15 +404,15 @@ jobs:
   plan:
   - in_parallel:
     - get: cf-ops-automation
-      params: { submodules: none, depth: 1 }
+      params: { submodules: none }
       trigger: true
       passed: [ create-teams ]
     - get: paas-templates-full
-      params: { submodules: none, depth: 1 }
+      params: { submodules: none, depth: 5 }
       passed: [ create-teams ]
       trigger: true
     - get: secrets-full
-      params: { submodules: none, depth: 1 }
+      params: { submodules: none, depth: 5 }
       passed: [ create-teams ]
       trigger: true
   - task: generate-all-update-pipelines
