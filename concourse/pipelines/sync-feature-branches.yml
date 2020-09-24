@@ -112,6 +112,10 @@ jobs:
           args:
             - -ce
             - |
+              if [ "$SKIP_SSL_VERIFICATION" = "true" ]; then
+                export GIT_SSL_NO_VERIFY=true
+                echo "Skipping ssl verification"
+              fi
               echo "============================="
               echo "Details about latest commit on $(cat paas-templates-features/.git/git-branch-heads-resource/branch)"
               echo "Ref: $(cat paas-templates-features/.git/ref)"
@@ -170,7 +174,8 @@ jobs:
                 echo "Diff detected, keeping changes"
               fi
       params:
-          WIP_BRANCH: ((paas-templates-merged-branch))
+        WIP_BRANCH: ((paas-templates-merged-branch))
+        SKIP_SSL_VERIFICATION: true
       on_failure:
         do:
           - task: display-conficts
