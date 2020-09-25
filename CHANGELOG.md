@@ -1,6 +1,6 @@
 # Changelog
 
-## [v5.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.0) (2020-09-16)
+## [v5.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.0) (2020-09-15)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v4.3.2...v5.0.0)
 
@@ -11,7 +11,6 @@
 **Fixed bugs:**
 
 - precompilation should manage per iaas-type bosh release [\#345](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/345)
-- Fix tfstate change detection [\#324](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/324)
 
 **Merged pull requests:**
 
@@ -52,6 +51,7 @@
 
 - Tfstate changes not detected after tf apply [\#323](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/323)
 - Improve secrets repository update robustness [\#320](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/320)
+- Fix tfstate change detection [\#324](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/324)
 - pipeline\(bosh\): add retry on secrets repository push [\#321](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/321)
 
 ## [v4.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v4.3.0) (2020-03-16)
