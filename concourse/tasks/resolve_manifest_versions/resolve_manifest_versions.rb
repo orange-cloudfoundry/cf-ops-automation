@@ -59,7 +59,7 @@ class ResolveManifestVersions
     version = stemcell.dig('version')
     optional_os = stemcell.dig('os')
     optional_name = stemcell.dig('name')
-    [stemcell_alias, version, optional_os, optional_name ]
+    [stemcell_alias, version, optional_os, optional_name]
   end
 
   def process_releases_versions(resolved_manifest, versions)
