@@ -27,21 +27,23 @@ class ResolveManifestVersions
   end
 
   def process_stemcell(stemcell, stemcell_name, versions)
-    os, version = extract_stemcell_manifest_info(stemcell)
+    stemcell_alias, version, os, name = extract_stemcell_manifest_info(stemcell)
     if version == 'latest'
+      puts "Extracting version defined for #{stemcell_alias}##{os || name}"
       lock_version = expected_stemcell_version(stemcell_name, versions)
-      lock_stemcell_version(lock_version, os, stemcell, stemcell_name)
+      lock_stemcell_version(lock_version, stemcell, stemcell_name)
     else
-      puts "Ignoring stemcell #{stemcell_name} as version is not set to latest (version: #{version})"
+      puts "Ignoring stemcell #{stemcell_alias}##{os || name} as version is not set to latest (version: #{version})"
     end
   end
 
-  def lock_stemcell_version(lock_version, os, stemcell, stemcell_name)
-    if stemcell_name.include?(os)
-      puts "Locking stemcell #{stemcell_name} to #{lock_version}"
+  def lock_stemcell_version(lock_version, stemcell, stemcell_name)
+    stemcell_alias, version, os, name = extract_stemcell_manifest_info(stemcell)
+    if os.to_s.empty? || stemcell_name.include?(os)
+      puts "Locking stemcell #{stemcell_alias}##{os || name}##{version} to #{lock_version}"
       stemcell.store('version', lock_version)
     else
-      puts "Manifest does not match expected os (#{os}) for stemcell #{stemcell_name}"
+      puts "Manifest does not match expected os (#{os}) for stemcell #{stemcell_name}. Keeping #{stemcell_alias}##{os || name}##{version}"
     end
   end
 
@@ -53,9 +55,11 @@ class ResolveManifestVersions
   end
 
   def extract_stemcell_manifest_info(stemcell)
+    stemcell_alias = stemcell.dig('alias')
     version = stemcell.dig('version')
-    os = stemcell.dig('os')
-    [os, version]
+    optional_os = stemcell.dig('os')
+    optional_name = stemcell.dig('name')
+    [stemcell_alias, version, optional_os, optional_name ]
   end
 
   def process_releases_versions(resolved_manifest, versions)
@@ -80,7 +84,7 @@ class ResolveManifestVersions
   end
 
   def extract_expected_info(name, versions)
-    release_versions_details = versions.dig('releases', name)
+    release_versions_details = versions&.dig('releases', name)
     lock_version = release_versions_details&.dig('version')
     [lock_version, release_versions_details]
   end
