@@ -4,6 +4,7 @@ require_relative 'active_support_copy_deep_merge'
 class Deployment
   attr_reader :name, :details
 
+  DEPLOYERS = %w[bosh-deployment kubernetes concourse terraform].freeze
   def initialize(deployment_name, details = {})
     @name = deployment_name
     @details = {}
@@ -25,6 +26,7 @@ class Deployment
 
   def disable
     details['status'] = 'disabled'
+    DEPLOYERS.each { |deployer| details[deployer]&.delete('active') }
     self
   end
 

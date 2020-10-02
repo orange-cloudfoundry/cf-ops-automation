@@ -6,12 +6,14 @@
     deployment_info['status'] == 'disabled'
   end
 
-  enabled_deployments = all_dependencies.select do |_, deployment_info|
-    deployment_info['status'] == 'enabled' && deployment_info['bosh-deployment']
+  precompile_excluded_deployments = config&.dig(root_deployment_name,'precompile','excluded-deployments') || []
+
+  filtered_deployments = all_dependencies.select do |deployment_name, deployment_info|
+    !precompile_excluded_deployments.include?(deployment_name) && deployment_info['bosh-deployment']
   end
 
   uniq_releases = {}
-  enabled_deployments&.sort&.each do |name, boshrelease|
+  filtered_deployments&.sort&.each do |name, boshrelease|
     boshrelease['releases']&.each do |release, info|
       previous_info = uniq_releases[release]
       raise "Inconsitency detected with '#{release}' boshrelease, in '#{name}' deployment: trying to replace\n#{previous_info} with \n#{info}" if previous_info && ! info.eql?(previous_info)
@@ -581,7 +583,7 @@ jobs:
     <% end %>
     <% end %>
 
-  <% if enabled_deployments.any? %>
+  <% if filtered_deployments.any? %>
   - name: init-concourse-boshrelease-and-stemcell-for-<%= root_deployment_name %>
     <% jobs["Utils"] << "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" %>
     on_failure:

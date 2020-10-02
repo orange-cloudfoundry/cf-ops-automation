@@ -20,21 +20,11 @@ class RootDeployment
 
   def overview_from_hash(deployment_factory)
     dependencies = {}
-
-    select_deployment_scan_files&.each do |filename|
-      dirname = filename.split(File::SEPARATOR).last
+    select_deployment_scan_files&.each do |enable_deployment_path|
+      dirname = enable_deployment_path.split(File::SEPARATOR).last
       puts "Processing #{dirname}"
-
-      enable_deployment_file = File.join(filename, ENABLE_DEPLOYMENT_FILENAME)
-      deployment = if File.exist?(enable_deployment_file)
-                     base_location = File.join(@dependency_root_path, @root_deployment_name, dirname)
-                     deployers_config = DeploymentDeployersConfig.new(dirname, base_location, filename, deployment_factory)
-                     deployers_config.load_configs
-                   else
-                     puts "Deployment #{dirname} is inactive"
-                     Deployment.new(dirname).disable
-                   end
-
+      deployers_config = create_deployment_deployer_config(dirname, deployment_factory, enable_deployment_path)
+      deployment = load_deployment_config_files(dirname, deployers_config, enable_deployment_path)
       dependencies[deployment.name] = deployment.details
     end
 
@@ -50,6 +40,28 @@ class RootDeployment
   end
 
   private
+
+  def create_deployment_deployer_config(deployment_name, deployment_factory, filename)
+    base_location = File.join(@dependency_root_path, @root_deployment_name, deployment_name)
+    DeploymentDeployersConfig.new(deployment_name, base_location, filename, deployment_factory)
+  end
+
+  def load_deployment_config_files(deployment_name, deployers_config, enable_deployment_path)
+    enable_deployment_file = File.join(enable_deployment_path, ENABLE_DEPLOYMENT_FILENAME)
+
+    if File.exist?(enable_deployment_file)
+      deployers_config.load_configs
+    else
+      puts "Deployment #{deployment_name} is inactive, ignoring inconsistencies."
+      begin
+        deployers_config.load_configs.disable
+      rescue RuntimeError => e
+        raise e unless e.message.start_with?("Inconsistency detected: deployment <#{deployment_name}> is marked as active")
+
+        Deployment.new(deployment_name).disable
+      end
+    end
+  end
 
   def select_deployment_scan_files
     enable_deployment_scan = File.join(@enable_deployment_root_path, @root_deployment_name, '/*')
