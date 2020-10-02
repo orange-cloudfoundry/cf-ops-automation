@@ -38,7 +38,7 @@ class DeploymentDeployersConfig
   end
 
   def load_bosh_config(deployment_details)
-    puts "Bosh release detected: #{@deployment_name}"
+    puts "Looking for bosh deployment files for #{@deployment_name}"
     dependency_filename = File.join(@public_base_location, DEPLOYMENT_DEPENDENCIES_FILENAME)
     return unless File.exist?(dependency_filename)
 

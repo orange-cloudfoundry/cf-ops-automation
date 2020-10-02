@@ -28,3 +28,5 @@
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
 #  git:
 #    shallow-clone-depth: 1 # Default: 0, ie disabled
+#    precompile:
+#       excluded_deployments: [] # Default: [] # List deployments to exclude from precompilation. As precompilation does not use secrets repository to determine enabled deployments, it might be convenient to exclude a deployment not enanled in secrets.

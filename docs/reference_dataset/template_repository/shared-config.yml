@@ -34,3 +34,5 @@ default:
 #  concourse:
 #    parallel_execution_limit: 10 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
+#    precompile:
+#       excluded_deployments: [] # Default: [] # List deployments to exclude from precompilation. As precompilation does not use secrets repository to determine enabled deployments, it might be convenient to exclude a deployment not enanled in secrets.
