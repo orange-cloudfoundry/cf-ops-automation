@@ -8,7 +8,7 @@ class DeploymentDeployersConfig
   DEPLOYMENT_DEPENDENCIES_FILENAME = 'deployment-dependencies.yml'.freeze
   CONCOURSE_CONFIG_DIRNAME = 'concourse-pipeline-config'.freeze
   TERRAFORM_CONFIG_DIRNAME = 'terraform-config'.freeze
-  KUBERNETES_CONFIG_DIRNAME = 'kubernetes-config'.freeze
+  KUBERNETES_CONFIG_DIRNAME = 'k8s-config'.freeze
   BOSH_DEPLOYMENT_CONFIG_DIRNAME = 'bosh-deployment-config'.freeze
   OLD_BOSH_DEPLOYMENT_CONFIG_DIRNAME = 'template'.freeze
   BOSH_DIRECTOR_CONFIG_DIRNAME = 'bosh-director-config'.freeze
@@ -26,7 +26,7 @@ class DeploymentDeployersConfig
     load_terraform_config(deployment_details)
     load_concourse_config(deployment_details)
     load_kubernetes_config(deployment_details)
-    raise "Inconsistency detected: deployment <#{@deployment_name}> is marked as active, but no #{DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config found at #{@public_base_location}" if deployment_details.empty?
+    raise "Inconsistency detected: deployment <#{@deployment_name}> is marked as active, but no #{DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config directory found (#{CONCOURSE_CONFIG_DIRNAME}, #{KUBERNETES_CONFIG_DIRNAME}) at #{@public_base_location}" if deployment_details.empty?
 
     create_and_enable_deployment(deployment_details)
   end
@@ -57,6 +57,7 @@ class DeploymentDeployersConfig
   end
 
   def load_kubernetes_config(deployment_details)
+    puts "Checking #{File.join(@public_base_location, KUBERNETES_CONFIG_DIRNAME)}"
     deployment_details['kubernetes'] = activate if Dir.exist? File.join(@public_base_location, KUBERNETES_CONFIG_DIRNAME)
   end
 

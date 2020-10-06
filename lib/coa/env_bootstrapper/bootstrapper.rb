@@ -28,6 +28,7 @@ module Coa
 
       def perform
         env_creator.deploy_transient_infra unless inactive_step?("deploy_transient_infra")
+        credhub.prepare_environment
         bosh.prepare_environment(prereqs)
         cf.prepare_environment(prereqs)
         git.prepare_environment(concourse.config, pipeline_vars)
@@ -59,6 +60,10 @@ module Coa
         config_source = prereqs.bosh || env_creator.vars
         bosh_config = Coa::Utils::Bosh::Config.new(config_source)
         Coa::EnvBootstrapper::Bosh.new(bosh_config)
+      end
+
+      def credhub
+        Coa::EnvBootstrapper::Credhub.new(prereqs)
       end
 
       def cf

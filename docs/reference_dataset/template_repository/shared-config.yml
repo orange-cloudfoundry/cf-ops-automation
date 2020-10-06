@@ -29,10 +29,12 @@ default:
     # shallow-clone-depth: 1 # Default: 0, ie disabled
 
 #<root-deployment-name>: # override per root-deployment
+#  stemcell:
+#    name: my-region-stemcell # Can be useful with multiple regions
 #  git:
 #    shallow-clone-depth: 1 # Default: 0, ie disabled
 #  concourse:
 #    parallel_execution_limit: 10 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
-#    precompile:
-#       excluded_deployments: [] # Default: [] # List deployments to exclude from precompilation. As precompilation does not use secrets repository to determine enabled deployments, it might be convenient to exclude a deployment not enanled in secrets.
+#  precompile:
+#    excluded_deployments: [] # Default: [] # List deployments to exclude from precompile. As precompile does not use secrets repository to determine enabled deployments, it might be convenient to exclude a deployment not enabled in secrets.

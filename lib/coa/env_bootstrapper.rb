@@ -10,5 +10,6 @@ module Coa
     require_relative './env_bootstrapper/errors'
     require_relative './env_bootstrapper/git'
     require_relative './env_bootstrapper/prereqs'
+    require_relative './env_bootstrapper/credhub'
   end
 end

@@ -13,6 +13,7 @@ module Coa
       OUTPUT_DIR_NAME    = 'output_dir'.freeze
       SECRETS_REPO_DIR   = "#{PROJECT_ROOT_DIR}/docs/reference_dataset/config_repository".freeze
       TEMPLATES_REPO_DIR = "#{PROJECT_ROOT_DIR}/docs/reference_dataset/template_repository".freeze
+      K8S_CONFIGS_REPO_DIR = "#{PROJECT_ROOT_DIR}/docs/reference_dataset/k8s_configs_repository".freeze
 
       def run_cmd(command, options = {})
         Coa::Utils::CommandRunner.new(command, options).execute

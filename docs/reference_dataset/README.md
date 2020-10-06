@@ -26,9 +26,11 @@ You can find an example of `cf-apps-deployments` described in ["hello world"](he
 
 ### Concourse
 
-You can find an example of `pipeline-sample` described in ["hello world"](hello-world-root-depls.md)
+You can find an example of `concourse-config` described in ["hello world"](hello-world-root-depls.md)
 
 ### Kubernetes
+
+You can find an example of `k8s-config` described in ["hello world"](hello-world-root-depls.md)
 
 
 ## Another World

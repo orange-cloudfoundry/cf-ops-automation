@@ -1,0 +1,4 @@
+#@data/values
+---
+iaas-type-custom-values:
+  iaas-type: openstack

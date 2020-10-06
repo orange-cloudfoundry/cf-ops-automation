@@ -76,6 +76,12 @@ module Coa
             "deploy-concourse-pipeline-sample-pipeline" => {}
           }
         },
+        "hello-world-root-depls-k8s-generated" => {
+          "team" => "hello-world-root-depls",
+          "jobs" => {
+            "deploy-k8s-sample" => {}
+          }
+        },
         "hello-world-root-depls-pipeline-sample" => {
           "team" => "main",
           "jobs" => {

@@ -167,7 +167,7 @@ describe RootDeployment do
       end
 
       it 'raises an error' do
-        expect { overview }.to raise_error(RuntimeError, "Inconsistency detected: deployment <ntp> is marked as active, but no deployment-dependencies.yml, nor other deployer config found at #{File.join(templates, root_deployment_name, 'ntp')}")
+        expect { overview }.to raise_error(RuntimeError, "Inconsistency detected: deployment <ntp> is marked as active, but no deployment-dependencies.yml, nor other deployer config directory found (concourse-pipeline-config, k8s-config) at #{File.join(templates, root_deployment_name, 'ntp')}")
       end
     end
   end

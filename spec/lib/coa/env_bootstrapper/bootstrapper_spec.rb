@@ -1,14 +1,10 @@
 require 'spec_helper'
 require 'tempfile'
-require 'coa/env_bootstrapper/bootstrapper'
-require 'coa/env_bootstrapper/bosh'
-require 'coa/env_bootstrapper/concourse'
-require 'coa/env_bootstrapper/git'
-require 'coa/env_bootstrapper/prereqs'
+require 'coa/env_bootstrapper'
 
 describe Coa::EnvBootstrapper::Bootstrapper do
   let(:tempfile) { Tempfile.new }
-  let(:empty_prereqs) { Coa::EnvBootstrapper::Prereqs.new }
+  let(:only_credhub_prereqs) { Coa::EnvBootstrapper::Prereqs.new({ 'credhub' => { 'server' => 'credhub-srv', 'client' => 'credhub-client-id', 'secret' => 'xxxxxx' } }) }
 
   describe '.new' do
     let(:bosh_prereqs_path) { File.join(fixtures_dir('lib'), 'coa/env_bootstrapper', 'bosh-prereqs.yml') }
@@ -42,6 +38,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
     let(:generated_concourse_credentials) { { "secret-uri" => "generated" } }
     let(:bosh) { Coa::EnvBootstrapper::Bosh.new({}) }
     let(:cf) { Coa::EnvBootstrapper::Cf.new({}) }
+    let(:credhub) { Coa::EnvBootstrapper::Credhub.new(only_credhub_prereqs) }
     let(:git) { Coa::EnvBootstrapper::Git.new(bosh) }
     let(:concourse) { Coa::EnvBootstrapper::Concourse.new({}) }
     let(:env_creator) { Coa::EnvBootstrapper::EnvCreator.new }
@@ -49,6 +46,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
 
     before do
       allow(bs).to       receive(:cf).and_return(cf)
+      allow(bs).to       receive(:credhub).and_return(credhub)
       allow(bs).to       receive(:bosh).and_return(bosh)
       allow(bs).to       receive(:git).and_return(git)
       allow(bs).to       receive(:concourse).and_return(concourse)
@@ -59,18 +57,21 @@ describe Coa::EnvBootstrapper::Bootstrapper do
 
     context "with no configuration" do
       let(:bs) { described_class.new }
+      let(:empty_prereqs) { Coa::EnvBootstrapper::Prereqs.new }
 
       it "executes all steps" do
         allow(env_creator).to receive(:deploy_transient_infra)
-        allow(bosh).to        receive(:prepare_environment)
-        allow(cf).to        receive(:prepare_environment)
-        allow(git).to         receive(:prepare_environment)
-        allow(concourse).to   receive(:run_pipelines)
+        allow(bosh).to receive(:prepare_environment)
+        allow(cf).to receive(:prepare_environment)
+        allow(git).to receive(:prepare_environment)
+        allow(credhub).to receive(:prepare_environment)
+        allow(concourse).to receive(:run_pipelines)
 
         bs.perform
 
         expect(env_creator).to have_received(:deploy_transient_infra)
         expect(cf).to        have_received(:prepare_environment)
+        expect(credhub).to        have_received(:prepare_environment)
         expect(bosh).to        have_received(:prepare_environment)
         expect(git).to         have_received(:prepare_environment)
         expect(concourse).to   have_received(:run_pipelines).
@@ -93,6 +94,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
         allow(cf).to          receive(:prepare_environment)
         allow(bosh).to        receive(:prepare_environment)
         allow(git).to         receive(:prepare_environment)
+        allow(credhub).to         receive(:prepare_environment)
         allow(concourse).to   receive(:run_pipelines)
 
         bs.perform
@@ -100,6 +102,7 @@ describe Coa::EnvBootstrapper::Bootstrapper do
         expect(env_creator).not_to have_received(:deploy_transient_infra)
         expect(bosh).to            have_received(:prepare_environment)
         expect(cf).to            have_received(:prepare_environment)
+        expect(credhub).to            have_received(:prepare_environment)
         expect(git).to             have_received(:prepare_environment)
         expect(concourse).to       have_received(:run_pipelines)
       end

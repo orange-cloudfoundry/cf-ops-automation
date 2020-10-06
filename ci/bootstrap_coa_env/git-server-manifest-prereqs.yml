@@ -15,6 +15,7 @@ git_server_manifest:
         - paas-templates
         - secrets
         - cf-ops-automation
+        - k8s-configs
     vm_type: default
     stemcell: default
     persistent_disk: 10_000
