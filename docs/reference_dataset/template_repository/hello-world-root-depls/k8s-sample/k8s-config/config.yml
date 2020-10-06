@@ -1,0 +1,14 @@
+#@ load("@ytt:data", "data")
+
+nothing: #@ data.values.nothing
+string: #@ data.values.string
+boolean: #@ data.values.bool
+int: #@ data.values.int
+float: #@ data.values.float
+
+auto-injected-by-coa:
+  deployment-name: #@ data.values.DEPLOYMENT_NAME
+
+iaas-type: #@ data.values.iaas-type-custom-values.iaas-type
+current-profile: #@ data.values.profile-values.name
+

@@ -1,0 +1,12 @@
+#@data/values
+---
+nothing: "something"
+string: "((/coa-my-credhub-key))"
+bool: false
+int: 0
+float: 0.0
+
+deployment:  #! This is required to be able to automatically inject value of COA_deployment__name using ytt --data-values-env COA
+  name: #! This is required to be able to automatically inject value of COA_deployment__name using ytt --data-values-env COA
+
+DEPLOYMENT_NAME: #! This is required to be able to automatically inject value of COA_DEPLOYMENT_NAME using ytt --data-values-env COA

@@ -110,7 +110,7 @@ describe DeploymentDeployersConfig do
       end
 
       it 'raises an error' do
-        error_message = "Inconsistency detected: deployment <#{deployment_name}> is marked as active, but no #{DeploymentDeployersConfig::DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config found at #{deployment_templates_path}"
+        error_message = "Inconsistency detected: deployment <#{deployment_name}> is marked as active, but no #{DeploymentDeployersConfig::DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config directory found (concourse-pipeline-config, k8s-config) at #{deployment_templates_path}"
 
         expect { subject.load_configs }.
           to raise_error(RuntimeError, error_message)

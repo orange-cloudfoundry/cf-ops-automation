@@ -69,6 +69,7 @@ describe Coa::EnvBootstrapper::Git do
     let(:pipeline_vars) { {} }
 
     before do
+      allow(git.logger).to receive(:log_and_puts)
       allow(Coa::Utils::CommandRunner).to receive(:new).and_return(runner)
       allow(runner).to receive(:execute).and_return("")
       allow(File).to receive(:open).and_yield(file)

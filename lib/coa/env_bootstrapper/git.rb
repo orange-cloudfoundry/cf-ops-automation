@@ -24,6 +24,11 @@ module Coa
         push_templates_repo
         push_secrets_repo(concourse_config, pipeline_vars)
         push_cf_ops_automation
+        k8s_configs_repo
+      end
+
+      def k8s_configs_repo
+        init_and_push(K8S_CONFIGS_REPO_DIR, "k8s-configs")
       end
 
       def push_templates_repo
@@ -45,6 +50,7 @@ module Coa
       end
 
       def push_cf_ops_automation
+        logger.log_and_puts :debug, "Setup cf_ops_automation push at <#{PROJECT_ROOT_DIR}>"
         Dir.chdir PROJECT_ROOT_DIR do
           remote_name = "remote-" + SecureRandom.hex
           branch_name = "br-" + SecureRandom.hex
@@ -81,6 +87,7 @@ module Coa
       end
 
       def init_and_push(repo_path, repo_name)
+        logger.log_and_puts :debug, "Init #{repo_name} at <#{repo_path}>"
         coa_submodule_path = "shared-files/cf-ops-automation-reference-dataset-submodule-sample"
         Dir.chdir repo_path do
           submodule_commit_reference = templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
@@ -173,7 +180,8 @@ module Coa
           "bosh-target"                               => bosh_config.environment,
           "cf-ops-automation-uri"                     => "git://#{server_ip}/cf-ops-automation",
           "paas-templates-uri"                        => "git://#{server_ip}/paas-templates",
-          "secrets-uri"                               => "git://#{server_ip}/secrets"
+          "secrets-uri"                               => "git://#{server_ip}/secrets",
+          "k8s-configs-repository-uri"                => "git://#{server_ip}/k8s-configs"
         }
       end
     end

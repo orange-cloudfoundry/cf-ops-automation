@@ -10,10 +10,14 @@ ci-deployment:
       hello-world-root-depls-update-generated: {} # This pipeline must be in 'main' team
       hello-world-root-depls-bosh-precompile-generated: # This pipeline is deployed in '<root-deployment-name>' team unless specified
         team: hello-world-root-depls
+      hello-world-root-depls-k8s-generated: # This pipeline is deployed in 'main' team unless specified
+        team: hello-world-root-depls
+        vars_files:
+        - shared/concourse-credentials.yml  # Use by Integration Tests to inject concourse variables (like credhub-client, etc...)
       hello-world-root-depls-bosh-generated: # This pipeline is deployed in 'main' team unless specified
         team: hello-world-root-depls
         vars_files:
         - hello-world-root-depls/root-deployment.yml
-        - shared/concourse-credentials.yml
+        - shared/concourse-credentials.yml  # Use by Integration Tests to inject concourse variables (like credhub-client, etc...)
       hello-world-root-depls-concourse-generated: # This pipeline is deployed in 'main' team unless specified
         team: hello-world-root-depls
