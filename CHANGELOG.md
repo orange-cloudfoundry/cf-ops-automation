@@ -1,5 +1,14 @@
 # Changelog
 
+## [v5.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.3) (2020-10-08)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.0.2...v5.0.3)
+
+**Merged pull requests:**
+
+- pipeline\(bosh-precompile\): only use templates to generate pipeline [\#351](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/351)
+- fix\(resolve-manifest-version\): handle properly multiple stemcell definition [\#350](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/350)
+
 ## [v5.0.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.2) (2020-09-25)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.0.1...v5.0.2)
@@ -457,7 +466,6 @@
 
 - Test ticket from Code Climate [\#132](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/132)
 - Remove custom slack certificates - requires concourse 3.9.1 [\#105](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/105)
-- Rename post-bosh-deploy.sh hook into post-deploy.sh [\#99](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/99)
 - Support Iaas specific TF configs loading [\#38](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/38)
 
 **Merged pull requests:**
@@ -490,6 +498,7 @@
 **Closed issues:**
 
 - S3 upload pipeline should handle additional teams [\#100](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/100)
+- Rename post-bosh-deploy.sh hook into post-deploy.sh [\#99](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/99)
 - init pipeline should handle additional teams [\#98](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/98)
 - on cf-app deployments \[skip ci\] is ignored on secrets repo updates and builds are triggered twice [\#95](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/95)
 
