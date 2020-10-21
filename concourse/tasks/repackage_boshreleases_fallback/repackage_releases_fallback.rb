@@ -137,7 +137,12 @@ class RepackageReleasesFallback
     repo = details['repository'] || ""
     version = details['version']
     tag_prefix = details['tag_prefix']
-    url = "#{GITHUB_PREFIX}/#{repo}/releases/download/#{tag_prefix}#{version}/#{name}-#{version}.tgz"
+    github_release_name = if details['github-release-name'].to_s.empty?
+                            "#{name}-#{version}.tgz"
+                          else
+                            details['github-release-name']
+                          end
+    url = "#{GITHUB_PREFIX}/#{repo}/releases/download/#{tag_prefix}#{version}/#{github_release_name}"
     puts "trying to download release #{name} from #{url}"
     boshrelease_filename = "#{name}-#{version}.tgz"
     [boshrelease_filename, url]

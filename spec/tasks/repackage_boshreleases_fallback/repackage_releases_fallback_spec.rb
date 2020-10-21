@@ -107,6 +107,26 @@ describe RepackageReleasesFallback do
       end
     end
 
+    context "when fallback to github releases with custom name" do
+      let(:repackaged_releases_path) { File.join(basedir, 'override_github_release_name') }
+      let(:expected_repackaged_fallback_files) { %w[fallback-fixes.yml os-conf-21.0.0.tgz minio-2020-06-18T02-23-35Z.tgz syslog-1.0.0.tgz boshreleases-namespaces.csv].sort }
+
+      before do
+        allow(URI).to receive(:open).and_raise(OpenURI::HTTPError.new(Net::HTTPServerError, StringIO.new))
+        allow(URI).to receive(:open).with(/https:\/\/github.com/, 'rb').and_return(true)
+      end
+
+      it 'download only from github' do
+        run_process
+        expect(repackaged_fallback_files).to match(expected_repackaged_fallback_files)
+        expect(URI).to have_received(:open).exactly(6).times
+        expect(URI).to have_received(:open).exactly(3).times.with(/https:\/\/bosh.io/, 'rb')
+        expect(URI).to have_received(:open).once.with('https://github.com/minio/minio-boshrelease/releases/download/RELEASE_2020-06-18T02-23-35Z/minio.tgz', 'rb')
+        expect(URI).to have_received(:open).once.with('https://github.com/cloudfoundry/os-conf-release/releases/download/v21.0.0/my-os-conf-release', 'rb')
+        expect(URI).to have_received(:open).once.with('https://github.com/cloudfoundry/syslog/releases/download/v1.0.0/syslog-1.0.0.tgz', 'rb')
+      end
+    end
+
     context "when repackage-releases does not have errors" do
       let(:expected_files) { %w[boshreleases-namespaces.csv dummy-nats-33.tgz].sort }
       let(:repackaged_releases_path) { File.join(basedir, 'existing_files_selective_copy') }

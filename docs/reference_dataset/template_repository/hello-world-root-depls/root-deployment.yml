@@ -9,7 +9,8 @@ releases:
   nginx:
     version: "1.13.12" # Mandatory
     repository: cloudfoundry-community/nginx-release # Mandatory
-    tag_prefix: '' # Optional - by default, COA assumes boshrelease tag starts with 'v'. Adjust using this prefix
+    tag_prefix: '' # Optional - by default, COA assumes boshrelease tag starts with 'v'. Adjust using this prefix.
+    github-release-name: '' # Optional - by default, COA uses "<name>-<version>.tgz" - Default: nil
 
   ntp:
     version: "4.2.8p11"

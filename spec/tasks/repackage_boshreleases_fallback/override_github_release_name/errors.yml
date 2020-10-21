@@ -1,0 +1,28 @@
+---
+minio:
+  tag_prefix: RELEASE_
+  repository: minio/minio-boshrelease
+  github-release-name: minio.tgz
+  version: 2020-06-18T02-23-35Z
+  error: |-
+    Stderr:
+    Stdout:
+    {xxx }
+os-conf:
+  tag_prefix: v
+  repository: cloudfoundry/os-conf-release
+  github-release-name: my-os-conf-release
+  version: 21.0.0
+  error: |-
+    Stderr:
+    Stdout:
+    {yyy }
+syslog:
+  tag_prefix: v
+  repository: cloudfoundry/syslog
+  github-release-name: ''
+  version: 1.0.0
+  error: |-
+    Stderr:
+    Stdout:
+    {zzz }
