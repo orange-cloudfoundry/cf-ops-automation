@@ -327,6 +327,7 @@ jobs:
                 STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+                echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
             BOSH_DEPLOYMENT: ntp_boshrelease-deployment
@@ -446,6 +447,7 @@ jobs:
                 STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
+                echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
             BOSH_DEPLOYMENT: zookeeper_boshrelease-deployment
