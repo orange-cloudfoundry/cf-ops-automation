@@ -341,12 +341,21 @@ jobs:
           run:
             path: /bin/bash
             args:
-              - -ce
+              - -c
               - |
-                ./cf-ops-automation/scripts/run_integration_tests.rb
+                cd cf-ops-automation/
+                echo "Git configuration:"
+                git config -l
+                echo "========================"
+                echo "removing 'url.https://.insteadof' properties"
+                git config --unset url.https://.insteadof
+                cd ..
+                ruby ./cf-ops-automation/scripts/run_integration_tests.rb
+                status=$?
                 if [ -f ./coa-logs/stdout.log ];then
                   cat ./coa-logs/stdout.log
                 fi
+                exit ${status}
           params:
             PREREQS_PATHS_RAW: "./prereqs/*.yml"
             COA_LOG_PATH: "../../../../coa-logs"
