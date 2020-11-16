@@ -1,0 +1,25 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))orangecloudfoundry/k8s-tools
+    tag: 9f5d31d753d3560c375c85cff3e11796e8d2cbdf
+inputs:
+  - name: paas-templates-resource
+  - name: cf-ops-automation
+outputs:
+  - name: paas-templates-resolved
+run:
+  path: bash
+  args:
+    - -ec
+    - |
+      echo "Running $TASK_RUN_SCRIPT"
+      $TASK_RUN_SCRIPT
+params:
+  TASK_RUN_SCRIPT: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/run.sh
+  ROOT_DEPLOYMENT_NAME:
+  COA_DEPLOYMENT_NAME:
+  CONFIG_DIR:
+  IAAS_TYPE:
+  PROFILES:

@@ -189,6 +189,9 @@ jobs:
             export CI_NAME=${BUILD_INFO}
             export CI_BUILD_ID=${BUILD_ID}
             export CI_BUILD_URL=$ATC_EXTERNAL_URL/builds/${BUILD_ID}
+            echo "Setup git config"
+            git config --global user.email "coa@cf-automation.org"
+            git config --global user.name "COA CI"
             echo "Running tests for $GIT_COMMIT_SHA@$GIT_BRANCH"
             fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
             echo "Setup Code Climate coverage"

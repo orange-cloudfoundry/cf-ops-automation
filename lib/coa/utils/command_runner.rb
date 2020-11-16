@@ -6,7 +6,7 @@ require_relative './coa_logger'
 module Coa
   module Utils
     # This class can execute system commands, more or less verbose, potential
-    # while loading a profile. Will raise an error if the comand fails unless
+    # while loading a profile. Will raise an error if the command fails unless
     # told otherwise.
     class CommandRunner
       include Coa::Utils::CoaLogger

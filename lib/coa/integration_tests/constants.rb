@@ -79,7 +79,8 @@ module Coa
         "hello-world-root-depls-k8s-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
-            "deploy-k8s-sample" => {}
+            "deploy-k8s-sample" => {},
+            "execute-deploy-script" => {}
           }
         },
         "hello-world-root-depls-pipeline-sample" => {
