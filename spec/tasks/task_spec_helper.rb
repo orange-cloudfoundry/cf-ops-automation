@@ -52,6 +52,14 @@ class TaskSpecHelper
     governmentpaas_default_image_version
   end
 
+  def self.k8s_tools_image
+    'orangecloudfoundry/k8s-tools'
+  end
+
+  def self.k8s_tools_image_version
+    '9f5d31d753d3560c375c85cff3e11796e8d2cbdf' # we need to bump to ruby 2.7.1 to converge with orange_default_image_version
+  end
+
   def self.cf_cli_image
     'governmentpaas/cf-cli'
   end

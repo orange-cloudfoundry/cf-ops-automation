@@ -46,10 +46,6 @@ resource_types:
     tag: 2.0.1
 
 resources:
-- name: concourse-meta
-  icon: file-document-box-search-outline
-  type: meta
-
 - name: failure-alert
   icon: slack
   type: slack-notification
@@ -95,6 +91,9 @@ resources:
     skip_ssl_verification: true
 
 <% unless enabled_deployments.empty? %>
+- name: concourse-meta
+  icon: file-document-box-search-outline
+  type: meta
 
 <% enabled_deployments.sort.each do |name, boshrelease|
   secrets_selected_paths = PipelineHelpers.git_resource_selected_paths(
@@ -134,7 +133,7 @@ resources:
     skip_ssl_verification: true
 <% end %>
 <% end %>
-<% if enabled_deployments.any? || disabled_deployments.any? || all_ci_deployments&.any? %>
+<% if enabled_deployments.any? %>
 - name: secrets-<%= root_deployment_name %>-trigger
   icon: source-commit
   type: git
@@ -143,9 +142,6 @@ resources:
     paths: ["private-config.yml", "<%= root_deployment_name %>", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
-<% end %>
-
-<% if enabled_deployments.any? %>
 - name: k8s-configs-repository
   icon: source-pull
   type: git
@@ -189,6 +185,8 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
+      - get: secrets-full-writer
+        params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: secrets-<%= root_deployment_name %>-limited
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
@@ -197,22 +195,39 @@ jobs:
         trigger: true
       - get: cf-ops-automation
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-
-    - task: run-deploy.sh
-      input_mapping: {scripts-resource: cf-ops-automation, templates: paas-templates-<%= root_deployment_name %>, secrets: secrets-<%= root_deployment_name %>-limited}
-      file: cf-ops-automation/concourse/tasks/execute_deploy_script.yml
+      - get: k8s-configs-repository
+        params: { submodules: none }
+    - task: apply-iaas-type-and-profiles
+      input_mapping:
+        paas-templates-resource: paas-templates-<%= root_deployment_name %>
+      file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
       params:
-        CURRENT_DEPLS: <%= root_deployment_name %>/template
-        COMMON_SCRIPT_DIR: scripts-resource/scripts
-        SECRETS_DIR: secrets
-        BOSH_TARGET: ((bosh-target))
-        BOSH_CLIENT: ((bosh-username))
-        BOSH_CLIENT_SECRET: "((bosh-password))"
-        BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+        ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
+        COA_DEPLOYMENT_NAME: hooks
+        CONFIG_DIR: k8s
+        IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
+    - task: run-deploy.sh
+      input_mapping: { paas-templates-resource: paas-templates-<%= root_deployment_name %>,  credentials-resource: secrets-full-writer }
+      output_mapping: { result-dir: updated-k8s-repo }
+      file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+      params:
+        COA_DEPLOYMENT_NAME: <%= root_deployment_name %>-k8s
+        CUSTOM_SCRIPT_DIR: paas-templates-resource/<%= root_deployment_name %>/hooks/k8s
         CREDHUB_SERVER: ((credhub-server))
         CREDHUB_CLIENT: ((credhub-client))
         CREDHUB_SECRET: "((credhub-secret))"
         CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+        IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
+        FILE_EXECUTION_FILTER: "deploy*.sh"
+
+    - put: k8s-configs-repository
+      attempts: 2
+      get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+      params:
+        repository: updated-k8s-repo
+        rebase: true
 
 <% enabled_deployments.sort.each do |name, boshrelease| %>
 <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
@@ -284,168 +299,24 @@ jobs:
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
       COA_DEPLOYMENT_NAME: <%= name %>
-
-  - task: execute-<%= name %>-pre-bosh-deploy
-    input_mapping:
-      scripts-resource: cf-ops-automation
-      template-resource: paas-templates-<%= name %>
-      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
-      additional-resource: pre-processed-manifest
-    output_mapping: {generated-files: pre-bosh-deploy-resource}
-    file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
-    params:
-      CUSTOM_SCRIPT_DIR: template-resource/<%= root_deployment_name %>/<%= name %>/template
-      SECRETS_DIR: credentials-resource/<%= root_deployment_name %>/<%= name %>
-      COA_DEPLOYMENT_NAME: <%= name %>
-      CREDHUB_SERVER: ((credhub-server))
-      CREDHUB_CLIENT: ((credhub-client))
-      CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
   - task: apply-iaas-type-and-profiles
     input_mapping:
       paas-templates-resource: paas-templates-<%= name %>
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: ((docker-registry-url))orangecloudfoundry/k8s-tools
-          tag: 9f5d31d753d3560c375c85cff3e11796e8d2cbdf
-      inputs:
-        - name: paas-templates-resource
-      outputs:
-        - name: paas-templates-resolved
-      params:
-        ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
-        COA_DEPLOYMENT_NAME: <%= name %>
-        CONFIG_DIR: k8s-config
-        IAAS_TYPE: ((iaas-type))
-        PROFILES: ((profiles))
-      run:
-        path: bash
-        args:
-          - -ec
-          - |
-            git clone paas-templates-resource paas-templates-resolved
-            echo "Copying git metadata"
-            cp -p paas-templates-resource/.git/commit_message paas-templates-resolved/.git
-            cp -p paas-templates-resource/.git/commit_timestamp paas-templates-resolved/.git
-            cp -p paas-templates-resource/.git/committer paas-templates-resolved/.git
-            cp -p paas-templates-resource/.git/describe_ref paas-templates-resolved/.git
-            cp -p paas-templates-resource/.git/ref paas-templates-resolved/.git
-            cp -p paas-templates-resource/.git/short_ref paas-templates-resolved/.git
-
-
-            cd paas-templates-resolved
-            cd "$ROOT_DEPLOYMENT_NAME/$COA_DEPLOYMENT_NAME/$CONFIG_DIR"
-
-            if [[ -n "${IAAS_TYPE}" && -d "${IAAS_TYPE}" ]]; then
-              echo "Copying from ${PWD}/${IAAS_TYPE} to ${PWD}"
-              cp -rv "${IAAS_TYPE}"/* .
-            else
-              echo "ignoring IAAS_TYPE customization. Iaas type not defined / detected at ${PWD}/${IAAS_TYPE}. Iaas type: $IAAS_TYPE"
-            fi
-
-            if [ -z "${PROFILES}" ]; then
-              echo "\$PROFILES is empty, skipping"
-              exit 0
-            fi
-
-            echo "${PROFILES}"|sed -e 's/,/\n/g' > /tmp/profiles.txt
-            if [ "$PROFILES_AUTOSORT" = "true" ]; then
-              NEWLINE_DELIMITED_PROFILES=$(sort </tmp/profiles.txt)
-              echo -e "Auto sort profiles:\n${NEWLINE_DELIMITED_PROFILES}"
-            else
-              NEWLINE_DELIMITED_PROFILES=$(cat /tmp/profiles.txt)
-              echo "Auto sort profiles disabled: ${NEWLINE_DELIMITED_PROFILES}"
-            fi
-            for profile in ${NEWLINE_DELIMITED_PROFILES}; do
-              echo "-------------------------"
-              if [[ -n ${profile} && -d ${profile} ]]; then
-                cp -rv "${profile}"/* .
-              else
-                echo "ignoring ${profile} customization. Profile not defined / detected at ${PWD}/<PROFILE>. Profile: <${profile}>"
-              fi
-            done
-
-  - task: execute-shell
+    file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
+    params:
+      ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
+      COA_DEPLOYMENT_NAME: <%= name %>
+      CONFIG_DIR: k8s-config
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+  - task: execute-pre-deploy-shell
     input_mapping:
       paas-templates-resource: paas-templates-resolved
       credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
-    output_mapping: {result-dir: updated-k8s-repo}
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: ((docker-registry-url))orangecloudfoundry/k8s-tools
-          tag: 9f5d31d753d3560c375c85cff3e11796e8d2cbdf
-      inputs:
-        - name: paas-templates-resource
-        - name: credentials-resource
-        - name: pre-processed-manifest
-        - name: cf-ops-automation
-        - name: k8s-configs-repository
-      outputs:
-        - name: result-dir
-      run:
-        path: bash
-        args:
-        - -ec
-        - |
-          echo "Available tools:"
-          for app in $(ls /usr/local/bin); do echo "$app: $($app --version 2>/dev/null|| $app version 2>/dev/null)";done
-          echo '---------------------'
-          OUTPUT_DIR=$(realpath ${OUTPUT_DIR:-result-dir})
-          export CREDHUB_CA_CERT=$(realpath $CREDHUB_CA_CERT)
-          export PRE_PROCESSED_MANIFEST_PATH=$(realpath pre-processed-manifest)
-          export K8S_GIT_REPO_PATH="${OUTPUT_DIR}"
-          export BASE_TEMPLATE_DIR=$(realpath ${CUSTOM_SCRIPT_DIR})
-          export PAAS_TEMPLATES_COMMIT_ID=$(cat  paas-templates-resource/.git/ref)
-          export PAAS_TEMPLATES_COMMITTER=$(cat  paas-templates-resource/.git/committer)
-          export PAAS_TEMPLATES_COMMIT_MESSAGE=$(cat  paas-templates-resource/.git/commit_message)
-          echo "Available Env Var:"
-          echo "\$COA_DEPLOYMENT_NAME: deployment name (set to: $COA_DEPLOYMENT_NAME)"
-          echo "\$COA_deployment__name: deployment name (set to: $COA_deployment__name)"
-          echo "\$BASE_TEMPLATE_DIR: directory containing k8s scripts to execute (set to: $BASE_TEMPLATE_DIR)"
-          echo "\$K8S_GIT_REPO_PATH: directory containing generated files (set to: $K8S_GIT_REPO_PATH)"
-          echo "\$PAAS_TEMPLATES_COMMIT_ID, \$PAAS_TEMPLATES_COMMITTER, \$PAAS_TEMPLATES_COMMIT_MESSAGE"
-          echo "\$PRE_PROCESSED_MANIFEST_PATH: directory containing files processed during 'generate-<deployment-name>-manifest' step"
-          echo '---------------------'
-
-          echo "setup OUTPUT K8S_GIT_REPO_PATH"
-          git config --global advice.detachedHead false
-          git config --global user.email "$GIT_USER_EMAIL"
-          git config --global user.name "$GIT_USER_NAME"
-
-          git clone k8s-configs-repository "${OUTPUT_DIR}/"
-
-          echo "list pre-proccessed files ($PRE_PROCESSED_MANIFEST_PATH):"
-          pushd $PRE_PROCESSED_MANIFEST_PATH
-          du -a .
-          popd
-
-          if [ -n "$BASE_TEMPLATE_DIR" ]; then
-            k8s_scripts_count=$(find $BASE_TEMPLATE_DIR -name "[0-9][0-9]*.sh"|wc -l)
-            if [ ${k8s_scripts_count} -gt 0 ]; then
-              chmod +x "$BASE_TEMPLATE_DIR"/*.sh
-              for k8s_script in $(ls $BASE_TEMPLATE_DIR/[0-9][0-9]*.sh);do
-                echo "Processing $k8s_script"
-                echo "______________________"
-                ${k8s_script}
-              done
-            else
-              echo "ignoring k8s scripts. No scripts matching $BASE_TEMPLATE_DIR/[0-9][0-9]-*.sh"
-            fi
-          else
-            echo "ignoring k8s scripts. No directory ($BASE_TEMPLATE_DIR) detected"
-          fi
-      params:
-        GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"
-        GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
+    output_mapping: {result-dir: ignored-k8s-repo-pre-deploy}
+    file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
     params:
       COA_DEPLOYMENT_NAME: <%= name %>
-      COA_deployment__name: <%= name %>
       CUSTOM_SCRIPT_DIR: paas-templates-resource/<%= root_deployment_name %>/<%= name %>/k8s-config
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
@@ -453,13 +324,45 @@ jobs:
       CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
-
+      FILE_EXECUTION_FILTER: "pre-deploy*.sh"
+  - task: execute-shell
+    input_mapping:
+      paas-templates-resource: paas-templates-resolved
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+    output_mapping: {result-dir: updated-k8s-repo}
+    file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+    params:
+      COA_DEPLOYMENT_NAME: <%= name %>
+      CUSTOM_SCRIPT_DIR: paas-templates-resource/<%= root_deployment_name %>/<%= name %>/k8s-config
+      CREDHUB_SERVER: ((credhub-server))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: "((credhub-secret))"
+      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
   - put: k8s-configs-repository
     attempts: 2
     get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     params:
       repository: updated-k8s-repo
       rebase: true
+  - task: execute-post-deploy-shell
+    input_mapping:
+      paas-templates-resource: paas-templates-resolved
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      k8s-configs-repository: updated-k8s-repo
+    output_mapping: {result-dir: ignored-k8s-repo-post-deploy}
+    file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+    params:
+      COA_DEPLOYMENT_NAME: <%= name %>
+      CUSTOM_SCRIPT_DIR: paas-templates-resource/<%= root_deployment_name %>/<%= name %>/k8s-config
+      CREDHUB_SERVER: ((credhub-server))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: "((credhub-secret))"
+      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+      FILE_EXECUTION_FILTER: "post-deploy*.sh"
 
 <% end %>
 

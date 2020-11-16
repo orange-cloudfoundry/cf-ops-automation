@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e # We choose in each script how we handle errors
 
 credhub delete --name "/coa-my-credhub-key"
 

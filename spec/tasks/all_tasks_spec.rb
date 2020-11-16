@@ -41,6 +41,7 @@ describe 'all tasks' do
         "orangecloudfoundry/cf-ops-automation:latest",
         TaskSpecHelper.pre_deploy_image + ':' + TaskSpecHelper.pre_deploy_image_version,
         TaskSpecHelper.terraform_image + ':' + TaskSpecHelper.terraform_image_version,
+        TaskSpecHelper.k8s_tools_image + ':' + TaskSpecHelper.k8s_tools_image_version,
         TaskSpecHelper.awscli_image + ':' + TaskSpecHelper.awscli_image_version
       ]
     end
