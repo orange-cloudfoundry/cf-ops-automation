@@ -12,6 +12,7 @@
 # limitations under the License.
 #
 require_relative './resolve_manifest_versions'
+require_relative './resolve_manifest_urls'
 require_relative '../../../lib/tasks'
 require 'yaml'
 
@@ -31,3 +32,9 @@ puts "Warning: no manifest detected !" if manifest.empty?
 
 resolve_manifest = ResolveManifestVersions.new(deployment_name, manifest)
 resolve_manifest.process(versions, stemcell_name)
+
+factory = ResolveManifestReleaseUrlFactory.factory(ENV.to_h.dup)
+releases_url_resolver = factory.select_resolver
+# releasesUrlResolver = ResolveManifestReleasesUrl.new(deployment_name, download_server_url, offline_mode_enabled)
+resolve_manifest_urls = ResolveManifestUrls.new(deployment_name, releases_url_resolver)
+resolve_manifest_urls.process(manifest, versions)

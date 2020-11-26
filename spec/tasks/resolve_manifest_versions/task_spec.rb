@@ -66,11 +66,18 @@ describe 'resolve_manifest_versions task' do
       expected_outputs = [{ 'name' => 'result-dir' }]
       expect(task['outputs']).to eq(expected_outputs)
     end
+
     it 'has params' do
-      expected_params = { "STEMCELL_NAME" => nil,
-                          "STEMCELL_VERSION" => nil,
-                          "MANIFEST_YAML_FILE" => nil,
-                          "VERSIONS_FILE" => nil }
+      expected_params = {
+        'STEMCELL_NAME' => nil,
+        'STEMCELL_VERSION' => nil,
+        'STEMCELL_OS' => nil,
+        'MANIFEST_YAML_FILE' => nil,
+        'VERSIONS_FILE' => nil,
+        'DOWNLOAD_SERVER_URL'  => nil,
+        'OFFLINE_MODE_ENABLED'  => nil,
+        'PRECOMPILE_MODE_ENABLED' => nil
+      }
       expect(task['params']).to eq(expected_params)
     end
   end

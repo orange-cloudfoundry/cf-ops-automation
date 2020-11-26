@@ -16,6 +16,7 @@ class ResolveManifestVersions
 
     output_filename = File.join(@output_dir, "#{@deployment_name}.yml")
     File.open(output_filename, 'w') { |file| file.write(YAML.dump(resolved_manifest)) }
+    resolved_manifest
   end
 
   private
@@ -29,7 +30,7 @@ class ResolveManifestVersions
   def process_stemcell(stemcell, stemcell_name, versions)
     stemcell_alias, version, os, name = extract_stemcell_manifest_info(stemcell)
     if version == 'latest'
-      puts "Extracting version defined for #{stemcell_alias}##{os || name}"
+      puts "Extracting stemcell version defined for #{stemcell_alias}##{os || name}"
       lock_version = expected_stemcell_version(stemcell_name, versions)
       lock_stemcell_version(lock_version, stemcell, stemcell_name)
     else
