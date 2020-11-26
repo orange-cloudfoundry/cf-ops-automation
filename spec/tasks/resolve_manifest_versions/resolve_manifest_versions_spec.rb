@@ -369,6 +369,5 @@ describe ResolveManifestVersions do
         expect(YAML.load_file(expected_output_filename)).to eq(expected_manifest)
       end
     end
-
   end
 end

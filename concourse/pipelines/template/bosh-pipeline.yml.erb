@@ -28,6 +28,15 @@
   offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
   offline_boshreleases_enabled = config&.dig('offline-mode', 'boshreleases') && true
   precompile_pipeline_enabled = config&.fetch('precompile-mode', true) && true
+  precompile_excluded_deployments = config&.dig(root_deployment_name,'precompile','excluded-deployments') || []
+
+  download_server_url = if offline_boshreleases_enabled
+                          # we expect s3-endpoint to end with '/'
+                          "((s3-#{precompile_pipeline_enabled ? "compiled-release" : "br" }-endpoint))((s3-#{ precompile_pipeline_enabled ? "compiled-release" : "br" }-bucket))"
+                        else
+                          "https://bosh.io/d/github.com/"
+                        end
+
   jobs = Hash.new {|h,k| h[k]=[]}
 
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
@@ -873,10 +882,13 @@ jobs:
     params:
       STEMCELL_NAME: ((stemcell-main-name))
       STEMCELL_VERSION: ((stemcell.version))
+      STEMCELL_OS: <%= offline_boshreleases_enabled && precompile_pipeline_enabled ? "((s3-compiled-release-os))":"" %>
       VERSIONS_FILE:  templates-resource/<%= root_deployment_name %>/root-deployment.yml
       MANIFEST_YAML_FILE: manifest-dir/interpolated-<%= name %>.yml
       DEPLOYMENT_NAME: <%= name %>
-
+      DOWNLOAD_SERVER_URL: <%= download_server_url %>
+      OFFLINE_MODE_ENABLED: <%= offline_boshreleases_enabled %>
+      PRECOMPILE_MODE_ENABLED: <%= precompile_pipeline_enabled %>
   - put: <%= name %>-deployment
     attempts: 2
     on_failure:
