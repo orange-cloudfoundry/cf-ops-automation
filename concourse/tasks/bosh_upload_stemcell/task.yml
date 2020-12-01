@@ -26,6 +26,7 @@ run:
   args:
     - -c
     - |
+      echo "Bosh CLI info: $(bosh --version)"
       find stemcell/ -name "*.tgz" -exec bosh upload-stemcell {} \;
 params:
   BOSH_ENVIRONMENT:

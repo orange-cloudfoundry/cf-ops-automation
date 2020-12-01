@@ -12,7 +12,12 @@ inputs:
 outputs:
   - name: result-dir
 run:
-  path: ./scripts-resource/concourse/tasks/bosh_variables/run.rb
+  path: bash
+  args:
+    - -ce
+    - |
+      echo "Bosh CLI info: $(bosh --version)"
+      ./scripts-resource/concourse/tasks/bosh_variables/run.rb
 params:
   BOSH_TARGET:
   BOSH_CLIENT:

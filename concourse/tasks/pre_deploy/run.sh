@@ -2,6 +2,9 @@
 
 set -e
 
+echo "Bosh CLI info: $(bosh --version)"
+echo "CF CLI: $(cf --version)"
+
 CURRENT_DIR=$(pwd)
 OUTPUT_DIR=${OUTPUT_DIR:-${CURRENT_DIR}/generated-files}
 

@@ -34,6 +34,7 @@ run:
       git config --global user.email "$GIT_USER_EMAIL"
       git config --global user.name "$GIT_USER_NAME"
       git clone config-resource output-config-resource
+      echo "Bosh CLI info: $(bosh --version)"
       ruby --version
       scripts-resource/concourse/tasks/bosh_delete_apply/run.rb
       exit_code=$?
