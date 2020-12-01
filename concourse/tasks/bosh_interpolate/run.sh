@@ -12,6 +12,7 @@
 # limitations under the License.
 #
 set -eC
+echo "Bosh CLI version: $(bosh --version)"
 ls -lrt bosh-inputs
 
 VARS_FILES=""

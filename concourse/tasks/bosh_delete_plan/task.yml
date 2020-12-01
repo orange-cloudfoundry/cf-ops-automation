@@ -27,7 +27,10 @@ run:
   path: bash
   args:
     - -ce
-    - ruby --version && scripts-resource/concourse/tasks/bosh_delete_plan/run.rb
+    - |
+      echo "Bosh CLI info: $(bosh --version)"
+      ruby --version
+      scripts-resource/concourse/tasks/bosh_delete_plan/run.rb
 params:
   ROOT_DEPLOYMENT_NAME:
   BOSH_TARGET:

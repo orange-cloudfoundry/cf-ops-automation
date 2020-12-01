@@ -26,6 +26,7 @@ run:
   args:
     - -c
     - |
+      echo "Bosh CLI info: $(bosh --version)"
       find releases-to-upload/ -name "*.tgz" -exec bosh inspect-local-release {} \;
       # --fix is usefull to override existing release with another sha1
       find releases-to-upload/ -name "*.tgz" -exec bosh upload-release --fix {} \;
