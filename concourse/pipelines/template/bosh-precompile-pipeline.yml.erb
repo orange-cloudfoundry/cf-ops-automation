@@ -23,6 +23,9 @@
 
   offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
   offline_boshreleases_enabled = config&.dig('offline-mode', 'boshreleases') && true
+  # precompile_skip_upload = config&.dig('precompile','skip-upload') && true
+  precompile_config = config&.dig('precompile') || {}
+  precompile_skip_upload = precompile_config.fetch('skip-upload', true) && true
 
   jobs = Hash.new {|h,k| h[k]=[]}
 
@@ -532,8 +535,10 @@ jobs:
             enabled: true
             force: true
 
+    <% if offline_boshreleases_enabled && !precompile_skip_upload %>
 
-    <% if offline_boshreleases_enabled %>
+    offline_boshreleases_enabled: <%= offline_boshreleases_enabled %>
+    precompile_skip_upload: <%= precompile_skip_upload %>
   - name: upload-compiled-<%= release %>
     <% jobs["Compiled-releases"] << "upload-compiled-#{release}" %>
     <% jobs["#{release[0]}"] << "upload-compiled-#{release}" %>

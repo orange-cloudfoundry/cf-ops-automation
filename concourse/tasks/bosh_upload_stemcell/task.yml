@@ -27,6 +27,7 @@ run:
     - -c
     - |
       echo "Bosh CLI info: $(bosh --version)"
+      echo "Uploading stemcell:"
       find stemcell/ -name "*.tgz" -exec bosh upload-stemcell {} \;
 params:
   BOSH_ENVIRONMENT:
