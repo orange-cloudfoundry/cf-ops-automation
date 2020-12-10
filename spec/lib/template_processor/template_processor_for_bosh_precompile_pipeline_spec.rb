@@ -81,6 +81,8 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         boshreleases: true
         stemcells: true
         docker-images: false
+      precompile:
+        skip-upload: false
     YAML
     YAML.safe_load(my_config_yaml)
   end
@@ -219,9 +221,13 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         expect(filtered_generated_jobs).to match(expected_compiled_exported_deployments)
       end
 
-      it 'generates upload job for dependencies describe in disabled deployments' do
+      it 'does not generate upload jobs' do
         filtered_generated_jobs = generated_pipeline['jobs'].select { |job| job['name']&.start_with?('upload-compiled') }.flat_map { |job| job['name'] }
-        expect(filtered_generated_jobs).to match(expected_uploaded_deployments)
+        expect(filtered_generated_jobs).to be_empty
+      end
+
+      it 'generates all groups' do
+        expect(generated_pipeline['groups'].flat_map { |group| group['name'] }.sort).to match(groups.flat_map { |group| group['name'] }.reject{ |group_name| group_name.start_with?('compiled-releases')}.sort)
       end
     end
 
@@ -372,12 +378,15 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
 
 
+
     context 'when online boshreleases and offline stemcells are used' do
       let(:loaded_config) do
         my_config_yaml = <<~YAML
           offline-mode:
             stemcells: true
           precompile-mode: false
+          precompile:
+            skip-upload: false
         YAML
         YAML.safe_load(my_config_yaml)
       end
@@ -452,6 +461,8 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
             boshreleases: false
             stemcells: false
             docker-images: false
+          precompile:
+            skip-upload: false
         YAML
         YAML.safe_load(my_config_yaml)
       end
