@@ -413,14 +413,16 @@ jobs:
         STEMCELL_PREFIX: ((stemcell-name-prefix))
         STEMCELL_MAIN_NAME: ((stemcell-main-name))
         STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+        VERSIONS_FILE: templates-resource/<%= root_deployment_name %>/root-deployment.yml
     <% end %>
     <% if !offline_stemcells_enabled || !precompile_pipeline_enabled %>
     - task: download-stemcell
       attempts: 2
+      input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %> }
       output_mapping: { stemcell: ((stemcell-main-name)) }
       file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
       params:
-        STEMCELL_VERSION: ((stemcell.version))
+        VERSIONS_FILE: templates-resource/<%= root_deployment_name %>/root-deployment.yml
         STEMCELL_PREFIX: ((stemcell-name-prefix))
         STEMCELL_MAIN_NAME: ((stemcell-main-name))
         STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
@@ -881,7 +883,6 @@ jobs:
     file: cf-ops-automation/concourse/tasks/resolve_manifest_versions/task.yml
     params:
       STEMCELL_NAME: ((stemcell-main-name))
-      STEMCELL_VERSION: ((stemcell.version))
       STEMCELL_OS: <%= offline_boshreleases_enabled && precompile_pipeline_enabled ? "((s3-compiled-release-os))":"" %>
       VERSIONS_FILE:  templates-resource/<%= root_deployment_name %>/root-deployment.yml
       MANIFEST_YAML_FILE: manifest-dir/interpolated-<%= name %>.yml

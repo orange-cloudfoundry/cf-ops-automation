@@ -172,6 +172,7 @@ jobs:
         STEMCELL_PREFIX: ((stemcell-name-prefix))
         STEMCELL_MAIN_NAME: ((stemcell-main-name))
         STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+        VERSIONS_FILE: templates-resource/empty-depls/root-deployment.yml
 - name: cancel-all-bosh-tasks
   on_failure:
     put: failure-alert
