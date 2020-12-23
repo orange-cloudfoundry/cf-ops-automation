@@ -2,6 +2,7 @@ require 'yaml'
 require 'erb'
 require 'ostruct'
 require 'fileutils'
+require_relative 'pipeline_helpers'
 
 class TemplateProcessor
   attr_reader :root_deployment_name, :config, :context

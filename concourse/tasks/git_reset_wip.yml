@@ -16,8 +16,9 @@ platform: linux
 image_resource:
   type: docker-image
   source:
+    # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
     repository: ((docker-registry-url))governmentpaas/git-ssh
-    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+    tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
 inputs:
   - name: reference-resource
 outputs:

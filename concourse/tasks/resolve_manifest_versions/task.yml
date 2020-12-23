@@ -17,7 +17,7 @@ image_resource:
   type: docker-image
   source:
     repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
-    tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+    tag: bca975d14888e2e587d6df3e2af7c45d94507454
 inputs:
   - name: templates-resource
   - name: manifest-dir

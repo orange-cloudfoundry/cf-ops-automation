@@ -93,7 +93,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))orangecloudfoundry/terraform
-            tag: 0137f362db1fdd482668e899eb7638ff447b0856
+            tag: 10505f812181d02e8be344a943a28a8af24f9e01
         inputs:
           - name: spec-resource
           - name: terraform-tfvars
@@ -149,7 +149,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))library/ruby
-            tag: 2.6.3-slim
+            tag: 2.7.1-slim
         inputs:
           - name: scripts-resource
           - name: state-file-resource

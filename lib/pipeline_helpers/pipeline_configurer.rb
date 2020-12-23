@@ -14,8 +14,9 @@ module PipelineHelpers
 
     def configure_serial_group_strategy
       pool_size = @parallel_execution_limit.get
-      configured_serial_group_strategy = ConfiguredSerialGroupNamingStrategy.new(@options.config, @options.root_deployment_name)
-      configured_serial_group_strategy_class = 'PipelineHelpers::' + configured_serial_group_strategy.get
+      configured_serial_group_strategy = PipelineHelpers::ConfiguredSerialGroupNamingStrategy.new(@options.config, @options.root_deployment_name)
+      configured_serial_group_strategy_class = configured_serial_group_strategy.get
+      configured_serial_group_strategy_class.insert(0, 'PipelineHelpers::') unless Object.const_defined?(configured_serial_group_strategy_class)
       Object.const_get(configured_serial_group_strategy_class).new(pool_size)
     end
   end

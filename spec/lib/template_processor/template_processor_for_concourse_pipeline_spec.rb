@@ -447,7 +447,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                       type: docker-image
                       source:
                         repository: ((docker-registry-url))governmentpaas/git-ssh
-                        tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+                        tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
                     outputs:
                       - name: success-tag
                     run:
@@ -469,7 +469,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                         type: docker-image
                         source:
                           repository: ((docker-registry-url))governmentpaas/git-ssh
-                          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+                          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
                       outputs:
                         - name: success-tag
                       run:

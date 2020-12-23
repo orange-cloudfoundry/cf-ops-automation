@@ -1,4 +1,4 @@
-FROM ruby:2.6.3
+FROM ruby:2.7.1
 
 # 3791e5703717a074429311d2d218c234a270f5b358210b6bb722b684dc1b5153  fly-5.8.1-linux-amd64.tgz
 # 28d59035d87157f3e87496c2350deefebbe050baed3fcc7f968605fa144bb11e  fly-6.4.0-linux-amd64.tgz

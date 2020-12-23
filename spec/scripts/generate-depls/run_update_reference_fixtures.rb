@@ -35,10 +35,12 @@ FileUtils.cp("#{pipelines_dir}/empty-depls-concourse-generated.yml", "#{referenc
 FileUtils.cp("#{pipelines_dir}/empty-depls-bosh-generated.yml", "#{references_dir}/empty-depls.yml", verbose: true)
 FileUtils.cp("#{pipelines_dir}/empty-depls-bosh-precompile-generated.yml", "#{references_dir}/empty-bosh-precompile.yml", verbose: true)
 FileUtils.cp("#{pipelines_dir}/empty-depls-news-generated.yml", "#{references_dir}/empty-news.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/empty-depls-k8s-generated.yml", "#{references_dir}/empty-k8s.yml", verbose: true)
 
 puts "Processing Simple Pipelines"
 FileUtils.cp("#{pipelines_dir}/simple-depls-bosh-generated.yml", "#{references_dir}/simple-depls-bosh-ref.yml", verbose: true)
 FileUtils.cp("#{pipelines_dir}/simple-depls-bosh-precompile-generated.yml", "#{references_dir}/simple-depls-bosh-precompile-ref.yml", verbose: true)
 FileUtils.cp("#{pipelines_dir}/simple-depls-news-generated.yml", "#{references_dir}/simple-depls-news-ref.yml", verbose: true)
+FileUtils.cp("#{pipelines_dir}/simple-depls-k8s-generated.yml", "#{references_dir}/simple-depls-k8s-ref.yml", verbose: true)
 
 FileUtils.rm_rf(pipelines_dir)

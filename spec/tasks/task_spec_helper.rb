@@ -13,11 +13,11 @@ class TaskSpecHelper
   end
 
   def self.orange_default_image_version
-    '0137f362db1fdd482668e899eb7638ff447b0856'
+    '10505f812181d02e8be344a943a28a8af24f9e01'
   end
 
   def self.governmentpaas_default_image_version
-    '2857fdbaea59594c06cf9c6e32027091b67d4767'
+    '19d32c252e328a762f75417fcee7cab6dbac9e97'
   end
 
   def self.curl_image
@@ -49,7 +49,8 @@ class TaskSpecHelper
   end
 
   def self.bosh_cli_v2_image_version
-    governmentpaas_default_image_version
+    # governmentpaas_default_image_version
+    'bca975d14888e2e587d6df3e2af7c45d94507454'
   end
 
   def self.k8s_tools_image
@@ -57,7 +58,7 @@ class TaskSpecHelper
   end
 
   def self.k8s_tools_image_version
-    '9f5d31d753d3560c375c85cff3e11796e8d2cbdf' # we need to bump to ruby 2.7.1 to converge with orange_default_image_version
+    orange_default_image_version
   end
 
   def self.cf_cli_image
@@ -65,7 +66,8 @@ class TaskSpecHelper
   end
 
   def self.cf_cli_image_version
-    governmentpaas_default_image_version
+    # governmentpaas_default_image_version
+    '0cba745d6d0e417423bd651beeda6b896687429a'
   end
 
   def self.spruce_image
@@ -81,7 +83,7 @@ class TaskSpecHelper
   end
 
   def self.ruby_image_version
-    '2.6.3'
+    '2.7.1'
   end
 
   def self.ruby_slim_image_version

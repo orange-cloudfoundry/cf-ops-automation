@@ -100,7 +100,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))library/ruby
-          tag: 2.6.3
+          tag: 2.7.1
       inputs:
         - name: concourse-teams
       outputs:
@@ -190,7 +190,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
         - name: final-control-plane-pipeline
         - name: secrets-full
@@ -257,7 +257,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: bca975d14888e2e587d6df3e2af7c45d94507454
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -352,7 +352,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: concourse-teams
       outputs:
@@ -438,7 +438,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: all-pipelines
       outputs:
