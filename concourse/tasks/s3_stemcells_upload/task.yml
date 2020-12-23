@@ -36,6 +36,27 @@ run:
       fi
       aws configure set default.s3.signature_version $S3_API_VERSION
 
+      cat >script.py <<EOF
+      import yaml
+      import os
+      version_file_env=os.getenv('VERSIONS_FILE')
+      versions_file=open(version_file_env)
+      loaded_file=yaml.load(versions_file, Loader=yaml.FullLoader)
+      version=loaded_file.get('stemcell',{}).get('version')
+      if version:
+        print(version)
+      EOF
+
+      echo "Extracting stemcell version from $VERSIONS_FILE"
+      #STEMCELL_VERSION=$(python3 -c "import yaml;import os;version_file_env=os.getenv('VERSIONS_FILE');versions_file=open(version_file_env);loaded_file=yaml.load(versions_file, Loader=yaml.FullLoader);v=loaded_file.get('stemcell').get('version');print(v)")
+      STEMCELL_VERSION=$(python3 script.py)
+      if [ -z "$STEMCELL_VERSION" ]; then
+        echo "ERROR: failed to extract version from $VERSIONS_FILE"
+        exit 1
+      else
+        echo "Stemcell version found: $STEMCELL_VERSION"
+      fi
+
       STEMCELL_URL="${STEMCELL_BASE_LOCATION}/${STEMCELL_PREFIX}${STEMCELL_MAIN_NAME}?v=$STEMCELL_VERSION"
       S3_NAMESPACE="${STEMCELL_PREFIX}${STEMCELL_MAIN_NAME}"
       TGZ_NAME="${STEMCELL_PREFIX}stemcell-$STEMCELL_VERSION-$STEMCELL_MAIN_NAME.tgz"
@@ -70,3 +91,4 @@ params:
   STEMCELL_PREFIX:
   STEMCELL_MAIN_NAME:
   STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells/
+  VERSIONS_FILE:

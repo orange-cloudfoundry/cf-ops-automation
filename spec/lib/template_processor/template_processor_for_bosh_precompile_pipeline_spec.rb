@@ -482,12 +482,13 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         [{ "task"=>"download-stemcell",
            "attempts"=>2,
            "file"=>"cf-ops-automation/concourse/tasks/download_stemcell/task.yml",
+           "input_mapping"=>{"templates-resource"=>"paas-templates-my-root-depls-limited"},
            "output_mapping"=>{"stemcell"=>"((stemcell-main-name))"},
            "params"=>
                  {"STEMCELL_BASE_LOCATION"=>"https://bosh.io/d/stemcells",
                        "STEMCELL_MAIN_NAME"=>"((stemcell-main-name))",
                        "STEMCELL_PREFIX"=>"((stemcell-name-prefix))",
-                       "STEMCELL_VERSION"=>"((stemcell.version))"}
+                  "VERSIONS_FILE"=>"templates-resource/my-root-depls/root-deployment.yml"}
           },
          {"task"=>"upload-to-director",
          "file"=>"cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml",

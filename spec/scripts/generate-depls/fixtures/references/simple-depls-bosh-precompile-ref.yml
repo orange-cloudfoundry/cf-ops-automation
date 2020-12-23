@@ -219,10 +219,10 @@ jobs:
           SECRET_ACCESS_KEY: ((s3-stemcell-secret-key))
           ENDPOINT: ((s3-stemcell-endpoint))
           SKIP_SSL_VERIFICATION: ((s3-stemcell-skip-ssl-verification))
-          STEMCELL_VERSION: ((stemcell.version))
           STEMCELL_PREFIX: ((stemcell-name-prefix))
           STEMCELL_MAIN_NAME: ((stemcell-main-name))
           STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+          VERSIONS_FILE: templates-resource/simple-depls/root-deployment.yml
   - name: compile-and-export-ntp_boshrelease
     serial: true
     on_failure:
