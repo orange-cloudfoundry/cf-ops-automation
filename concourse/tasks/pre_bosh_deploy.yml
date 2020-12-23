@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source:
     repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-    tag: 0137f362db1fdd482668e899eb7638ff447b0856
+    tag: 10505f812181d02e8be344a943a28a8af24f9e01
 inputs:
   - name: scripts-resource
   - name: template-resource

@@ -83,7 +83,8 @@ describe 'generate_concourse_pipeline_config task' do
   end
 
   context 'Pre-requisite' do
-    let(:task) { YAML.load_file 'concourse/tasks/generate_concourse_pipeline_config/task.yml' }
+    let(:task_name) { File.basename(File.dirname(__FILE__))}
+    let(:task) { YAML.load_file "concourse/tasks/#{task_name}/task.yml" }
 
     it 'uses ruby image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s

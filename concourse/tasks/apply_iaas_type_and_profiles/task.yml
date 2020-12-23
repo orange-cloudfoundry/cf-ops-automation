@@ -3,7 +3,7 @@ image_resource:
   type: docker-image
   source:
     repository: ((docker-registry-url))orangecloudfoundry/k8s-tools
-    tag: 9f5d31d753d3560c375c85cff3e11796e8d2cbdf
+    tag: 10505f812181d02e8be344a943a28a8af24f9e01
 inputs:
   - name: paas-templates-resource
   - name: cf-ops-automation

@@ -130,7 +130,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: concourse-micro
       run:
@@ -147,7 +147,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))library/ruby
-          tag: 2.6.3
+          tag: 2.7.1
       inputs:
       - name: concourse-micro
       outputs:
@@ -200,7 +200,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))library/ruby
-            tag: 2.6.3
+            tag: 2.7.1
         inputs:
           - name: concourse-micro-legacy
         outputs:
@@ -284,7 +284,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/curl-ssl
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: config-resource
       run:
@@ -309,8 +309,9 @@ jobs:
           image_resource:
             type: docker-image
             source:
+              # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
               repository: ((docker-registry-url))governmentpaas/git-ssh
-              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+              tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
           outputs:
             - name: success-tag
           run:
@@ -334,8 +335,9 @@ jobs:
       image_resource:
         type: docker-image
         source:
+          # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
           repository: ((docker-registry-url))governmentpaas/git-ssh
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
         - name: concourse-micro-success
           optional: true
@@ -415,7 +417,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/git-ssh
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: secrets-writer
       outputs:
@@ -461,7 +463,7 @@ jobs:
         type: docker-image
         source:
           repository: ((docker-registry-url))governmentpaas/git-ssh
-          tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: paas-templates-full
       outputs:

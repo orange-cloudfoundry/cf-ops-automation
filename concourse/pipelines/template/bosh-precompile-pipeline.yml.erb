@@ -269,7 +269,7 @@ jobs:
             type: docker-image
             source:
               repository: ((docker-registry-url))governmentpaas/curl-ssl
-              tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+              tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
           inputs:
             - name: repackaged-releases-fallback
           run:
@@ -398,7 +398,7 @@ jobs:
             type: docker-image
             source:
               repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+              tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: stemcell
           outputs:
@@ -429,7 +429,7 @@ jobs:
               type: docker-image
               source:
                 repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
-                tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+                tag: bca975d14888e2e587d6df3e2af7c45d94507454
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -468,7 +468,7 @@ jobs:
             type: docker-image
             source:
               repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+              tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: stemcell
             - name: secrets
@@ -503,7 +503,7 @@ jobs:
             type: docker-image
             source:
               repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+              tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: release
             - name: stemcell
@@ -570,7 +570,7 @@ jobs:
             type: docker-image
             source:
               repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 0137f362db1fdd482668e899eb7638ff447b0856
+              tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: compiled-release
             - name: secrets
@@ -620,7 +620,7 @@ jobs:
           type: docker-image
           source:
             repository: ((docker-registry-url))governmentpaas/curl-ssl
-            tag: 2857fdbaea59594c06cf9c6e32027091b67d4767
+            tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
         outputs:
           - name: result-dir
         run:
