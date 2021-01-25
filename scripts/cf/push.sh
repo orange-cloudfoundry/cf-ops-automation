@@ -57,7 +57,7 @@ fi
 cf target -o "$CF_ORG" -s "$CF_SPACE"
 
 CF_PUSH_OPTIONS="--strategy rolling"
-echo "To override default option, create 'cf-env' file alongside 'pre-cf-push.sh'. And set a shell variable, named 'CF_PUSH_OPTIONS', to expected value - Default: $CF_PUSH_OPTIONS"
+echo "COA TIPS: To override default option, create 'cf-env.sh' file alongside 'pre-cf-push.sh'. And set a shell variable, named 'CF_PUSH_OPTIONS', to expected value - Default: $CF_PUSH_OPTIONS"
 
 if [ -f "$CF_ENV_FILE" ];then
   echo "Overriding CF push options"
@@ -70,7 +70,7 @@ set +e
 cf push -f ${CF_MANIFEST} ${CF_PUSH_OPTIONS} 2>&1 | tee /tmp/cf-push.log
 ret_code=$?
 if [ $ret_code -ne 0 ]; then
-  DISPLAY_LOG_CMD=$(  grep "TIP: use 'cf logs" /tmp/cf-push.log | cut -d\' -f2)
+  DISPLAY_LOG_CMD=$(grep "TIP: use 'cf logs" /tmp/cf-push.log | cut -d\' -f2)
   eval   $DISPLAY_LOG_CMD
   exit   $ret_code
 fi
