@@ -1,6 +1,29 @@
 # Changelog
 
-## [v5.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.3) (2020-10-08)
+## [v5.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.1.0) (2021-01-25)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.0.3...v5.1.0)
+
+**Implemented enhancements:**
+
+- CF7 & Cf app zero downtime deployment  [\#329](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/329)
+- generate bosh compiled release pipeline [\#88](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/88)
+- feature\(minimal-kubernetes-support\): fix pipeline without deployment [\#353](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/353)
+- feature\(minimal-kubernetes-support\): introduce new pipeline to support k8s files [\#352](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/352)
+- Bump docker images [\#337](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/337)
+
+**Closed issues:**
+
+- cf app support lacks ability to define CF CLI environment variables to tune cf push behavior [\#240](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/240)
+
+**Merged pull requests:**
+
+- feature\(tune-cf-push-options\): allow cf push customization [\#357](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/357)
+- pipeline\(bosh|precompile\): fix stemcell version consistency [\#356](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/356)
+-  feature\(bosh-director-pull-mode\): implement for bosh pipelines only [\#355](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/355)
+- CI: bump to concourse 6.7.1 [\#354](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/354)
+
+## [v5.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.0.3) (2020-10-05)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.0.2...v5.0.3)
 
@@ -192,6 +215,7 @@
 
 - cleanup old pipelines [\#271](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/271)
 - upgrade to concourse 5 [\#261](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/261)
+- hardening pipeline retries [\#241](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/241)
 
 ## [v3.6.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.6.0) (2019-06-28)
 
@@ -272,7 +296,6 @@
 
 - pipeline\(bosh\): improvements [\#247](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/247)
 - tasks\(bosh\_update\_\[cloud|runtime\]\_config: fix operator alphabetical order when applied [\#245](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/245)
-- hardening pipeline retries [\#241](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/241)
 - pipelines\(submodules\): fix  [\#237](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/237)
 - 108 add covered pipelines [\#236](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/236)
 - Load submodules from the PaaS Template repo in the BOSH pipeline [\#230](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/230)
@@ -582,6 +605,7 @@
 - task\(terraform\_\*\): switch to custom image with providers and bump TF 0.11.2 [\#73](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/73)
 - task\(generate\_manifest\): supports vars-file without spruce processing [\#71](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/71)
 - pipeline\(depls\): introduces a new staging branch on paas-templates [\#68](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/68)
+- Fix improper input mapping for secrets in tf-pipeline [\#58](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/58)
 
 ## [v1.7.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v1.7.1) (2017-12-08)
 
@@ -615,7 +639,6 @@
 **Merged pull requests:**
 
 - pipeline\(depls\): overrides bosh-deployment-resource v1 to latest [\#59](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/59)
-- Fix improper input mapping for secrets in tf-pipeline [\#58](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/58)
 - Fix Tf pipeline [\#57](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/57)
 - pipeline\(depls\): move stemcell support from bosh.io to S3 [\#55](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/55)
 - task\(execute\_deploy\_script\): ensure deploy.sh is always executable [\#54](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/54)

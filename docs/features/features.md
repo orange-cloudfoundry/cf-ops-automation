@@ -8,6 +8,19 @@ Feature: Cf application deployment support
 
   Scenario: a deployment, or a part, is done using a concourse pipeline
     But needs documentation
+#    Then the following environment variables exist:
+#      | name              | description                                                                     |
+#      | GENERATE_DIR      | directory holding generated files. It's an absolute path.                       |
+#      | BASE_TEMPLATE_DIR | directory where `pre-cf-push.sh` is located. It's an relative path.             |
+#      | SECRETS_DIR       | directory holding secrets related to current deployment. It's an relative path. |
+#      | CF_API_URL        | current application Cloud Foundry API url                                       |
+#      | CF_USERNAME       | current Cloud Foundry application user                                          |
+#      | CF_PASSWORD       | current Cloud Foundry application user password                                 |
+#      | CF_ORG            | current Cloud Foundry application organization                                  |
+#      | CF_SPACE          | current Cloud Foundry application space                                         |
+#      | CUSTOM_SCRIPT_DIR | TODO                                         |
+#      | CF_MANIFEST       | TODO                                         |
+#
 
 Feature: Creating pipelines with the COA engine
   As a paas-template user,
@@ -93,11 +106,11 @@ Feature: Terraform support for root deployment
 
 12 scenarios (10 undefined, 2 passed)
 32 steps (10 skipped, 10 undefined, 12 passed)
-0m2.598s
+0m1.381s
 
 You can implement step definitions for undefined steps with these snippets:
 
-Given("Hello world generated pipelines from reference_dataset") do
+Given('Hello world generated pipelines from reference_dataset') do
   pending # Write code here that turns the phrase above into concrete actions
 end
 

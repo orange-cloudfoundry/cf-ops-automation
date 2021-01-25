@@ -159,10 +159,11 @@ jobs:
         trigger: true
     - task: download-stemcell
       attempts: 2
+      input_mapping: { templates-resource: paas-templates-another-world-root-depls }
       output_mapping: { stemcell: ((stemcell-main-name)) }
       file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
       params:
-        STEMCELL_VERSION: ((stemcell.version))
+        VERSIONS_FILE: templates-resource/another-world-root-depls/root-deployment.yml
         STEMCELL_PREFIX: ((stemcell-name-prefix))
         STEMCELL_MAIN_NAME: ((stemcell-main-name))
         STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells

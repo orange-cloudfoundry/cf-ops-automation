@@ -1,0 +1,314 @@
+
+---
+resource_types:
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+    tag: v1.4.2
+- name: meta
+  type: docker-image
+  source:
+    repository: ((docker-registry-url))olhtbr/metadata-resource
+    tag: 2.0.1
+resources:
+- name: failure-alert
+  icon: slack
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
+- name: secrets-hello-world-root-depls-limited
+  icon: source-branch
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml", "hello-world-root-depls/ci-deployment-overview.yml", "hello-world-root-depls/secrets", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: secrets-full-writer
+  icon: source-pull
+  type: git
+  source:
+    uri: ((secrets-uri))
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-templates-hello-world-root-depls
+  icon: home-analytics
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["shared-config.yml", "meta-inf.yml", "hello-world-root-depls/root-deployment.yml", "hello-world-root-depls/template"]
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
+- name: cf-ops-automation
+  type: git
+  icon: rocket
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+- name: concourse-meta
+  icon: file-document-box-search-outline
+  type: meta
+- name: paas-templates-k8s-sample
+  icon: home-edit
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["hello-world-root-depls/k8s-sample", "hello-world-root-depls/root-deployment.yml"]
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
+- name: secrets-hello-world-root-depls-trigger
+  icon: source-commit
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml", "hello-world-root-depls", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: k8s-configs-repository
+  icon: source-pull
+  type: git
+  source:
+    uri: ((k8s-configs-repository-uri))
+    username: ((k8s-configs-repository-username))
+    password: ((k8s-configs-repository-password))
+    branch: ((k8s-configs-repository-branch))
+    skip_ssl_verification: true
+#- name: paas-templates--versions
+#  icon: home-thermometer
+#  type: git
+#  source:
+#    uri: ((paas-templates-uri))
+#    paths: ["hello-world-root-depls/root-deployment.yml"]
+#    branch: pipeline-current-((paas-templates-branch))
+#    skip_ssl_verification: true
+#- name: paas-templates-full
+#  icon: home-assistant
+#  type: git
+#  source:
+#    uri: ((paas-templates-uri))
+#    branch: pipeline-current-((paas-templates-branch))
+#    skip_ssl_verification: true
+jobs:
+- name: execute-deploy-script
+  serial: true
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+    - in_parallel:
+      - get: secrets-full-writer
+        params: { submodules: none, depth: 0 }
+      - get: secrets-hello-world-root-depls-limited
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get: paas-templates-hello-world-root-depls
+        params: { submodules: none, depth: 0 }
+        trigger: true
+      - get: cf-ops-automation
+        params: { submodules: none, depth: 0 }
+      - get: k8s-configs-repository
+        params: { submodules: none }
+    - task: apply-iaas-type-and-profiles
+      input_mapping:
+        paas-templates-resource: paas-templates-hello-world-root-depls
+      file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
+      params:
+        ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+        COA_DEPLOYMENT_NAME: hooks
+        CONFIG_DIR: k8s
+        IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
+    - task: run-deploy.sh
+      input_mapping: { paas-templates-resource: paas-templates-hello-world-root-depls,  credentials-resource: secrets-full-writer }
+      output_mapping: { result-dir: updated-k8s-repo }
+      file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+      params:
+        COA_DEPLOYMENT_NAME: hello-world-root-depls-k8s
+        CUSTOM_SCRIPT_DIR: paas-templates-resource/hello-world-root-depls/hooks/k8s
+        CREDHUB_SERVER: ((credhub-server))
+        CREDHUB_CLIENT: ((credhub-client))
+        CREDHUB_SECRET: "((credhub-secret))"
+        CREDHUB_CA_CERT: credentials-resource/shared/certs/internal_paas-ca/server-ca.crt
+        IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
+        FILE_EXECUTION_FILTER: "deploy*.sh"
+    - put: k8s-configs-repository
+      attempts: 2
+      get_params: { submodules: none, depth: 0 }
+      params:
+        repository: updated-k8s-repo
+        rebase: true
+- name: deploy-k8s-sample
+  serial: true
+  serial_groups: [concurrent-group-0]
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - in_parallel:
+    - put: concourse-meta
+    - get: k8s-configs-repository
+      params: { submodules: none }
+    - get: secrets-full-writer
+      params: { submodules: none, depth: 0 }
+    - get: cf-ops-automation
+      params: { submodules: none, depth: 0 }
+      trigger: true
+    - get: paas-templates-k8s-sample
+      trigger: true
+      params:
+        submodules: none
+        submodule_recursive: "false" # this must be a string
+        depth: 0
+  - task: generate-k8s-sample-manifest
+    input_mapping:
+      scripts-resource: cf-ops-automation
+      credentials-resource: secrets-full-writer
+      additional-resource: paas-templates-k8s-sample
+    output_mapping: {generated-files: pre-processed-manifest}
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
+    params:
+      SPRUCE_FILE_BASE_PATH: credentials-resource/hello-world-root-depls/k8s-sample/
+      YML_TEMPLATE_DIR: additional-resource/hello-world-root-depls/k8s-sample/k8s-config
+      YML_FILES: |
+          ./credentials-resource/hello-world-root-depls/k8s-sample/secrets/meta.yml
+          ./credentials-resource/hello-world-root-depls/k8s-sample/secrets/secrets.yml
+          ./credentials-resource/shared/secrets.yml
+          ./additional-resource/meta-inf.yml
+      CUSTOM_SCRIPT_DIR: additional-resource/hello-world-root-depls/k8s-sample/k8s-config
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+      COA_DEPLOYMENT_NAME: k8s-sample
+  - task: apply-iaas-type-and-profiles
+    input_mapping:
+      paas-templates-resource: paas-templates-k8s-sample
+    file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
+    params:
+      ROOT_DEPLOYMENT_NAME: hello-world-root-depls
+      COA_DEPLOYMENT_NAME: k8s-sample
+      CONFIG_DIR: k8s-config
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+  - task: execute-pre-deploy-shell
+    input_mapping:
+      paas-templates-resource: paas-templates-resolved
+      credentials-resource: secrets-full-writer
+    output_mapping: {result-dir: ignored-k8s-repo-pre-deploy}
+    file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+    params:
+      COA_DEPLOYMENT_NAME: k8s-sample
+      CUSTOM_SCRIPT_DIR: paas-templates-resource/hello-world-root-depls/k8s-sample/k8s-config
+      CREDHUB_SERVER: ((credhub-server))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: "((credhub-secret))"
+      CREDHUB_CA_CERT: credentials-resource/shared/certs/internal_paas-ca/server-ca.crt
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+      FILE_EXECUTION_FILTER: "pre-deploy*.sh"
+  - task: execute-shell
+    input_mapping:
+      paas-templates-resource: paas-templates-resolved
+      credentials-resource: secrets-full-writer
+    output_mapping: {result-dir: updated-k8s-repo}
+    file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+    params:
+      COA_DEPLOYMENT_NAME: k8s-sample
+      CUSTOM_SCRIPT_DIR: paas-templates-resource/hello-world-root-depls/k8s-sample/k8s-config
+      CREDHUB_SERVER: ((credhub-server))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: "((credhub-secret))"
+      CREDHUB_CA_CERT: credentials-resource/shared/certs/internal_paas-ca/server-ca.crt
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+  - put: k8s-configs-repository
+    attempts: 2
+    get_params: { submodules: none, depth: 0 }
+    params:
+      repository: updated-k8s-repo
+      rebase: true
+  - task: execute-post-deploy-shell
+    input_mapping:
+      paas-templates-resource: paas-templates-resolved
+      credentials-resource: secrets-full-writer
+      k8s-configs-repository: updated-k8s-repo
+    output_mapping: {result-dir: ignored-k8s-repo-post-deploy}
+    file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
+    params:
+      COA_DEPLOYMENT_NAME: k8s-sample
+      CUSTOM_SCRIPT_DIR: paas-templates-resource/hello-world-root-depls/k8s-sample/k8s-config
+      CREDHUB_SERVER: ((credhub-server))
+      CREDHUB_CLIENT: ((credhub-client))
+      CREDHUB_SECRET: "((credhub-secret))"
+      CREDHUB_CA_CERT: credentials-resource/shared/certs/internal_paas-ca/server-ca.crt
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+      FILE_EXECUTION_FILTER: "post-deploy*.sh"
+- name: retrigger-all-jobs
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+  plan:
+  - in_parallel:
+    - get: cf-ops-automation
+      params: { submodules: none, depth: 0 }
+    - get: secrets-hello-world-root-depls-trigger
+      params: { submodules: none, depth: 0 }
+  - task: generate-hello-world-root-depls-pipeline
+    output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
+      outputs:
+        - name: result-dir
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-k8s-sample" >> result-dir/flight-plan
+      params:
+        BUILD_PIPELINE_NAME: hello-world-root-depls-bosh-generated
+  - task: fly-into-concourse
+    input_mapping: {fly-cmd: trigger-hello-world-root-depls-plan}
+    output_mapping: {flight-report: concourse-hello-world-root-depls-trigger-report}
+    file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+    params:
+      ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
+      FLY_USERNAME: ((concourse-hello-world-root-depls-username))
+      FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
+      FLY_TEAM: hello-world-root-depls
+groups:
+- name: hello-world-root-depls
+  jobs:
+    - deploy-k8s-sample
+    - execute-deploy-script
+    - retrigger-all-jobs
+- name: deploy-k
+  jobs:
+    - deploy-k8s-sample
+- name: utils
+  jobs:
+    - execute-deploy-script
+    - retrigger-all-jobs
