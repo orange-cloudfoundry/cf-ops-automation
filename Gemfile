@@ -8,11 +8,11 @@ group :development do
   gem 'docker_registry2', '>= 1.7.0'
   gem 'git', '>=1.7.0'
   gem 'github_changelog_generator', '>= 1.14.3'
-  gem 'mdl', '>=0.4.0'
+  gem 'mdl', '>= 0.9.0'
   gem 'rake', '>=12.2.1'
   gem 'reek', '>= 6.0.1'
   gem 'rubocop', '>= 0.88.0'
-  gem 'rubocop-rspec', '>= 1.38.1'
+  gem 'rubocop-rspec', '>= 1.42.0'
 end
 
 group :test do
