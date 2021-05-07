@@ -33,7 +33,7 @@ resources:
 jobs:
 - name: (( concat "upload-" secrets.release-name "-" secrets.release-version "-boshrelease-to-s3" ))
   plan:
-    - aggregate:
+    - in_parallel:
       - get: (( grab secrets.release-name ))
         attempts: 2
     - task: create-boshrelease-tarball
@@ -62,7 +62,7 @@ jobs:
 
 - name: (( concat "upload-latest-" secrets.release-name "-boshrelease-to-s3" ))
   plan:
-    - aggregate:
+    - in_parallel:
       - get: (( grab secrets.release-name ))
         attempts: 2
         trigger: true

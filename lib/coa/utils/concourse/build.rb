@@ -3,6 +3,7 @@ require_relative '../coa_logger'
 module Coa
   module Utils
     module Concourse
+      require 'json'
       # Concourse's Builds concept: https://concourse-ci.org/builds.html
       class Build
         include Coa::Utils::CoaLogger
@@ -53,10 +54,10 @@ module Coa
         end
 
         def update_status_from_raw_builds(raw_builds)
-          build = raw_builds.split("\n").max_by { |bd| bd.split[2] } # [2] contains an incremental id for the build
-          split_build = build.split
-          self.status = split_build[3]
-        rescue NoMethodError => _ # this would indicate that the build is not listed
+          builds = JSON.parse(raw_builds)
+          latest_build = builds.max_by { |build| build['id'] }
+          self.status = latest_build['status']
+        rescue NoMethodError => _e # this would indicate that the build is not listed
           logger.debug "The build has probably not started yet."
         end
 

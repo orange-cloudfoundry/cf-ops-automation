@@ -4,7 +4,7 @@ require 'coa/utils/concourse'
 describe Coa::Utils::Concourse::Build do
   let(:fly)      { instance_double("Coa::Utils::Concourse::Fly") }
   let(:pipeline) { instance_double("Coa::Utils::Concourse::Pipeline", pause: true) }
-  let(:job)      { instance_double("Coa::Utils::Concourse::Job", fullname: "p1/j1", pipeline: pipeline ) }
+  let(:job)      { instance_double("Coa::Utils::Concourse::Job", fullname: "p1/j1", pipeline: pipeline) }
 
   before do
     stub_const("#{described_class}::MAX_RETRIES", 2)
@@ -17,7 +17,39 @@ describe Coa::Utils::Concourse::Build do
     let(:build) { described_class.new(job: job) }
 
     context "when the jobs has succeeded" do
-      let(:build_response) { "34455  p1/j1  1  succeeded  2018-12-14@09:27:20+0000  n/a  17m33s+" }
+      let(:build_response) do
+        <<~JSON
+          [
+            {
+              "id": 7397,
+              "team_name": "main",
+              "name": "3",
+              "status": "succeeded",
+              "api_url": "/api/v1/builds/7397",
+              "job_name": "j1",
+              "pipeline_id": 18,
+              "pipeline_name": "p1",
+              "created_by": "a_user",
+              "start_time": 1620503583,
+              "end_time": 1620503644
+            },
+            {
+              "id": 7393,
+              "team_name": "main",
+              "name": "2",
+              "status": "succeeded",
+              "api_url": "/api/v1/builds/7393",
+              "job_name": "j1",
+              "pipeline_id": 18,
+              "pipeline_name": "p1",
+              "created_by": "a_user",
+              "start_time": 1620413583,
+              "end_time": 1620413644
+            }
+          ]
+        JSON
+      end
+      # Concourse pre 7.2.0 format: { "34455  p1/j1  1  succeeded  2018-12-14@09:27:20+0000  n/a  17m33s+" }
 
       it "returns a build directly" do
         allow(job).to receive(:raw_builds).and_return(build_response)
@@ -30,7 +62,25 @@ describe Coa::Utils::Concourse::Build do
     end
 
     context "when the job has not succeeded" do
-      let(:build_response) { "34455  p1/j1  1  started  2018-12-14@09:27:20+0000  n/a  17m33s+" }
+      # let(:build_response) { "34455  p1/j1  1  started  2018-12-14@09:27:20+0000  n/a  17m33s+" }
+      let(:build_response) do
+        <<~JSON
+          [
+            {
+              "id": 7397,
+              "team_name": "main",
+              "name": "3",
+              "status": "started",
+              "api_url": "/api/v1/builds/7397",
+              "job_name": "j1",
+              "pipeline_id": 18,
+              "pipeline_name": "p1",
+              "created_by": "a_user",
+              "start_time": 1620403683
+            }
+          ]
+        JSON
+      end
 
       it "retries" do
         allow(job).to receive(:raw_builds).and_return(build_response)
