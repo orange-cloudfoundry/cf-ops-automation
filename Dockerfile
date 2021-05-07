@@ -2,9 +2,10 @@ FROM ruby:2.7.1
 
 # 974ec56d3b43e7ef77fa8fc43b0652a308b39e8d860191f861812e7111af20bc  fly-6.7.2-linux-amd64.tgz
 # 4e0502afbd60d2501c67deef1c640100d2c37ee1c26755138cc24f5d4d527a3a  fly-7.1.0-linux-amd64.tgz
+# f511e497cf12b1e9a0dda124cc7c6619fc2afa24a5b6776bb6746eedba8dfaa9  fly-7.2.0-linux-amd64.tgz
 # https://github.com/concourse/concourse/releases/
-ARG CONCOURSE_VERSION=7.1.0
-ARG CONCOURSE_SHA256=4e0502afbd60d2501c67deef1c640100d2c37ee1c26755138cc24f5d4d527a3a
+ARG CONCOURSE_VERSION=7.2.0
+ARG CONCOURSE_SHA256=f511e497cf12b1e9a0dda124cc7c6619fc2afa24a5b6776bb6746eedba8dfaa9
 
 #
 ARG BOSH_CLI_VERSION=6.4.1
