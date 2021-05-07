@@ -35,7 +35,7 @@ module Coa
         end
 
         def get_raw_job_builds(full_job_name)
-          run "builds --job #{full_job_name}"
+          run "builds --job #{full_job_name} --json"
         end
 
         def set_pipeline(pipeline, options)
