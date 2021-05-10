@@ -55,7 +55,7 @@ module Coa
 
         def update_status_from_raw_builds(raw_builds)
           builds = JSON.parse(raw_builds)
-          build = builds.max { |b1,b2| b1['id'] <=> b2['id'] }
+          build = builds.max_by { |build| build['id'] }
           self.status = build['status']
         rescue NoMethodError => _ # this would indicate that the build is not listed
           logger.debug "The build has probably not started yet."
