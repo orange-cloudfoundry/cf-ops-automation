@@ -1,14 +1,14 @@
 ---
 resource_types:
   - name: slack-notification
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+      repository: cfcommunity/slack-notification-resource
 
   - name: cron-resource
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))cftoolsmiths/cron-resource
+      repository: cftoolsmiths/cron-resource
 
 resources:
 
@@ -90,9 +90,9 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))orangecloudfoundry/terraform
+            repository: orangecloudfoundry/terraform
             tag: 10505f812181d02e8be344a943a28a8af24f9e01
         inputs:
           - name: spec-resource
@@ -146,9 +146,9 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))library/ruby
+            repository: library/ruby
             tag: 2.7.1-slim
         inputs:
           - name: scripts-resource
@@ -190,7 +190,7 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
             repository: ((docker-registry-url))library/alpine
             tag: "3.9"

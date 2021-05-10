@@ -25,7 +25,7 @@ describe 'all tasks' do
                          images[name] << task_filename
                        else
                          [task_filename]
-                        end
+                       end
       end
       images
     end
@@ -55,14 +55,26 @@ describe 'all tasks' do
       expect(docker_images_with_task.keys).to match_array(expected_task_images)
     end
 
-    it 'ensures image resource use custom docker registry' do
+    it 'ensures docker-image based resource use custom docker registry' do
       invalid_tasks = {}
       tasks.each do |task_filename|
         task = YAML.load_file task_filename
         docker_image = task.dig('image_resource', 'source', 'repository').to_s
-        next if docker_image.empty?
+        next if docker_image.empty? || task.dig('image_resource', 'type') != 'docker-image'
 
         invalid_tasks[task_filename] = docker_image unless docker_image.start_with?(DOCKER_REGISTRY_PREFIX)
+      end
+      expect(invalid_tasks).to be_empty
+    end
+
+    it 'ensures registry-image based resource use custom docker registry' do
+      invalid_tasks = {}
+      tasks.each do |task_filename|
+        task = YAML.load_file task_filename
+        docker_image = task.dig('image_resource', 'source', 'repository').to_s
+        next if docker_image.empty? || task.dig('image_resource','type') != 'registry-image'
+
+        invalid_tasks[task_filename] = docker_image if docker_image.start_with?(DOCKER_REGISTRY_PREFIX)
       end
       expect(invalid_tasks).to be_empty
     end

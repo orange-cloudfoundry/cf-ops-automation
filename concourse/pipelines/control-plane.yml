@@ -1,24 +1,24 @@
 ---
 resource_types:
   - name: concourse-5-pipeline
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))concourse/concourse-pipeline-resource
+      repository: concourse/concourse-pipeline-resource
       tag: 5.0.0
   - name: concourse-pipeline
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))orangecloudfoundry/concourse-pipeline-resource
+      repository: orangecloudfoundry/concourse-pipeline-resource
       tag: 6.5.0
   - name: slack-notification
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+      repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
   - name: meta
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))olhtbr/metadata-resource
+      repository: olhtbr/metadata-resource
       tag: 2.0.1
 resources:
 - name: concourse-meta
@@ -127,9 +127,9 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          repository: governmentpaas/curl-ssl
           tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: concourse-micro
@@ -144,9 +144,9 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))library/ruby
+          repository: library/ruby
           tag: 2.7.1
       inputs:
       - name: concourse-micro
@@ -197,9 +197,9 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))library/ruby
+            repository: library/ruby
             tag: 2.7.1
         inputs:
           - name: concourse-micro-legacy
@@ -281,9 +281,9 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))governmentpaas/curl-ssl
+          repository: governmentpaas/curl-ssl
           tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: config-resource
@@ -307,10 +307,10 @@ jobs:
         config: &success_tag
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
               # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
-              repository: ((docker-registry-url))governmentpaas/git-ssh
+              repository: governmentpaas/git-ssh
               tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
           outputs:
             - name: success-tag
@@ -333,10 +333,10 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
           # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
-          repository: ((docker-registry-url))governmentpaas/git-ssh
+          repository: governmentpaas/git-ssh
           tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
         - name: concourse-micro-success
@@ -414,9 +414,9 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))governmentpaas/git-ssh
+          repository: governmentpaas/git-ssh
           tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: secrets-writer
@@ -460,9 +460,9 @@ jobs:
     config:
       platform: linux
       image_resource:
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))governmentpaas/git-ssh
+          repository: governmentpaas/git-ssh
           tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
       inputs:
       - name: paas-templates-full

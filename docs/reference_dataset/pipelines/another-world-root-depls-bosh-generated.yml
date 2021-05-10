@@ -2,24 +2,24 @@
 ---
 resource_types:
 - name: slack-notification
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+    repository: cfcommunity/slack-notification-resource
     tag: v1.4.2
 - name: bosh-deployment-v2
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
+    repository: cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 - name: bosh-errand
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))cfcommunity/bosh2-errand-resource
+    repository: cfcommunity/bosh2-errand-resource
     tag: v0.1.2
 - name: meta
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))olhtbr/metadata-resource
+    repository: olhtbr/metadata-resource
     tag: 2.0.1
 resources:
 - name: concourse-meta
@@ -105,9 +105,9 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            repository: governmentpaas/curl-ssl
             tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
         inputs:
           - name: repackaged-releases-fallback

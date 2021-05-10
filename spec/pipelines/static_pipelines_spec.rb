@@ -45,11 +45,21 @@ describe 'static concourse pipelines spec' do
       expect(resource_types).not_to be_empty
     end
 
-    it 'ensures resource-type use custom docker registry' do
+    it 'ensures docker-image resource-type use custom docker registry' do
       invalid_resource_type = []
-      resource_types.each do |resource_type|
+      resource_types.select {|resource_type| resource_type.dig('type') == 'docker-image' }.each do |resource_type|
         docker_image_raw = resource_type['source']['repository'].to_s
         invalid_resource_type << docker_image_raw unless docker_image_raw.start_with?(DOCKER_REGISTRY_PREFIX)
+      end
+
+      expect(invalid_resource_type).to be_empty
+    end
+
+    it 'ensures registry-image resource-type does not override docker registry' do
+      invalid_resource_type = []
+      resource_types.select {|resource_type| resource_type.dig('type') == 'registry-image' }.each do |resource_type|
+        docker_image_raw = resource_type['source']['repository'].to_s
+        invalid_resource_type << docker_image_raw if docker_image_raw.start_with?(DOCKER_REGISTRY_PREFIX)
       end
 
       expect(invalid_resource_type).to be_empty

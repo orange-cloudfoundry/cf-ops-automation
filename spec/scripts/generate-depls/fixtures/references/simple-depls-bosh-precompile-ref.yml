@@ -2,14 +2,14 @@
 ---
 resource_types:
 - name: slack-notification
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+    repository: cfcommunity/slack-notification-resource
     tag: v1.4.2
 - name: bosh-deployment-v2
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
+    repository: cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 resources:
   - name: failure-alert
@@ -157,9 +157,9 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
-              repository: ((docker-registry-url))governmentpaas/curl-ssl
+              repository: governmentpaas/curl-ssl
               tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
           inputs:
             - name: repackaged-releases-fallback
@@ -248,9 +248,9 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
-              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              repository: orangecloudfoundry/bosh-cli-v2-cf-cli
               tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: stemcell
@@ -278,9 +278,9 @@ jobs:
           config:
             platform: linux
             image_resource:
-              type: docker-image
+              type: registry-image
               source:
-                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                repository: governmentpaas/bosh-cli-v2
                 tag: bca975d14888e2e587d6df3e2af7c45d94507454
             inputs:
               - name: releases-to-upload
@@ -310,9 +310,9 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
-              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              repository: orangecloudfoundry/bosh-cli-v2-cf-cli
               tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: stemcell
@@ -368,9 +368,9 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
-              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              repository: orangecloudfoundry/bosh-cli-v2-cf-cli
               tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: stemcell
@@ -398,9 +398,9 @@ jobs:
           config:
             platform: linux
             image_resource:
-              type: docker-image
+              type: registry-image
               source:
-                repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+                repository: governmentpaas/bosh-cli-v2
                 tag: bca975d14888e2e587d6df3e2af7c45d94507454
             inputs:
               - name: releases-to-upload
@@ -430,9 +430,9 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
-              repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+              repository: orangecloudfoundry/bosh-cli-v2-cf-cli
               tag: 10505f812181d02e8be344a943a28a8af24f9e01
           inputs:
             - name: stemcell
@@ -489,9 +489,9 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))governmentpaas/curl-ssl
+            repository: governmentpaas/curl-ssl
             tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
         outputs:
           - name: result-dir

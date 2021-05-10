@@ -75,9 +75,9 @@ describe 'CfAppsPipelineTemplateProcessing' do
   let(:expected_resource_types) do
     resource_types_yaml = <<~YAML
       - name: slack-notification
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+          repository: cfcommunity/slack-notification-resource
           tag: v1.4.2
     YAML
     YAML.safe_load(resource_types_yaml)

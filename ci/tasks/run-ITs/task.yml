@@ -14,7 +14,7 @@
 
 platform: linux
 image_resource:
-  type: docker-image
+  type: registry-image
   source: {repository: orangecloudfoundry/cf-ops-automation, tag: develop-latest}
 inputs:
   - name: cf-ops-automation

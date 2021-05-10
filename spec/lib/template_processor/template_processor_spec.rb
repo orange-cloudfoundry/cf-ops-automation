@@ -108,7 +108,7 @@ describe TemplateProcessor do
             ---
             resource_types:
             - name: slack-notification
-              type: docker-image
+              type: registry-image
               source:
                 repository: cfcommunity/slack-notification-resource
             resources: []

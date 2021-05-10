@@ -1,15 +1,15 @@
 ---
 resource_types:
   - name: slack-notification
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+      repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
 
   - name: git-branch-heads
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))orangecloudfoundry/git-branch-heads-resource
+      repository: orangecloudfoundry/git-branch-heads-resource
       tag: 1.1.0
 
 resources:
