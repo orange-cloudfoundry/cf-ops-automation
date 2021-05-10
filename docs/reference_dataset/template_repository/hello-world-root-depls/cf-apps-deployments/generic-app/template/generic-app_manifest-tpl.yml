@@ -22,7 +22,7 @@ applications:
 
     meta-inf-support: (( grab meta-inf.status ))
 
-secrets: # you may define temporary keys in this section, that will be pruned upon spruce invocation, ie won't endup in spruce-generated files
+secrets: # you may define temporary keys in this section, that will be pruned upon spruce invocation, ie won't end in spruce-generated files
   path_to_my_file: (( concat "../../../../" $CUSTOM_SCRIPT_DIR "/spruce-file-sample-from-templates.txt" ))
 
 

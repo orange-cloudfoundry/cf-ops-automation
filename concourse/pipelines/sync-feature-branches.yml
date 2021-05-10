@@ -1,15 +1,15 @@
 ---
 resource_types:
   - name: slack-notification
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+      repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
 
   - name: git-branch-heads
-    type: docker-image
+    type: registry-image
     source:
-      repository: ((docker-registry-url))orangecloudfoundry/git-branch-heads-resource
+      repository: orangecloudfoundry/git-branch-heads-resource
       tag: 1.1.0
 
 resources:
@@ -97,9 +97,9 @@ jobs:
     - task: merge-commit
       config:
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))governmentpaas/git-ssh
+            repository: governmentpaas/git-ssh
             tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
         platform: linux
         inputs:
@@ -181,9 +181,9 @@ jobs:
           - task: display-conficts
             config:
               image_resource:
-                type: docker-image
+                type: registry-image
                 source:
-                  repository: ((docker-registry-url))governmentpaas/git-ssh
+                  repository: governmentpaas/git-ssh
                   tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
               platform: linux
               inputs:
@@ -261,9 +261,9 @@ jobs:
           - task: display-conficts
             config:
               image_resource:
-                type: docker-image
+                type: registry-image
                 source:
-                  repository: ((docker-registry-url))governmentpaas/git-ssh
+                  repository: governmentpaas/git-ssh
                   tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
               platform: linux
               inputs:
@@ -321,9 +321,9 @@ jobs:
       config:
         platform: linux
         image_resource:
-          type: docker-image
+          type: registry-image
           source:
-            repository: ((docker-registry-url))governmentpaas/git-ssh
+            repository: governmentpaas/git-ssh
             tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
         inputs:
           - name: reference-resource

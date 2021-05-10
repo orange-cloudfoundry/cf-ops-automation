@@ -76,19 +76,19 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
   let(:expected_resource_types) do
     resource_types_yaml = <<~YAML
       - name: slack-notification
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+          repository: cfcommunity/slack-notification-resource
           tag: v1.4.2
       - name: concourse-5-pipeline
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))concourse/concourse-pipeline-resource
+          repository: concourse/concourse-pipeline-resource
           tag: 5.0.0
       - name: concourse-pipeline
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))orangecloudfoundry/concourse-pipeline-resource
+          repository: orangecloudfoundry/concourse-pipeline-resource
           tag: 6.5.0
     YAML
     YAML.safe_load(resource_types_yaml)
@@ -444,9 +444,9 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                   config:
                     platform: linux
                     image_resource:
-                      type: docker-image
+                      type: registry-image
                       source:
-                        repository: ((docker-registry-url))governmentpaas/git-ssh
+                        repository: governmentpaas/git-ssh
                         tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
                     outputs:
                       - name: success-tag
@@ -466,9 +466,9 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                     config:
                       platform: linux
                       image_resource:
-                        type: docker-image
+                        type: registry-image
                         source:
-                          repository: ((docker-registry-url))governmentpaas/git-ssh
+                          repository: governmentpaas/git-ssh
                           tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
                       outputs:
                         - name: success-tag

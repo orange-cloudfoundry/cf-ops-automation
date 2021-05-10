@@ -14,9 +14,9 @@
 
 platform: linux
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))governmentpaas/curl-ssl
+    repository: governmentpaas/curl-ssl
     tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
 inputs:
 - name: fly-cmd

@@ -1,9 +1,9 @@
 ---
 platform: linux
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))orangecloudfoundry/bosh-cli-v2-cf-cli
+    repository: orangecloudfoundry/bosh-cli-v2-cf-cli
     tag: 10505f812181d02e8be344a943a28a8af24f9e01
 inputs:
   - name: scripts-resource

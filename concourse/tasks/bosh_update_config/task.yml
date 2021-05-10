@@ -14,9 +14,9 @@
 
 platform: linux
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))governmentpaas/bosh-cli-v2
+    repository: governmentpaas/bosh-cli-v2
     tag: bca975d14888e2e587d6df3e2af7c45d94507454
 inputs:
   - name: config-manifest

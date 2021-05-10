@@ -79,24 +79,24 @@ describe 'BoshPipelineTemplateProcessing' do
   let(:expected_resource_types) do
     resource_types_yaml = <<~YAML
       - name: slack-notification
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))cfcommunity/slack-notification-resource
+          repository: cfcommunity/slack-notification-resource
           tag: v1.4.2
       - name: bosh-deployment-v2
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
+          repository: cloudfoundry/bosh-deployment-resource
           tag: v2.12.0
       - name: bosh-errand
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))cfcommunity/bosh2-errand-resource
+          repository: cfcommunity/bosh2-errand-resource
           tag: v0.1.2
       - name: meta
-        type: docker-image
+        type: registry-image
         source:
-          repository: ((docker-registry-url))olhtbr/metadata-resource
+          repository: olhtbr/metadata-resource
           tag: 2.0.1
 
     YAML
