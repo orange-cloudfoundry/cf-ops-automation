@@ -4,6 +4,7 @@ applications:
     path: .
 
     memory: (( grab secrets.an_undefined_key_in_secrets_yml || an_undefined_yml_key.fallback.value || "64M" )) # as no values are defined, spruce will use the 64M default value
+    random-route: true
 
     # By default, spruce home dir is in the configuration repo, in the deployment directory
     #  (ie: credentials-resource/hello-world-root-depls/cf-apps-deployments/generic-app/)
