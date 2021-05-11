@@ -65,7 +65,7 @@ describe Coa::Utils::Bosh::Client do
     end
 
     context "when the stemcell is not uploaded" do
-      let(:command_response) { "bosh-warden-boshlite-ubuntu-xenial-go_agent	70.1*" }
+      let(:command_response) { "bosh-warden-boshlite-ubuntu-bionic-go_agent	70.1*" }
 
       it "returns true" do
         allow(command_runner).to receive(:execute).and_return(command_response)

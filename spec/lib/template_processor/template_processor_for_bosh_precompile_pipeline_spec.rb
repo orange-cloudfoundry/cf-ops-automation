@@ -27,7 +27,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
       bosh-bats:
         status: disabled
         stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          bosh-openstack-kvm-ubuntu-bionic-go_agent:
         bosh-deployment: {}
         releases:
           bosh:
@@ -38,7 +38,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         status: disabled
       shield-expe:
         stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          bosh-openstack-kvm-ubuntu-bionic-go_agent:
         releases:
           cf-routing-release:
             base_location: https://bosh.io/d/github.com/
@@ -57,7 +57,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         status: enabled
       bui:
         stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          bosh-openstack-kvm-ubuntu-bionic-go_agent:
         releases:
           route-registrar-boshrelease:
             base_location: https://bosh.io/d/github.com/
@@ -586,7 +586,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
       deps_yaml = <<~YAML
         shield-expe:
           stemcells:
-            bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
           releases:
             cf-routing-release:
               base_location: https://bosh.io/d/github.com/
@@ -597,7 +597,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
           status: enabled
         bui:
           stemcells:
-            bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
           releases:
             cf-routing-release:
               base_location: https://bosh.io/d/github.com/

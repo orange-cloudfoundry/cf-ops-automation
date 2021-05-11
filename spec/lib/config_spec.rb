@@ -19,7 +19,7 @@ describe Config do
         'iaas' => 'my_custom_iaas',
         'profiles' => [],
         'stemcell' => {
-          'name' => 'bosh-openstack-kvm-ubuntu-xenial-go_agent'
+          'name' => 'bosh-openstack-kvm-ubuntu-bionic-go_agent'
         },
         'concourse' => {
           'parallel_execution_limit' => 5
@@ -55,7 +55,7 @@ describe Config do
           {
             'bosh-options' => { 'cleanup' => true, 'dry_run' => false, 'fix' => true, 'max_in_flight' => 10, 'no_redact' => false, 'recreate' => false, 'skip_drain' => [] },
             'concourse' => {'parallel_execution_limit' => 5 },
-            'iaas' => 'extended', 'profiles' => ['x-profile'], 'stemcell' => { 'name' => 'bosh-openstack-kvm-ubuntu-xenial-go_agent' }
+            'iaas' => 'extended', 'profiles' => ['x-profile'], 'stemcell' => { 'name' => 'bosh-openstack-kvm-ubuntu-bionic-go_agent' }
           },
           'offline-mode' => { 'boshreleases' => false, 'docker-images' => false, 'stemcells' => true },
           :private => true, :shared => true }

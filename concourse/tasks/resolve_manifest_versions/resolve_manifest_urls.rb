@@ -94,7 +94,7 @@ class PrecompileOfflineReleaseUrlResolver < AbstractReleaseUrlResolver
   def resolve(release_name, release_version, release_repository)
     return {} unless valid?
 
-    # Minio download url format for compiled release:  https://private-s3.internal.paas/compiled-releases/minio/minio-2020-06-18T02-23-35Z-ubuntu-xenial-621.89.tgz
+    # Minio download url format for compiled release:  https://private-s3.internal.paas/compiled-releases/minio/minio-2020-06-18T02-23-35Z-ubuntu-bionic-621.89.tgz
     puts "Resolving #{release_name}-#{release_version} using Compiled Offline resolver"
     namespace = release_repository.split('/').first
     resolved_url = "#{download_server_url.delete_suffix('/')}/#{namespace}/#{release_name}-#{release_version}-#{@stemcell_os}-#{@stemcell_version}.tgz"

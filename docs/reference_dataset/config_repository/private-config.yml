@@ -14,7 +14,7 @@
 #    recreate: false # Optional. Recreate all VMs in deployment. Defaults to false.
 #    skip_drain: # Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
 #  stemcell:
-#    name: bosh-openstack-kvm-ubuntu-xenial-go_agent  # Default: bosh-openstack-kvm-ubuntu-xenial-go_agent
+#    name: bosh-openstack-kvm-ubuntu-bionic-go_agent  # Default: bosh-openstack-kvm-ubuntu-bionic-go_agent
 #  concourse:
 #    parallel_execution_limit: 5 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy

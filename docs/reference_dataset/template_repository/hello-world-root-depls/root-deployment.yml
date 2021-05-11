@@ -2,7 +2,7 @@
 name: hello-world-root-depls
 
 stemcell:
-  version: "621.76" # Mandatory
+  version: "1.1" # Mandatory
   sha1: # Optional
 
 releases:

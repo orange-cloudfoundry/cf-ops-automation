@@ -13,4 +13,4 @@ pipeline_vars:
   s3-compiled-release-secret-key: ""
   s3-compiled-release-endpoint: ""
   s3-compiled-release-skip-ssl-verification: false
-  s3-compiled-release-os: ubuntu-xenial
+  s3-compiled-release-os: ubuntu-bionic

@@ -14,7 +14,7 @@ default:
     # recreate: false # Optional. Recreate all VMs in deployment. Defaults to false.
     # skip_drain: # Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
   stemcell:
-    name: 56  # Default: bosh-openstack-kvm-ubuntu-xenial-go_agent
+    name: 56  # Default: bosh-openstack-kvm-ubuntu-bionic-go_agent
   concourse:
     # You can limit job execution per pipeline, static jobs are not affected by this restriction. Only jobs that are
     #  added or removed are limited. You can defined the maximum number of jobs executed in parallel.

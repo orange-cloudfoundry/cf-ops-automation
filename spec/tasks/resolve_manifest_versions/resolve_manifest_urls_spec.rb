@@ -78,7 +78,7 @@ describe ResolveManifestUrls do
       YAML
       YAML.safe_load(yaml_content)
     end
-    let(:stemcell_name) { "my-stemcell-ubuntu-xenial-go_agent" }
+    let(:stemcell_name) { "my-stemcell-ubuntu-bionic-go_agent" }
 
     context "when valid versions in online mode and manifest are provided" do
       let(:download_server_url) { 'https://bosh.io/d/github.com' }

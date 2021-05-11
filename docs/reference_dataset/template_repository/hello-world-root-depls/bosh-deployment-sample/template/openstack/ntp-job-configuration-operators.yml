@@ -17,6 +17,6 @@
           restrict 127.0.0.0 mask 255.0.0.0
           restrict -6 ::1
     vm_type: default
-    stemcell: trusty
+    stemcell: default
     networks:
     - name: concourse-bucc

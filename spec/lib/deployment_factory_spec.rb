@@ -410,7 +410,7 @@ describe DeploymentFactory do
       end
 
       it 'creates an enhanced deployment' do
-        expect(loaded_deployments.first).to have_attributes(name: deployment_name, details: include('stemcells' => { 'bosh-openstack-kvm-ubuntu-xenial-go_agent' => {} }))
+        expect(loaded_deployments.first).to have_attributes(name: deployment_name, details: include('stemcells' => { 'bosh-openstack-kvm-ubuntu-bionic-go_agent' => {} }))
       end
     end
   end
