@@ -1,17 +1,17 @@
 ---
 resource_types:
   - name: slack-notification
-    type: docker-image
+    type: registry-image
     source:
       repository: cfcommunity/slack-notification-resource
 
   - name: pull-request
-    type: docker-image
+    type: registry-image
     source:
       repository: teliaoss/github-pr-resource
 
   - name: meta
-    type: docker-image
+    type: registry-image
     source:
       repository: olhtbr/metadata-resource
       tag: 2.0.1
@@ -35,7 +35,7 @@ resources:
     password: ((dockerhub-password))
     tag: develop-latest
 
-- name: cf-ops-automation-docker-image-PR
+- name: cf-ops-automation-docker-image-pr
   icon: docker
   type: docker-image
   source:
@@ -75,7 +75,7 @@ resources:
     branch: master
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
-- name: PR-develop
+- name: pr-develop
   icon: source-pull
   type: pull-request
   source:
@@ -292,7 +292,7 @@ jobs:
         config: &integration_tests_setup_credhub_pre_requisites_task_config
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
               repository: governmentpaas/bosh-cli-v2
               tag: bca975d14888e2e587d6df3e2af7c45d94507454
@@ -396,7 +396,7 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
               repository: orangecloudfoundry/cf-ops-automation
               tag: develop-latest
@@ -421,7 +421,7 @@ jobs:
               CHANGE_DETECTED_COUNTER=$(git status --porcelain|wc -l)
               if [ ${CHANGE_DETECTED_COUNTER} -gt 0 ]
               then
-                 git commit -m "[ci skip] Living documentation auto-update"
+                 git commit -m "Living documentation auto-update"
               else
                  echo "No change detected, skip commit"
               fi
@@ -467,7 +467,7 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
               repository: orangecloudfoundry/cf-ops-automation
               tag: develop-latest
@@ -512,7 +512,7 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
               repository: orangecloudfoundry/cf-ops-automation
               tag: develop-latest
@@ -561,7 +561,7 @@ jobs:
         params:
           repository: cf-ops-automation
 
-  - name: PullRequests-build-cached-image
+  - name: pull-requests-build-cached-image
     on_failure: &PR_on_failure_alert
       put: slack-alert
       params:
@@ -573,96 +573,96 @@ jobs:
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
     plan:
-      - get: PR-develop
+      - get: pr-develop
         trigger: true
         version: every
-      - put: PR-develop
+      - put: pr-develop
         params:
-          path: PR-develop
+          path: pr-develop
           status: pending
-      - put: cf-ops-automation-docker-image-PR
+      - put: cf-ops-automation-docker-image-pr
         attempts: 5
         get_params: {skip_download: true}
         params:
-          build: PR-develop
-          tag: PR-develop/.git/resource/pr
+          build: pr-develop
+          tag: pr-develop/.git/resource/pr
           tag_prefix: PR-
         on_failure:
-          put: PR-develop
+          put: pr-develop
           params:
-            path: PR-develop
+            path: pr-develop
             status: failure
 
-  - name: PullRequests-UnitTests
+  - name: pull-requests-unit-tests
     on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - in_parallel:
         - put: concourse-meta
-        - get: cf-ops-automation-docker-image-PR
-          passed: [PullRequests-build-cached-image]
+        - get: cf-ops-automation-docker-image-pr
+          passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
-          resource: PR-develop
+          resource: pr-develop
           trigger: true
           version: every
-      - put: PR-develop
+      - put: pr-develop
         params:
           path: cf-ops-automation
           status: pending
       - task: test-pr
         attempts: 2
-        image: cf-ops-automation-docker-image-PR
+        image: cf-ops-automation-docker-image-pr
         timeout: 30m
         config: *unit_tests_config
         params:
           GIT_SHA_CMD: cat .git/resource/head_sha
           GIT_BRANCH_CMD: cat .git/resource/head_name
         on_failure:
-          put: PR-develop
+          put: pr-develop
           params:
-            path: PR-develop
+            path: pr-develop
             status: failure
 
-  - name: PullRequests-AcceptanceTests
+  - name: pull-requests-acceptance-tests
     on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - in_parallel:
-        - get: cf-ops-automation-docker-image-PR
-          passed: [PullRequests-UnitTests]
+        - get: cf-ops-automation-docker-image-pr
+          passed: [pull-requests-unit-tests]
           trigger: true
         - get: cf-ops-automation
-          resource: PR-develop
+          resource: pr-develop
           trigger: true
           version: every
-          passed: [PullRequests-UnitTests]
+          passed: [pull-requests-unit-tests]
       - task: acceptance-test-pr
         attempts: 2
-        image: cf-ops-automation-docker-image-PR
+        image: cf-ops-automation-docker-image-pr
         timeout: 30m
         config: *acceptance_tests_config
         on_failure: &PR_coa_failure
-          put: PR-develop
+          put: pr-develop
           params:
             path: cf-ops-automation
             status: failure
-  - name: PullRequests-IntegrationTests
+  - name: pull-requests-integration-tests
     on_failure: *PR_on_failure_alert
     serial_groups: [integration]
     serial: true
     plan:
       - in_parallel:
-        - get: cf-ops-automation-docker-image-PR
-          passed: [PullRequests-build-cached-image]
+        - get: cf-ops-automation-docker-image-pr
+          passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
-          resource: PR-develop
+          resource: pr-develop
           trigger: true
           version: every
       - task: setup-pre-requisites
         attempts: 1
-        image: cf-ops-automation-docker-image-PR
+        image: cf-ops-automation-docker-image-pr
         config: *integration_tests_setup_pre_requisites_task_config
         on_failure: *PR_coa_failure
         # it is not possible to include it as config param, otherwise we get an deserialization error
@@ -678,19 +678,19 @@ jobs:
         on_failure: *PR_coa_failure
       - task: upload-pipelines
         attempts: 2
-        image: cf-ops-automation-docker-image-PR
+        image: cf-ops-automation-docker-image-pr
         config: *integration_tests_upload-pipelines_task_config
         on_failure: *PR_coa_failure
 
-  - name: PullRequests-Success
+  - name: pull-requests-success
     plan:
       - in_parallel:
         - get: cf-ops-automation
-          resource: PR-develop
+          resource: pr-develop
           trigger: true
           version: every
-          passed: [PullRequests-AcceptanceTests, PullRequests-IntegrationTests]
-      - put: PR-develop
+          passed: [pull-requests-acceptance-tests, pull-requests-integration-tests]
+      - put: pr-develop
         params:
           path: cf-ops-automation
           status: success
@@ -731,7 +731,7 @@ jobs:
         config:
           platform: linux
           image_resource:
-            type: docker-image
+            type: registry-image
             source:
               repository: alpine
           inputs:
@@ -789,7 +789,7 @@ jobs:
       params: {file: version/version}
 
 groups:
-  - name: Overview
+  - name: overview
     jobs:
       - patch
       - minor
@@ -802,15 +802,15 @@ groups:
       - merge-to-master
       - ship-it
       - merge-changelog-to-develop
-      - PullRequests-build-cached-image
-      - PullRequests-UnitTests
-      - PullRequests-AcceptanceTests
-      - PullRequests-IntegrationTests
-      - PullRequests-Success
+      - pull-requests-build-cached-image
+      - pull-requests-unit-tests
+      - pull-requests-acceptance-tests
+      - pull-requests-integration-tests
+      - pull-requests-success
       - run-tests-for-hotfix-branch
       - ship-hotfix
 
-  - name: Releases
+  - name: releases
     jobs:
       - patch
       - minor
@@ -824,15 +824,15 @@ groups:
       - ship-it
       - merge-changelog-to-develop
 
-  - name: Pull-Requests
+  - name: pull-requests
     jobs:
-      - PullRequests-build-cached-image
-      - PullRequests-UnitTests
-      - PullRequests-AcceptanceTests
-      - PullRequests-IntegrationTests
-      - PullRequests-Success
+      - pull-requests-build-cached-image
+      - pull-requests-unit-tests
+      - pull-requests-acceptance-tests
+      - pull-requests-integration-tests
+      - pull-requests-success
 
-  - name: Hotfixes
+  - name: hotfixes
     jobs:
       - build-cached-image
       - run-tests-for-hotfix-branch
