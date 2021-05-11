@@ -22,6 +22,7 @@ inputs:
   - name: templates-resource
 outputs:
   - name: logs-dir
+  - name: stemcell
 run:
   path: sh
   args:
@@ -48,7 +49,6 @@ run:
       EOF
 
       echo "Extracting stemcell version from $VERSIONS_FILE"
-      #STEMCELL_VERSION=$(python3 -c "import yaml;import os;version_file_env=os.getenv('VERSIONS_FILE');versions_file=open(version_file_env);loaded_file=yaml.load(versions_file, Loader=yaml.FullLoader);v=loaded_file.get('stemcell').get('version');print(v)")
       STEMCELL_VERSION=$(python3 script.py)
       if [ -z "$STEMCELL_VERSION" ]; then
         echo "ERROR: failed to extract version from $VERSIONS_FILE"
