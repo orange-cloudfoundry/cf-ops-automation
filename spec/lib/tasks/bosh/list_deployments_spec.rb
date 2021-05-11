@@ -20,40 +20,40 @@ describe Tasks::Bosh::ListDeployments do
                   "Rows": [
                       { "name": "concourse",
                           "release_s": "bosh-dns/1.11.0\nbpm/1.1.5\nconcourse/5.3.0\ngeneric-scripting/2\nhaproxy/9.8.0\nminio/2019-06-27T21-13-50Z\nnode-exporter/4.2.0\nos-conf/21.0.0\npostgres/39\nprometheus/26.1.0\nrouting/0.195.0\nshield/8.5.0\nsyslog/11.6.0\nturbulence/0.10.0+dev.2",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.69",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.69",
                           "team_s": "" },
                       { "name": "credhub-ha",
                           "release_s": "bpm/1.1.5\ncredhub/2.5.6\nhaproxy/9.8.0\nnode-exporter/4.2.0\nos-conf/21.0.0\npostgres/39\nshield/7.0.2\nsyslog/11.6.0\nuaa/74.8.0",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.77",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.77",
                           "team_s": "" },
                       {
                           "name": "dns-recursor",
                           "release_s": "bosh-dns/1.11.0\nbpm/1.1.5\nnode-exporter/4.2.0\nntp/4.2.8p12\nos-conf/21.0.0\nsyslog/11.6.0",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.77",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.77",
                           "team_s": ""
                       },
                       {
                           "name": "docker-bosh-cli",
                           "release_s": "bosh-dns/1.11.0\nbpm/1.1.5\ncron/1.1.3\ndocker/35.3.4\ngeneric-scripting/2\nnode-exporter/4.2.0\nos-conf/21.0.0\nrouting/0.195.0\nsyslog/11.6.0\nweave-scope/0.0.18",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.77",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.77",
                           "team_s": ""
                       },
                       {
                           "name": "gitlab",
                           "release_s": "bosh-dns/1.11.0\nbpm/1.1.5\ndocker/35.3.4\ngeneric-scripting/2\nminio/2019-06-27T21-13-50Z\nnode-exporter/4.2.0\nos-conf/21.0.0\nrouting/0.195.0\nshield/8.5.0\nsyslog/11.6.0\nweave-scope/0.0.18",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.77",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.77",
                           "team_s": ""
                       },
                       {
                           "name": "minio-private-s3",
                           "release_s": "bosh-dns/1.11.0\nbpm/1.1.5\nhaproxy/9.8.0\nminio/2019-06-27T21-13-50Z\nnode-exporter/4.2.0\nos-conf/21.0.0\nrouting/0.195.0\nsyslog/11.6.0\nweave-scope/0.0.18",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.77",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.77",
                           "team_s": ""
                       },
                       {
                           "name": "prometheus-exporter-master",
                           "release_s": "bosh-dns/1.11.0\nbosh-dns-aliases/0.0.3\nbpm/1.1.5\nnode-exporter/4.2.0\nos-conf/21.0.0\nprometheus/26.1.0\nrouting/0.195.0\nsyslog/11.6.0\nweave-scope/0.0.18",
-                          "stemcell_s": "bosh-openstack-kvm-ubuntu-xenial-go_agent/456.77",
+                          "stemcell_s": "bosh-openstack-kvm-ubuntu-bionic-go_agent/456.77",
                           "team_s": ""
                       }
                   ],

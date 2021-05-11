@@ -30,7 +30,7 @@ describe 'BoshPipelineTemplateProcessing' do
         status: disabled
       shield-expe:
         stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          bosh-openstack-kvm-ubuntu-bionic-go_agent:
         releases:
           cf-routing-release:
             base_location: https://bosh.io/d/github.com/
@@ -49,7 +49,7 @@ describe 'BoshPipelineTemplateProcessing' do
         status: enabled
       bui:
         stemcells:
-          bosh-openstack-kvm-ubuntu-xenial-go_agent:
+          bosh-openstack-kvm-ubuntu-bionic-go_agent:
         releases:
           route-registrar-boshrelease:
             base_location: https://bosh.io/d/github.com/
@@ -245,7 +245,7 @@ describe 'BoshPipelineTemplateProcessing' do
         shield_only = <<~YAML
           shield-expe:
             stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
             releases:
               cf-routing-release:
                 base_location: https://bosh.io/d/github.com/
@@ -306,7 +306,7 @@ describe 'BoshPipelineTemplateProcessing' do
         shield_only = <<~YAML
           custom-shield:
             stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
             releases:
               cf-routing-release:
                 base_location: https://bosh.io/d/github.com/
@@ -320,7 +320,7 @@ describe 'BoshPipelineTemplateProcessing' do
             status: enabled
           default-shield:
             stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
             releases:
               cf-routing-release:
                 base_location: https://bosh.io/d/github.com/
@@ -380,7 +380,7 @@ describe 'BoshPipelineTemplateProcessing' do
         shield_only = <<~YAML
           shield-expe:
             stemcells:
-              bosh-openstack-kvm-ubuntu-xenial-go_agent:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
             releases:
               cf-routing-release:
                 base_location: https://bosh.io/d/github.com/
@@ -908,7 +908,7 @@ describe 'BoshPipelineTemplateProcessing' do
       deps_yaml = <<~YAML
         shield-expe:
           stemcells:
-            bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
           releases:
             cf-routing-release:
               base_location: https://bosh.io/d/github.com/
@@ -919,7 +919,7 @@ describe 'BoshPipelineTemplateProcessing' do
           status: enabled
         bui:
           stemcells:
-            bosh-openstack-kvm-ubuntu-xenial-go_agent:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
           releases:
             cf-routing-release:
               base_location: https://bosh.io/d/github.com/

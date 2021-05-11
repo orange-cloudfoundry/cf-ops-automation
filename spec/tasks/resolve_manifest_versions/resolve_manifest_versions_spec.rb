@@ -19,7 +19,7 @@ describe ResolveManifestVersions do
         version: latest
       stemcells:
       - alias: default
-        os: ubuntu-xenial
+        os: ubuntu-bionic
         version: latest
       update:
         canaries: 1
@@ -58,7 +58,7 @@ describe ResolveManifestVersions do
       YAML
       YAML.safe_load(yaml_content)
     end
-    let(:stemcell_name) { "my-stemcell-ubuntu-xenial-go_agent" }
+    let(:stemcell_name) { "my-stemcell-ubuntu-bionic-go_agent" }
 
     context "when no stemcell version is defined" do
       let(:versions) do
@@ -73,8 +73,7 @@ describe ResolveManifestVersions do
       end
 
       it "raises an error" do
-
-        expect{run_process}.to raise_error(RuntimeError, "Missing version for stemcell my-stemcell-ubuntu-xenial-go_agent. Please fix 'root-deployment.yml' or this manifest")
+        expect { run_process }.to raise_error(RuntimeError, "Missing version for stemcell my-stemcell-ubuntu-bionic-go_agent. Please fix 'root-deployment.yml' or this manifest")
       end
     end
 
@@ -89,7 +88,7 @@ describe ResolveManifestVersions do
               version: "1.5.9"
           stemcells:
             - alias: default
-              os: ubuntu-xenial
+              os: ubuntu-bionic
               version: "621.76"
           update:
             canaries: 1
@@ -118,7 +117,7 @@ describe ResolveManifestVersions do
             version: 0.2
           stemcells:
           - alias: default
-            os: ubuntu-xenial
+            os: ubuntu-bionic
             version: 0.3
           update:
             canaries: 1
@@ -139,7 +138,7 @@ describe ResolveManifestVersions do
               version: "1.5.9"
           stemcells:
             - alias: default
-              os: ubuntu-xenial
+              os: ubuntu-bionic
               version: 0.3
           update:
             canaries: 1
@@ -169,7 +168,7 @@ describe ResolveManifestVersions do
             version: 0.2
           stemcells:
           - alias: default
-            os: ubuntu-xenial
+            os: ubuntu-bionic
             version: 0.3
           update:
             canaries: 1
@@ -190,7 +189,7 @@ describe ResolveManifestVersions do
               version: 0.2
           stemcells:
             - alias: default
-              os: ubuntu-xenial
+              os: ubuntu-bionic
               version: 0.3
           update:
             canaries: 1
@@ -232,7 +231,7 @@ describe ResolveManifestVersions do
               version: latest
           stemcells:
             - alias: default
-              os: ubuntu-xenial
+              os: ubuntu-bionic
               version: latest
           update:
             canaries: 1
@@ -265,10 +264,10 @@ describe ResolveManifestVersions do
             version: latest
           stemcells:
           - alias: default
-            os: ubuntu-xenial
+            os: ubuntu-bionic
             version: latest
           - alias: openstack-hws
-            name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+            name: bosh-openstack-kvm-ubuntu-bionic-go_agent
             version: latest
           update:
             canaries: 1
@@ -293,10 +292,10 @@ describe ResolveManifestVersions do
               version: 33.3.3
           stemcells:
             - alias: default
-              os: ubuntu-xenial
+              os: ubuntu-bionic
               version: '621.76'
             - alias: openstack-hws
-              name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+              name: bosh-openstack-kvm-ubuntu-bionic-go_agent
               version: '621.76'
           update:
             canaries: 1
@@ -325,13 +324,13 @@ describe ResolveManifestVersions do
             version: latest
           stemcells:
           - alias: default
-            os: ubuntu-xenial
-            version: latest
-          - alias: default-bionic
             os: ubuntu-bionic
             version: latest
+          - alias: default-xenial
+            os: ubuntu-xenial
+            version: latest
           - alias: openstack-hws
-            name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+            name: bosh-openstack-kvm-ubuntu-bionic-go_agent
             version: latest
           update:
             canaries: 1
@@ -349,13 +348,13 @@ describe ResolveManifestVersions do
               version: 1.5.9
           stemcells:
             - alias: default
-              os: ubuntu-xenial
-              version: '621.76'
-            - alias: default-bionic
               os: ubuntu-bionic
+              version: '621.76'
+            - alias: default-xenial
+              os: ubuntu-xenial
               version: 'latest'
             - alias: openstack-hws
-              name: bosh-openstack-kvm-ubuntu-xenial-go_agent
+              name: bosh-openstack-kvm-ubuntu-bionic-go_agent
               version: '621.76'
           update:
             canaries: 1

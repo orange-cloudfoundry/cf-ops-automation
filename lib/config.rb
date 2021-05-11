@@ -6,7 +6,7 @@ require_relative 'extended_config'
 # Manage configuration shared by root-deployments. A public config file can be overridden by a private config file and
 # an extended configuration (based on environment variables)
 class Config
-  DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-xenial-go_agent'.freeze
+  DEFAULT_STEMCELL = 'bosh-openstack-kvm-ubuntu-bionic-go_agent'.freeze
   DEFAULT_PROFILES = [].freeze
   DEFAULT_STEMCELL_PREFIX = 'bosh'.freeze
   EMPTY_BOSH_OPTIONS = {}.freeze

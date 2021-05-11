@@ -9,8 +9,8 @@ releases: [] # defined in a operators file
 update: {} # defined in a operators file
 
 stemcells:
-- alias: trusty
-  os: ubuntu-xenial
+- alias: default
+  os: ubuntu-bionic
   version: latest
 
 instance_groups:
@@ -19,7 +19,7 @@ instance_groups:
   azs: [z1]
   vm_type: default
   persistent_disk: 0
-  stemcell: trusty
+  stemcell: default
   networks:
   - name: concourse-bucc
   jobs:
