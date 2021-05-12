@@ -1,4 +1,17 @@
 ---
+meta:
+  tasks:
+  - &on_failure_alert
+    put: slack-alert
+    params:
+      channel: ((slack-channel))
+      text: |
+        Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
+        https://github.com/orange-cloudfoundry/cf-ops-automation/commit/$TEXT_FILE_CONTENT
+      text_file: cf-ops-automation/.git/ref
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+
 resource_types:
   - name: slack-notification
     type: registry-image
@@ -112,20 +125,32 @@ resources:
     branch: hotfix
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
+#- name: coa-ci-secrets
+#  type: git
+#  source:
+#    uri: ((coa-ci-secrets-git-uri))
+#    username: ((coa-ci-secrets-git-username))
+#    password: ((coa-ci-secrets-git-password))
+
 jobs:
+#  - name: auto-update-pipeline
+#    serial: true
+#    on_failure: *on_failure_alert
+#    plan:
+#      - in_parallel:
+#        - get: coa-ci-secrets
+#          trigger: true
+#        - get: cf-ops-automation
+#          resource: ci-develop
+#          trigger: true
+#      - set_pipeline: self
+#        file: cf-ops-automation/ci/pipeline.yml
+#        var_files:
+#          - coa-ci-secrets/flexible-engine-env/credentials-fe-int.yml
 
   - name: build-cached-image
     serial: true
-    on_failure: &on_failure_alert
-      put: slack-alert
-      params:
-        channel: ((slack-channel))
-        text: |
-          Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
-          https://github.com/orange-cloudfoundry/cf-ops-automation/commit/$TEXT_FILE_CONTENT
-        text_file: cf-ops-automation/.git/ref
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure_alert
     plan:
     - get: cf-ops-automation
       resource: ci-develop
@@ -623,6 +648,11 @@ jobs:
           params:
             path: pr-develop
             status: failure
+      - put: pr-develop
+        params:
+          path: cf-ops-automation
+          status: success
+          context: unit-test
 
   - name: pull-requests-acceptance-tests
     on_failure: *PR_on_failure_alert
@@ -630,13 +660,12 @@ jobs:
     plan:
       - in_parallel:
         - get: cf-ops-automation-docker-image-pr
-          passed: [pull-requests-unit-tests]
+          passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
           resource: pr-develop
           trigger: true
           version: every
-          passed: [pull-requests-unit-tests]
       - task: acceptance-test-pr
         attempts: 2
         image: cf-ops-automation-docker-image-pr
@@ -647,6 +676,12 @@ jobs:
           params:
             path: cf-ops-automation
             status: failure
+      - put: pr-develop
+        params:
+          path: cf-ops-automation
+          status: success
+          context: acceptance-tests
+
   - name: pull-requests-integration-tests
     on_failure: *PR_on_failure_alert
     serial_groups: [integration]
@@ -681,6 +716,11 @@ jobs:
         image: cf-ops-automation-docker-image-pr
         config: *integration_tests_upload-pipelines_task_config
         on_failure: *PR_coa_failure
+      - put: pr-develop
+        params:
+          path: cf-ops-automation
+          status: success
+          context: integration-tests
 
   - name: pull-requests-success
     plan:
@@ -688,8 +728,8 @@ jobs:
         - get: cf-ops-automation
           resource: pr-develop
           trigger: true
-          version: every
-          passed: [pull-requests-acceptance-tests, pull-requests-integration-tests]
+#          version: every
+          passed: [pull-requests-unit-tests, pull-requests-integration-tests,pull-requests-acceptance-tests]
       - put: pr-develop
         params:
           path: cf-ops-automation
@@ -791,24 +831,7 @@ jobs:
 groups:
   - name: overview
     jobs:
-      - patch
-      - minor
-      - major
-      - build-cached-image
-      - unit-tests
-      - acceptance-tests
-      - integration-tests
-      - update-documentation
-      - merge-to-master
-      - ship-it
-      - merge-changelog-to-develop
-      - pull-requests-build-cached-image
-      - pull-requests-unit-tests
-      - pull-requests-acceptance-tests
-      - pull-requests-integration-tests
-      - pull-requests-success
-      - run-tests-for-hotfix-branch
-      - ship-hotfix
+      - "*"
 
   - name: releases
     jobs:
