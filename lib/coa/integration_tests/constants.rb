@@ -46,10 +46,12 @@ module Coa
         "hello-world-root-depls-bosh-precompile-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
-              "compile-and-export-ntp" => {},
-              "compile-and-export-nginx" => {},
-              "compile-and-export-vault" => {},
-              "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {}
+            "compile-and-export-ntp" => {},
+            "compile-and-export-nginx" => {},
+            "compile-and-export-vault" => {},
+            "upload-stemcell-to-director" => {},
+            "push-boshreleases" => {},
+            "init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls" => {}
           }
         },
         "hello-world-root-depls-bosh-generated" => {
@@ -66,7 +68,7 @@ module Coa
             "recreate-all" => { "trigger" => true },
             "recreate-bosh-deployment-sample" => {},
             "cancel-all-bosh-tasks" => { "trigger" => true },
-            "push-stemcell" => {},
+            "upload-stemcell-to-director" => {},
             "push-boshreleases" => {}
           }
         },

@@ -294,7 +294,12 @@ jobs:
               echo "  slack-proxy:" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-disable: ((slack-disable-it))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-proxy-https-tunnel:" >> prereqs/pipeline-vars-prereqs.yml
+              if [ -z "$INTEGRATION_TEST_PREREQS" ]; then
+                echo "Error \$INTEGRATION_TEST_PREREQS is empty"
+                exit 1
+              fi
               printenv INTEGRATION_TEST_PREREQS > prereqs/integration-test-prereqs.yml
+              #ruby -ryaml -e 'puts YAML.load(ENV["CLOUD_CONFIG_PREREQS"]).to_yaml' > prereqs/cloud-config-prereqs.yml
               cf-ops-automation/ci/scripts/deploy-bosh-releases.rb prereqs/bosh-deployment-manifest-prereqs.yml
               echo "removing 'ntp' release and 'bosh-deployment-sample' deployment"
               bosh delete-deployment --force -d bosh-deployment-sample --non-interactive
@@ -304,9 +309,8 @@ jobs:
               bosh releases
               bosh stemcells
               echo "Setup DONE"
-
         # it is not possible to include it as config param, otherwise we get an deserialization error
-        params:
+        params: &integration_tests_setup_pre_requisites_task_config_params
             INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
             BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
             BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
@@ -701,12 +705,12 @@ jobs:
         config: *integration_tests_setup_pre_requisites_task_config
         on_failure: *PR_coa_failure
         # it is not possible to include it as config param, otherwise we get an deserialization error
-        params:
-          INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
-          BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
-          BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
-          BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
-          BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
+        params: *integration_tests_setup_pre_requisites_task_config_params
+#          INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
+#          BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
+#          BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
+#          BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
+#          BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: *integration_tests_setup_credhub_pre_requisites_task_config

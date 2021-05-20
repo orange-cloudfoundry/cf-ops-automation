@@ -24,7 +24,7 @@ rm -rf "${COA_PREREQS_DIR}"
 mkdir -p "${COA_PREREQS_DIR}"
 
 
-echo "set pipeline $(basename ${TASK_FILE_PATH}) on ${FLY_TARGET}"
+echo "manually execute ITs $(basename "${TASK_FILE_PATH}") on ${FLY_TARGET}"
 "${FLY_CMD}" -t "${FLY_TARGET}" execute  -c "${TASK_FILE_PATH}" \
     -l "${PIPELINE_VARIABLES}" \
     -o coa-logs="${COA_LOGS_DIR}" \

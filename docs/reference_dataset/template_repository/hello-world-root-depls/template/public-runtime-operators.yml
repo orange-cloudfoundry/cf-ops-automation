@@ -1,4 +1,4 @@
 - type: replace
-  path: /orange-runtime-extentions/COA-public?
+  path: /orange-runtime-extentions?/COA-public?
   value:
     enabled: true
