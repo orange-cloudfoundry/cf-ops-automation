@@ -104,19 +104,8 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
   let(:groups) do
     [
       { 'name' => 'my-root-depls',
-        'jobs' =>
-         %w[compile-and-export-bosh
-            compile-and-export-cf-routing-release
-            compile-and-export-haproxy-boshrelease
-            compile-and-export-route-registrar-boshrelease
-            init-concourse-boshrelease-and-stemcell-for-my-root-depls
-            push-boshreleases
-            push-stemcell
-            upload-compiled-bosh
-            upload-compiled-cf-routing-release
-            upload-compiled-haproxy-boshrelease
-            upload-compiled-route-registrar-boshrelease] },
-      { 'name' => 'utils', 'jobs' => %w[init-concourse-boshrelease-and-stemcell-for-my-root-depls push-boshreleases push-stemcell] },
+        'jobs' => %w[*] },
+      { 'name' => 'utils', 'jobs' => %w[init-concourse-boshrelease-and-stemcell-for-my-root-depls push-boshreleases upload-stemcell-to-director upload-stemcell-to-s3] },
       { "name" => "compiled-releases", "jobs" => %w[upload-compiled-bosh upload-compiled-cf-routing-release upload-compiled-haproxy-boshrelease upload-compiled-route-registrar-boshrelease] },
       { "name" => "releases", "jobs" => %w[compile-and-export-bosh compile-and-export-cf-routing-release compile-and-export-haproxy-boshrelease compile-and-export-route-registrar-boshrelease] },
       { "name" => "b", "jobs" => %w[compile-and-export-bosh upload-compiled-bosh] },
@@ -327,7 +316,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         YAML
         YAML.safe_load expected_yaml
       end
-      let(:expected_push_stemcell_tasks) { %w[upload-stemcells] }
+      let(:expected_push_stemcell_to_director_tasks) { %w[upload-to-director] }
       let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases repackage-releases-fallback upload-repackaged-releases upload-to-director check-repackaging-errors] }
 
       it 'generates s3 precompiled resources (ie use precompile bucket)' do
@@ -349,19 +338,26 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         expect(boshrelease_get_version).to all(satisfy { |_k, v| v.nil? })
       end
 
-      it 'generates push-stemcells tasks' do
+      it 'generates upload_stemcell_to_director tasks' do
         push_stemcell_job_tasks = generated_pipeline['jobs']
-                                      .select { |job| job['name'] == "push-stemcell" }
-                                      .flat_map { |job| job['plan'] }
-                                      .flat_map { |step| step['task'] }.compact
-        expect(push_stemcell_job_tasks).to match(expected_push_stemcell_tasks)
+          .select { |job| job['name'] == "upload-stemcell-to-director" }
+          .flat_map { |job| job['plan'] }
+          .flat_map { |step| step['task'] }.compact
+        expect(push_stemcell_job_tasks).to match(expected_push_stemcell_to_director_tasks)
       end
+
+      it 'does not generate step upload-stemcell-to-s3' do
+        s3_job = generated_pipeline['jobs']
+                   .select { |job| job['name'] == "upload-stemcell-to-s3" }
+        expect(s3_job).not_to be_empty
+      end
+
 
       it 'generates push-boshreleases tasks' do
         push_boshreleases_job_tasks = generated_pipeline['jobs']
-                                      .select { |job| job['name'] == "push-boshreleases" }
-                                      .flat_map { |job| job['plan'] }
-                                      .flat_map { |step| step['task'] }.compact
+          .select { |job| job['name'] == "push-boshreleases" }
+          .flat_map { |job| job['plan'] }
+          .flat_map { |step| step['task'] }.compact
         expect(push_boshreleases_job_tasks).to match(expected_push_boshreleases_tasks)
       end
 
@@ -409,7 +405,8 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         YAML.safe_load expected_yaml
       end
 
-      let(:expected_push_stemcell_tasks) { %w[upload-stemcells] }
+      let(:expected_push_stemcell_to_director_tasks) { %w[upload-to-director] }
+      let(:expected_upload_stemcell_to_s3_tasks) { %w[upload-stemcells] }
       let(:expected_push_boshreleases_tasks) { %w[repackage-releases repackage-releases-fallback upload-to-director check-repackaging-errors] }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz' }
 
@@ -420,36 +417,42 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
       it 'generates s3 version using path on get' do
         stemcell_get_step = generated_pipeline['jobs']
-                                .select { |job| job['name'] == "push-stemcell" }
-                                .flat_map { |job| job['plan'] }
-                                .flat_map { |plan| plan['in_parallel'] }
-                                .compact
-                                .select { |resource| resource['get'] == '((stemcell-main-name))' }
+          .select { |job| job['name'] == "push-stemcell" }
+          .flat_map { |job| job['plan'] }
+          .flat_map { |plan| plan['in_parallel'] }
+          .compact
+          .select { |resource| resource['get'] == '((stemcell-main-name))' }
         expect(stemcell_get_step).to be_empty
       end
 
-      it 'generates push-stemcell with stemcell upload to director' do
+      it 'generates upload_stemcell_to_director tasks' do
         push_stemcell_job_tasks = generated_pipeline['jobs']
-                          .select { |job| job['name'] == "push-stemcell" }
-                          .flat_map { |job| job['plan'] }
-                          .flat_map { |step| step['task'] }.compact
-        expect(push_stemcell_job_tasks).to match(expected_push_stemcell_tasks)
+          .select { |job| job['name'] == "upload-stemcell-to-director" }
+          .flat_map { |job| job['plan'] }
+          .flat_map { |step| step['task'] }.compact
+        expect(push_stemcell_job_tasks).to match(expected_push_stemcell_to_director_tasks)
+      end
+
+      it 'does not generate step upload-stemcell-to-s3' do
+        s3_job = generated_pipeline['jobs']
+          .select { |job| job['name'] == "upload-stemcell-to-s3" }
+        expect(s3_job).not_to be_empty
       end
 
       it 'generates push-boshreleases tasks' do
         push_boshreleases_job_tasks = generated_pipeline['jobs']
-                                          .select { |job| job['name'] == "push-boshreleases" }
-                                          .flat_map { |job| job['plan'] }
-                                          .flat_map { |step| step['task'] }.compact
+          .select { |job| job['name'] == "push-boshreleases" }
+          .flat_map { |job| job['plan'] }
+          .flat_map { |step| step['task'] }.compact
         expect(push_boshreleases_job_tasks).to match(expected_push_boshreleases_tasks)
       end
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}' do
         init_args = generated_pipeline['jobs']
-                        .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
-                        .flat_map { |job| job['plan'] }
-                        .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
-                        .flat_map { |task| task['config']['run']['args'] }
+          .select { |job| job['name'] == "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] && step['task'] == "generate-#{root_deployment_name}-flight-plan" }
+          .flat_map { |task| task['config']['run']['args'] }
         expect(init_args[1]).to include(*expected_stemcell_init)
       end
     end
@@ -502,6 +505,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
        }]
       end
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan' }
+      let(:expected_stemcell_get_step) { { "get" => "((stemcell-main-name))", "trigger" => true, "attempts" => 2 } }
 
       it 'generates bosh-io stemcell with pinned version' do
         bosh_io_stemcell = generated_pipeline['resources'].select { |resource| resource['type'] == 'bosh-io-stemcell' }
@@ -510,17 +514,25 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
       it 'generates bosh_io version using path on get' do
         stemcell_get_step = generated_pipeline['jobs']
-          .select { |job| job['name'] == "push-stemcell" }
+          .select { |job| job['name'] == "upload-stemcell-to-director" }
           .flat_map { |job| job['plan'] }
           .flat_map { |plan| plan['in_parallel'] }
           .compact
           .select { |resource| resource['get'] == '((stemcell-main-name))' }
-        expect(stemcell_get_step).to be_empty
+          .first
+        expect(stemcell_get_step).to match(expected_stemcell_get_step)
       end
 
-      it 'generates push-stemcell with stemcell upload to director' do
+      it 'does not generate step upload-stemcell-to-s3' do
+        s3_job = generated_pipeline['jobs']
+          .select { |job| job['name'] == "upload-stemcell-to-s3" }
+        expect(s3_job).to be_empty
+      end
+
+
+      it 'generates step upload-stemcell-to-director' do
         upload_task = generated_pipeline['jobs']
-          .select { |job| job['name'] == "push-stemcell" }
+          .select { |job| job['name'] == "upload-stemcell-to-director" }
           .flat_map { |job| job['plan'] }
           .select { |step| step['task'] }
         expect(upload_task).to match(expected_stemcell_upload_task)

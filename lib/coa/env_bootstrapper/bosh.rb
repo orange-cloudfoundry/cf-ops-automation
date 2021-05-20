@@ -35,7 +35,7 @@ module Coa
       end
 
       def update_cloud_config(cloud_config)
-        raise NoActiveStepConfigError.new('cloud_config', 'update_cloud_config') unless cloud_config
+        raise NoActiveStepConfigError.new('cloud_config', 'update_cloud_config') if cloud_config.to_s.empty?
 
         file = Tempfile.new("cloud-config.yml")
         file.write(cloud_config.to_yaml)

@@ -49,6 +49,16 @@
 %>
 
 ---
+meta:
+  tasks:
+    - &on_failure
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
+
 resource_types:
 - name: slack-notification
   type: registry-image
@@ -269,13 +279,7 @@ resources:
 jobs:
 - name: push-boshreleases
     <% jobs['utils'] << 'push-boshreleases' %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: cf-ops-automation
@@ -377,28 +381,25 @@ jobs:
                 echo "No errors detected"
               fi
 
-- name: push-stemcell
-    <% jobs['utils'] << 'push-stemcell' %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+<% if offline_stemcells_enabled %>
+- name: upload-stemcell-to-s3
+  <% jobs['utils'] << 'upload-stemcell-to-s3' %>
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: cf-ops-automation
+        attempts: 2
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get : secrets-<%= root_deployment_name %>-limited
+        attempts: 2
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: paas-templates-<%= root_deployment_name %>
+        attempts: 2
         params: { submodules: none }
         trigger: true
-    <% if offline_stemcells_enabled %>
-    - task: upload-stemcells
+    - task: s3-upload-stemcells
       attempts: 2
       input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %> }
       file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
@@ -414,8 +415,28 @@ jobs:
         STEMCELL_MAIN_NAME: ((stemcell-main-name))
         STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
         VERSIONS_FILE: templates-resource/<%= root_deployment_name %>/root-deployment.yml
-    <% end %>
+<% end %>
+
+- name: upload-stemcell-to-director
+  <% jobs['utils'] << 'upload-stemcell-to-director' %>
+  on_failure: *on_failure
+  plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          attempts: 2
+          params: { submodules: none }
+          trigger: true
+        - get : secrets-<%= root_deployment_name %>-limited
+          attempts: 2
+          params: { submodules: none }
+        - get: ((stemcell-main-name))
+          trigger: true
+          attempts: 2
     <% if !offline_stemcells_enabled || !precompile_pipeline_enabled %>
+        - get: paas-templates-<%= root_deployment_name %>
+          attempts: 2
+          params: { submodules: none }
+          trigger: true
     - task: download-stemcell
       attempts: 2
       input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %> }
@@ -426,6 +447,7 @@ jobs:
         STEMCELL_PREFIX: ((stemcell-name-prefix))
         STEMCELL_MAIN_NAME: ((stemcell-main-name))
         STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+    <% end %>
 
     - task: upload-to-director
       attempts: 2
@@ -436,18 +458,10 @@ jobs:
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_ENVIRONMENT: ((bosh-target))
         BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
-    <% end %>
-
 
 - name: cancel-all-bosh-tasks
   <% jobs['utils'] << 'cancel-all-bosh-tasks' %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - get: cf-ops-automation
@@ -466,13 +480,7 @@ jobs:
 <% if disabled_deployments.any? %>
 - name: delete-deployments-review
   <% jobs['utils'] << 'delete-deployments-review' %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: cf-ops-automation
@@ -496,13 +504,7 @@ jobs:
 - name: approve-and-delete-disabled-deployments
   <% jobs['utils'] << 'approve-and-delete-disabled-deployments' %>
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: cf-ops-automation
@@ -534,13 +536,7 @@ jobs:
 - name: execute-deploy-script
   <% jobs['utils'] << 'execute-deploy-script' %>
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: secrets-<%= root_deployment_name %>-limited
@@ -567,13 +563,7 @@ jobs:
 - name: cloud-config-and-runtime-config-for-<%= root_deployment_name %>
   <% jobs['utils'] << "cloud-config-and-runtime-config-for-#{root_deployment_name}" %>
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - put: concourse-meta
     - get: secrets-full-writer
@@ -729,19 +719,14 @@ jobs:
   <% jobs["deploy-#{name[0]}"] << "deploy-#{name}" %>
   serial: true
   <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - put: concourse-meta
     - get: secrets-full-writer
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: ((stemcell-main-name))
+      passed: [ upload-stemcell-to-director ]
       trigger: true
       params:
         <%= "tarball: false" unless offline_stemcells_enabled %>
@@ -970,13 +955,7 @@ jobs:
 - name: run-errand-<%= name %>-<%= errand_display_name %>
   <% jobs["deploy-#{name[0]}"] << "run-errand-#{name}-#{errand_display_name}" %>
   serial_groups: [auto-errand-<%= name %>]
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - get: concourse-meta
@@ -996,13 +975,7 @@ jobs:
   <% jobs["deploy-#{name[0]}"] << "run-manual-errand-#{name}-#{errand_display_name}" %>
 
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
         - get: concourse-meta
@@ -1017,13 +990,7 @@ jobs:
 <% if enabled_deployments.any? %>
 - name: retrigger-all-jobs
   <% jobs['utils'] << 'retrigger-all-jobs' %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - get: cf-ops-automation
@@ -1065,13 +1032,7 @@ jobs:
 - name: recreate-all
   <% jobs['recreate'] << 'recreate-all' %>
   <% jobs['utils'] << 'recreate-all' %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   serial_groups: [recreate]
   plan:
   - in_parallel:
@@ -1086,13 +1047,7 @@ jobs:
 - name: recreate-<%= name %>
   <% jobs['recreate'] << "recreate-#{name}" %>
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   serial_groups: [recreate]
   plan:
   - in_parallel:
@@ -1141,13 +1096,7 @@ jobs:
 <% if enabled_deployments.any? %>
 - name: init-concourse-boshrelease-and-stemcell-for-<%= root_deployment_name %>
   <% jobs['utils'] << "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" %>
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - get: cf-ops-automation
@@ -1210,13 +1159,7 @@ jobs:
     <% jobs['terraform'] << 'check-terraform-consistency' %>
   serial: true
   serial_groups: [terraform]
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - get: cf-ops-automation
@@ -1257,13 +1200,7 @@ jobs:
     <% jobs['terraform'] << 'approve-and-enforce-terraform-consistency' %>
   serial: true
   serial_groups: [terraform]
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - put: concourse-meta
@@ -1333,9 +1270,7 @@ jobs:
 groups:
 - name: <%= root_deployment_name.downcase %>
   jobs:
-<% jobs.map {|_, job_names| job_names }.flatten.uniq.sort.each do |job_name| %>
-    - <%= job_name %>
-<% end %>
+    - "*"
 <% jobs.sort.each do |group_name, job_names| %>
 - name: <%= group_name.downcase %>
   jobs:

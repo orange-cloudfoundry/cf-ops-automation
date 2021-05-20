@@ -1,5 +1,14 @@
 
 ---
+meta:
+  tasks:
+    - &on_failure
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
 resource_types:
 - name: slack-notification
   type: registry-image
@@ -115,13 +124,7 @@ resources:
     version: { ref: v((releases.zookeeper_boshrelease.version)) }
 jobs:
   - name: push-boshreleases
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: cf-ops-automation
@@ -190,14 +193,8 @@ jobs:
                   else
                     echo "No errors detected"
                   fi
-  - name: push-stemcell
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+  - name: upload-stemcell-to-s3
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: cf-ops-automation
@@ -223,15 +220,30 @@ jobs:
           STEMCELL_MAIN_NAME: ((stemcell-main-name))
           STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
           VERSIONS_FILE: templates-resource/simple-depls/root-deployment.yml
+  - name: upload-stemcell-to-director
+    on_failure: *on_failure
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: ((stemcell-main-name))
+            trigger: true
+            attempts: 2
+      - task: upload-to-director
+        attempts: 2
+        input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
   - name: compile-and-export-ntp_boshrelease
     serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: ntp_boshrelease
@@ -240,6 +252,7 @@ jobs:
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
+            passed: [ upload-stemcell-to-director ]
             trigger: true
             attempts: 2
       - task: generate-ntp_boshrelease-deployment-manifest
@@ -300,8 +313,6 @@ jobs:
         attempts: 2
         params:
           manifest: final-release-manifest/ntp_boshrelease-deployment.yml
-          stemcells:
-            - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
           cleanup: true
       - task: compile-and-export-ntp_boshrelease
         attempts: 2
@@ -345,13 +356,7 @@ jobs:
             force: true
   - name: compile-and-export-zookeeper_boshrelease
     serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: zookeeper_boshrelease
@@ -360,6 +365,7 @@ jobs:
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
+            passed: [ upload-stemcell-to-director ]
             trigger: true
             attempts: 2
       - task: generate-zookeeper_boshrelease-deployment-manifest
@@ -420,8 +426,6 @@ jobs:
         attempts: 2
         params:
           manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml
-          stemcells:
-            - ((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
           cleanup: true
       - task: compile-and-export-zookeeper_boshrelease
         attempts: 2
@@ -464,13 +468,7 @@ jobs:
             enabled: true
             force: true
   - name: init-concourse-boshrelease-and-stemcell-for-simple-depls
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
     - in_parallel:
         - get: cf-ops-automation
@@ -517,11 +515,7 @@ jobs:
 groups:
   - name: simple-depls
     jobs:
-      - compile-and-export-ntp_boshrelease
-      - compile-and-export-zookeeper_boshrelease
-      - init-concourse-boshrelease-and-stemcell-for-simple-depls
-      - push-boshreleases
-      - push-stemcell
+      - "*"
   - name: "releases"
     jobs:
       - compile-and-export-ntp_boshrelease
@@ -530,7 +524,8 @@ groups:
     jobs:
       - init-concourse-boshrelease-and-stemcell-for-simple-depls
       - push-boshreleases
-      - push-stemcell
+      - upload-stemcell-to-director
+      - upload-stemcell-to-s3
   - name: "n"
     jobs:
       - compile-and-export-ntp_boshrelease
