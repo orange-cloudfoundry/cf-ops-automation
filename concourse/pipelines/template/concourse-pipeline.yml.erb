@@ -81,7 +81,7 @@ resources:
     git_submodules: git_submodules,
     config: concourse_config,
     config_key: 'secrets',
-    defaults: ["#{depls}/#{name}", "shared"])
+    defaults: ["#{depls}/#{name}", "shared", "coa/config"])
   paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
     depls: depls,
     name: name,

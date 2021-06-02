@@ -240,6 +240,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 paths:
                 - "#{root_deployment_name}/#{name}"
                 - 'shared'
+                - 'coa/config'
                 branch: ((secrets-branch))
                 skip_ssl_verification: true
           YAML
