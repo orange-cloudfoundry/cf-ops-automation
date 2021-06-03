@@ -9,7 +9,7 @@ class TaskSpecHelper
   end
 
   def self.alpine_image_version
-    '3.9'
+    '3.13'
   end
 
   def self.orange_default_image_version
