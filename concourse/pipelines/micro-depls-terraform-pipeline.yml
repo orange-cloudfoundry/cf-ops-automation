@@ -5,11 +5,6 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
 
-  - name: cron-resource
-    type: registry-image
-    source:
-      repository: cftoolsmiths/cron-resource
-
   - name: bosh-config
     type: registry-image
     source:
@@ -20,11 +15,12 @@ resources:
 
 - name: at-noon
   icon: calendar-clock
-  type: cron-resource
+  type: time
   source:
-    expression: "0 12 * * 1-5"
+    start: 12:00
+    stop: 13:00
     location: "Europe/Paris"
-    fire_immediately: true
+    days: [ Monday, Tuesday, Wednesday, Thursday, Friday ]
 
 - name: micro-bosh-runtime-config
   type: bosh-config
