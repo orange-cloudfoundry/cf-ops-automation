@@ -189,7 +189,7 @@ jobs:
           type: registry-image
           source:
             repository: ((docker-registry-url))library/alpine
-            tag: "3.9"
+            tag: "3.13"
         inputs:
           - name: reference-resource
           - name: generated-resource
