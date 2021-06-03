@@ -258,6 +258,7 @@ jobs:
         - get: cf-ops-automation-docker-image-develop
           passed: [unit-tests, integration-tests]
           trigger: true
+        - get: version
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
@@ -279,6 +280,26 @@ jobs:
               ruby --version
               bundle --version
               bundle exec cucumber
+      - task: ensure-changelog-is-working
+        image: cf-ops-automation-docker-image-develop
+        config: &changelog_working
+          platform: linux
+          inputs:
+            - name: cf-ops-automation
+            - name: version
+          run:
+            dir: cf-ops-automation
+            path: /bin/bash
+            args:
+              - -ce
+              - |
+                RELEASE_VERSION=$(cat ../version/version)
+                echo "Github changelog generator version: $(bundle exec github_changelog_generator --version)"
+                bundle exec github_changelog_generator --no-author --future-release "v${RELEASE_VERSION}" --unreleased-only --add-sections '{"misc":{"prefix":"**Miscellaneous:**","labels":["chore","CI/Build"]}}'
+                cat CHANGELOG.md
+          params:
+            CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
+
 
   - name: integration-tests
     on_failure: *on_failure_alert
@@ -537,7 +558,7 @@ jobs:
               git clone cf-ops-automation cf-ops-automation-changelog
               cd cf-ops-automation-changelog/
               echo "Github changelog generator version: $(bundle exec github_changelog_generator --version)"
-              bundle exec github_changelog_generator --no-author --future-release "v${RELEASE_VERSION}"
+              bundle exec github_changelog_generator --no-author --future-release "v${RELEASE_VERSION}" --add-sections '{"misc":{"prefix":"**Miscellaneous:**","labels":["chore","CI/Build"]}}'
               mkdir -p docs/features/
               bundle exec cucumber -f html --out docs/features/features.html -f pretty --out docs/features/features.md -f pretty --no-color --no-source
               git add -A
@@ -693,6 +714,7 @@ jobs:
           resource: pr-develop
           trigger: true
           version: every
+        - get: version
       - *coa-pending-pr
       - put: pr-develop
         params:
@@ -704,6 +726,10 @@ jobs:
         image: cf-ops-automation-docker-image-pr
         timeout: 30m
         config: *acceptance_tests_config
+        on_failure: *coa-failure-pr
+      - task: ensure-changelog-is-working
+        image: cf-ops-automation-docker-image-pr
+        config: *changelog_working
         on_failure: *coa-failure-pr
       - put: pr-develop
         params:
