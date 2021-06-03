@@ -11,6 +11,26 @@ meta:
       text_file: cf-ops-automation/.git/ref
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
+  - &coa-failure-pr
+    put: pr-develop
+    params:
+      path: cf-ops-automation
+      status: failure
+  - &coa-pending-pr
+    put: pr-develop
+    params:
+      path: cf-ops-automation
+      status: pending
+  - &pending-pr
+    put: pr-develop
+    params:
+      path: pr-develop
+      status: pending
+  - &failed-pr
+    put: pr-develop
+    params:
+      path: pr-develop
+      status: failure
 
 resource_types:
   - name: slack-notification
@@ -605,10 +625,12 @@ jobs:
       - get: pr-develop
         trigger: true
         version: every
+      - *pending-pr
       - put: pr-develop
         params:
           path: pr-develop
           status: pending
+          context: build-image
       - put: cf-ops-automation-docker-image-pr
         attempts: 5
         get_params: {skip_download: true}
@@ -617,10 +639,12 @@ jobs:
           tag: pr-develop/.git/resource/pr
           tag_prefix: PR-
         on_failure:
-          put: pr-develop
-          params:
-            path: pr-develop
-            status: failure
+          *failed-pr
+      - put: pr-develop
+        params:
+          path: pr-develop
+          status: success
+          context: build-image
 
   - name: pull-requests-unit-tests
     on_failure: *PR_on_failure_alert
@@ -635,10 +659,12 @@ jobs:
           resource: pr-develop
           trigger: true
           version: every
+      - *coa-pending-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
           status: pending
+          context: unit-test
       - task: test-pr
         attempts: 2
         image: cf-ops-automation-docker-image-pr
@@ -648,10 +674,7 @@ jobs:
           GIT_SHA_CMD: cat .git/resource/head_sha
           GIT_BRANCH_CMD: cat .git/resource/head_name
         on_failure:
-          put: pr-develop
-          params:
-            path: pr-develop
-            status: failure
+          *failed-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
@@ -670,16 +693,18 @@ jobs:
           resource: pr-develop
           trigger: true
           version: every
+      - *coa-pending-pr
+      - put: pr-develop
+        params:
+          path: cf-ops-automation
+          status: pending
+          context: acceptance-tests
       - task: acceptance-test-pr
         attempts: 2
         image: cf-ops-automation-docker-image-pr
         timeout: 30m
         config: *acceptance_tests_config
-        on_failure: &PR_coa_failure
-          put: pr-develop
-          params:
-            path: cf-ops-automation
-            status: failure
+        on_failure: *coa-failure-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
@@ -699,11 +724,16 @@ jobs:
           resource: pr-develop
           trigger: true
           version: every
+      - put: pr-develop
+        params:
+          path: cf-ops-automation
+          status: pending
+          context: integration-tests
       - task: setup-pre-requisites
         attempts: 1
         image: cf-ops-automation-docker-image-pr
         config: *integration_tests_setup_pre_requisites_task_config
-        on_failure: *PR_coa_failure
+        on_failure: *coa-failure-pr
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params: *integration_tests_setup_pre_requisites_task_config_params
 #          INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
@@ -714,12 +744,12 @@ jobs:
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: *integration_tests_setup_credhub_pre_requisites_task_config
-        on_failure: *PR_coa_failure
+        on_failure: *coa-failure-pr
       - task: upload-pipelines
         attempts: 2
         image: cf-ops-automation-docker-image-pr
         config: *integration_tests_upload-pipelines_task_config
-        on_failure: *PR_coa_failure
+        on_failure: *coa-failure-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
