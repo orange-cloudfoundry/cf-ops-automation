@@ -16,12 +16,11 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 
-- name: weekday-morning
+- name: each-6-h-on-weekday
   icon: calendar-clock
   type: time
   source:
-    start: 08:00
-    stop: 09:00
+    interval: 6h
     days: [ Monday, Tuesday, Wednesday, Thursday, Friday ]
     location: "Europe/Paris"
 
@@ -55,7 +54,7 @@ jobs:
   serial: true
   plan:
   - in_parallel:
-    - get: weekday-morning
+    - get: each-6-h-on-weekday
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none}
