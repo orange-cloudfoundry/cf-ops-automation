@@ -6,12 +6,6 @@ resource_types:
       repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
 
-  - name: cron-resource
-    type: registry-image
-    source:
-      repository: cftoolsmiths/cron-resource
-      # use latest as no other recent tag available
-
 resources:
 - name: failure-alert
   icon: slack
@@ -24,11 +18,12 @@ resources:
 
 - name: weekday-morning
   icon: calendar-clock
-  type: cron-resource
+  type: time
   source:
-    expression: 30 8 * * 1-5
+    start: 08:00
+    stop: 09:00
+    days: [ Monday, Tuesday, Wednesday, Thursday, Friday ]
     location: "Europe/Paris"
-    fire_immediately: true
 
 - name: secrets-full
   icon: source-pull

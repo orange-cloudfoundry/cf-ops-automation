@@ -6,11 +6,6 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
-  - name: cron-resource
-    type: registry-image
-    source:
-      repository: cftoolsmiths/cron-resource
-      # use latest as no other recent tag available
 resources:
 jobs:
 - name: this-is-an-empty-pipeline

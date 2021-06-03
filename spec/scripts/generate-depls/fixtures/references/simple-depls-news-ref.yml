@@ -6,11 +6,6 @@ resource_types:
     source:
       repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
-  - name: cron-resource
-    type: registry-image
-    source:
-      repository: cftoolsmiths/cron-resource
-      # use latest as no other recent tag available
 resources:
 - name: failure-alert
   icon: slack
@@ -43,13 +38,12 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
-- name: monday-morning
+- name: monday
   icon: calendar-clock
-  type: cron-resource
+  type: time
   source:
-    expression: 30 8 * * 1
+    days: [ Monday ]
     location: "Europe/Paris"
-    fire_immediately: true
 - name: ntp_boshrelease
   icon: github-circle
   type: github-release
@@ -76,7 +70,7 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-      - get: monday-morning
+      - get: monday
         trigger: true
       - get: ntp_boshrelease
         attempts: 2
@@ -133,7 +127,7 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-      - get: monday-morning
+      - get: monday
         trigger: true
       - get: zookeeper_boshrelease
         attempts: 2

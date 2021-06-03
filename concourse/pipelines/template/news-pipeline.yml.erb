@@ -30,12 +30,6 @@ resource_types:
       repository: cfcommunity/slack-notification-resource
       tag: v1.4.2
 
-  - name: cron-resource
-    type: registry-image
-    source:
-      repository: cftoolsmiths/cron-resource
-      # use latest as no other recent tag available
-
 resources:
 <% if enabled_deployments.any? %>
   <% if uniq_releases.any? %>
@@ -74,13 +68,12 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-- name: monday-morning
+- name: monday
   icon: calendar-clock
-  type: cron-resource
+  type: time
   source:
-    expression: 30 8 * * 1
+    days: [ Monday ]
     location: "Europe/Paris"
-    fire_immediately: true
   <% end %>
 <% end %>
 
@@ -119,7 +112,7 @@ jobs:
       username: Concourse
   plan:
     - in_parallel:
-      - get: monday-morning
+      - get: monday
         trigger: true
       - get: <%= release %>
         attempts: 2
