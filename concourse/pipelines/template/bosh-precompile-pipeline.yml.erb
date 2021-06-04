@@ -273,7 +273,7 @@ jobs:
             type: registry-image
             source:
               repository: governmentpaas/curl-ssl
-              tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
+              tag: f4817cce4038ac072c06507ca9d255392489d967
           inputs:
             - name: repackaged-releases-fallback
           run:
@@ -407,7 +407,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 10505f812181d02e8be344a943a28a8af24f9e01
+              tag: 8d4bfff7a4aff1d88caff6bd5b78e2d34981d4f1
           inputs:
             - name: stemcell
           outputs:
@@ -438,7 +438,7 @@ jobs:
               type: registry-image
               source:
                 repository: governmentpaas/bosh-cli-v2
-                tag: bca975d14888e2e587d6df3e2af7c45d94507454
+                tag: f4817cce4038ac072c06507ca9d255392489d967
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -471,7 +471,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 10505f812181d02e8be344a943a28a8af24f9e01
+              tag: 8d4bfff7a4aff1d88caff6bd5b78e2d34981d4f1
           inputs:
             - name: stemcell
             - name: secrets
@@ -506,7 +506,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 10505f812181d02e8be344a943a28a8af24f9e01
+              tag: 8d4bfff7a4aff1d88caff6bd5b78e2d34981d4f1
           inputs:
             - name: release
             - name: stemcell
@@ -567,7 +567,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 10505f812181d02e8be344a943a28a8af24f9e01
+              tag: 8d4bfff7a4aff1d88caff6bd5b78e2d34981d4f1
           inputs:
             - name: compiled-release
             - name: secrets
@@ -611,7 +611,7 @@ jobs:
           type: registry-image
           source:
             repository: governmentpaas/curl-ssl
-            tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
+            tag: f4817cce4038ac072c06507ca9d255392489d967
         outputs:
           - name: result-dir
         run:
