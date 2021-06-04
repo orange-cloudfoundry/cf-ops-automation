@@ -69,7 +69,7 @@ class OfflineReleaseUrlResolver < AbstractReleaseUrlResolver
     puts "Resolving #{release_name}-#{release_version} using Offline resolver"
     namespace = release_repository.split('/').first
     resolved_url = "#{download_server_url.delete_suffix('/')}/#{namespace}/#{release_name}-#{release_version}.tgz"
-    { 'url' => resolved_url }
+    { 'url' => resolved_url, 'sha1' => '' }
   end
 
   def valid?
@@ -98,7 +98,7 @@ class PrecompileOfflineReleaseUrlResolver < AbstractReleaseUrlResolver
     puts "Resolving #{release_name}-#{release_version} using Compiled Offline resolver"
     namespace = release_repository.split('/').first
     resolved_url = "#{download_server_url.delete_suffix('/')}/#{namespace}/#{release_name}-#{release_version}-#{@stemcell_os}-#{@stemcell_version}.tgz"
-    { 'url' => resolved_url, 'stemcell' => { 'os' => @stemcell_os, 'version' => @stemcell_version }, 'exported_from' => [{ 'os' => @stemcell_os, 'version' => @stemcell_version }] }
+    { 'url' => resolved_url, 'sha1' => '', 'stemcell' => { 'os' => @stemcell_os, 'version' => @stemcell_version }, 'exported_from' => [{ 'os' => @stemcell_os, 'version' => @stemcell_version }] }
   end
 
   def valid?

@@ -65,6 +65,7 @@ describe PrecompileOfflineReleaseUrlResolver do
         {
           'url' => "https://private-s3.internal.paas/compiled-releases/minio-org/minio-2.0-my-os-0.0.7.tgz",
           'exported_from' => [{ 'os' => 'my-os', 'version' => '0.0.7' }],
+          'sha1' => '',
           'stemcell' => { 'os' => 'my-os', 'version' => '0.0.7' }
         }
       end
@@ -148,7 +149,8 @@ describe OfflineReleaseUrlResolver do
     context 'when valid ' do
       let(:expected) do
         {
-            'url' => "https://private-s3.internal.paas/releases/minio-org/minio-2.0.tgz"
+            'url' => "https://private-s3.internal.paas/releases/minio-org/minio-2.0.tgz",
+            'sha1' => ''
         }
       end
 
