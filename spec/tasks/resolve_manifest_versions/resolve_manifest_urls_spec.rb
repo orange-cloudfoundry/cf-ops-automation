@@ -124,9 +124,11 @@ describe ResolveManifestUrls do
             - name: generic-scripting
               url: "https://public-releases.com/my-bucket/orange-cloudfoundry/generic-scripting-3.tgz"
               version: "3"
+              sha1: ''
             - name: bosh-dns-aliases
               version: "1.5.9"
               url: "https://public-releases.com/my-bucket/cloudfoundry/bosh-dns-aliases-1.5.9.tgz"
+              sha1: ''
           stemcells:
             - alias: default
               os: my-os
