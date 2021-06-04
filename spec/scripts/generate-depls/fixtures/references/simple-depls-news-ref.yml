@@ -88,7 +88,7 @@ jobs:
           type: registry-image
           source:
             repository: governmentpaas/curl-ssl
-            tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
+            tag: f4817cce4038ac072c06507ca9d255392489d967
         inputs:
           - name: boshrelease
         outputs:
@@ -145,7 +145,7 @@ jobs:
           type: registry-image
           source:
             repository: governmentpaas/curl-ssl
-            tag: 19d32c252e328a762f75417fcee7cab6dbac9e97
+            tag: f4817cce4038ac072c06507ca9d255392489d967
         inputs:
           - name: boshrelease
         outputs:
