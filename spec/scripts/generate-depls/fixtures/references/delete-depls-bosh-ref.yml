@@ -448,24 +448,10 @@ jobs:
             params:
               repository: updated-cpi-config
               rebase: true
-- name: recreate-all
-  on_failure: *on_failure
-  serial_groups: [recreate]
-  plan:
-  - in_parallel:
-     - get: secrets-delete-depls-limited
-       params: { submodules: none, depth: 0 }
-     - get: paas-templates-delete-depls
-       params: { submodules: none, depth: 0 }
-     - get: cf-ops-automation
-       params: { submodules: none, depth: 0 }
 groups:
 - name: delete-depls
   jobs:
     - "*"
-- name: recreate
-  jobs:
-    - recreate-all
 - name: utils
   jobs:
     - approve-and-delete-disabled-deployments
@@ -474,6 +460,5 @@ groups:
     - delete-deployments-review
     - execute-deploy-script
     - push-boshreleases
-    - recreate-all
     - upload-stemcell-to-director
     - upload-stemcell-to-s3
