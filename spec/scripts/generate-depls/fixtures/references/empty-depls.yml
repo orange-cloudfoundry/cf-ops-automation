@@ -382,30 +382,15 @@ jobs:
             params:
               repository: updated-cpi-config
               rebase: true
-- name: recreate-all
-  on_failure: *on_failure
-  serial_groups: [recreate]
-  plan:
-  - in_parallel:
-     - get: secrets-empty-depls-limited
-       params: { submodules: none, depth: 0 }
-     - get: paas-templates-empty-depls
-       params: { submodules: none, depth: 0 }
-     - get: cf-ops-automation
-       params: { submodules: none, depth: 0 }
 groups:
 - name: empty-depls
   jobs:
     - "*"
-- name: recreate
-  jobs:
-    - recreate-all
 - name: utils
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-empty-depls
     - execute-deploy-script
     - push-boshreleases
-    - recreate-all
     - upload-stemcell-to-director
     - upload-stemcell-to-s3

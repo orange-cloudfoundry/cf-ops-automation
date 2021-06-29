@@ -108,8 +108,6 @@ describe 'BoshPipelineTemplateProcessing' do
         'jobs' => [ '*' ]},
       { 'name' => 'deploy-b', 'jobs' => ['deploy-bui'] },
       { 'name' => 'deploy-s', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe-automated-smoke-tests', 'run-errand-shield-expe-import', 'run-manual-errand-shield-expe-manual-import', 'run-manual-errand-shield-expe-my-smoke-tests' ] },
-      { 'name' => 'recreate',
-        'jobs' => ['recreate-all', 'recreate-bui', 'recreate-shield-expe'] },
       { 'name' => 'utils',
         'jobs' =>
         ['approve-and-delete-disabled-deployments',
@@ -119,7 +117,6 @@ describe 'BoshPipelineTemplateProcessing' do
          'execute-deploy-script',
          'init-concourse-boshrelease-and-stemcell-for-my-root-depls',
          'push-boshreleases',
-         'recreate-all',
          'retrigger-all-jobs',
          'upload-stemcell-to-director',
          'upload-stemcell-to-s3'] }

@@ -65,8 +65,6 @@ module Coa
             "deploy-bosh-deployment-sample" => {},
             "check-terraform-consistency" => {},
             "approve-and-enforce-terraform-consistency" => { "trigger" => true },
-            "recreate-all" => { "trigger" => true },
-            "recreate-bosh-deployment-sample" => {},
             "cancel-all-bosh-tasks" => { "trigger" => true },
             "upload-stemcell-to-director" => {},
             "push-boshreleases" => {}
