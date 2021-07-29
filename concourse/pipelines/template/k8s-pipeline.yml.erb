@@ -28,6 +28,7 @@
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
 
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-k8s-generated")
 %>
@@ -223,7 +224,7 @@ jobs:
         FILE_EXECUTION_FILTER: "deploy*.sh"
 
     - put: k8s-configs-repository
-      attempts: 2
+      attempts: <%= concourse_retry[:push] %>
       get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       params:
         repository: updated-k8s-repo
@@ -341,7 +342,7 @@ jobs:
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
   - put: k8s-configs-repository
-    attempts: 2
+    attempts: <%= concourse_retry[:push] %>
     get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     params:
       repository: updated-k8s-repo

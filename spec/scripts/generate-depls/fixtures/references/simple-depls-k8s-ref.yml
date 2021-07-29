@@ -136,7 +136,7 @@ jobs:
         PROFILES: ((profiles))
         FILE_EXECUTION_FILTER: "deploy*.sh"
     - put: k8s-configs-repository
-      attempts: 2
+      attempts: 6
       get_params: { submodules: none, depth: 0 }
       params:
         repository: updated-k8s-repo
@@ -228,7 +228,7 @@ jobs:
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
   - put: k8s-configs-repository
-    attempts: 2
+    attempts: 6
     get_params: { submodules: none, depth: 0 }
     params:
       repository: updated-k8s-repo

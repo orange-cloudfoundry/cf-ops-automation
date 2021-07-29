@@ -161,19 +161,19 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        attempts: 2
+        attempts: 4
         params: { submodules: none, depth: 0 }
         trigger: true
       - get : secrets-delete-depls-limited
-        attempts: 2
+        attempts: 4
         params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-delete-depls
-        attempts: 2
+        attempts: 4
         params: { submodules: none }
         trigger: true
     - task: s3-upload-stemcells
-      attempts: 2
+      attempts: 3
       input_mapping: { templates-resource: paas-templates-delete-depls }
       file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
       params:
@@ -193,17 +193,17 @@ jobs:
   plan:
     - in_parallel:
         - get: cf-ops-automation
-          attempts: 2
+          attempts: 4
           params: { submodules: none }
           trigger: true
         - get : secrets-delete-depls-limited
-          attempts: 2
+          attempts: 4
           params: { submodules: none }
         - get: ((stemcell-main-name))
           trigger: true
-          attempts: 2
+          attempts: 4
     - task: upload-to-director
-      attempts: 2
+      attempts: 3
       input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-delete-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
       params:
@@ -335,7 +335,7 @@ jobs:
         PROFILES: ((profiles))
     - in_parallel:
       - task: update-cloud-config-for-delete-depls
-        attempts: 2
+        attempts: 3
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-delete-depls-limited}
         output_mapping: {deployed-config: deployed-cloud-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -373,7 +373,7 @@ jobs:
               repository: updated-cloud-config
               rebase: true
       - task: update-runtime-config-for-delete-depls
-        attempts: 2
+        attempts: 3
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-delete-depls-limited}
         output_mapping: {deployed-config: deployed-runtime-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -411,7 +411,7 @@ jobs:
               repository: updated-runtime-config
               rebase: true
       - task: update-cpi-config-for-delete-depls
-        attempts: 2
+        attempts: 3
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-delete-depls-limited}
         output_mapping: {deployed-config: deployed-cpi-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml

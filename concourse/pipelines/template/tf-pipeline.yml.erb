@@ -5,6 +5,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
 %>
 ---
 resource_types:

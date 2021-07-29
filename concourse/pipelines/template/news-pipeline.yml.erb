@@ -21,6 +21,7 @@
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
 %>
 ---
 resource_types:
@@ -115,7 +116,7 @@ jobs:
       - get: monday
         trigger: true
       - get: <%= release %>
-        attempts: 2
+        attempts: <%= concourse_retry[:pull] %>
         params: {tarball: false}
       - get: paas-templates-full
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }

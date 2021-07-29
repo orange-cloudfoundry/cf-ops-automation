@@ -18,6 +18,17 @@ class Config
   DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT = 5
   CONFIG_GIT_KEY = 'git'.freeze
   CONFIG_SHALLOW_CLONE_DEPTH_KEY = 'shallow-clone-depth'.freeze
+  CONFIG_RETRY_KEY = 'retry'.freeze
+  CONFIG_PULL_KEY = 'pull'.freeze
+  CONFIG_TASK_KEY = 'task'.freeze
+  DEFAULT_CONFIG_RETRY_TASK_LIMIT = 2
+  DEFAULT_CONFIG_RETRY_PULL_LIMIT = 2
+  DEFAULT_CONFIG_RETRY_PUSH_LIMIT = 2
+  DEFAULT_CONFIG_RETRY_BOSH_PUSH_LIMIT = DEFAULT_CONFIG_RETRY_PUSH_LIMIT
+  CONFIG_PUSH_KEY = 'push'.freeze
+  CONFIG_BOSH_PUSH_KEY = 'bosh-push'.freeze
+  DEFAULT_RETRY = { CONFIG_TASK_KEY => DEFAULT_CONFIG_RETRY_TASK_LIMIT,CONFIG_PULL_KEY => DEFAULT_CONFIG_RETRY_PULL_LIMIT, CONFIG_PUSH_KEY => DEFAULT_CONFIG_RETRY_PUSH_LIMIT, CONFIG_BOSH_PUSH_KEY => DEFAULT_CONFIG_RETRY_BOSH_PUSH_LIMIT }
+
   attr_reader :loaded_config
 
   def initialize(public_yaml_location = '', private_yaml_location = '', extended_config = ExtendedConfigBuilder.new.build)
@@ -39,7 +50,8 @@ class Config
         CONFIG_CONCOURSE_KEY => { CONFIG_PARALLEL_EXECUTION_LIMIT_KEY => DEFAULT_CONFIG_PARALLEL_EXECUTION_LIMIT },
         CONFIG_BOSH_OPTIONS_KEY => {
           'cleanup' => true, 'no_redact' => false, 'dry_run' => false, 'fix' => false, 'recreate' => false, 'max_in_flight' => nil, 'skip_drain' => []
-        }
+        },
+        CONFIG_RETRY_KEY => DEFAULT_RETRY
       }
     }.deep_merge(@extended_config.default_format)
   end

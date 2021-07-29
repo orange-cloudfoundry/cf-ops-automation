@@ -1,16 +1,26 @@
 module PipelineHelpers
   # this class configures some generation options instead of doing it in pipeline templates
   class PipelineConfigurer
-    attr_reader :serial_group_strategy, :parallel_execution_limit, :git_shallow_clone_depth
+    attr_reader :serial_group_strategy, :parallel_execution_limit, :git_shallow_clone_depth, :concourse_retry
 
     def initialize(options)
       @options = options
       @parallel_execution_limit = ConfiguredParallelExecutionLimit.new(options.config, options.root_deployment_name)
       @serial_group_strategy = configure_serial_group_strategy
       @git_shallow_clone_depth = ConfiguredGitShallowCloneDepth.new(options.config, options.root_deployment_name)
+      @concourse_retry = configure_concourse_retry
     end
 
     private
+
+    def configure_concourse_retry
+      {
+        task: ConfiguredRetryTask.new(@options.config, @options.root_deployment_name).get,
+        push: ConfiguredRetryPush.new(@options.config, @options.root_deployment_name).get,
+        pull: ConfiguredRetryPull.new(@options.config, @options.root_deployment_name).get,
+        bosh_push: ConfiguredRetryBoshPush.new(@options.config, @options.root_deployment_name).get
+      }
+    end
 
     def configure_serial_group_strategy
       pool_size = @parallel_execution_limit.get

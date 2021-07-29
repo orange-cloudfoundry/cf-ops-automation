@@ -21,6 +21,12 @@ describe Config do
         'stemcell' => {
           'name' => 'bosh-openstack-kvm-ubuntu-bionic-go_agent'
         },
+        'retry' => {
+          'task' => 2,
+          'bosh-push' => 2,
+          'pull' => 2,
+          'push' => 2
+        },
         'concourse' => {
           'parallel_execution_limit' => 5
         }
@@ -48,14 +54,15 @@ describe Config do
 
       let(:shared_config_result) { { 'default' => { 'iaas' => 'shared', 'profiles' => %w[shared-profile], 'bosh-options' => { 'fix' => true } }, shared: true } }
       let(:private_config_result) { { 'default' => { 'iaas' => 'private', 'profiles' => %w[private-profile], 'bosh-options' => { 'max_in_flight' => 10 } }, private: true } }
-      let(:extended_config_result) { { 'default' => { 'iaas' => 'extended', 'profiles' => %w[x-profile] } } }
+      let(:extended_config_result) { { 'default' => { 'iaas' => 'extended', 'profiles' => %w[x-profile], 'retry' => { 'bosh-push' => 1 } } } }
       let(:extended_config) { instance_double(ExtendedConfig) }
       let(:expected_loaded_config) do
         { 'default' =>
           {
             'bosh-options' => { 'cleanup' => true, 'dry_run' => false, 'fix' => true, 'max_in_flight' => 10, 'no_redact' => false, 'recreate' => false, 'skip_drain' => [] },
             'concourse' => {'parallel_execution_limit' => 5 },
-            'iaas' => 'extended', 'profiles' => ['x-profile'], 'stemcell' => { 'name' => 'bosh-openstack-kvm-ubuntu-bionic-go_agent' }
+            'iaas' => 'extended', 'profiles' => ['x-profile'], 'stemcell' => { 'name' => 'bosh-openstack-kvm-ubuntu-bionic-go_agent' },
+            'retry'=> { 'task' => 2, 'bosh-push'=> 1, 'pull'=> 2, 'push'=> 2 }
           },
           'offline-mode' => { 'boshreleases' => false, 'docker-images' => false, 'stemcells' => true },
           :private => true, :shared => true }

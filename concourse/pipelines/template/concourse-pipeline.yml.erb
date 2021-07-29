@@ -6,6 +6,7 @@
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
 %>
 ---
 resource_types:
@@ -136,15 +137,15 @@ jobs:
     - get: paas-templates-<%= name %>
       <% current_git_submodule = git_submodules[depls][name] if git_submodules[depls] %>
       params: { submodules: <%= current_git_submodule || 'none' %>, depth: <%= current_git_submodule ? 0 : git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: true
     - get: secrets-<%= name %>
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: false
 
   - task: spruce-processing-<%= name %>

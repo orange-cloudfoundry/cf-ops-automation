@@ -1,5 +1,5 @@
 module PipelineHelpers
-  # this class looks for ParallelExecutionLimit
+  # this class looks for GitShallowCloneDepth
   class ConfiguredGitShallowCloneDepth < ConfigGetter
     NO_SHALLOW_CLONE = 0
     def default_value
