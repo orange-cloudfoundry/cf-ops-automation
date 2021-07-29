@@ -235,19 +235,19 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        attempts: 2
+        attempts: 4
         params: { submodules: none, depth: 0 }
         trigger: true
       - get : secrets-simple-depls-limited
-        attempts: 2
+        attempts: 4
         params: { submodules: none, depth: 0 }
         trigger: true
       - get: paas-templates-simple-depls
-        attempts: 2
+        attempts: 4
         params: { submodules: none }
         trigger: true
     - task: s3-upload-stemcells
-      attempts: 2
+      attempts: 3
       input_mapping: { templates-resource: paas-templates-simple-depls }
       file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
       params:
@@ -267,17 +267,17 @@ jobs:
   plan:
     - in_parallel:
         - get: cf-ops-automation
-          attempts: 2
+          attempts: 4
           params: { submodules: none }
           trigger: true
         - get : secrets-simple-depls-limited
-          attempts: 2
+          attempts: 4
           params: { submodules: none }
         - get: ((stemcell-main-name))
           trigger: true
-          attempts: 2
+          attempts: 4
     - task: upload-to-director
-      attempts: 2
+      attempts: 3
       input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-simple-depls-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
       params:
@@ -358,7 +358,7 @@ jobs:
         PROFILES: ((profiles))
     - in_parallel:
       - task: update-cloud-config-for-simple-depls
-        attempts: 2
+        attempts: 3
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
         output_mapping: {deployed-config: deployed-cloud-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -396,7 +396,7 @@ jobs:
               repository: updated-cloud-config
               rebase: true
       - task: update-runtime-config-for-simple-depls
-        attempts: 2
+        attempts: 3
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
         output_mapping: {deployed-config: deployed-runtime-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -434,7 +434,7 @@ jobs:
               repository: updated-runtime-config
               rebase: true
       - task: update-cpi-config-for-simple-depls
-        attempts: 2
+        attempts: 3
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-simple-depls-limited}
         output_mapping: {deployed-config: deployed-cpi-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -484,7 +484,7 @@ jobs:
       passed: [ upload-stemcell-to-director ]
       trigger: true
       params:
-      attempts: 2
+      attempts: 4
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
@@ -492,7 +492,7 @@ jobs:
       trigger: true
       params:
         tarball: false
-      attempts: 2
+      attempts: 4
     - get: secrets-ntp-with-scan
       params: { submodules: none, depth: 0 }
       trigger: true
@@ -610,7 +610,7 @@ jobs:
       OFFLINE_MODE_ENABLED: false
       PRECOMPILE_MODE_ENABLED: true
   - put: ntp-with-scan-deployment
-    attempts: 2
+    attempts: 5
     on_failure:
       do:
         - task: update-ntp-with-scan-files
@@ -663,7 +663,7 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "ntp-with-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
-    attempts: 2
+    attempts: 6
     get_params: { submodules: none, depth: 0 }
     params:
       repository: updated-ntp-with-scan-secrets
@@ -692,7 +692,7 @@ jobs:
       passed: [ upload-stemcell-to-director ]
       trigger: true
       params:
-      attempts: 2
+      attempts: 4
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
@@ -700,7 +700,7 @@ jobs:
       trigger: true
       params:
         tarball: false
-      attempts: 2
+      attempts: 4
     - get: paas-templates-zookeeper-without-scan
       trigger: true
       params:
@@ -815,7 +815,7 @@ jobs:
       OFFLINE_MODE_ENABLED: false
       PRECOMPILE_MODE_ENABLED: true
   - put: zookeeper-without-scan-deployment
-    attempts: 2
+    attempts: 5
     on_failure:
       do:
         - task: update-zookeeper-without-scan-files
@@ -868,7 +868,7 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "zookeeper-without-scan generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
-    attempts: 2
+    attempts: 6
     get_params: { submodules: none, depth: 0 }
     params:
       repository: updated-zookeeper-without-scan-secrets
@@ -927,14 +927,14 @@ jobs:
   - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
-      attempts: 2
+      attempts: 4
 #      trigger: true
     - get: secrets-simple-depls-trigger
       params: { submodules: none, depth: 0 }
-      attempts: 2
+      attempts: 4
     - get: paas-templates-simple-depls-versions
       params: { submodules: none, depth: 0 }
-      attempts: 2
+      attempts: 4
       trigger: true
   - task: generate-simple-depls-flight-plan
     output_mapping: {result-dir: init-simple-depls-plan}

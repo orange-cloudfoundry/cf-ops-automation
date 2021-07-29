@@ -31,6 +31,7 @@
 
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
+  concourse_retry = configurer.concourse_retry
 
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated") || root_deployment_name
 
@@ -258,7 +259,7 @@ jobs:
       <% end %>
       - task: upload-to-director
         # this is required to manage runtime config bosh release upload
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
         file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
         params:
@@ -318,7 +319,7 @@ jobs:
             params: { submodules: none }
             trigger: true
       - task: upload-stemcells
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %>-limited }
         file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
         params:
@@ -347,13 +348,13 @@ jobs:
             params: { submodules: none }
           - get: ((stemcell-main-name))
             trigger: true
-            attempts: 2
+            attempts: <%= concourse_retry[:pull] %>
     <% unless offline_stemcells_enabled %>
           - get: paas-templates-<%= root_deployment_name %>-limited
             params: { submodules: none }
             trigger: true
       - task: download-stemcell
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %>-limited }
         output_mapping: { stemcell: ((stemcell-main-name)) }
         file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
@@ -364,7 +365,7 @@ jobs:
           STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
     <% end %>
       - task: upload-to-director
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-full-writer }
         file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
         params:
@@ -385,13 +386,13 @@ jobs:
       - in_parallel:
           - get: <%= release %>
             trigger: true
-            attempts: 2
+            attempts: <%= concourse_retry[:pull] %>
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
             passed: [ upload-stemcell-to-director ]
             trigger: true
-            attempts: 2
+            attempts: <%= concourse_retry[:pull] %>
       - task: generate-<%= release %>-deployment-manifest
         <%
         manifest = {'name' => "#{release}-deployment", 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
@@ -430,7 +431,7 @@ jobs:
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
-          attempts: 2
+          attempts: <%= concourse_retry[:task] %>
           input_mapping: { releases-to-upload: <%= release %>, config-resource: secrets-full-writer }
           config:
             platform: linux
@@ -456,13 +457,13 @@ jobs:
             BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
 
       - put: <%= release %>-deployment
-        attempts: 2
+        attempts: <%= concourse_retry[:bosh_push] %>
         params:
           manifest: final-release-manifest/<%= release %>-deployment.yml
           cleanup: true
 
       - task: compile-and-export-<%= release %>
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
         output_mapping: {exported-release: <%= release %>-exported-release}
         config:
@@ -497,7 +498,7 @@ jobs:
             RELEASE_VERSION: ((releases.<%= release %>.version))
     <% if offline_boshreleases_enabled %>
       - task: generate-<%= release %>-name
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: {release: <%= release %>-exported-release, stemcell: ((stemcell-main-name))}
         output_mapping: {result-dir: compiled-<%= release %>}
         config:
@@ -526,7 +527,7 @@ jobs:
 
                 cp release/*.tgz result-dir/"${RELEASE_NAME}-${RELEASE_VERSION}-${STEMCELL_OS}-${STEMCELL_VERSION}.tgz"
       - put: compiled-<%= release %>
-        attempts: 2
+        attempts: <%= concourse_retry[:push] %>
         params:
           file: compiled-<%= release %>/*.tgz
           acl: public-read
@@ -550,16 +551,16 @@ jobs:
       - in_parallel:
         - get: cf-ops-automation
           params: { submodules: none}
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
           #trigger: true
         - get: secrets-full-writer
           params: { submodules: none}
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
         - get: compiled-<%= release %>
           trigger: true
         - get: ((stemcell-main-name))
       - task: upload-<%= release %>
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: {secrets: secrets-full-writer, compiled-release: compiled-<%= release %>}
         config:
           platform: linux
@@ -594,14 +595,14 @@ jobs:
     - in_parallel:
         - get: cf-ops-automation
           params: { submodules: none}
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
           #trigger: true
         - get: secrets-<%= root_deployment_name %>-trigger
           params: { submodules: none}
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
         - get: paas-templates-<%= root_deployment_name %>-versions
           params: { submodules: none}
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
           trigger: true
     - task: generate-<%= root_deployment_name %>-flight-plan
       output_mapping: {result-dir: init-<%= root_deployment_name %>-plan}

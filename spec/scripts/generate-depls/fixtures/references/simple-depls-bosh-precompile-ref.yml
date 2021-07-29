@@ -148,7 +148,7 @@ jobs:
         file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
       - task: upload-to-director
         # this is required to manage runtime config bosh release upload
-        attempts: 2
+        attempts: 3
         input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
         file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
         params:
@@ -206,7 +206,7 @@ jobs:
             params: { submodules: none }
             trigger: true
       - task: upload-stemcells
-        attempts: 2
+        attempts: 3
         input_mapping: { templates-resource: paas-templates-simple-depls-limited }
         file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
         params:
@@ -231,9 +231,9 @@ jobs:
             params: { submodules: none }
           - get: ((stemcell-main-name))
             trigger: true
-            attempts: 2
+            attempts: 4
       - task: upload-to-director
-        attempts: 2
+        attempts: 3
         input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-full-writer }
         file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
         params:
@@ -248,13 +248,13 @@ jobs:
       - in_parallel:
           - get: ntp_boshrelease
             trigger: true
-            attempts: 2
+            attempts: 4
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
             passed: [ upload-stemcell-to-director ]
             trigger: true
-            attempts: 2
+            attempts: 4
       - task: generate-ntp_boshrelease-deployment-manifest
         input_mapping: {stemcell: ((stemcell-main-name))}
         output_mapping: {generated-files: final-release-manifest}
@@ -286,7 +286,7 @@ jobs:
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
-          attempts: 2
+          attempts: 3
           input_mapping: { releases-to-upload: ntp_boshrelease, config-resource: secrets-full-writer }
           config:
             platform: linux
@@ -310,12 +310,12 @@ jobs:
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
       - put: ntp_boshrelease-deployment
-        attempts: 2
+        attempts: 5
         params:
           manifest: final-release-manifest/ntp_boshrelease-deployment.yml
           cleanup: true
       - task: compile-and-export-ntp_boshrelease
-        attempts: 2
+        attempts: 3
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
         output_mapping: {exported-release: ntp_boshrelease-exported-release}
         config:
@@ -361,13 +361,13 @@ jobs:
       - in_parallel:
           - get: zookeeper_boshrelease
             trigger: true
-            attempts: 2
+            attempts: 4
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
             passed: [ upload-stemcell-to-director ]
             trigger: true
-            attempts: 2
+            attempts: 4
       - task: generate-zookeeper_boshrelease-deployment-manifest
         input_mapping: {stemcell: ((stemcell-main-name))}
         output_mapping: {generated-files: final-release-manifest}
@@ -399,7 +399,7 @@ jobs:
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
-          attempts: 2
+          attempts: 3
           input_mapping: { releases-to-upload: zookeeper_boshrelease, config-resource: secrets-full-writer }
           config:
             platform: linux
@@ -423,12 +423,12 @@ jobs:
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
       - put: zookeeper_boshrelease-deployment
-        attempts: 2
+        attempts: 5
         params:
           manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml
           cleanup: true
       - task: compile-and-export-zookeeper_boshrelease
-        attempts: 2
+        attempts: 3
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
         output_mapping: {exported-release: zookeeper_boshrelease-exported-release}
         config:
@@ -473,14 +473,14 @@ jobs:
     - in_parallel:
         - get: cf-ops-automation
           params: { submodules: none}
-          attempts: 2
+          attempts: 4
           #trigger: true
         - get: secrets-simple-depls-trigger
           params: { submodules: none}
-          attempts: 2
+          attempts: 4
         - get: paas-templates-simple-depls-versions
           params: { submodules: none}
-          attempts: 2
+          attempts: 4
           trigger: true
     - task: generate-simple-depls-flight-plan
       output_mapping: {result-dir: init-simple-depls-plan}

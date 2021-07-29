@@ -5,6 +5,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
 %>
 ---
 resource_types:
@@ -87,15 +88,15 @@ jobs:
     - put: concourse-meta
     - get: paas-templates-<%= depls %>
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: true
     - get: secrets-<%= depls %>-for-pipeline
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: true
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: true
 
   - task: generate-<%= depls %>-pipelines
@@ -172,7 +173,7 @@ jobs:
       COMMIT_MESSAGE: "Generated pipelines update for <%= depls %>"
       OLD_DIR: "coa/pipelines/generated"
   - put: secrets-writer
-    attempts: 2
+    attempts: <%= concourse_retry[:push] %>
     params:
       repository: generated-pipelines
       rebase: true

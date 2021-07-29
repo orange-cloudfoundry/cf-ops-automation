@@ -44,6 +44,7 @@
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
 
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-generated")
 %>
@@ -388,19 +389,19 @@ jobs:
   plan:
     - in_parallel:
       - get: cf-ops-automation
-        attempts: 2
+        attempts: <%= concourse_retry[:pull] %>
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get : secrets-<%= root_deployment_name %>-limited
-        attempts: 2
+        attempts: <%= concourse_retry[:pull] %>
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: paas-templates-<%= root_deployment_name %>
-        attempts: 2
+        attempts: <%= concourse_retry[:pull] %>
         params: { submodules: none }
         trigger: true
     - task: s3-upload-stemcells
-      attempts: 2
+      attempts: <%= concourse_retry[:task] %>
       input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %> }
       file:  cf-ops-automation/concourse/tasks/s3_stemcells_upload/task.yml
       params:
@@ -423,22 +424,22 @@ jobs:
   plan:
     - in_parallel:
         - get: cf-ops-automation
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
           params: { submodules: none }
           trigger: true
         - get : secrets-<%= root_deployment_name %>-limited
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
           params: { submodules: none }
         - get: ((stemcell-main-name))
           trigger: true
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
     <% if !offline_stemcells_enabled || !precompile_pipeline_enabled %>
         - get: paas-templates-<%= root_deployment_name %>
-          attempts: 2
+          attempts: <%= concourse_retry[:pull] %>
           params: { submodules: none }
           trigger: true
     - task: download-stemcell
-      attempts: 2
+      attempts: <%= concourse_retry[:task] %>
       input_mapping: { templates-resource: paas-templates-<%= root_deployment_name %> }
       output_mapping: { stemcell: ((stemcell-main-name)) }
       file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
@@ -450,7 +451,7 @@ jobs:
     <% end %>
 
     - task: upload-to-director
-      attempts: 2
+      attempts: <%= concourse_retry[:task] %>
       input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-<%= root_deployment_name %>-limited }
       file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
       params:
@@ -595,7 +596,7 @@ jobs:
 
     - in_parallel:
       - task: update-cloud-config-for-<%= root_deployment_name %>
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= root_deployment_name %>-limited}
         output_mapping: {deployed-config: deployed-cloud-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -634,7 +635,7 @@ jobs:
               rebase: true
 
       - task: update-runtime-config-for-<%= root_deployment_name %>
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= root_deployment_name %>-limited}
         output_mapping: {deployed-config: deployed-runtime-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -673,7 +674,7 @@ jobs:
               rebase: true
 
       - task: update-cpi-config-for-<%= root_deployment_name %>
-        attempts: 2
+        attempts: <%= concourse_retry[:task] %>
         input_mapping: {scripts-resource: cf-ops-automation, secrets: secrets-<%= root_deployment_name %>-limited}
         output_mapping: {deployed-config: deployed-cpi-config}
         file: cf-ops-automation/concourse/tasks/bosh_update_config/task.yml
@@ -730,7 +731,7 @@ jobs:
       trigger: true
       params:
         <%= "tarball: false" unless offline_stemcells_enabled %>
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: true
@@ -739,7 +740,7 @@ jobs:
       trigger: true
       params:
         <%= "tarball: false" unless offline_boshreleases_enabled %>
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
   <% end %>
   <% if deployment_details.local_deployment_secrets_scan? %>
     - get: secrets-<%= name %>
@@ -876,7 +877,7 @@ jobs:
       OFFLINE_MODE_ENABLED: <%= offline_boshreleases_enabled %>
       PRECOMPILE_MODE_ENABLED: <%= precompile_pipeline_enabled %>
   - put: <%= name %>-deployment
-    attempts: 2
+    attempts: <%= concourse_retry[:bosh_push] %>
     on_failure:
       do:
         - task: update-<%= name %>-files
@@ -932,7 +933,7 @@ jobs:
       PROFILES: ((profiles))
       COMMIT_MESSAGE: "<%= name %> generated manifest auto update.\nDeployment information: $(cat additional-resource/deployment_information.txt)\nActive profiles: ${PROFILES}\n[skip ci]"
   - put: secrets-full-writer
-    attempts: 2
+    attempts: <%= concourse_retry[:push] %>
     get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     params:
       repository: updated-<%= name %>-secrets
@@ -1037,14 +1038,14 @@ jobs:
   - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
 #      trigger: true
     - get: secrets-<%= root_deployment_name %>-trigger
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
     - get: paas-templates-<%= root_deployment_name %>-versions
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      attempts: 2
+      attempts: <%= concourse_retry[:pull] %>
       trigger: true
   - task: generate-<%= root_deployment_name %>-flight-plan
     output_mapping: {result-dir: init-<%= root_deployment_name %>-plan}

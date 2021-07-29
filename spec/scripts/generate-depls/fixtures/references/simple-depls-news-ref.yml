@@ -73,7 +73,7 @@ jobs:
       - get: monday
         trigger: true
       - get: ntp_boshrelease
-        attempts: 2
+        attempts: 4
         params: {tarball: false}
       - get: paas-templates-full
         params: { submodules: none, depth: 0 }
@@ -130,7 +130,7 @@ jobs:
       - get: monday
         trigger: true
       - get: zookeeper_boshrelease
-        attempts: 2
+        attempts: 4
         params: {tarball: false}
       - get: paas-templates-full
         params: { submodules: none, depth: 0 }

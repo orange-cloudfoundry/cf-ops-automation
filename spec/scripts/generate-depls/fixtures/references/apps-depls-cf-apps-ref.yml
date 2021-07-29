@@ -133,7 +133,7 @@ jobs:
             ./additional-resource/meta-inf.yml
         CUSTOM_SCRIPT_DIR: additional-resource/apps-depls/my_cf_app/template
     - task: push-test-app
-      attempts: 2
+      attempts: 6
       input_mapping: {scripts-resource: cf-ops-automation, templates-resource: paas-template-test-app, credentials-resource: secrets-test-app, additional-resource: release-manifest}
       output_mapping: {generated-files: final-release-manifest}
       file: cf-ops-automation/concourse/tasks/cf_push.yml

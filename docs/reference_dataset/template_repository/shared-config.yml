@@ -5,10 +5,15 @@ offline-mode:
    stemcells: false # Choose where stemcells are downloaded from. Default: true
 
 default:
+  #retry: # Configure how to handle retries in various context
+    # task: 2 # Optional. You may override number of retry when running concourse tasks (except put, get and bosh deploy)
+    # pull: 2 # Optional. You may override number of retry when getting data from external system like git, s3, etc...
+    # push: 2 # Optional. You may override number of retry when sending data to external system like git, s3, etc...
+    # bosh-push: 2 # Optional. You may override number of retry when sending data to bosh
   #bosh-options: # Optional. You may override bosh deploy default options for all deployments. To customize only a specific deployment, see 'deployment-dependencies.yml'
     # cleanup: true # Optional. An boolean that specifies if a bosh cleanup should be run after deployment. Defaults to true.
     # no_redact: false # Optional. Removes redacted from Bosh output. Defaults to false.
-    # dry_run: false # Optional. Shows the deployment diff without running a deploy. Defaults to false.
+    # dry_run: false # Optional. Shows the deployment diff without running a bosh deploy. Defaults to false.
     # fix: false # Optional. Recreate an instance with an unresponsive agent instead of erroring. Defaults to false.
     # max_in_flight: # Optional. A number of max in flight option. Default: unset, use bosh max in flight
     # recreate: false # Optional. Recreate all VMs in deployment. Defaults to false.
@@ -17,11 +22,11 @@ default:
     name: 56  # Default: bosh-openstack-kvm-ubuntu-bionic-go_agent
   concourse:
     # You can limit job execution per pipeline, static jobs are not affected by this restriction. Only jobs that are
-    #  added or removed are limited. You can defined the maximum number of jobs executed in parallel.
+    #  added or removed are limited. You can define the maximum number of jobs executed in parallel.
     parallel_execution_limit: 5 # Default: -1, ie unlimited
     # when parallel execution limit is active, you can choose the placement strategy used to group jobs.
     #   - SerialGroupRoundRobinNamingStrategy: each job is dispatched to a dedicated pool using round-robin strategy. We
-    #           have a non deterministic allocation, but good repartition.
+    #           have a non-deterministic allocation, but good repartition.
     #   - SerialGroupMd5NamingStrategy: each job is dispatched to a dedicated pool using md5 hash and some computation.
     #           we have a deterministic allocation, but repartition cannot be guarantied. Recommended for on-demand services
     serial_group_naming_strategy: SerialGroupRoundRobinNamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
@@ -29,6 +34,11 @@ default:
     # shallow-clone-depth: 1 # Default: 0, ie disabled
 
 #<root-deployment-name>: # override per root-deployment
+#  retry:
+#    task: 1 # Default: 2
+#    pull: 3 # Default: 2
+#    push: 4 # Default: 2
+#    bosh-push: 5 # Default: 2
 #  stemcell:
 #    name: my-region-stemcell # Can be useful with multiple regions
 #  git:
