@@ -242,6 +242,7 @@ jobs:
           BOSH_ENVIRONMENT: ((bosh-target))
           BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
   - name: compile-and-export-ntp_boshrelease
+    serial_groups: [concurrent-group-0]
     serial: true
     on_failure: *on_failure
     plan:
@@ -355,6 +356,7 @@ jobs:
             enabled: true
             force: true
   - name: compile-and-export-zookeeper_boshrelease
+    serial_groups: [concurrent-group-1]
     serial: true
     on_failure: *on_failure
     plan:

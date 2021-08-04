@@ -32,6 +32,7 @@
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
   concourse_retry = configurer.concourse_retry
+  enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
 
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated") || root_deployment_name
 
@@ -374,12 +375,12 @@ jobs:
           BOSH_ENVIRONMENT: ((bosh-target))
           BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
 
-
   <% uniq_releases.each do |release, info| %>
+  <% current_serial_group = configurer.serial_group_strategy.generate(release, info) %>
   - name: compile-and-export-<%= release %>
     <% jobs["Releases"] << "compile-and-export-#{release}" %>
     <% jobs["#{release[0]}"] << "compile-and-export-#{release}" %>
-
+    <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
     serial: true
     on_failure: *on_failure
     plan:
