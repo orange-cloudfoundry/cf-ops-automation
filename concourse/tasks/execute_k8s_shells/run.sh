@@ -39,6 +39,7 @@ export PAAS_TEMPLATES_COMMITTER
 PAAS_TEMPLATES_COMMIT_MESSAGE=$(cat  paas-templates-resource/.git/commit_message)
 export PAAS_TEMPLATES_COMMIT_MESSAGE
 echo "Available Env Var:"
+echo "\$COA_ROOT_DEPLOYMENT_NAME: root deployment name (set to: $COA_ROOT_DEPLOYMENT_NAME)"
 echo "\$COA_DEPLOYMENT_NAME: deployment name (set to: $COA_DEPLOYMENT_NAME)"
 echo "\$BASE_TEMPLATE_DIR: directory containing k8s scripts to execute (set to: $BASE_TEMPLATE_DIR)"
 echo "\$K8S_GIT_REPO_PATH: directory containing generated files (set to: $K8S_GIT_REPO_PATH)"
