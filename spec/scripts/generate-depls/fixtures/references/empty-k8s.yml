@@ -91,6 +91,7 @@ jobs:
       file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
       params:
         COA_DEPLOYMENT_NAME: empty-depls-k8s
+        COA_ROOT_DEPLOYMENT_NAME: empty-depls
         CUSTOM_SCRIPT_DIR: paas-templates-resource/empty-depls/hooks/k8s
         CREDHUB_SERVER: ((credhub-server))
         CREDHUB_CLIENT: ((credhub-client))
