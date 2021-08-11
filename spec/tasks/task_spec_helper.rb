@@ -13,11 +13,11 @@ class TaskSpecHelper
   end
 
   def self.orange_default_image_version
-    '8d4bfff7a4aff1d88caff6bd5b78e2d34981d4f1'
+    'e52d0924aa2dc367e078fdb5ff19eecab1b16ed7'
   end
 
   def self.governmentpaas_default_image_version
-    'f4817cce4038ac072c06507ca9d255392489d967'
+    '469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb'
   end
 
   def self.curl_image
@@ -50,7 +50,6 @@ class TaskSpecHelper
 
   def self.bosh_cli_v2_image_version
     governmentpaas_default_image_version
-    'f4817cce4038ac072c06507ca9d255392489d967'
   end
 
   def self.k8s_tools_image
@@ -66,8 +65,7 @@ class TaskSpecHelper
   end
 
   def self.cf_cli_image_version
-    # governmentpaas_default_image_version
-    '0cba745d6d0e417423bd651beeda6b896687429a'
+    governmentpaas_default_image_version
   end
 
   def self.spruce_image

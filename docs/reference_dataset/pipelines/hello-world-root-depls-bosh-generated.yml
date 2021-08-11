@@ -189,7 +189,7 @@ jobs:
           type: registry-image
           source:
             repository: governmentpaas/curl-ssl
-            tag: f4817cce4038ac072c06507ca9d255392489d967
+            tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
         inputs:
           - name: repackaged-releases-fallback
         run:
@@ -634,7 +634,7 @@ jobs:
         type: registry-image
         source:
           repository: governmentpaas/curl-ssl
-          tag: f4817cce4038ac072c06507ca9d255392489d967
+          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       inputs:
         - name: final-release-manifest
       outputs:
@@ -771,7 +771,7 @@ jobs:
         type: registry-image
         source:
           repository: governmentpaas/curl-ssl
-          tag: f4817cce4038ac072c06507ca9d255392489d967
+          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       outputs:
         - name: result-dir
       run:
@@ -839,7 +839,7 @@ jobs:
           type: registry-image
           source:
             repository: governmentpaas/bosh-cli-v2
-            tag: f4817cce4038ac072c06507ca9d255392489d967
+            tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
         inputs:
           - name: scripts-resource
           - name: secrets
@@ -888,7 +888,7 @@ jobs:
         type: registry-image
         source:
           repository: governmentpaas/curl-ssl
-          tag: f4817cce4038ac072c06507ca9d255392489d967
+          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       outputs:
         - name: result-dir
       run:

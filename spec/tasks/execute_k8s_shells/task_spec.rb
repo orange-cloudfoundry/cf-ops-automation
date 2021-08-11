@@ -99,6 +99,7 @@ describe 'execute_k8s_shells task' do
         "TASK_RUN_SCRIPT" => "cf-ops-automation/concourse/tasks/execute_k8s_shells/run.sh",
         "FILE_EXECUTION_FILTER" => "[0-9][0-9]-*.sh",
         "COA_DEPLOYMENT_NAME" => nil,
+        "COA_ROOT_DEPLOYMENT_NAME" => nil,
         "CUSTOM_SCRIPT_DIR" => nil,
         "CREDHUB_SERVER" => nil,
         "CREDHUB_CLIENT" => nil,

@@ -4,7 +4,7 @@ image_resource:
   type: registry-image
   source:
     repository: governmentpaas/cf-cli
-    tag: 0cba745d6d0e417423bd651beeda6b896687429a
+    tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
 inputs:
   - name: scripts-resource
   - name: credentials-resource
