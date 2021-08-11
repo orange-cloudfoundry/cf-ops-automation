@@ -29,6 +29,14 @@ else
   echo "Deployment name: $COA_DEPLOYMENT_NAME"
 fi
 
+if [ -z "$COA_ROOT_DEPLOYMENT_NAME" ]; then
+  echo "env COA_ROOT_DEPLOYMENT_NAME is missing"
+  exit 1
+else
+  echo "Deployment name: $COA_ROOT_DEPLOYMENT_NAME"
+fi
+
+
 if [ -z "$IAAS_TYPE" ]; then
   echo "env IAAS_TYPE is missing"
   exit 1

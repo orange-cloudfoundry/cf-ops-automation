@@ -448,7 +448,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                       type: registry-image
                       source:
                         repository: governmentpaas/git-ssh
-                        tag: f4817cce4038ac072c06507ca9d255392489d967
+                        tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
                     outputs:
                       - name: success-tag
                     run:
@@ -470,7 +470,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                         type: registry-image
                         source:
                           repository: governmentpaas/git-ssh
-                          tag: f4817cce4038ac072c06507ca9d255392489d967
+                          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
                       outputs:
                         - name: success-tag
                       run:

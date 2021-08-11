@@ -89,7 +89,7 @@ jobs:
           type: registry-image
           source:
             repository: orangecloudfoundry/terraform
-            tag: 8d4bfff7a4aff1d88caff6bd5b78e2d34981d4f1
+            tag: e52d0924aa2dc367e078fdb5ff19eecab1b16ed7
         inputs:
           - name: spec-resource
           - name: terraform-tfvars
