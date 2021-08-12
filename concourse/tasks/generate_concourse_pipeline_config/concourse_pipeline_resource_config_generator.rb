@@ -58,7 +58,7 @@ class ConcoursePipelineResourceConfigGenerator
     pipeline['team'] = team || 'main'
     pipeline['config_file'] = config
     pipeline['vars_files'] = vars_files || []
-    @pipelines['pipelines']. << pipeline
+    @pipelines['pipelines'] << pipeline
   end
 
   def generate_vars_files(pipeline_name, root_deployment)

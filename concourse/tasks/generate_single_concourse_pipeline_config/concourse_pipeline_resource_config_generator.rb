@@ -16,7 +16,7 @@ class ConcoursePipelineResourceConfigGenerator
   def execute
     validate_dir
     puts "execute"
-
+    # exit 1
     pipelines = list_pipelines
     puts pipelines
     pipelines.each do |pipeline_config_filename|
@@ -48,6 +48,8 @@ class ConcoursePipelineResourceConfigGenerator
     pipeline['team'] = team || 'main'
     pipeline['config_file'] = config
     pipeline['vars_files'] = vars_files || []
+    pipeline['unpaused'] = true
+
     @pipelines['pipelines']. << pipeline
   end
 
