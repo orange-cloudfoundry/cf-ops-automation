@@ -243,7 +243,11 @@ jobs:
             cc-test-reporter before-build
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
             echo "Sending coverage to Code Climate"
-            cc-test-reporter after-build -d
+            if [[ $(cc-test-reporter after-build) -eq 0 ]]; then
+              echo "Failed to run cc-test-reporter. Re-launch in debug mode";
+              echo "---------------------------"
+              cc-test-reporter after-build -d;
+            fi
         params:
           CC_TEST_REPORTER_ID: ((code-climate-test-reporter-id))
           COVERAGE: true
@@ -677,6 +681,7 @@ jobs:
           passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
+          passed: [pull-requests-build-cached-image]
           resource: pr-develop
           trigger: true
           version: every
@@ -711,6 +716,7 @@ jobs:
           passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
+          passed: [pull-requests-build-cached-image]
           resource: pr-develop
           trigger: true
           version: every
@@ -747,6 +753,7 @@ jobs:
           passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
+          passed: [pull-requests-build-cached-image]
           resource: pr-develop
           trigger: true
           version: every
