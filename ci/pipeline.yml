@@ -23,6 +23,7 @@ meta:
       status: pending
   - &pending-pr
     put: pr-develop
+    attempts: 2
     params:
       path: pr-develop
       status: pending
@@ -532,12 +533,15 @@ jobs:
       - in_parallel:
         - get: version
           params: {bump: final}
+          attempts: 2
         - get: cf-ops-automation
           resource: ci-master
           passed: [merge-to-master]
+          attempts: 2
 #        - get: cf-ops-automation-docker-image-develop
 #          passed: [merge-to-master]
       - task: generate-changelog
+        attempts: 2
         config:
           platform: linux
           image_resource:
@@ -578,11 +582,13 @@ jobs:
             GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"
             CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
       - put: ci-master
+        attempts: 2
         params:
           repository: cf-ops-automation-changelog
           rebase: true
       - task: generate-release
 #        image: cf-ops-automation-docker-image-source
+        attempts: 2
         config:
           platform: linux
           image_resource:
@@ -611,6 +617,7 @@ jobs:
           params:
             CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
       - put: gh-release
+        attempts: 2
         params:
           name: version/version
           tag_prefix: v
@@ -619,6 +626,7 @@ jobs:
           globs:
            - github-info/cf-ops-automation.tgz
       - put: version
+        attempts: 2
         params: {bump: patch}
 
   - name: merge-changelog-to-develop
@@ -627,11 +635,14 @@ jobs:
     plan:
       - in_parallel:
         - get: cf-ops-automation
+          attempts: 2
           resource: ci-master
           trigger: true
           passed: [ship-it]
         - get: ci-develop
+          attempts: 2
       - put: ci-develop
+        attempts: 2
         params:
           repository: cf-ops-automation
 
