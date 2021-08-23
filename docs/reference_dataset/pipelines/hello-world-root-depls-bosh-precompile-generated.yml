@@ -1,5 +1,14 @@
 
 ---
+meta:
+  tasks:
+    - &on_failure
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
 resource_types:
 - name: slack-notification
   type: registry-image
@@ -127,13 +136,7 @@ resources:
     version: { ref: v((releases.vault.version)) }
 jobs:
   - name: push-boshreleases
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: cf-ops-automation
@@ -202,14 +205,8 @@ jobs:
                   else
                     echo "No errors detected"
                   fi
-  - name: push-stemcell
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+  - name: upload-stemcell-to-director
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: cf-ops-automation
@@ -217,6 +214,9 @@ jobs:
             trigger: true
           - get : secrets-full-writer
             params: { submodules: none }
+          - get: ((stemcell-main-name))
+            trigger: true
+            attempts: 2
           - get: paas-templates-hello-world-root-depls-limited
             params: { submodules: none }
             trigger: true
@@ -240,14 +240,9 @@ jobs:
           BOSH_ENVIRONMENT: ((bosh-target))
           BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
   - name: compile-and-export-ntp
+    serial_groups: [concurrent-group-0]
     serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: ntp
@@ -256,6 +251,7 @@ jobs:
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
+            passed: [ upload-stemcell-to-director ]
             trigger: true
             attempts: 2
       - task: generate-ntp-deployment-manifest
@@ -316,8 +312,6 @@ jobs:
         attempts: 2
         params:
           manifest: final-release-manifest/ntp-deployment.yml
-          stemcells:
-            - ((stemcell-main-name))/stemcell.tgz
           cleanup: true
       - task: compile-and-export-ntp
         attempts: 2
@@ -360,14 +354,9 @@ jobs:
             enabled: true
             force: true
   - name: compile-and-export-nginx
+    serial_groups: [concurrent-group-1]
     serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: nginx
@@ -376,6 +365,7 @@ jobs:
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
+            passed: [ upload-stemcell-to-director ]
             trigger: true
             attempts: 2
       - task: generate-nginx-deployment-manifest
@@ -436,8 +426,6 @@ jobs:
         attempts: 2
         params:
           manifest: final-release-manifest/nginx-deployment.yml
-          stemcells:
-            - ((stemcell-main-name))/stemcell.tgz
           cleanup: true
       - task: compile-and-export-nginx
         attempts: 2
@@ -480,14 +468,9 @@ jobs:
             enabled: true
             force: true
   - name: compile-and-export-vault
+    serial_groups: [concurrent-group-2]
     serial: true
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
       - in_parallel:
           - get: vault
@@ -496,6 +479,7 @@ jobs:
           - get: secrets-full-writer
             params: { submodules: none}
           - get: ((stemcell-main-name))
+            passed: [ upload-stemcell-to-director ]
             trigger: true
             attempts: 2
       - task: generate-vault-deployment-manifest
@@ -556,8 +540,6 @@ jobs:
         attempts: 2
         params:
           manifest: final-release-manifest/vault-deployment.yml
-          stemcells:
-            - ((stemcell-main-name))/stemcell.tgz
           cleanup: true
       - task: compile-and-export-vault
         attempts: 2
@@ -600,13 +582,7 @@ jobs:
             enabled: true
             force: true
   - name: init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
-    on_failure:
-      put: failure-alert
-      params:
-        channel: ((slack-channel))
-        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *on_failure
     plan:
     - in_parallel:
         - get: cf-ops-automation
@@ -654,12 +630,7 @@ jobs:
 groups:
   - name: hello-world-root-depls
     jobs:
-      - compile-and-export-nginx
-      - compile-and-export-ntp
-      - compile-and-export-vault
-      - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
-      - push-boshreleases
-      - push-stemcell
+      - "*"
   - name: "releases"
     jobs:
       - compile-and-export-nginx
@@ -669,7 +640,7 @@ groups:
     jobs:
       - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
       - push-boshreleases
-      - push-stemcell
+      - upload-stemcell-to-director
   - name: "n"
     jobs:
       - compile-and-export-nginx

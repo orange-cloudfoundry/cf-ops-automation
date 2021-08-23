@@ -133,6 +133,7 @@ another-world-root-depls
 ### slack-channel
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### slack-disable
@@ -192,7 +193,7 @@ another-world-root-depls
 
 ### another-world-root-depls-bosh-precompile-generated.yml
 
-No credentials required
+* slack-channel
 
 ### another-world-root-depls-cf-apps-generated.yml
 

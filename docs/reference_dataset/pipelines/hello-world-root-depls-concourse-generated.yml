@@ -58,7 +58,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["hello-world-root-depls/pipeline-sample", "shared"]
+    paths: ["hello-world-root-depls/pipeline-sample", "shared", "coa/config"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-templates-pipeline-sample

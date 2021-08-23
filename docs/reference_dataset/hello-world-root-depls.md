@@ -25,8 +25,8 @@ hello-world-root-depls
 │       └── secrets.yml
 ├── cf-apps-deployments
 │   └── generic-app
-│       ├── enable-cf-app.yml
 │       ├── Readme.md
+│       ├── enable-cf-app.yml
 │       ├── secrets
 │       │   └── secrets.yml
 │       └── spruce-file-sample-from-secrets.txt
@@ -44,10 +44,10 @@ hello-world-root-depls
 ├── k8s-sample
 │   └── enable-deployment.yml
 ├── pipeline-sample
+│   ├── Readme.md
 │   ├── concourse-pipeline-config
 │   │   └── virtualbox
 │   ├── enable-deployment.yml
-│   ├── Readme.md
 │   └── secrets
 │       └── secrets.yml
 ├── runtime-config.yml
@@ -113,8 +113,8 @@ hello-world-root-depls
 │           ├── pre-cf-push.sh
 │           ├── spruce-file-sample-from-templates.txt
 │           └── static-app
-│               ├── index.html
-│               └── Staticfile
+│               ├── Staticfile
+│               └── index.html
 ├── hooks
 │   └── k8s
 │       └── deploy.sh

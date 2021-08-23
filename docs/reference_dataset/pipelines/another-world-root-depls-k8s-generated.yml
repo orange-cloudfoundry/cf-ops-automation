@@ -91,6 +91,7 @@ jobs:
       file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
       params:
         COA_DEPLOYMENT_NAME: another-world-root-depls-k8s
+        COA_ROOT_DEPLOYMENT_NAME: another-world-root-depls
         CUSTOM_SCRIPT_DIR: paas-templates-resource/another-world-root-depls/hooks/k8s
         CREDHUB_SERVER: ((credhub-server))
         CREDHUB_CLIENT: ((credhub-client))

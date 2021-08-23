@@ -1,5 +1,14 @@
 
 ---
+meta:
+  tasks:
+    - &on_failure
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+        username: Concourse
 resource_types:
 - name: slack-notification
   type: registry-image
@@ -66,13 +75,7 @@ resources:
     skip_ssl_verification: true
 jobs:
 - name: push-boshreleases
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: cf-ops-automation
@@ -138,25 +141,24 @@ jobs:
               else
                 echo "No errors detected"
               fi
-- name: push-stemcell
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+- name: upload-stemcell-to-director
+  on_failure: *on_failure
   plan:
     - in_parallel:
-      - get: cf-ops-automation
-        params: { submodules: none, depth: 0 }
-        trigger: true
-      - get : secrets-another-world-root-depls-limited
-        params: { submodules: none, depth: 0 }
-        trigger: true
-      - get: paas-templates-another-world-root-depls
-        params: { submodules: none }
-        trigger: true
+        - get: cf-ops-automation
+          attempts: 2
+          params: { submodules: none }
+          trigger: true
+        - get : secrets-another-world-root-depls-limited
+          attempts: 2
+          params: { submodules: none }
+        - get: ((stemcell-main-name))
+          trigger: true
+          attempts: 2
+        - get: paas-templates-another-world-root-depls
+          attempts: 2
+          params: { submodules: none }
+          trigger: true
     - task: download-stemcell
       attempts: 2
       input_mapping: { templates-resource: paas-templates-another-world-root-depls }
@@ -177,13 +179,7 @@ jobs:
         BOSH_ENVIRONMENT: ((bosh-target))
         BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
 - name: cancel-all-bosh-tasks
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
   - in_parallel:
     - get: cf-ops-automation
@@ -200,13 +196,7 @@ jobs:
       BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 - name: execute-deploy-script
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - in_parallel:
       - get: secrets-another-world-root-depls-limited
@@ -230,13 +220,7 @@ jobs:
         BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
 - name: cloud-config-and-runtime-config-for-another-world-root-depls
   serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
+  on_failure: *on_failure
   plan:
     - put: concourse-meta
     - get: secrets-full-writer
@@ -380,40 +364,14 @@ jobs:
             params:
               repository: updated-cpi-config
               rebase: true
-- name: recreate-all
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  serial_groups: [recreate]
-  plan:
-  - in_parallel:
-     - get: secrets-another-world-root-depls-limited
-       params: { submodules: none, depth: 0 }
-     - get: paas-templates-another-world-root-depls
-       params: { submodules: none, depth: 0 }
-     - get: cf-ops-automation
-       params: { submodules: none, depth: 0 }
 groups:
 - name: another-world-root-depls
   jobs:
-    - cancel-all-bosh-tasks
-    - cloud-config-and-runtime-config-for-another-world-root-depls
-    - execute-deploy-script
-    - push-boshreleases
-    - push-stemcell
-    - recreate-all
-- name: recreate
-  jobs:
-    - recreate-all
+    - "*"
 - name: utils
   jobs:
     - cancel-all-bosh-tasks
     - cloud-config-and-runtime-config-for-another-world-root-depls
     - execute-deploy-script
     - push-boshreleases
-    - push-stemcell
-    - recreate-all
+    - upload-stemcell-to-director
