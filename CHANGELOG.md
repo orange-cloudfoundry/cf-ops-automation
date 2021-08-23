@@ -1,8 +1,8 @@
 # Changelog
 
-## [v5.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.0) (2021-08-23)
+## [v5.2.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.1) (2021-08-23)
 
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.1.0...v5.2.0)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.1.0...v5.2.1)
 
 **Implemented enhancements:**
 
