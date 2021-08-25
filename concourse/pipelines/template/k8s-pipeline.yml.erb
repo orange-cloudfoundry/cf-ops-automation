@@ -132,7 +132,13 @@ resources:
     paths: <%= paas_templates_selected_paths %>
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
-<% end %>
+- name: reconciliation-loop
+  type: time
+  source:
+    interval: 4m
+    location: Europe/Paris
+
+  <% end %>
 <% end %>
 <% if enabled_deployments.any? %>
 - name: secrets-<%= root_deployment_name %>-trigger
@@ -246,6 +252,8 @@ jobs:
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+      trigger: true
+    - get: reconciliation-loop
       trigger: true
   <% if deployment_details.local_deployment_secrets_scan? %>
     - get: secrets-<%= name %>
