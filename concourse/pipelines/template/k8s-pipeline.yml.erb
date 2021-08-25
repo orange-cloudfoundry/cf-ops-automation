@@ -143,6 +143,8 @@ resources:
     paths: ["private-config.yml", "<%= root_deployment_name %>", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
+<% end %>
+
 - name: k8s-configs-repository
   icon: source-pull
   type: git
@@ -152,16 +154,6 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-
-#- name: paas-templates-<%#= root_deployment_name %>-versions
-#  icon: home-thermometer
-#  type: git
-#  source:
-#    uri: ((paas-templates-uri))
-#    paths: ["<%= root_deployment_name %>/root-deployment.yml"]
-#    branch: pipeline-current-((paas-templates-branch))
-#    skip_ssl_verification: true
-<% end %>
 
 <% if disabled_deployments.any? %>
 #- name: paas-templates-full
