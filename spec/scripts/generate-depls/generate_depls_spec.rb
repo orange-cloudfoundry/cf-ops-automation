@@ -152,6 +152,10 @@ describe 'generate-depls' do
       context 'when bosh-precompile pipeline is checked' do
         it_behaves_like 'pipeline checker', 'empty-depls-bosh-precompile-generated.yml', 'empty-bosh-precompile.yml'
       end
+
+      context 'when k8s pipeline is checked' do
+        it_behaves_like 'pipeline checker', 'empty-depls-k8s-generated.yml', 'empty-k8s.yml'
+      end
     end
   end
 end
