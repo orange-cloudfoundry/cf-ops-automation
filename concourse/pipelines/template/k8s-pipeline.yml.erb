@@ -132,15 +132,14 @@ resources:
     paths: <%= paas_templates_selected_paths %>
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
+<% end %>
+<% end %>
+<% if enabled_deployments.any? %>
 - name: reconciliation-loop
   type: time
   source:
     interval: 4m
     location: Europe/Paris
-
-  <% end %>
-<% end %>
-<% if enabled_deployments.any? %>
 - name: secrets-<%= root_deployment_name %>-trigger
   icon: source-commit
   type: git
