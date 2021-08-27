@@ -105,6 +105,22 @@ another-world-root-depls
 * another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
+### k8s-configs-repository-branch
+
+* another-world-root-depls-k8s-generated.yml
+
+### k8s-configs-repository-password
+
+* another-world-root-depls-k8s-generated.yml
+
+### k8s-configs-repository-uri
+
+* another-world-root-depls-k8s-generated.yml
+
+### k8s-configs-repository-username
+
+* another-world-root-depls-k8s-generated.yml
+
 ### paas-templates-branch
 
 * another-world-root-depls-bosh-generated.yml
@@ -212,6 +228,10 @@ No credentials required
 * credhub-secret
 * credhub-server
 * iaas-type
+* k8s-configs-repository-branch
+* k8s-configs-repository-password
+* k8s-configs-repository-uri
+* k8s-configs-repository-username
 * paas-templates-branch
 * paas-templates-uri
 * profiles

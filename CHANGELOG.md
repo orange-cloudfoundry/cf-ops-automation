@@ -1,5 +1,13 @@
 # Changelog
 
+## [v5.2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.2) (2021-08-27)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.2.1...v5.2.2)
+
+**Merged pull requests:**
+
+- k8s support enhancements [\#378](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/378)
+
 ## [v5.2.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.1) (2021-08-23)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.1.0...v5.2.1)

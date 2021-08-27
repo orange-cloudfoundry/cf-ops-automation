@@ -62,6 +62,11 @@ resources:
     paths: ["hello-world-root-depls/k8s-sample", "hello-world-root-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
+- name: reconciliation-loop
+  type: time
+  source:
+    interval: 4m
+    location: Europe/Paris
 - name: secrets-hello-world-root-depls-trigger
   icon: source-commit
   type: git
@@ -79,14 +84,6 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-#- name: paas-templates--versions
-#  icon: home-thermometer
-#  type: git
-#  source:
-#    uri: ((paas-templates-uri))
-#    paths: ["hello-world-root-depls/root-deployment.yml"]
-#    branch: pipeline-current-((paas-templates-branch))
-#    skip_ssl_verification: true
 #- name: paas-templates-full
 #  icon: home-assistant
 #  type: git
@@ -168,6 +165,8 @@ jobs:
       params: { submodules: none, depth: 0 }
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
+      trigger: true
+    - get: reconciliation-loop
       trigger: true
     - get: paas-templates-k8s-sample
       trigger: true

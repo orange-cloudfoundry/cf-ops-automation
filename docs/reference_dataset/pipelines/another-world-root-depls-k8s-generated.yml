@@ -51,6 +51,15 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
+- name: k8s-configs-repository
+  icon: source-pull
+  type: git
+  source:
+    uri: ((k8s-configs-repository-uri))
+    username: ((k8s-configs-repository-username))
+    password: ((k8s-configs-repository-password))
+    branch: ((k8s-configs-repository-branch))
+    skip_ssl_verification: true
 jobs:
 - name: execute-deploy-script
   serial: true
