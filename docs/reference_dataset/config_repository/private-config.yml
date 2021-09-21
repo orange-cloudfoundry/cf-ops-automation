@@ -5,26 +5,41 @@
 #   stemcells: false # Default: true
 #
 #default:
+#  reconciliation-loop:
+#     interval: 6h # Default 4m. You may override concourse k8s pipelines job frequency, ie interval between execution when nothing happen.
+#  retry: # Configure how to handle retries in various context
+#     task: 2 # Optional. You may override number of retry when running concourse tasks (except put, get and bosh deploy)
+#     pull: 2 # Optional. You may override number of retry when getting data from external system like git, s3, etc...
+#     push: 2 # Optional. You may override number of retry when sending data to external system like git, s3, etc...
+#     bosh-push: 2 # Optional. You may override number of retry when sending data to bosh
 #  bosh-options: # Optional. You may override bosh deploy default options for all deployments. To customize only a specific deployment, see 'deployment-dependencies.yml'.
-#    cleanup: true # Optional. An boolean that specifies if a bosh cleanup should be run after deployment. Defaults to true.
-#    no_redact: false # Optional. Removes redacted from Bosh output. Defaults to false.
-#    dry_run: false # Optional. Shows the deployment diff without running a deploy. Defaults to false.
-#    fix: false # Optional. Recreate an instance with an unresponsive agent instead of erroring. Defaults to false.
-#    max_in_flight: # Optional. A number of max in flight option. Default: unset, use bosh max in flight
-#    recreate: false # Optional. Recreate all VMs in deployment. Defaults to false.
-#    skip_drain: # Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
+#     cleanup: true # Optional. An boolean that specifies if a bosh cleanup should be run after deployment. Defaults to true.
+#     no_redact: false # Optional. Removes redacted from Bosh output. Defaults to false.
+#     dry_run: false # Optional. Shows the deployment diff without running a deploy. Defaults to false.
+#     fix: false # Optional. Recreate an instance with an unresponsive agent instead of erroring. Defaults to false.
+#     max_in_flight: # Optional. A number of max in flight option. Default: unset, use bosh max in flight
+#     recreate: false # Optional. Recreate all VMs in deployment. Defaults to false.
+#     skip_drain: # Optional. A collection of instance group names to skip running drain scripts for. Defaults to empty.
 #  stemcell:
-#    name: bosh-openstack-kvm-ubuntu-bionic-go_agent  # Default: bosh-openstack-kvm-ubuntu-bionic-go_agent
+#     name: bosh-openstack-kvm-ubuntu-bionic-go_agent  # Default: bosh-openstack-kvm-ubuntu-bionic-go_agent
 #  concourse:
-#    parallel_execution_limit: 5 # Default: -1, ie unlimited
-#    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
+#     parallel_execution_limit: 5 # Default: -1, ie unlimited
+#     serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
 #  git:
 #    shallow-clone-depth: 1 # Default: 0, ie disabled
 
-
 #<root-deployment-name>: # override per root-deployment
+#  reconciliation-loop:
+#     interval: 1h # Default 4m
+#  retry:
+#    task: 1 # Default: 2
+#    pull: 3 # Default: 2
+#    push: 4 # Default: 2
+#    bosh-push: 5 # Default: 2
 #  stemcell:
 #    name: my-region-stemcell # Can be useful with multiple regions
+#  git:
+#    shallow-clone-depth: 1 # Default: 0, ie disabled
 #  concourse:
 #    parallel_execution_limit: 10 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
