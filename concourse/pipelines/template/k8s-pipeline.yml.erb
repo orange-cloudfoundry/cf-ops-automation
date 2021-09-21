@@ -29,6 +29,7 @@
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
   concourse_retry = configurer.concourse_retry
+  reconciliation_loop_interval = configurer.reconciliation_loop_interval.get # 4m
 
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-k8s-generated")
 %>
@@ -138,7 +139,7 @@ resources:
 - name: reconciliation-loop
   type: time
   source:
-    interval: 4m
+    interval: <%= reconciliation_loop_interval %>
     location: Europe/Paris
 - name: secrets-<%= root_deployment_name %>-trigger
   icon: source-commit
@@ -159,16 +160,6 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-
-<% if disabled_deployments.any? %>
-#- name: paas-templates-full
-#  icon: home-assistant
-#  type: git
-#  source:
-#    uri: ((paas-templates-uri))
-#    branch: pipeline-current-((paas-templates-branch))
-#    skip_ssl_verification: true
-<% end %>
 
 jobs:
 - name: execute-deploy-script

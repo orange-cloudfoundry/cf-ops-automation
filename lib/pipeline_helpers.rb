@@ -5,6 +5,7 @@ module PipelineHelpers
   require_relative './pipeline_helpers/configured_parallel_execution_limit'
   require_relative './pipeline_helpers/configured_serial_group_naming_strategy'
   require_relative './pipeline_helpers/configured_concourse_retry'
+  require_relative './pipeline_helpers/configured_reconciliation_loop_interval'
   require_relative './pipeline_helpers/deployment_details'
   require_relative './pipeline_helpers/pipeline_configurer'
   require_relative './pipeline_helpers/serial_group_naming_strategy'

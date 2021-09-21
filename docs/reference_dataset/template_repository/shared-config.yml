@@ -5,6 +5,8 @@ offline-mode:
    stemcells: false # Choose where stemcells are downloaded from. Default: true
 
 default:
+  reconciliation-loop:
+     interval: 6h # Default 4m. You may override concourse k8s pipelines job frequency, ie interval between execution when nothing happen.
   #retry: # Configure how to handle retries in various context
     # task: 2 # Optional. You may override number of retry when running concourse tasks (except put, get and bosh deploy)
     # pull: 2 # Optional. You may override number of retry when getting data from external system like git, s3, etc...
@@ -34,6 +36,8 @@ default:
     # shallow-clone-depth: 1 # Default: 0, ie disabled
 
 #<root-deployment-name>: # override per root-deployment
+#  reconciliation-loop:
+#     interval: 1h # Default 4m
 #  retry:
 #    task: 1 # Default: 2
 #    pull: 3 # Default: 2
