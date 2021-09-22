@@ -60,7 +60,6 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-
 jobs:
 - name: execute-deploy-script
   serial: true

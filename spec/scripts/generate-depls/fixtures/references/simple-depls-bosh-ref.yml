@@ -391,6 +391,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 6
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
@@ -429,6 +430,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 6
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
@@ -467,6 +469,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 6
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
@@ -623,6 +626,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy ntp-with-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
+          attempts: 6
           get_params: { submodules: none, depth: 0 }
           params:
             repository: failed-ntp-with-scan-secrets
@@ -828,6 +832,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy zookeeper-without-scan manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
+          attempts: 6
           get_params: { submodules: none, depth: 0 }
           params:
             repository: failed-zookeeper-without-scan-secrets

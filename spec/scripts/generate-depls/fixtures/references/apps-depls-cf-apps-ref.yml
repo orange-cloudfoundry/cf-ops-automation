@@ -156,6 +156,7 @@ jobs:
         PROFILES: ((profiles))
         COMMIT_MESSAGE: "test-app generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
+      attempts: 6
       get_params: { submodules: none, depth: 0 }
       params:
         repository: updated-test-app-secrets

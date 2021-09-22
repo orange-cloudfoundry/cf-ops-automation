@@ -302,6 +302,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
@@ -340,6 +341,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
@@ -378,6 +380,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
