@@ -86,9 +86,7 @@ describe 'static concourse pipelines spec' do
     let(:expected_task_images) do
       [
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_image_version },
-       { "repository" => "orangecloudfoundry/orange-cf-bosh-cli" },
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_slim_image_version },
-       { "repository" => TaskSpecHelper.terraform_image, "tag" => TaskSpecHelper.terraform_image_version },
        { "repository" => TaskSpecHelper.alpine_image, "tag" => TaskSpecHelper.alpine_image_version },
        { "repository" => TaskSpecHelper.curl_image, "tag" => TaskSpecHelper.curl_image_version },
        { "repository" => TaskSpecHelper.git_image, "tag" => TaskSpecHelper.git_image_version },
