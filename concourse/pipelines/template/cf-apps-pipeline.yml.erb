@@ -192,6 +192,7 @@ jobs:
         PROFILES: ((profiles))
         COMMIT_MESSAGE: "<%= app_name %> generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
+      attempts: <%= concourse_retry[:push] %>
       get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       params:
         repository: updated-<%= app_name %>-secrets

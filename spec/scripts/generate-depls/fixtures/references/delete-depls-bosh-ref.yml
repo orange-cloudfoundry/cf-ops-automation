@@ -274,6 +274,7 @@ jobs:
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
         put: secrets-full-writer
+        attempts: 6
         get_params: { submodules: none, depth: 0 }
         params:
           repository: updated-config-resource
@@ -368,6 +369,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 6
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
@@ -406,6 +408,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 6
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
@@ -444,6 +447,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 6
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config

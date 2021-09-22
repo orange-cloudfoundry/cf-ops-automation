@@ -528,6 +528,7 @@ jobs:
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
         put: secrets-full-writer
+        attempts: <%= concourse_retry[:push] %>
         get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         params:
           repository: updated-config-resource
@@ -629,6 +630,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: <%= concourse_retry[:push] %>
             get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
             params:
               repository: updated-cloud-config
@@ -668,6 +670,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: <%= concourse_retry[:push] %>
             get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
             params:
               repository: updated-runtime-config
@@ -707,6 +710,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: <%= concourse_retry[:push] %>
             get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
             params:
               repository: updated-cpi-config
@@ -890,6 +894,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy <%= name %> manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
+          attempts: <%= concourse_retry[:push] %>
           get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
           params:
             repository: failed-<%= name %>-secrets
@@ -1197,6 +1202,7 @@ jobs:
           username: Concourse
       on_success:
         put: secrets-full-writer
+        attempts: <%= concourse_retry[:push] %>
         get_params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         params:
           repository: updated-terraform-state-secrets
