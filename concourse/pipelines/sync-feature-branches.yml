@@ -87,12 +87,12 @@ jobs:
   plan:
     - in_parallel:
       - get: paas-templates-features
-        attempts: 2
+        attempts: 5
         params: { submodules: none }
         trigger: true
         version: every
       - get: features-or-wip-merged
-        attempts: 2
+        attempts: 5
         params: { submodules: none }
     - task: merge-commit
       config:
@@ -112,6 +112,7 @@ jobs:
           args:
             - -ce
             - |
+              git config --global advice.detachedHead false
               if [ "$SKIP_SSL_VERIFICATION" = "true" ]; then
                 export GIT_SSL_NO_VERIFY=true
                 echo "Skipping ssl verification"
@@ -134,7 +135,18 @@ jobs:
               echo "Committer: $(cat .git/committer)"
               echo "============================="
               #git fetch
-              git fetch origin $(cat ../paas-templates-features/.git/ref)
+              set +e
+              for i in {1..5}; do
+                git fetch origin $(cat ../paas-templates-features/.git/ref)
+                if [ $? -eq 0 ]; then
+                  echo "Fetch successfull"
+                  break;
+                fi
+                sleep_duration=$((i*30))
+                echo "Fetch failed - try $i - sleeping $sleep_duration"
+                sleep $sleep_duration
+              done
+              set -e
               cd ..
               git clone features-or-wip-merged rebased-wip
               cd rebased-wip
@@ -229,7 +241,7 @@ jobs:
               icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
               username: Concourse
     - put: features-or-wip-merged
-      attempts: 2
+      attempts: 5
       get_params: { submodules: none, depth: 1 }
       params:
         repository: rebased-wip
