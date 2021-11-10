@@ -56,7 +56,7 @@ resources:
     uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
-    paths: [ "<%= depls %>", '.gitmodules', 'public-config.yml' ]
+    paths: [ '<%= depls %>', '.gitmodules', 'shared-config.yml', 'meta-inf.yml' ]
 
 
 - name: cf-ops-automation
