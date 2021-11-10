@@ -59,7 +59,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["<%= cf_app_info["base-dir"] %>", "shared"]
+    paths: ["private-config.yml", "<%= cf_app_info["base-dir"] %>", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 
@@ -68,7 +68,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["<%= cf_app_info["base-dir"] %>"]
+    paths: ["shared-config.yml", "meta-inf.yml", "<%= cf_app_info["base-dir"] %>"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 <% end %>

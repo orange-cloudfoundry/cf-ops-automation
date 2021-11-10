@@ -222,6 +222,8 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 paths:
                 - '#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}'
                 - '#{root_deployment_name}/root-deployment.yml'
+                - "shared-config.yml"
+                - "meta-inf.yml"
                 branch: ((paas-templates-branch))
                 skip_ssl_verification: true
           YAML
@@ -241,6 +243,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 - "#{root_deployment_name}/#{name}"
                 - 'shared'
                 - 'coa/config'
+                - 'private-config.yml'
                 branch: ((secrets-branch))
                 skip_ssl_verification: true
           YAML

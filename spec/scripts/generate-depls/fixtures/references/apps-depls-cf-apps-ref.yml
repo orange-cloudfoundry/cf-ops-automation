@@ -42,7 +42,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["apps-depls/my_cf_app", "shared"]
+    paths: ["private-config.yml", "apps-depls/my_cf_app", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-template-test-app
@@ -50,7 +50,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["apps-depls/my_cf_app"]
+    paths: ["shared-config.yml", "meta-inf.yml", "apps-depls/my_cf_app"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 jobs:

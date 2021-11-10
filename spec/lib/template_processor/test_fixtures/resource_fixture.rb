@@ -40,7 +40,7 @@ module Coa
           uri: ((paas-templates-uri))
           branch: ((paas-templates-branch))
           skip_ssl_verification: true
-          paths: [ "<%= depls %>", '.gitmodules', 'public-config.yml' ]
+          paths: [ "<%= depls %>", '.gitmodules', 'shared-config.yml', 'meta-inf.yml' ]
       cf-ops-automation:
         name: cf-ops-automation
         icon: rocket
