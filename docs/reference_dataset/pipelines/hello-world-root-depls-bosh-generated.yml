@@ -322,6 +322,7 @@ jobs:
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
         put: secrets-full-writer
+        attempts: 2
         get_params: { submodules: none, depth: 0 }
         params:
           repository: updated-config-resource
@@ -416,6 +417,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
@@ -454,6 +456,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
@@ -492,6 +495,7 @@ jobs:
               username: Concourse
           on_success:
             put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config
@@ -592,8 +596,8 @@ jobs:
       CUSTOM_SCRIPT_DIR: template-resource/hello-world-root-depls/bosh-deployment-sample/template
       SECRETS_DIR: credentials-resource/hello-world-root-depls/bosh-deployment-sample
       MANIFEST_NAME: bosh-deployment-sample.yml
-  - task: generate-empty-ops-and-vars-files
-    # this task is required as long as all deployments still don't use ops/vars files
+  - task: generate-coa-ops-and-vars-files
+    input_mapping: {template-resource: paas-templates-bosh-deployment-sample}
     output_mapping: {result-dir: ops-and-vars-files}
     config:
       platform: linux
@@ -604,6 +608,7 @@ jobs:
           tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       inputs:
         - name: final-release-manifest
+        - name: template-resource
       outputs:
         - name: result-dir
       run:
@@ -615,8 +620,23 @@ jobs:
           mkdir -p result-dir/vars
           find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
           find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-          echo '---' > result-dir/operators/0-empty-operators.yml
-          echo '---' > result-dir/vars/0-empty-vars.yml
+          {
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-id?'
+            echo '  value: "((''coa-templates-commit-id))"'
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-author?'
+            echo '  value: "((''coa-templates-author))"'
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-message?'
+            echo '  value: |
+            echo '    ((''coa-templates-message))'
+          } > result-dir/operators/0-coa-templates-reference-operators.yml
+          {
+            echo "coa-templates-commit-id: $(cat  template-resource/.git/ref)"
+            echo "coa-templates-commit-author: $(template-resource/.git/committer))"
+            echo "coa-templates-commit-message: $(template-resource/.git/commit_message)"
+          } > result-dir/operators/0-coa-templates-reference-vars.yml
   - task: display-bosh-deployment-sample-manifest
     input_mapping:
       bosh-inputs: ops-and-vars-files
@@ -659,6 +679,7 @@ jobs:
             PROFILES: ((profiles))
             COMMIT_MESSAGE: "Failed to deploy bosh-deployment-sample manifest\n\nActive profiles: ${PROFILES}\n[skip ci]"
         - put: secrets-full-writer
+          attempts: 2
           get_params: { submodules: none, depth: 0 }
           params:
             repository: failed-bosh-deployment-sample-secrets
@@ -900,6 +921,7 @@ jobs:
           username: Concourse
       on_success:
         put: secrets-full-writer
+        attempts: 2
         get_params: { submodules: none, depth: 0 }
         params:
           repository: updated-terraform-state-secrets
