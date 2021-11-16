@@ -113,6 +113,7 @@ jobs:
             - -ce
             - |
               git config --global advice.detachedHead false
+              git config --global merge.renamelimit 10000
               if [ "$SKIP_SSL_VERIFICATION" = "true" ]; then
                 export GIT_SSL_NO_VERIFY=true
                 echo "Skipping ssl verification"
