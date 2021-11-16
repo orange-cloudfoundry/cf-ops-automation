@@ -559,8 +559,8 @@ jobs:
       CUSTOM_SCRIPT_DIR: template-resource/simple-depls/ntp-with-scan/template
       SECRETS_DIR: credentials-resource/simple-depls/ntp-with-scan
       MANIFEST_NAME: ntp-with-scan.yml
-  - task: generate-empty-ops-and-vars-files
-    # this task is required as long as all deployments still don't use ops/vars files
+  - task: generate-coa-ops-and-vars-files
+    input_mapping: {template-resource: paas-templates-ntp-with-scan}
     output_mapping: {result-dir: ops-and-vars-files}
     config:
       platform: linux
@@ -571,6 +571,7 @@ jobs:
           tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       inputs:
         - name: final-release-manifest
+        - name: template-resource
       outputs:
         - name: result-dir
       run:
@@ -582,8 +583,27 @@ jobs:
           mkdir -p result-dir/vars
           find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
           find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-          echo '---' > result-dir/operators/0-empty-operators.yml
-          echo '---' > result-dir/vars/0-empty-vars.yml
+          echo "Generating '0-coa-templates-reference-operators.yml'"
+          {
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-id?'
+            echo '  value: "((''coa-templates-commit-id))"'
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-author?'
+            echo '  value: "((''coa-templates-commit-author))"'
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-message?'
+            echo '  value: |'
+            echo '    ((''coa-templates-commit-message))'
+          } > result-dir/operators/0-coa-templates-reference-operators.yml
+          echo "Done - file '0-coa-templates-reference-operators.yml'"
+          echo "Generating '0-coa-templates-reference-vars.yml'"
+          {
+            echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
+            echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
+            echo 'coa-templates-commit-message: "'"$(cat template-resource/.git/commit_message)"'"'
+          } > result-dir/operators/0-coa-templates-reference-vars.yml
+          echo "Done - file '0-coa-templates-reference-vars.yml'"
   - task: display-ntp-with-scan-manifest
     input_mapping:
       bosh-inputs: ops-and-vars-files
@@ -765,8 +785,8 @@ jobs:
       CUSTOM_SCRIPT_DIR: template-resource/simple-depls/zookeeper-without-scan/template
       SECRETS_DIR: credentials-resource/simple-depls/zookeeper-without-scan
       MANIFEST_NAME: zookeeper-without-scan.yml
-  - task: generate-empty-ops-and-vars-files
-    # this task is required as long as all deployments still don't use ops/vars files
+  - task: generate-coa-ops-and-vars-files
+    input_mapping: {template-resource: paas-templates-zookeeper-without-scan}
     output_mapping: {result-dir: ops-and-vars-files}
     config:
       platform: linux
@@ -777,6 +797,7 @@ jobs:
           tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       inputs:
         - name: final-release-manifest
+        - name: template-resource
       outputs:
         - name: result-dir
       run:
@@ -788,8 +809,27 @@ jobs:
           mkdir -p result-dir/vars
           find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
           find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-          echo '---' > result-dir/operators/0-empty-operators.yml
-          echo '---' > result-dir/vars/0-empty-vars.yml
+          echo "Generating '0-coa-templates-reference-operators.yml'"
+          {
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-id?'
+            echo '  value: "((''coa-templates-commit-id))"'
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-author?'
+            echo '  value: "((''coa-templates-commit-author))"'
+            echo '- type: replace'
+            echo '  path: /tags?/coa-templates-commit-message?'
+            echo '  value: |'
+            echo '    ((''coa-templates-commit-message))'
+          } > result-dir/operators/0-coa-templates-reference-operators.yml
+          echo "Done - file '0-coa-templates-reference-operators.yml'"
+          echo "Generating '0-coa-templates-reference-vars.yml'"
+          {
+            echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
+            echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
+            echo 'coa-templates-commit-message: "'"$(cat template-resource/.git/commit_message)"'"'
+          } > result-dir/operators/0-coa-templates-reference-vars.yml
+          echo "Done - file '0-coa-templates-reference-vars.yml'"
   - task: display-zookeeper-without-scan-manifest
     input_mapping:
       bosh-inputs: ops-and-vars-files
