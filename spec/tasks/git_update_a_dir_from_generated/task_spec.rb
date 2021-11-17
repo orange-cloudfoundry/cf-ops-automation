@@ -35,7 +35,7 @@ describe 'git_update_a_dir_from_generated task' do
 
     it 'updates files in output dir' do
       expected_files = [File.join(@updated_git_resource, "coa/pipelines/deployed/unchanged_file.txt"), File.join(@updated_git_resource, "coa/pipelines/deployed/new_file.txt")]
-      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/deployed/') + '*']).to match(expected_files)
+      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/deployed/') + '*']).to match_array(expected_files)
     end
 
     it 'adds and removes files' do
@@ -81,7 +81,7 @@ describe 'git_update_a_dir_from_generated task' do
 
     it 'updates files in output dir' do
       expected_files = [File.join(@updated_git_resource, "coa/pipelines/deployed/unchanged_file.txt"), File.join(@updated_git_resource, "coa/pipelines/deployed/new_file.txt")]
-      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/deployed/') + '*']).to match(expected_files)
+      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/deployed/') + '*']).to match_array(expected_files)
     end
 
     it 'adds and removes files' do
