@@ -63,7 +63,7 @@ class ConcoursePipelineResourceConfigGenerator
 
   def generate_vars_files(pipeline_name, root_deployment)
     puts " INFO - ignores credentials include 'pipeline' or 'generated'"
-    vars_files = Dir[File.join(@config_dir, 'credentials-*.yml')].reject { |file_path| filter_credentials_file(file_path) }
+    vars_files = Dir[File.join(@config_dir, 'credentials-*.yml')].reject { |file_path| filter_credentials_file(file_path) }&.sort
     config_file_suffix = pipeline_name.gsub('-generated', '')
     config_file_suffix += '-pipeline' unless config_file_suffix.end_with?('-pipeline')
     current_pipeline_config_file = File.join(@config_dir, "credentials-#{config_file_suffix}.yml")
