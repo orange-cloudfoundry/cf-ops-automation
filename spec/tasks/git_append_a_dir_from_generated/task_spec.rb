@@ -41,7 +41,7 @@ describe 'git_append_a_dir_from_generated task' do
     end
 
     it 'updates files in output dir' do
-      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/generated/') + '*']).to match(expected_files)
+      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/generated/') + '*']).to match_array(expected_files)
     end
 
     it 'updates file content' do
@@ -91,7 +91,7 @@ describe 'git_append_a_dir_from_generated task' do
     end
 
     it 'updates files in output dir' do
-      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/generated/') + '*']).to match(expected_files)
+      expect(Dir[File.join(@updated_git_resource, 'coa/pipelines/generated/') + '*']).to match_array(expected_files)
     end
 
     it 'updates file content' do
