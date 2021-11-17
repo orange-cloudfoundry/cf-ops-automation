@@ -1,15 +1,15 @@
 FROM ruby:2.7.1
 
 # 4e0502afbd60d2501c67deef1c640100d2c37ee1c26755138cc24f5d4d527a3a  fly-7.1.0-linux-amd64.tgz
-# f511e497cf12b1e9a0dda124cc7c6619fc2afa24a5b6776bb6746eedba8dfaa9  fly-7.2.0-linux-amd64.tgz
 # 919f79a0c2c94b38738440a1bb9c0dfeb3b2bd126602a2a13e3d12b4830b8a5a  fly-7.3.2-linux-amd64.tgz
+# c264d9cb979d05598e44e0527220e21e2f20564f63cc11f98c8480768997433f  fly-7.6.0-linux-amd64.tgz
 # https://github.com/concourse/concourse/releases/
-ARG CONCOURSE_VERSION=7.3.2
-ARG CONCOURSE_SHA256=919f79a0c2c94b38738440a1bb9c0dfeb3b2bd126602a2a13e3d12b4830b8a5a
+ARG CONCOURSE_VERSION=7.6.0
+ARG CONCOURSE_SHA256=c264d9cb979d05598e44e0527220e21e2f20564f63cc11f98c8480768997433f
 
-#
-ARG BOSH_CLI_VERSION=6.4.1
-ARG BOSH_CLI_SHA256=756d8e403f1d349ef3766d28980379c24da6212fa45dcf296c0519d4ec54d66a
+# https://github.com/cloudfoundry/bosh-cli/releases
+ARG BOSH_CLI_VERSION=6.4.7
+ARG BOSH_CLI_SHA256=596abc123ddb676f081d375dc4672359fb1573c38d8dd3e8bdc4f3d2769783a1
 
 RUN apt-get update && \
  apt-get -y install tree vim netcat dnsutils jq
