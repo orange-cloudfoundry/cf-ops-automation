@@ -801,13 +801,11 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML.safe_load ci_deployments_yaml
       end
       let(:expected_tf_ensure_step) do
-        {"file" => "cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml",
+        { "do" => [{"file" => "cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml",
          "input_mapping" => { "generated-resource" => "terraform-cf", "reference-resource" => "secrets-full-writer" },
-         "on_failure" => { "params" => { "channel" => "((slack-channel))", "icon_url" => "http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png", "text" => "Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].", "username" => "Concourse" }, "put" => "failure-alert" },
-         "on_success" => { "attempts"=>2, "get_params" => { "depth" => 0, "submodules" => "none" }, "params" => { "rebase" => true, "repository" => "updated-terraform-state-secrets" }, "put" => "secrets-full-writer" },
          "output_mapping" => { "updated-git-resource" => "updated-terraform-state-secrets" },
          "params" => { "COMMIT_MESSAGE" => "Terraform TFState auto update\n\nActive profiles: ${PROFILES}", "NEW_FILE" => "terraform.tfstate", "OLD_FILE" => "my-tfstate-location/terraform.tfstate", "PROFILES" => "((profiles))" },
-         "task" => "update-terraform-state-file" }
+         "task" => "update-terraform-state-file" },{ "attempts"=>2, "get_params" => { "depth" => 0, "submodules" => "none" }, "params" => { "rebase" => true, "repository" => "updated-terraform-state-secrets" }, "put" => "secrets-full-writer" }]}
       end
 
       it 'generates all resource_types' do
