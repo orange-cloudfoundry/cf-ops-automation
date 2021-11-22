@@ -459,6 +459,9 @@ jobs:
         BOSH_CLIENT_SECRET: ((bosh-password))
         BOSH_ENVIRONMENT: ((bosh-target))
         BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+        <% if offline_stemcells_enabled && precompile_pipeline_enabled %>
+        NO_STEMCELL_ADDITIONAL_MESSAGE: "We use offline stemcells and precompile releases, so this task is useful as deploy-<xxx> job triggering dependency."
+        <% end %>
 
 - name: cancel-all-bosh-tasks
   <% jobs['utils'] << 'cancel-all-bosh-tasks' %>
