@@ -450,6 +450,7 @@ jobs:
                 - -c
                 - |
                   find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+                  echo "INFO: this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced."
 
           params:
             BOSH_CLIENT: ((bosh-username))
