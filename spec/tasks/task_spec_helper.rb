@@ -20,6 +20,14 @@ class TaskSpecHelper
     '469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb'
   end
 
+  def self.spruce_image
+    'governmentpaas/spruce'
+  end
+
+  def self.spruce_image_version
+    governmentpaas_default_image_version
+  end
+
   def self.curl_image
     'governmentpaas/curl-ssl'
   end

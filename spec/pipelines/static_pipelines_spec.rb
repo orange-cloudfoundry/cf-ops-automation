@@ -89,6 +89,7 @@ describe 'static concourse pipelines spec' do
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_slim_image_version },
        { "repository" => TaskSpecHelper.alpine_image, "tag" => TaskSpecHelper.alpine_image_version },
        { "repository" => TaskSpecHelper.curl_image, "tag" => TaskSpecHelper.curl_image_version },
+       { "repository" => TaskSpecHelper.spruce_image, "tag" => TaskSpecHelper.spruce_image_version },
        { "repository" => TaskSpecHelper.git_image, "tag" => TaskSpecHelper.git_image_version },
        { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version },
        { "repository" => TaskSpecHelper.bosh_cf_cli_image, "tag" => TaskSpecHelper.bosh_cf_cli_image_version }

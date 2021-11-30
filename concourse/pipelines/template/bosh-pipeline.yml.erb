@@ -821,7 +821,7 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/curl-ssl
+          repository: governmentpaas/spruce
           tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
       inputs:
         - name: final-release-manifest
@@ -858,10 +858,11 @@ jobs:
           {
             echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
             echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
-            echo 'coa-templates-commit-message: "'"$(cat template-resource/.git/commit_message)"'"'
-          } > result-dir/operators/0-coa-templates-reference-vars.yml
-          echo "Done - file '0-coa-templates-reference-vars.yml'"
+            echo  'coa-templates-commit-message: ((file "template-resource/.git/commit_message"))'
 
+          } > coa-vars.spruce
+          spruce merge coa-vars.spruce >result-dir/vars/0-coa-templates-reference-vars.yml
+          echo "Done - file '0-coa-templates-reference-vars.yml'"
 
   - task: display-<%= name %>-manifest
     input_mapping:
