@@ -92,7 +92,8 @@ describe 'static concourse pipelines spec' do
        { "repository" => TaskSpecHelper.spruce_image, "tag" => TaskSpecHelper.spruce_image_version },
        { "repository" => TaskSpecHelper.git_image, "tag" => TaskSpecHelper.git_image_version },
        { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version },
-       { "repository" => TaskSpecHelper.bosh_cf_cli_image, "tag" => TaskSpecHelper.bosh_cf_cli_image_version }
+       { "repository" => TaskSpecHelper.bosh_cf_cli_image, "tag" => TaskSpecHelper.bosh_cf_cli_image_version },
+       { "repository" => TaskSpecHelper.fly_image, "tag" => TaskSpecHelper.fly_image_version }
       ]
     end
     let(:image_resources) do
