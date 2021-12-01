@@ -4,6 +4,14 @@ class TaskSpecHelper
     File.absolute_path(relative_path)
   end
 
+  def self.fly_image
+    'teliaoss/concourse-fly'
+  end
+
+  def self.fly_image_version
+    '20210905'
+  end
+
   def self.alpine_image
     'library/alpine'
   end

@@ -146,20 +146,20 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: library/ruby
-          tag: 2.7.1
+          repository: teliaoss/concourse-fly
+          tag: '20210905'
       inputs:
       - name: concourse-micro
       outputs:
       - name: sorted-pipelines
       run:
-        path: /bin/bash
+        path: /bin/sh
         args:
           - -ec
           - |
+            echo "We use fly $(fly --version) to format pipelines"
             cp -p concourse-micro/*.yml sorted-pipelines/
-            cd sorted-pipelines
-            ruby -ryaml -e 'Dir["*.yml"].each { |yaml_file| puts "processing #{yaml_file}"; yaml = YAML.load_file(yaml_file); yaml["resources"] = yaml["resources"]&.sort_by { |x| x["name"]}; yaml["resource_types"] = yaml["resource_types"]&.sort_by { |x| x["name"]}; puts "rewriting #{yaml_file}"; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) } }'
+            find sorted-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
 
   - task: update-git-deployed-pipelines
     input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
@@ -199,20 +199,20 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: library/ruby
-            tag: 2.7.1
+            repository: teliaoss/concourse-fly
+            tag: '20210905'
         inputs:
           - name: concourse-micro-legacy
         outputs:
           - name: sorted-pipelines
         run:
-          path: /bin/bash
+          path: /bin/sh
           args:
             - -ec
             - |
+              echo "We use fly $(fly --version) to format pipelines"
               cp -p concourse-micro-legacy/*.yml sorted-pipelines/
-              cd sorted-pipelines
-              ruby -ryaml -e 'Dir["*.yml"].each { |yaml_file| puts "processing #{yaml_file}"; yaml = YAML.load_file(yaml_file); yaml["resources"] = yaml["resources"]&.sort_by { |x| x["name"]}; yaml["resource_types"] = yaml["resource_types"]&.sort_by { |x| x["name"]}; puts "rewriting #{yaml_file}"; File.open(yaml_file, "w") { |file| file.write(yaml.to_yaml) } }'
+              find sorted-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
 
     - task: update-git-deployed-pipelines
       input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
