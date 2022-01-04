@@ -24,7 +24,7 @@ inputs:
 run:
   path: bash
   args:
-    - -c
+    - -ce
     - |
       echo "Bosh CLI info: $(bosh --version)"
       echo "Uploading stemcell:"
