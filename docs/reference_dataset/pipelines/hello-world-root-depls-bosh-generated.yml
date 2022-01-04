@@ -321,12 +321,13 @@ jobs:
         BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
         COMMIT_MESSAGE: "${ROOT_DEPLOYMENT_NAME}: Automated Bosh and Secrets Cleanup"
       ensure:
-        put: secrets-full-writer
-        attempts: 2
-        get_params: { submodules: none, depth: 0 }
-        params:
-          repository: updated-config-resource
-          rebase: true
+        do:
+        - put: secrets-full-writer
+          attempts: 2
+          get_params: { submodules: none, depth: 0 }
+          params:
+            repository: updated-config-resource
+            rebase: true
 - name: execute-deploy-script
   serial: true
   on_failure: *on_failure
@@ -399,24 +400,18 @@ jobs:
           CREDHUB_SECRET: "((credhub-secret))"
           CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
-          task: update-cloud-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
-          output_mapping: {updated-git-resource: updated-cloud-config}
-          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-          params:
-            OLD_FILE: "hello-world-root-depls/cloud-config.yml"
-            NEW_FILE: "cloud-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "hello-world-root-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
-          on_failure:
-            put: failure-alert
+          do:
+          - task: update-cloud-config
+            attempts: 2
+            input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
+            output_mapping: {updated-git-resource: updated-cloud-config}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
             params:
-              channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-              username: Concourse
-          on_success:
-            put: secrets-full-writer
+              OLD_FILE: "hello-world-root-depls/cloud-config.yml"
+              NEW_FILE: "cloud-config.yml"
+              PROFILES: ((profiles))
+              COMMIT_MESSAGE: "hello-world-root-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          - put: secrets-full-writer
             attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
@@ -438,24 +433,18 @@ jobs:
            CREDHUB_SECRET: "((credhub-secret))"
            CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
-          task: update-runtime-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
-          output_mapping: {updated-git-resource: updated-runtime-config}
-          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-          params:
-            OLD_FILE: "hello-world-root-depls/runtime-config.yml"
-            NEW_FILE: "runtime-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "hello-world-root-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
-          on_failure:
-            put: failure-alert
+          do:
+          - task: update-runtime-config
+            attempts: 2
+            input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
+            output_mapping: {updated-git-resource: updated-runtime-config}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
             params:
-              channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-              username: Concourse
-          on_success:
-            put: secrets-full-writer
+              OLD_FILE: "hello-world-root-depls/runtime-config.yml"
+              NEW_FILE: "runtime-config.yml"
+              PROFILES: ((profiles))
+              COMMIT_MESSAGE: "hello-world-root-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          - put: secrets-full-writer
             attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
@@ -477,24 +466,18 @@ jobs:
           CREDHUB_SECRET: "((credhub-secret))"
           CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
-          task: update-cpi-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
-          output_mapping: {updated-git-resource: updated-cpi-config}
-          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-          params:
-            OLD_FILE: "hello-world-root-depls/cpi-config.yml"
-            NEW_FILE: "cpi-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "hello-world-root-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
-          on_failure:
-            put: failure-alert
+          do:
+          - task: update-cpi-config
+            attempts: 2
+            input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
+            output_mapping: {updated-git-resource: updated-cpi-config}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
             params:
-              channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-              username: Concourse
-          on_success:
-            put: secrets-full-writer
+              OLD_FILE: "hello-world-root-depls/cpi-config.yml"
+              NEW_FILE: "cpi-config.yml"
+              PROFILES: ((profiles))
+              COMMIT_MESSAGE: "hello-world-root-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          - put: secrets-full-writer
             attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
@@ -620,23 +603,22 @@ jobs:
           mkdir -p result-dir/vars
           find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
           find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+          echo "Generating '0-coa-templates-reference-operators.yml'"
           {
             echo '- type: replace'
             echo '  path: /tags?/coa-templates-commit-id?'
             echo '  value: "((''coa-templates-commit-id))"'
             echo '- type: replace'
-            echo '  path: /tags?/coa-templates-author?'
-            echo '  value: "((''coa-templates-author))"'
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-message?'
-            echo '  value: |
-            echo '    ((''coa-templates-message))'
+            echo '  path: /tags?/coa-templates-commit-author?'
+            echo '  value: "((''coa-templates-commit-author))"'
           } > result-dir/operators/0-coa-templates-reference-operators.yml
+          echo "Done - file '0-coa-templates-reference-operators.yml'"
+          echo "Generating '0-coa-templates-reference-vars.yml'"
           {
-            echo "coa-templates-commit-id: $(cat  template-resource/.git/ref)"
-            echo "coa-templates-commit-author: $(template-resource/.git/committer))"
-            echo "coa-templates-commit-message: $(template-resource/.git/commit_message)"
+            echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
+            echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
           } > result-dir/operators/0-coa-templates-reference-vars.yml
+          echo "Done - file '0-coa-templates-reference-vars.yml'"
   - task: display-bosh-deployment-sample-manifest
     input_mapping:
       bosh-inputs: ops-and-vars-files
@@ -903,24 +885,17 @@ jobs:
       PROFILES_SPEC_PATH_PREFIX: "hello-world-root-depls/terraform-config/spec-"
       PROFILES: ((profiles))
     ensure:
-      task: update-terraform-state-file
-      input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}
-      output_mapping: {updated-git-resource: updated-terraform-state-secrets}
-      file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-      params:
-        OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
-        NEW_FILE: "terraform.tfstate"
-        PROFILES: ((profiles))
-        COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}"
-      on_failure:
-        put: failure-alert
+      do:
+      - task: update-terraform-state-file
+        input_mapping: {reference-resource: secrets-full-writer, generated-resource: terraform-cf}
+        output_mapping: {updated-git-resource: updated-terraform-state-secrets}
+        file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
         params:
-          channel: ((slack-channel))
-          text: Failure during [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
-      on_success:
-        put: secrets-full-writer
+          OLD_FILE: "hello-world-root-depls/terraform-config/terraform.tfstate"
+          NEW_FILE: "terraform.tfstate"
+          PROFILES: ((profiles))
+          COMMIT_MESSAGE: "Terraform TFState auto update\n\nActive profiles: ${PROFILES}"
+      - put: secrets-full-writer
         attempts: 2
         get_params: { submodules: none, depth: 0 }
         params:

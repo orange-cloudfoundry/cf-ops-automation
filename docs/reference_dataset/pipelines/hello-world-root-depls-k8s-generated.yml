@@ -65,7 +65,7 @@ resources:
 - name: reconciliation-loop
   type: time
   source:
-    interval: 4m
+    interval: 6h
     location: Europe/Paris
 - name: secrets-hello-world-root-depls-trigger
   icon: source-commit
@@ -84,13 +84,6 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-#- name: paas-templates-full
-#  icon: home-assistant
-#  type: git
-#  source:
-#    uri: ((paas-templates-uri))
-#    branch: pipeline-current-((paas-templates-branch))
-#    skip_ssl_verification: true
 jobs:
 - name: execute-deploy-script
   serial: true

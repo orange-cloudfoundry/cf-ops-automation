@@ -42,7 +42,7 @@ resources:
   type: git
   source:
     uri: ((secrets-uri))
-    paths: ["hello-world-root-depls/cf-apps-deployments/generic-app", "shared"]
+    paths: ["private-config.yml", "hello-world-root-depls/cf-apps-deployments/generic-app", "shared"]
     branch: ((secrets-branch))
     skip_ssl_verification: true
 - name: paas-template-generic-app
@@ -50,7 +50,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["hello-world-root-depls/cf-apps-deployments/generic-app"]
+    paths: ["shared-config.yml", "meta-inf.yml", "hello-world-root-depls/cf-apps-deployments/generic-app"]
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
 jobs:
@@ -156,6 +156,7 @@ jobs:
         PROFILES: ((profiles))
         COMMIT_MESSAGE: "generic-app generated CF manifest auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
     - put: secrets-full-writer
+      attempts: 2
       get_params: { submodules: none, depth: 0 }
       params:
         repository: updated-generic-app-secrets

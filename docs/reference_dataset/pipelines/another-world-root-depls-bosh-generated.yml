@@ -266,24 +266,19 @@ jobs:
           CREDHUB_SECRET: "((credhub-secret))"
           CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
-          task: update-cloud-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
-          output_mapping: {updated-git-resource: updated-cloud-config}
-          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-          params:
-            OLD_FILE: "another-world-root-depls/cloud-config.yml"
-            NEW_FILE: "cloud-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "another-world-root-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
-          on_failure:
-            put: failure-alert
+          do:
+          - task: update-cloud-config
+            attempts: 2
+            input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cloud-config}
+            output_mapping: {updated-git-resource: updated-cloud-config}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
             params:
-              channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-              username: Concourse
-          on_success:
-            put: secrets-full-writer
+              OLD_FILE: "another-world-root-depls/cloud-config.yml"
+              NEW_FILE: "cloud-config.yml"
+              PROFILES: ((profiles))
+              COMMIT_MESSAGE: "another-world-root-depls cloud-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          - put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cloud-config
@@ -304,24 +299,19 @@ jobs:
            CREDHUB_SECRET: "((credhub-secret))"
            CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
-          task: update-runtime-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
-          output_mapping: {updated-git-resource: updated-runtime-config}
-          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-          params:
-            OLD_FILE: "another-world-root-depls/runtime-config.yml"
-            NEW_FILE: "runtime-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "another-world-root-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
-          on_failure:
-            put: failure-alert
+          do:
+          - task: update-runtime-config
+            attempts: 2
+            input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-runtime-config}
+            output_mapping: {updated-git-resource: updated-runtime-config}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
             params:
-              channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-              username: Concourse
-          on_success:
-            put: secrets-full-writer
+              OLD_FILE: "another-world-root-depls/runtime-config.yml"
+              NEW_FILE: "runtime-config.yml"
+              PROFILES: ((profiles))
+              COMMIT_MESSAGE: "another-world-root-depls runtime-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          - put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-runtime-config
@@ -342,24 +332,19 @@ jobs:
           CREDHUB_SECRET: "((credhub-secret))"
           CREDHUB_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
         ensure:
-          task: update-cpi-config
-          input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
-          output_mapping: {updated-git-resource: updated-cpi-config}
-          file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
-          params:
-            OLD_FILE: "another-world-root-depls/cpi-config.yml"
-            NEW_FILE: "cpi-config.yml"
-            PROFILES: ((profiles))
-            COMMIT_MESSAGE: "another-world-root-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
-          on_failure:
-            put: failure-alert
+          do:
+          - task: update-cpi-config
+            attempts: 2
+            input_mapping: {reference-resource: secrets-full-writer, generated-resource: deployed-cpi-config}
+            output_mapping: {updated-git-resource: updated-cpi-config}
+            file: cf-ops-automation/concourse/tasks/git_update_a_file_from_generated.yml
             params:
-              channel: ((slack-channel))
-              text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-              icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-              username: Concourse
-          on_success:
-            put: secrets-full-writer
+              OLD_FILE: "another-world-root-depls/cpi-config.yml"
+              NEW_FILE: "cpi-config.yml"
+              PROFILES: ((profiles))
+              COMMIT_MESSAGE: "another-world-root-depls cpi-config auto update\n\nActive profiles: ${PROFILES}\n[skip ci]"
+          - put: secrets-full-writer
+            attempts: 2
             get_params: { submodules: none, depth: 0 }
             params:
               repository: updated-cpi-config

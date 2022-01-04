@@ -44,7 +44,7 @@ resources:
     uri: ((paas-templates-uri))
     branch: ((paas-templates-branch))
     skip_ssl_verification: true
-    paths: [ "hello-world-root-depls", '.gitmodules', 'public-config.yml' ]
+    paths: [ 'hello-world-root-depls', '.gitmodules', 'shared-config.yml', 'meta-inf.yml' ]
 - name: cf-ops-automation
   icon: rocket
   type: git
@@ -143,8 +143,28 @@ jobs:
           ruby filter_pipelines.rb
     params:
       ROOT_DEPLOYMENT: hello-world-root-depls
+  - task: format-pipelines
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: teliaoss/concourse-fly
+          tag: "20210905"
+      inputs:
+        - name: selected-pipelines
+      outputs:
+        - name: formated-pipelines
+      run:
+        path: /bin/sh
+        args:
+          - -ec
+          - |
+            echo "We use fly $(fly --version) to format pipelines"
+            cp -rp selected-pipelines/* formated-pipelines/
+            find formated-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
   - task: update-git-generated-pipelines
-    input_mapping: {reference-resource: secrets-hello-world-root-depls-for-pipeline, generated-resource: selected-pipelines}
+    input_mapping: {reference-resource: secrets-hello-world-root-depls-for-pipeline, generated-resource: formated-pipelines}
     output_mapping: {updated-git-resource: generated-pipelines}
     file: cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml
     params:

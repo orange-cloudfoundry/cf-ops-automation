@@ -281,7 +281,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "ntp-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"ntp-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp", "version"=>"4.2.8p11"}]}'
+            MANIFEST_CONTENT: '{"name"=>"ntp-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp", "version"=>"4.2.8p13"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -303,6 +303,7 @@ jobs:
                 - -c
                 - |
                   find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+                  echo "INFO: this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced."
           params:
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: ((bosh-password))
@@ -395,7 +396,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "nginx-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.13.12"}]}'
+            MANIFEST_CONTENT: '{"name"=>"nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.21.3"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -417,6 +418,7 @@ jobs:
                 - -c
                 - |
                   find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+                  echo "INFO: this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced."
           params:
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: ((bosh-password))
@@ -509,7 +511,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "vault-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.3"}]}'
+            MANIFEST_CONTENT: '{"name"=>"vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.5"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -531,6 +533,7 @@ jobs:
                 - -c
                 - |
                   find releases-to-upload/ -name "*.tgz" -exec bosh upload-release {} \;
+                  echo "INFO: this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced."
           params:
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: ((bosh-password))

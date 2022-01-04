@@ -1,6 +1,23 @@
 # Changelog
 
-## [v5.2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.2) (2021-08-27)
+## [v5.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.3.0) (2022-01-04)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.2.2...v5.3.0)
+
+**Implemented enhancements:**
+
+- Include git metadata in bosh manifest [\#381](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/381)
+- pipelines\(control-plane|update\): use fly to format pipelines [\#383](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/383)
+- fix missing scanned files and concourse bump [\#380](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/380)
+
+**Fixed bugs:**
+
+- tasks\(bosh\_upload\_stemcell\): detect errors during stemcell upload [\#385](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/385)
+- pipelines\(bosh\): remove commit message from bosh tags [\#384](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/384)
+- pipelines\(bosh\): fix git info into bosh manifest injection [\#382](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/382)
+- customize-reconciliation-loop-interval [\#379](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/379)
+
+## [v5.2.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.2) (2021-08-26)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.2.1...v5.2.2)
 
