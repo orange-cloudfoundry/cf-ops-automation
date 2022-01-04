@@ -30,7 +30,7 @@ run:
       echo "Inspecting local releases:"
       find releases-to-upload/ -name "*.tgz" -exec bosh inspect-local-release {} \;
       # --fix is usefull to override existing release with another sha1
-      echo "Inspecting releases available at ${BOSH_ENVIRONMENT}"
+      echo "Upload releases at ${BOSH_ENVIRONMENT}"
       find releases-to-upload/ -name "*.tgz" -exec bosh upload-release --fix {} \;
 params:
   BOSH_ENVIRONMENT:
