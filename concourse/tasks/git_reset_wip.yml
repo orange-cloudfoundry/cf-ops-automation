@@ -16,9 +16,9 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
-    repository: governmentpaas/git-ssh
-    tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+    # from https://hub.docker.com/r/orangecloudfoundry/git-ssh/tags
+    repository: orangecloudfoundry/git-ssh
+    tag: 317bf1656840ce57682039109ce93b701ffa6a32
 inputs:
   - name: reference-resource
 outputs:

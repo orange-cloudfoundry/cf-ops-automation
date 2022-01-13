@@ -183,8 +183,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/curl-ssl
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/curl-ssl
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
         - name: final-control-plane-pipeline
         - name: secrets-full
@@ -250,8 +250,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/bosh-cli-v2
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/bosh-cli-v2
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -345,8 +345,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/curl-ssl
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/curl-ssl
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
       - name: concourse-teams
       outputs:
@@ -431,8 +431,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/curl-ssl
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/curl-ssl
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
       - name: all-pipelines
       outputs:

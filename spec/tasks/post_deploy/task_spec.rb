@@ -8,7 +8,7 @@ describe 'post_deploy task' do
 
     it 'uses alphagov cf-cli image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('governmentpaas/cf-cli')
+      expect(docker_image_used).to match('orangecloudfoundry/cf-cli')
     end
   end
 
