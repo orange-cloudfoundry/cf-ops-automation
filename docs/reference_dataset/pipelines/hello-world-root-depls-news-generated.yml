@@ -94,8 +94,8 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: governmentpaas/curl-ssl
-            tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+            repository: orangecloudfoundry/curl-ssl
+            tag: 317bf1656840ce57682039109ce93b701ffa6a32
         inputs:
           - name: boshrelease
         outputs:
@@ -151,8 +151,8 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: governmentpaas/curl-ssl
-            tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+            repository: orangecloudfoundry/curl-ssl
+            tag: 317bf1656840ce57682039109ce93b701ffa6a32
         inputs:
           - name: boshrelease
         outputs:
@@ -208,8 +208,8 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: governmentpaas/curl-ssl
-            tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+            repository: orangecloudfoundry/curl-ssl
+            tag: 317bf1656840ce57682039109ce93b701ffa6a32
         inputs:
           - name: boshrelease
         outputs:

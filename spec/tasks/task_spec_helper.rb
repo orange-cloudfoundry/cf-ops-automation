@@ -21,35 +21,35 @@ class TaskSpecHelper
   end
 
   def self.orange_default_image_version
-    'e52d0924aa2dc367e078fdb5ff19eecab1b16ed7'
+    '317bf1656840ce57682039109ce93b701ffa6a32'
   end
 
   def self.governmentpaas_default_image_version
-    '469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb'
+    '317bf1656840ce57682039109ce93b701ffa6a32'
   end
 
   def self.spruce_image
-    'governmentpaas/spruce'
+    'orangecloudfoundry/spruce'
   end
 
   def self.spruce_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.curl_image
-    'governmentpaas/curl-ssl'
+    'orangecloudfoundry/curl-ssl'
   end
 
   def self.curl_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.git_image
-    'governmentpaas/git-ssh'
+    'orangecloudfoundry/git-ssh'
   end
 
   def self.git_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.bosh_cf_cli_image
@@ -61,11 +61,11 @@ class TaskSpecHelper
   end
 
   def self.bosh_cli_v2_image
-    'governmentpaas/bosh-cli-v2'
+    'orangecloudfoundry/bosh-cli-v2'
   end
 
   def self.bosh_cli_v2_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.k8s_tools_image
@@ -77,19 +77,19 @@ class TaskSpecHelper
   end
 
   def self.cf_cli_image
-    'governmentpaas/cf-cli'
+    'orangecloudfoundry/cf-cli'
   end
 
   def self.cf_cli_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.spruce_image
-    'governmentpaas/spruce'
+    'orangecloudfoundry/spruce'
   end
 
   def self.spruce_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.ruby_image
@@ -121,11 +121,11 @@ class TaskSpecHelper
   end
 
   def self.awscli_image
-    'governmentpaas/awscli'
+    'orangecloudfoundry/awscli'
   end
 
   def self.awscli_image_version
-    governmentpaas_default_image_version
+    orange_default_image_version # governmentpaas_default_image_old_version
   end
 
   def self.load_yaml_fixture(task_name, relative_path_from_fixture_dir)

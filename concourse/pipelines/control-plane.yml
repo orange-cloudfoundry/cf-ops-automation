@@ -129,8 +129,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/curl-ssl
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/curl-ssl
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
       - name: concourse-micro
       run:
@@ -283,8 +283,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/curl-ssl
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/curl-ssl
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
       - name: config-resource
       run:
@@ -309,9 +309,9 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
-              repository: governmentpaas/git-ssh
-              tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+              # from https://hub.docker.com/r/orangecloudfoundry/git-ssh/tags
+              repository: orangecloudfoundry/git-ssh
+              tag: 317bf1656840ce57682039109ce93b701ffa6a32
           outputs:
             - name: success-tag
           run:
@@ -335,9 +335,9 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          # from https://hub.docker.com/r/governmentpaas/git-ssh/tags
-          repository: governmentpaas/git-ssh
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          # from https://hub.docker.com/r/orangecloudfoundry/git-ssh/tags
+          repository: orangecloudfoundry/git-ssh
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
         - name: concourse-micro-success
           optional: true
@@ -416,8 +416,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/git-ssh
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/git-ssh
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
       - name: secrets-writer
       outputs:
@@ -462,8 +462,8 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: governmentpaas/git-ssh
-          tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+          repository: orangecloudfoundry/git-ssh
+          tag: 317bf1656840ce57682039109ce93b701ffa6a32
       inputs:
       - name: paas-templates-full
       outputs:
