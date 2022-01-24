@@ -58,6 +58,17 @@ another-world-root-depls
 {:config_repo_name=>"config_repository", :template_repo_name=>"template_repository"}
 ## List of pipelines in which credentials appear for another-world-root-depls
 
+### background-image-url
+
+* another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
+* another-world-root-depls-cf-apps-generated.yml
+* another-world-root-depls-concourse-generated.yml
+* another-world-root-depls-k8s-generated.yml
+* another-world-root-depls-news-generated.yml
+* another-world-root-depls-tf-generated.yml
+* another-world-root-depls-update-generated.yml
+
 ### bosh-password
 
 * another-world-root-depls-bosh-generated.yml
@@ -184,6 +195,7 @@ another-world-root-depls
 
 ### another-world-root-depls-bosh-generated.yml
 
+* background-image-url
 * bosh-password
 * bosh-target
 * bosh-username
@@ -209,18 +221,20 @@ another-world-root-depls
 
 ### another-world-root-depls-bosh-precompile-generated.yml
 
+* background-image-url
 * slack-channel
 
 ### another-world-root-depls-cf-apps-generated.yml
 
-No credentials required
+* background-image-url
 
 ### another-world-root-depls-concourse-generated.yml
 
-No credentials required
+* background-image-url
 
 ### another-world-root-depls-k8s-generated.yml
 
+* background-image-url
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -245,13 +259,13 @@ No credentials required
 
 ### another-world-root-depls-news-generated.yml
 
-No credentials required
+* background-image-url
 
 ### another-world-root-depls-tf-generated.yml
 
-No credentials required
+* background-image-url
 
 ### another-world-root-depls-update-generated.yml
 
-No credentials required
+* background-image-url
 

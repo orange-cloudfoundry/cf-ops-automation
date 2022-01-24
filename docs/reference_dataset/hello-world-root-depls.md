@@ -25,8 +25,8 @@ hello-world-root-depls
 │       └── secrets.yml
 ├── cf-apps-deployments
 │   └── generic-app
-│       ├── Readme.md
 │       ├── enable-cf-app.yml
+│       ├── Readme.md
 │       ├── secrets
 │       │   └── secrets.yml
 │       └── spruce-file-sample-from-secrets.txt
@@ -44,10 +44,10 @@ hello-world-root-depls
 ├── k8s-sample
 │   └── enable-deployment.yml
 ├── pipeline-sample
-│   ├── Readme.md
 │   ├── concourse-pipeline-config
 │   │   └── virtualbox
 │   ├── enable-deployment.yml
+│   ├── Readme.md
 │   └── secrets
 │       └── secrets.yml
 ├── runtime-config.yml
@@ -113,8 +113,8 @@ hello-world-root-depls
 │           ├── pre-cf-push.sh
 │           ├── spruce-file-sample-from-templates.txt
 │           └── static-app
-│               ├── Staticfile
-│               └── index.html
+│               ├── index.html
+│               └── Staticfile
 ├── hooks
 │   └── k8s
 │       └── deploy.sh
@@ -157,6 +157,17 @@ hello-world-root-depls
 
 {:config_repo_name=>"config_repository", :template_repo_name=>"template_repository"}
 ## List of pipelines in which credentials appear for hello-world-root-depls
+
+### background-image-url
+
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-bosh-precompile-generated.yml
+* hello-world-root-depls-cf-apps-generated.yml
+* hello-world-root-depls-concourse-generated.yml
+* hello-world-root-depls-k8s-generated.yml
+* hello-world-root-depls-news-generated.yml
+* hello-world-root-depls-tf-generated.yml
+* hello-world-root-depls-update-generated.yml
 
 ### bosh-password
 
@@ -402,6 +413,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-bosh-generated.yml
 
+* background-image-url
 * bosh-password
 * bosh-target
 * bosh-username
@@ -431,6 +443,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-bosh-precompile-generated.yml
 
+* background-image-url
 * bosh-password
 * bosh-target
 * bosh-username
@@ -455,6 +468,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-cf-apps-generated.yml
 
+* background-image-url
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -474,6 +488,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-concourse-generated.yml
 
+* background-image-url
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -495,6 +510,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-k8s-generated.yml
 
+* background-image-url
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -522,6 +538,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-news-generated.yml
 
+* background-image-url
 * bot-github-access-token
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
@@ -536,6 +553,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-tf-generated.yml
 
+* background-image-url
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri
@@ -553,6 +571,7 @@ hello-world-root-depls
 
 ### hello-world-root-depls-update-generated.yml
 
+* background-image-url
 * cf-ops-automation-branch
 * cf-ops-automation-tag-filter
 * cf-ops-automation-uri

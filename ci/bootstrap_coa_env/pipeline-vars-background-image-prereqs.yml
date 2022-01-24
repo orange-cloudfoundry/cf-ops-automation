@@ -1,0 +1,3 @@
+pipeline_vars:
+  background-image-url: https://upload.wikimedia.org/wikipedia/commons/7/76/Creative-Tail-test_tube.svg
+  background-image-url-description: used by concourse to display a backgound image on each pipelines

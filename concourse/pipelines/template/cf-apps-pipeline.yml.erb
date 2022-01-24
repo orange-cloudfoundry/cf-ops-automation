@@ -11,6 +11,8 @@
   current_team = CiDeployment.team(all_ci_deployments, depls, "#{depls}-cf-apps-generated")
 %>
 ---
+display:
+  background_image: ((background-image-url))
 resource_types:
   - name: slack-notification
     type: registry-image

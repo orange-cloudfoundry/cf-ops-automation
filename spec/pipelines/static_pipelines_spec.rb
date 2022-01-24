@@ -8,10 +8,30 @@ describe 'static concourse pipelines spec' do
   let(:pipelines_references_fixture) { 'spec/scripts/generate-depls/fixtures/references/' }
   let(:pipelines_references_dataset) { 'docs/reference_dataset/pipelines/' }
   let(:pipeline_files) do
-    Dir.glob(pipelines_dir + '**/*.yml') + Dir.glob(pipelines_references_fixture + '*.yml') + Dir.glob(pipelines_references_dataset + '*.yml')
+    Dir.glob("#{pipelines_dir}**/*.yml") + Dir.glob("#{pipelines_references_fixture}*.yml") + Dir.glob("#{pipelines_references_dataset}*.yml")
   end
 
-  context 'resource_type exists' do
+  context 'when checking pipelines definition' do
+    let(:pipelines_without_reference_dataset) { Dir.glob("#{pipelines_dir}**/*.yml") + Dir.glob("#{pipelines_references_fixture}*.yml") }
+    let(:pipelines_display) do
+      result = []
+      pipelines_without_reference_dataset.each do |pipeline_filename|
+        pipeline = YAML.load_file(pipeline_filename)
+        result << if pipeline['display']
+                    pipeline['display'].to_yaml
+                  else
+                    "missing display in #{pipeline_filename}"
+                  end
+      end
+      result.uniq
+    end
+
+    it 'has uniq background_display set' do
+      expect(pipelines_display).to match_array("---\nbackground_image: \"((background-image-url))\"\n")
+    end
+  end
+
+  context 'when resource_type exists' do
     let(:resource_types) do
       result = []
       puts "list: #{pipeline_files}"

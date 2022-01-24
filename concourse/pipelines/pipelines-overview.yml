@@ -1,4 +1,6 @@
 ---
+display:
+  background_image: ((background-image-url))
 resources:
   - name: templates-commit
     type: mock
