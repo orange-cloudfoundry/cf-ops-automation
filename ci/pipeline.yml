@@ -16,6 +16,24 @@ meta:
     params:
       path: cf-ops-automation
       status: failure
+  - &coa-failure-acceptance-pr
+    put: pr-develop
+    params:
+      path: cf-ops-automation
+      status: failure
+      context: acceptance-tests
+  - &coa-failure-it-pr
+    put: pr-develop
+    params:
+      path: cf-ops-automation
+      status: failure
+      context: integration-tests
+  - &coa-failure-ut-pr
+    put: pr-develop
+    params:
+      path: cf-ops-automation
+      status: failure
+      context: unit-tests
   - &coa-pending-pr
     put: pr-develop
     params:
@@ -32,7 +50,8 @@ meta:
     params:
       path: pr-develop
       status: failure
-
+display:
+  background_image: https://wallpapercave.com/download/pirate-flag-wallpapers-wp2022142
 resource_types:
   - name: slack-notification
     type: registry-image
@@ -361,8 +380,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: governmentpaas/bosh-cli-v2
-              tag: 469ceea7a619b0abdd6cb27efd4d3bd5e9be3ddb
+              repository: orangecloudfoundry/bosh-cli-v2
+              tag: 317bf1656840ce57682039109ce93b701ffa6a32
           inputs:
             - name: cf-ops-automation
           params:
@@ -704,7 +723,9 @@ jobs:
           GIT_SHA_CMD: cat .git/resource/head_sha
           GIT_BRANCH_CMD: cat .git/resource/head_name
         on_failure:
-          *failed-pr
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-ut-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
@@ -736,11 +757,17 @@ jobs:
         image: cf-ops-automation-docker-image-pr
         timeout: 30m
         config: *acceptance_tests_config
-        on_failure: *coa-failure-pr
+        on_failure:
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-acceptance-pr
       - task: ensure-changelog-is-working
         image: cf-ops-automation-docker-image-pr
         config: *changelog_working
-        on_failure: *coa-failure-pr
+        on_failure:
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-acceptance-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
@@ -770,7 +797,10 @@ jobs:
         attempts: 1
         image: cf-ops-automation-docker-image-pr
         config: *integration_tests_setup_pre_requisites_task_config
-        on_failure: *coa-failure-pr
+        on_failure:
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-it-pr
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params: *integration_tests_setup_pre_requisites_task_config_params
 #          INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
@@ -781,12 +811,18 @@ jobs:
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: *integration_tests_setup_credhub_pre_requisites_task_config
-        on_failure: *coa-failure-pr
+        on_failure:
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-it-pr
       - task: upload-pipelines
         attempts: 2
         image: cf-ops-automation-docker-image-pr
         config: *integration_tests_upload-pipelines_task_config
-        on_failure: *coa-failure-pr
+        on_failure:
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-it-pr
       - put: pr-develop
         params:
           path: cf-ops-automation
