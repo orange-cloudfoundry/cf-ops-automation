@@ -45,6 +45,8 @@ echo "\$BASE_TEMPLATE_DIR: directory containing k8s scripts to execute (set to: 
 echo "\$K8S_GIT_REPO_PATH: directory containing generated files (set to: $K8S_GIT_REPO_PATH)"
 echo "\$PAAS_TEMPLATES_COMMIT_ID, \$PAAS_TEMPLATES_COMMITTER, \$PAAS_TEMPLATES_COMMIT_MESSAGE"
 echo "\$PRE_PROCESSED_MANIFEST_PATH: directory containing files processed during 'generate-<deployment-name>-manifest' step"
+echo "\$IAAS_TYPE: current IaaS type (set to $IAAS_TYPE)"
+echo "\$PROFILES: current active profiles (set to $PROFILES)"
 echo '---------------------'
 
 if [ -z "$PAAS_TEMPLATES_COMMIT_ID" ]; then
