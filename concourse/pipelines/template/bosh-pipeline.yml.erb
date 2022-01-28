@@ -1102,10 +1102,53 @@ jobs:
 <% if all_ci_deployments&.any? %>
   <% if all_ci_deployments&.dig(root_deployment_name, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY) %>
     <% raise "invalid ci-deployment-overview.yml. Missing key [#{root_deployment_name}][#{PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY}][state_file_path] or delete terraform-config key." if terraform_config_path.nil? %>
+- name: check-terraform-is-applied
+    <% jobs['terraform'] << 'check-terraform-is-applied' %>
+  serial: true
+  serial_groups: [terraform-applied]
+  on_failure: *on_failure
+  plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+          trigger: true
+        - get: paas-templates-<%= root_deployment_name %>
+          params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+          trigger: true
+        - get: secrets-<%= root_deployment_name %>-limited
+          params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+          trigger: true
+    - task: generate-terraform-tfvars
+      input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= root_deployment_name %>-limited, additional-resource: paas-templates-<%= root_deployment_name %>}
+      output_mapping: {generated-files: terraform-tfvars}
+      file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
+      params:
+        YML_FILES: |
+          ./credentials-resource/shared/secrets.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/meta.yml
+          ./credentials-resource/<%= terraform_config_path %>/secrets/secrets.yml
+          ./additional-resource/meta-inf.yml
+        YML_TEMPLATE_DIR: additional-resource/<%= terraform_config_path %>/template
+        CUSTOM_SCRIPT_DIR: additional-resource/<%= terraform_config_path %>/template
+        SUFFIX: -tpl.tfvars.yml
+        IAAS_TYPE: ((iaas-type))
+        PROFILES: ((profiles))
+    - task: terraform-plan
+      input_mapping: {secret-state-resource: secrets-<%= root_deployment_name %>-limited,spec-resource: paas-templates-<%= root_deployment_name %>}
+      file: cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml
+      params:
+        FAIL_ON_DIFF: true
+        SPEC_PATH: "<%= terraform_config_path %>/spec"
+        SECRET_STATE_FILE_PATH: "<%= terraform_config_path %>"
+        IAAS_SPEC_PATH: "<%= terraform_config_path %>/spec-((iaas-type))"
+        PROFILES_SPEC_PATH_PREFIX: "<%= terraform_config_path %>/spec-"
+        PROFILES: ((profiles))
+
+
 - name: check-terraform-consistency
     <% jobs['terraform'] << 'check-terraform-consistency' %>
   serial: true
-  serial_groups: [terraform]
+  serial_groups: [terraform-consistency]
   on_failure: *on_failure
   plan:
   - in_parallel:
@@ -1146,7 +1189,7 @@ jobs:
 - name: approve-and-enforce-terraform-consistency
     <% jobs['terraform'] << 'approve-and-enforce-terraform-consistency' %>
   serial: true
-  serial_groups: [terraform]
+  serial_groups: [terraform-consistency, terraform-applied]
   on_failure: *on_failure
   plan:
   - in_parallel:

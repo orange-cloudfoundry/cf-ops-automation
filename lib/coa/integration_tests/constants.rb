@@ -64,6 +64,7 @@ module Coa
             "execute-deploy-script" => {},
             "deploy-bosh-deployment-sample" => {},
             "check-terraform-consistency" => {},
+            "check-terraform-is-applied" => { "ignore-failure" => true }, # As we expect an error due to terraform change not applied yet
             "approve-and-enforce-terraform-consistency" => { "trigger" => true },
             "cancel-all-bosh-tasks" => { "trigger" => true },
             "upload-stemcell-to-director" => {},

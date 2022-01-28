@@ -814,7 +814,7 @@ describe 'BoshPipelineTemplateProcessing' do
 
       it 'generates terraform group' do
         expected_tf_group = { 'name' => 'terraform',
-                              'jobs' => %w[approve-and-enforce-terraform-consistency check-terraform-consistency] }
+                              'jobs' => %w[approve-and-enforce-terraform-consistency check-terraform-consistency check-terraform-is-applied] }
         generated = generated_pipeline['groups'].select { |group| group['name'] == 'terraform' }.pop
         expect(generated).to match(expected_tf_group)
       end
@@ -827,7 +827,6 @@ describe 'BoshPipelineTemplateProcessing' do
           .first
         ensure_definition = terraform_apply_task['ensure']
         expect(ensure_definition).to match(expected_tf_ensure_step)
-
       end
 
       it 'generates a valid check-terraform-consistency job' do
@@ -865,6 +864,62 @@ describe 'BoshPipelineTemplateProcessing' do
           .select { |step| step['task'] }
 
         expect(generated).to match(expected_tf_job)
+      end
+
+      it 'generates a valid check-terraform-is-applied job' do
+        expected_tf_job =
+          [
+            { "task" => 'generate-terraform-tfvars',
+              "input_mapping" =>
+                { "scripts-resource" => "cf-ops-automation", "credentials-resource" => "secrets-my-root-depls-limited", "additional-resource" => "paas-templates-my-root-depls" },
+              "output_mapping" => { "generated-files" => "terraform-tfvars" },
+              "file" => "cf-ops-automation/concourse/tasks/generate_manifest/task.yml",
+              "params" =>
+                { "YML_FILES" =>
+                    "./credentials-resource/shared/secrets.yml\n./credentials-resource/my-tfstate-location/secrets/meta.yml\n./credentials-resource/my-tfstate-location/secrets/secrets.yml\n./additional-resource/meta-inf.yml\n",
+                  "YML_TEMPLATE_DIR" => "additional-resource/my-tfstate-location/template",
+                  "CUSTOM_SCRIPT_DIR" => "additional-resource/my-tfstate-location/template",
+                  "SUFFIX" => "-tpl.tfvars.yml",
+                  "IAAS_TYPE" => "((iaas-type))",
+                  "PROFILES" => "((profiles))" } },
+            { "task" => "terraform-plan",
+              "input_mapping" =>
+                { "secret-state-resource" => "secrets-my-root-depls-limited",
+                  "spec-resource" => "paas-templates-my-root-depls" },
+              "file" => "cf-ops-automation/concourse/tasks/terraform_plan_cloudfoundry.yml",
+              "params" =>
+                { "SPEC_PATH" => "my-tfstate-location/spec",
+                  "SECRET_STATE_FILE_PATH" => "my-tfstate-location",
+                  "IAAS_SPEC_PATH" => "my-tfstate-location/spec-((iaas-type))",
+                  "PROFILES" => "((profiles))",
+                  "FAIL_ON_DIFF"=> true,
+                  "PROFILES_SPEC_PATH_PREFIX" => "my-tfstate-location/spec-" } }
+          ]
+
+        generated = generated_pipeline['jobs']
+                      .select { |job| job['name'] == "check-terraform-is-applied" }
+                      .flat_map { |job| job['plan'] }
+                      .select { |step| step['task'] }
+
+        expect(generated).to match(expected_tf_job)
+      end
+    end
+
+    context 'when validating terraform parallelism' do
+      let(:check_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('check-terraform-consistency') } }
+      let(:check_terraform_jobs_serial) { check_terraform_jobs.first['serial_groups'] }
+      let(:check_terraform_applied_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('check-terraform-is-applied') } }
+      let(:check_terraform_applied_jobs_serial) { check_terraform_applied_jobs.first['serial_groups'] }
+      let(:enforce_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('approve-and-enforce-terraform-consistency') } }
+      let(:enforce_terraform_jobs_serial) { enforce_terraform_jobs.first['serial_groups'] }
+      let(:all_ci_deployments) { enable_root_deployment_terraform }
+
+      it 'ensures enforce exclude check jobs' do
+        expect(enforce_terraform_jobs_serial).to match(check_terraform_jobs_serial + check_terraform_applied_jobs_serial)
+      end
+
+      it 'ensures check jobs does not share serials_groups' do
+        expect(check_terraform_applied_jobs_serial).not_to match(check_terraform_jobs_serial)
       end
     end
 
