@@ -100,10 +100,16 @@ run:
     else
       echo "WARNING: no profile detected !"
     fi
-
+    OPTIONS="-input=false"
+    if [ "$FAIL_ON_DIFF" = "true"  ];then
+      echo "Enable failure on differences"
+      OPTIONS="$OPTIONS -detailed-exitcode"
+    else
+      echo "Disable failure on differences"
+    fi
     cd generated-files/
     terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/
-    terraform plan -input=false ../spec-applied/
+    terraform plan $OPTIONS ../spec-applied/
 
 params:
   SPEC_PATH:
@@ -112,3 +118,4 @@ params:
   PROFILES:
   PROFILES_SPEC_PATH_PREFIX:
   PROFILES_AUTOSORT: true
+  FAIL_ON_DIFF: false
