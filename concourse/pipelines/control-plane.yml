@@ -100,7 +100,7 @@ resources:
 
 - name: concourse-micro-legacy
   icon: concourse-ci
-  type: concourse-5-pipeline
+  type: concourse-pipeline
   source: *concourse_config
 
 jobs:
@@ -175,58 +175,58 @@ jobs:
       repository: updated-pipelines
       rebase: true
 
-- name: save-deployed-pipelines-legacy
-  build_log_retention:
-    builds: 30
-  serial: true
-  on_failure: &failure_alert
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-    - in_parallel:
-        - put: concourse-meta
-        - get: cf-ops-automation
-          params: { submodules: none}
-        - get: secrets-writer
-          params: { submodules: none}
-        - get: concourse-micro-legacy
-          trigger: true
-    - task: sort-pipelines
-      config:
-        platform: linux
-        image_resource:
-          type: registry-image
-          source:
-            repository: teliaoss/concourse-fly
-            tag: '20210905'
-        inputs:
-          - name: concourse-micro-legacy
-        outputs:
-          - name: sorted-pipelines
-        run:
-          path: /bin/sh
-          args:
-            - -ec
-            - |
-              echo "We use fly $(fly --version) to format pipelines"
-              cp -p concourse-micro-legacy/*.yml sorted-pipelines/
-              find sorted-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
-
-    - task: update-git-deployed-pipelines
-      input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
-      output_mapping: {updated-git-resource: updated-pipelines}
-      file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
-      params:
-        COMMIT_MESSAGE: "Deployed pipelines update - [skip ci]"
-        OLD_DIR: "coa/pipelines/deployed"
-    - put: secrets-writer
-      params:
-        repository: updated-pipelines
-        rebase: true
+#- name: save-deployed-pipelines-legacy
+#  build_log_retention:
+#    builds: 30
+#  serial: true
+#  on_failure: &failure_alert
+#    put: failure-alert
+#    params:
+#      channel: ((slack-channel))
+#      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+#      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+#      username: Concourse
+#  plan:
+#    - in_parallel:
+#        - put: concourse-meta
+#        - get: cf-ops-automation
+#          params: { submodules: none}
+#        - get: secrets-writer
+#          params: { submodules: none}
+#        - get: concourse-micro-legacy
+#          trigger: true
+#    - task: sort-pipelines
+#      config:
+#        platform: linux
+#        image_resource:
+#          type: registry-image
+#          source:
+#            repository: teliaoss/concourse-fly
+#            tag: '20210905'
+#        inputs:
+#          - name: concourse-micro-legacy
+#        outputs:
+#          - name: sorted-pipelines
+#        run:
+#          path: /bin/sh
+#          args:
+#            - -ec
+#            - |
+#              echo "We use fly $(fly --version) to format pipelines"
+#              cp -p concourse-micro-legacy/*.yml sorted-pipelines/
+#              find sorted-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
+#
+#    - task: update-git-deployed-pipelines
+#      input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
+#      output_mapping: {updated-git-resource: updated-pipelines}
+#      file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
+#      params:
+#        COMMIT_MESSAGE: "Deployed pipelines update - [skip ci]"
+#        OLD_DIR: "coa/pipelines/deployed"
+#    - put: secrets-writer
+#      params:
+#        repository: updated-pipelines
+#        rebase: true
 
 - name: on-git-commit
   build_log_retention:
