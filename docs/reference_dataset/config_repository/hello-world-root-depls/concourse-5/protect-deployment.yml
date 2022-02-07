@@ -1,5 +1,0 @@
-meta:
-  description: |
-    This is a marker file to avoid directory deletion even if `enable-deployment.yml` is not present.
-    As reference dataset is used for integration tests, and we share bosh director with real deployments,
-    we don't want to delete `concourse-5` deployment when delete is executed

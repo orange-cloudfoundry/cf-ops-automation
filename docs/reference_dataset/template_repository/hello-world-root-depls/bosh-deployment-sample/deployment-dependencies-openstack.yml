@@ -1,9 +1,0 @@
----
-deployment:
-  bosh-deployment:
-    releases:
-      # we can add a iaas-dependant bosh release, like bosh-cpi
-      #bosh-openstack-cpi:
-      #  base_location: https://bosh.io/d/github.com/
-      #  repository: cloudfoundry-incubator/bosh-openstack-cpi
-      nginx:

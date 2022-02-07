@@ -1,4 +1,0 @@
-- type: replace
-  path: /orange-config-extentions?/COA-public?
-  value:
-    enabled: true

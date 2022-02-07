@@ -1,4 +1,0 @@
----
-user_name: "(( grab secrets.openstack.username ))"
-password: "(( grab secrets.openstack.password ))"
-meta-inf-support: "(( grab meta-inf.status ))"

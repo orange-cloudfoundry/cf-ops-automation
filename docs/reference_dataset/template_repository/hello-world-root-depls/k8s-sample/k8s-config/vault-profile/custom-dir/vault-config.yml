@@ -1,3 +1,0 @@
-#@ load("@ytt:data", "data")
-
-current-profile: #@ data.values.profile.name

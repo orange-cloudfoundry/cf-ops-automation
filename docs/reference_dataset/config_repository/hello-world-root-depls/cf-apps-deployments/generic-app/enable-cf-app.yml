@@ -1,8 +1,0 @@
----
-cf-app:
-  generic-app:
-    cf_api_url: https://my-cloudfroundry.org
-    cf_username: a-test-User
-    cf_password: a-test-Password
-    cf_organization: my-test-org
-    cf_space: my-test-space

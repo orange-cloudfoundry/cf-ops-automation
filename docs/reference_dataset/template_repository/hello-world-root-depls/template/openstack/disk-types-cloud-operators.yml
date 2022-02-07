@@ -1,5 +1,0 @@
-- type: replace
-  path: /disk_types/-
-  value:
-    name: micro-coa-ci
-    disk_size: 1500

@@ -1,7 +1,0 @@
----
-deployment:
-  bosh-deployment:
-    # bosh-release required. Don't set version here, set it in paas-template/root-deployment.yml
-    releases:
-      #we add vault boshrelease in profile dedicated file
-      vault:
