@@ -2,8 +2,7 @@
 secrets:
   meta-inf-support: (( grab meta-inf.status ))
 
-name: bosh-deployment-sample
-
+name: ((coa_deployment_name))
 releases: [] # defined in a operators file
 
 update: {} # defined in a operators file
@@ -46,3 +45,11 @@ instance_groups:
             error_log /var/vcap/sys/log/nginx/example.com-error.log;
           }
         }
+coa:
+  metadata:
+    description: |
+      other keys are automatically injected by COA as bosh variable. 
+    paas_templates_commit_id: ((paas_templates_commit_id))
+    coa_root_deployment_name: ((coa_root_deployment_name))
+    iaas_type: ((iaas_type))
+    profiles: ((profiles))

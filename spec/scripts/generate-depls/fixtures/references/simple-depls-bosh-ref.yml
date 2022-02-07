@@ -582,8 +582,22 @@ jobs:
           {
             echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
             echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
-          } > result-dir/operators/0-coa-templates-reference-vars.yml
+          } > result-dir/vars/0-coa-templates-reference-vars.yml
           echo "Done - file '0-coa-templates-reference-vars.yml'"
+          echo "Generating '0-coa-metadata-vars.yml'"
+          {
+            echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
+            echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
+            echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
+            echo 'iaas_type: "'"${IAAS_TYPE}"'"'
+            echo 'profiles: "'"${PROFILES}"'"'
+          } > result-dir/vars/0-coa-metadata-vars.yml
+          echo "Done - file '0-coa-metadata-vars.yml'"
+      params:
+        PROFILES: ((profiles))
+        IAAS_TYPE: ((iaas-type))
+        ROOT_DEPLOYMENT_NAME: simple-depls
+        DEPLOYMENT_NAME: ntp-with-scan
   - task: display-ntp-with-scan-manifest
     input_mapping:
       bosh-inputs: ops-and-vars-files
@@ -803,8 +817,22 @@ jobs:
           {
             echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
             echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
-          } > result-dir/operators/0-coa-templates-reference-vars.yml
+          } > result-dir/vars/0-coa-templates-reference-vars.yml
           echo "Done - file '0-coa-templates-reference-vars.yml'"
+          echo "Generating '0-coa-metadata-vars.yml'"
+          {
+            echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
+            echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
+            echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
+            echo 'iaas_type: "'"${IAAS_TYPE}"'"'
+            echo 'profiles: "'"${PROFILES}"'"'
+          } > result-dir/vars/0-coa-metadata-vars.yml
+          echo "Done - file '0-coa-metadata-vars.yml'"
+      params:
+        PROFILES: ((profiles))
+        IAAS_TYPE: ((iaas-type))
+        ROOT_DEPLOYMENT_NAME: simple-depls
+        DEPLOYMENT_NAME: zookeeper-without-scan
   - task: display-zookeeper-without-scan-manifest
     input_mapping:
       bosh-inputs: ops-and-vars-files
