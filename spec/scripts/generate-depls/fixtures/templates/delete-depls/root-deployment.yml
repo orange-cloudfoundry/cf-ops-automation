@@ -1,5 +1,0 @@
----
-name: delete-depls
-
-stemcell:
-  version: "3468.1"

@@ -1,3 +1,0 @@
-.
-├── example-file.yml
-└── example-dir

@@ -1,4 +1,0 @@
----
-name: invalid_deployment
-director_uuid: (( grab secrets.undefined_key ))
-

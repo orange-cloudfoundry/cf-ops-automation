@@ -1,4 +1,0 @@
----
-deployment:
-  bosh:
-    releases:

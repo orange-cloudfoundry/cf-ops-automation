@@ -1,9 +1,0 @@
----
-name: bosh
-director_uuid: (( grab secrets.bosh.bosh_micro_uuid ))
-
-stemcells:
-- alias: trusty
-  os: ubuntu-trusty
-  version: latest
-

@@ -1,5 +1,0 @@
-bucc:
-  bin_path: /path/to/bucc/bin
-  cpi: openstack
-  cpi_specific_options: "--keystone-v2"
-

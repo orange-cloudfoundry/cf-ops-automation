@@ -1,5 +1,0 @@
----
-name: simple-cf-apps-depls
-
-stemcell:
-  version: "3468.1"

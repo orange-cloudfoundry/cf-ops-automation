@@ -1,7 +1,0 @@
----
-name: first_deployment
-director_uuid: (( grab secrets.bosh_uuid ))
-
-releases:
-- name: ntp
-  version: (( grab meta.ntp.version ))

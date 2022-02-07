@@ -1,7 +1,0 @@
-.
-./.hide-me
-./another-world-root-depls
-./hello-world-root-depls
-./private-config.yml
-./shared
-

@@ -1,9 +1,0 @@
----
-default:
-  stemcell:
-    name: bosh-dummy-stemcell
-  retry:
-    task: 3
-    pull: 4
-    bosh-push: 5
-    push: 6

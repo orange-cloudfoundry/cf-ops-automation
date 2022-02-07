@@ -1,6 +1,0 @@
----
-- type: replace
-  path: /releases/-
-  value:
-    name: a-new-release
-    version: 1.0.0

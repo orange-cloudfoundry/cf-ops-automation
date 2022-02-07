@@ -1,7 +1,0 @@
----
-deployment:
-  bosh-deployment:
-    releases:
-      zookeeper_boshrelease:
-        base_location: https://bosh.io/d/github.com/
-        repository: cppforlife/zookeeper-release
