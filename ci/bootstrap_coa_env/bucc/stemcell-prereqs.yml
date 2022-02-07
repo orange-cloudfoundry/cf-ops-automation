@@ -1,5 +1,0 @@
-stemcell:
-  name: bosh-warden-boshlite-ubuntu-trusty-go_agent
-  version: "3586.25"
-  uri: https://s3.amazonaws.com/bosh-core-stemcells/warden/bosh-stemcell-3586.25-warden-boshlite-ubuntu-trusty-go_agent.tgz
-  sha: b9a44806dc1bb99b0d11d7413742f3619139da0b

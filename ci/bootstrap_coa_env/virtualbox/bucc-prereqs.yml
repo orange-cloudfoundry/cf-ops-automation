@@ -1,3 +1,0 @@
-bucc:
-  bin_path: "./bin/bucc/bin" # relative from ROOT
-  cpi: virtualbox

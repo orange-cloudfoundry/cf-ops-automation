@@ -1,7 +1,0 @@
-concourse:
-  concourse_target: cf-ops-automation
-  concourse_url: https://192.168.50.6
-  concourse_username: admin
-  concourse_password: 
-  concourse_insecure: "false"
-  concourse_ca_cert: 

@@ -1,6 +1,0 @@
-bosh:
-  bosh_environment: 192.168.50.6
-  bosh_target: 192.168.50.6
-  bosh_client: admin
-  bosh_client_secret: 
-  bosh_ca_cert: 
