@@ -1,1 +1,0 @@
-scripts/init-template.sh
