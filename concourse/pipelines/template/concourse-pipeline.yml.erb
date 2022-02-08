@@ -56,9 +56,9 @@ resources:
       username: ((concourse-<%= depls %>-username))
       password: ((concourse-<%= depls %>-password))
 
-- name: concourse-5-legacy-for-<%= depls %>
+- name: concourse-legacy-for-<%= depls %>
   icon: concourse-ci
-  type: concourse-5-pipeline
+  type: concourse-pipeline
   source:
     target: ((concourse-<%= depls %>-target))
     insecure: ((concourse-<%= depls %>-insecure))
@@ -226,7 +226,7 @@ jobs:
               - -ec
               - touch success-tag/task.ok
       on_failure:
-        put: concourse-5-legacy-for-<%= depls %>
+        put: concourse-legacy-for-<%= depls %>
         attempts: 3
         params:
           pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
