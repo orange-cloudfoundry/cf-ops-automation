@@ -460,7 +460,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                         - -ec
                         - touch success-tag/task.ok
                 on_failure:
-                  put: concourse-5-legacy-for-#{root_deployment_name}
+                  put: concourse-legacy-for-#{root_deployment_name}
                   attempts: 3
                   params:
                     pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
