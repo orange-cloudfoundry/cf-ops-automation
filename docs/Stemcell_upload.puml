@@ -1,0 +1,66 @@
+@startuml
+ actor DevOpsTeam as team
+
+ entity Git
+ box COA
+    participant "bosh-pipeline"
+    participant "precompile-pipeline"
+ end box
+
+ entity "Bosh Director" as bosh
+ entity "S3 Server" as s3
+ entity "Bosh IO" as boshio
+
+ team -> Git: bump stemcell
+ Git -> "bosh-pipeline": stemcell-version
+
+ group stemcell online mode (push-stemcell)
+    autonumber
+     "bosh-pipeline" -> boshio: download stemcell from
+     boshio --> "bosh-pipeline": stemcell.tgz
+     "bosh-pipeline" -> bosh: upload stemcell to
+     bosh --> "bosh-pipeline": done
+     ...
+ end group
+ group deploy-<my_deployment>
+     "bosh-pipeline" -> bosh: deploy-<my_deployment>
+     note right: does not include stemcell, neither bosh releases
+  end group
+ group stemcell offline mode without precompile
+    group task upload stemcell
+        autonumber
+        "bosh-pipeline" -> boshio: download
+        boshio --> "bosh-pipeline": stemcell.tgz
+        "bosh-pipeline" -> s3: upload stemcell
+        s3 --> "bosh-pipeline": done
+    end group
+    group task download stemcell
+    "bosh-pipeline" -> boshio: download stemcell
+    boshio --> "bosh-pipeline": stemcell.tgz
+    end group
+    "bosh-pipeline" -> bosh: upload stemcell
+    bosh --> "bosh-pipeline": done
+ end
+ == ==
+ group   stemcell offline mode with precompile
+    autonumber
+     "bosh-pipeline" -> boshio: download stemcell
+     boshio --> "bosh-pipeline": stemcell.tgz
+     "precompile-pipeline" -> s3: s3 upload stemcell
+     s3 --> "precompile-pipeline": done
+     "precompile-pipeline" -> bosh: bosh director upload stemcell
+     bosh --> "precompile-pipeline": done
+ end
+== ==
+  group stemcell online mode with precompile
+    note over "precompile-pipeline", "bosh-pipeline": It makes sense only for COA CI, to be able to test precompile pipelines
+    autonumber
+     "bosh-pipeline" -> boshio: download stemcell
+     boshio --> "bosh-pipeline": stemcell.tgz
+     "precompile-pipeline" -> s3: upload stemcell
+     s3 --> "precompile-pipeline": done
+     "precompile-pipeline" -> bosh: upload stemcell
+     bosh --> "precompile-pipeline": done
+    end
+
+@enduml

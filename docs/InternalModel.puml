@@ -1,0 +1,385 @@
+@startuml
+'https://plantuml.com/class-diagram
+
+class Map
+class Array
+class OfflineMode<? extends Map>{
+    Boolean boshreleases
+    Boolean stemcell
+    Boolean docker-images
+
+}
+
+LoadedConfig *-- OfflineMode
+LoadedConfig *-- DefaultConfig
+DefaultConfig *-- Profiles
+DefaultConfig *-- Stemcell
+DefaultConfig *-- IaasType
+DefaultConfig *-- Concourse
+DefaultConfig *-- BoshOptions
+DefaultConfig *-- Retry
+DefaultConfig *-- ReconciliationLoop
+DefaultConfig *-- Git
+
+enum IaasType {
+  openstack-hws
+  vsphere
+  ...
+}
+
+class Profiles<is Array>{
+  60-enable-backups
+  70-alertmanager-mattermost
+  80-r2-openstack-hws
+  81-r3-openstack-hws
+  90-vpn-traffic-limitation
+  91-paas-templates-version
+  98-adapt-extended-deployments
+  99-debug-k8s-ops-depls
+  ...
+}
+
+SharedConfig *-- OfflineMode
+SharedConfig *-- DefaultConfig
+class SharedConfig<is Map>{
+    OfflineMode offline-mode
+    Boolean precompile-mode
+    DefaultConfigMap default
+    DefaultConfigMap root_deployment_name_override*
+}
+note right of SharedConfig{
+    From shared_config.yml
+}
+
+PrivateConfig *-- OfflineMode
+PrivateConfig *-- DefaultConfig
+class PrivateConfig<is Map>{
+    OfflineMode offline-mode
+    Boolean precompile-mode
+    DefaultConfigMap default
+    DefaultConfigMap root_deployment_name_override*
+
+}
+note right of PrivateConfig {
+    From private_config.yml
+}
+class DefaultConfig<is Map>{
+  stemcell: Stemcell
+  IaasType iaas
+  Concourse concourse
+  BoshOptions bosh-options
+  Retry retry
+  Profiles profiles
+  ReconciliationLoop reconciliation-loop
+  Git git
+}
+class Concourse<is Map> {
+    Integer parallel_execution_limit
+}
+class Stemcell<is Map> {
+    String name
+}
+class BoshOptions<is Map> {
+  Boolean cleanup
+  Boolean no_redact
+  Boolean dry_run
+  Boolean fix
+  Boolean recreate
+  Array skip_drain
+  Integer max_in_flight
+}
+
+class   Git<is Map>{
+        Integer     shallow-clone-depth
+}
+class   ReconciliationLoop<is Map>{
+        Time  interval
+}
+note right of ReconciliationLoop::interval
+  Sample format 1h. <b>Default: 4m</b>
+end note
+
+class Retry<is Map> {
+  Integer task
+  Integer pull
+  Integer push
+  Integer bosh-push
+}
+interface LoadedConfig<is Map> {
+    OfflineMode offline-mode
+    Boolean precompile-mode
+    DefaultConfigMap default
+    DefaultConfigMap root_deployment_name_override*
+}
+note right of LoadedConfig::root_deployment_name_override
+  Sample
+     coab-depls:
+       retry:
+         bosh-push: 1
+end note
+
+class RootDeploymentVersion<is RubyObject> #palegreen{
+    load_file("#{options.paas_templates_path}/#{root_deployment_name}/root-deployment.yml")
+    VersionsInfo: versions()
+}
+RootDeploymentVersion *- VersionsInfo : > create
+VersionsInfo *-- ReleaseInfo
+VersionsInfo *-- StemcellVersion
+
+interface VersionsInfo<is Map>{
+ String root_deployment_name
+ Map<release_name, ReleaseInfo> releases
+ StemcellVersion stemcell
+}
+note right of VersionsInfo
+   stemcell:
+     version: '1.51'
+end note
+
+class StemcellVersion<is Map> {
+   String version
+}
+
+
+class ReleaseInfo<is Map> {
+    String repository
+    String sha1
+    String version
+    String base_location
+    String skip_branch_checkout
+    String tag_prefix
+}
+note right of ReleaseInfo::base_location
+  default: https://github.com/
+end note
+note right of ReleaseInfo::skip_branch_checkout
+  default: false
+end note
+note right of ReleaseInfo::tag_prefix
+  default: v
+end note
+
+
+class TemplateProcessor <is RubyObject> #palegreen{
+    String root_deployment_name
+    String bosh_cert
+    String ops_automation_path
+    LoadedConfig loaded_config
+    VersionsInfo versions
+    CfAppsOverview all_cf_apps
+    CiDeploymentOverview all_ci_deployments
+    Dependencies: all_dependencies
+    GitModules git_submodules
+    SecretsDirectoriesOverview: secrets_dirs_overview
+}
+note top of TemplateProcessor{
+    Pipeline_generator.rb set_context
+}
+
+TemplateProcessor::all_ci_deployments *-- CiDeploymentOverview
+TemplateProcessor::secrets_dirs_overview *-- SecretsDirectoriesOverview
+TemplateProcessor::loaded_config *-- LoadedConfig
+TemplateProcessor::all_cf_apps *-- CfAppsOverview
+TemplateProcessor::git_submodules *-- GitSubmodules
+TemplateProcessor::all_dependencies *-- Dependencies
+TemplateProcessor::versions *-- VersionsInfo
+
+CiDeploymentOverview *-- CiDeploymentInfo
+interface CiDeploymentOverview<is Map>{
+    Map<root_deployment_name, CiDeploymentInfo>
+}
+class CiDeploymentInfo<is Map> {
+    String target_name
+    TerraformConfig terraform_config
+    PipelineConfigs pipelines
+}
+CiDeploymentInfo *-- TerraformConfig
+class TerraformConfig<is Map> {
+    String state_file_path
+}
+CiDeploymentInfo *-- PipelineConfigs
+class PipelineConfigs<is Map> {
+    Map<pipeline_name, PipelineInfo>
+}
+PipelineConfigs *-- PipelineInfo
+class PipelineInfo<is Map> {
+    String team
+    String config_file
+}
+
+CiDeployment - CiDeploymentOverview : > generate
+class CiDeployment<is RubyObject> #palegreen{
+ CiDeploymentOverview: overview()
+}
+
+interface CfAppsOverview <is Map>{
+    Map<deployment_name,CfAppInfo>
+}
+CfAppsOverview *-- CfAppInfo
+class CfAppInfo <is Map>{
+      String cf_api_url
+      String cf_username
+      String cf_password
+      String cf_organization
+      String cf_space
+      String base-dir
+}
+
+CfApps - CfAppsOverview : > generate
+class CfApps<is RubyObject> #palegreen{
+ CfAppsOverview: overview()
+}
+
+interface GitSubmodules <is Map>{
+}
+
+GitModules - GitSubmodules : > generate
+class GitModules<is RubyObject> #palegreen{
+
+ GitSubmodules : list()
+}
+class RootDeployment<is RubyObject> #palegreen{
+ new(root_deployment_name, options.paas_templates_path, options.secrets_path)
+ Dependencies : overview_from_hash(deployment_factory)
+}
+RootDeployment::overview_from_hash *-- DeploymentFactory
+RootDeployment::overview_from_hash *-- Dependencies
+
+class RootDeploymentOverviewEnhancer<is RubyObject> #palegreen{
+ new(root_deployment_name, root_deployment_overview, versions)
+ Dependencies : enhance()
+}
+RootDeploymentOverviewEnhancer::enhance *-- Dependencies
+RootDeploymentOverviewEnhancer::enhance *-- RootDeployment::overview_from_hash
+
+class ExtendedConfigBuilder<is RubyObject> #palegreen{
+ new()
+ ExtendedConfigBuilder: with_iaas_type(options.iaas_type)
+ ExtendedConfigBuilder: with_profiles(profiles)
+ --
+ ExtendedConfig : build()
+}
+ExtendedConfigBuilder *-- ExtendedConfig: > create
+class ExtendedConfig<is RubyObject> #palegreen{
+}
+Config *-- SharedConfig : > load_yaml
+Config *-- PrivateConfig : > load_yaml
+Config *-- ExtendedConfig
+class Config<is RubyObject> #palegreen {
+    new(shared_config, private_config, extended_config)
+    LoadedConfig : load_config()
+}
+Config *-- LoadedConfig: > create
+note top of RootDeployment {
+    versions = root_deployment_versions.versions
+}
+
+class DeploymentFactory<is RubyObject> #palegreen {
+    new(root_deployment_name, root_deployment_versions.versions, config)
+}
+DeploymentFactory::new *-- RootDeploymentVersion::versions
+DeploymentFactory::new *-- LoadedConfig
+
+interface Dependencies<is Map> {
+    Map<deployment_name, Dependency>
+}
+
+enum DeploymentStatus {
+    enabled,
+    disabled
+}
+
+class ActivationInfo< Map>{
+    Boolean active
+}
+
+DependencyErrands *-- ErrandInfo
+class DependencyErrands {
+    Map<errand_name, ErrandInfo>
+}
+class ErrandInfo {
+    String display-name
+}
+
+
+DependencyStemcells *-- DependencyStemcellInfo
+class DependencyStemcells{
+    Map<stemcell_name, DependencyStemcellInfo>
+}
+class DependencyStemcellInfo{
+    EMPTY_MAP
+}
+
+DependencyResources *-- DependencyResourceSecrets
+DependencyResources *-- DependencyResourceTemplates
+class DependencyResourceSecrets<is Map>{
+    Boolean local_deployment_scan
+
+}
+
+class DependencyResourceTemplates<is Map>{
+      Array<String> extended_scan_path
+}
+note left of DependencyResourceTemplates {
+  resources:
+    templates:
+      extended_scan_path:
+      - micro-depls/00-core-connectivity-terraform/template/terraform-specs
+      - shared-operators/paas-templates-version
+}
+
+class DependencyResources{
+    DependencyResourceSecrets secrets
+    DependencyResourceTemplates templates
+}
+
+DependencyReleases *-- DependencyReleaseInfo
+class DependencyReleases {
+    Map<release_name, DependencyReleaseInfo>
+}
+
+class DependencyReleaseInfo {
+    String version
+}
+
+Dependencies *-- Dependency
+Dependency *-- BoshOptions
+Dependency *-- DependencyErrands
+Dependency *-- DependencyReleases
+Dependency *-- DependencyResources
+Dependency *-- DependencyResourceSecrets
+Dependency *-- DependencyStemcells
+Dependency *-- DeploymentStatus
+Dependency *-- ActivationInfo
+class Dependency<is Map> {
+    DependencyResources resources
+    DependencyReleases releases
+    DependencyStemcells stemcells
+    BoshOptions bosh-options
+    DependencyErrands errands
+    DependencyErrands manual-errands
+    DeploymentStatus status
+
+    ActivationInfo bosh-deployment
+    ActivationInfo kubernetes
+    ActivationInfo concourse
+}
+note left of Dependencies {
+    Corresponding to "Dependencies loaded:" in generate-depls.rb logs
+}
+
+class Secrets<is RubyObject> #palegreen{
+    new("#{options.secrets_path}/*")
+    overview()
+}
+Secrets *-- SecretsDirectoriesOverview : > create
+class SecretsDirectoriesOverview<is Map>{
+    Map<root_deployment_name, SubDirectories>
+}
+SecretsDirectoriesOverview *-- SubDirectories
+class SubDirectories<is Array>{
+}
+note right of SubDirectories {
+    only get direct directories of each root_deployment_name
+}
+@enduml
