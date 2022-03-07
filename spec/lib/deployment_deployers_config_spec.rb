@@ -9,6 +9,7 @@ describe DeploymentDeployersConfig do
   let(:templates) do
     Dir.mktmpdir('templates')
   end
+  let(:fail_on_inconsistency) { true}
   let(:secrets) do
     Dir.mktmpdir('secrets')
   end
@@ -33,7 +34,7 @@ describe DeploymentDeployersConfig do
   end
 
   describe '#load_configs' do
-    subject { described_class.new(deployment_name, deployment_templates_path, deployment_secrets_path, deployment_factory) }
+    subject { described_class.new(deployment_name, deployment_templates_path, deployment_secrets_path, deployment_factory, fail_on_inconsistency: fail_on_inconsistency) }
 
     context 'when bosh and concourse deployers are enabled' do
       let(:loaded_config) { subject.load_configs }

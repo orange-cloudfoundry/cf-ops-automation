@@ -1,0 +1,303 @@
+<%
+  require "#{ops_automation_path}/lib/pipeline_helpers"
+
+  root_deployment_name = "TODO"
+
+  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
+  configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
+
+  enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
+  git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
+  concourse_retry = configurer.concourse_retry
+  jobs = Hash.new {|h,k| h[k]=[]}
+%>
+---
+display:
+  background_image: ((background-image-url))
+resource_types:
+  - name: concourse-5-pipeline
+    type: registry-image
+    source:
+      repository: concourse/concourse-pipeline-resource
+      tag: 5.0.0
+
+  - name: concourse-pipeline
+    type: registry-image
+    source:
+      repository: orangecloudfoundry/concourse-pipeline-resource
+      tag: 6.5.0
+
+  - name: slack-notification
+    type: registry-image
+    source:
+      repository: cfcommunity/slack-notification-resource
+      tag: v1.4.2
+
+resources:
+<%   enabled_deployments_with_empty = all_dependencies.select do |root_deployment, root_deployment_info|
+    root_deployment_info.keep_if {|_, deployment_info| deployment_info['status'] == 'enabled' && deployment_info['concourse']}
+  end
+
+  enabled_concourse_deployments = enabled_deployments_with_empty.keep_if {|_, deployment_info| deployment_info.size > 0 }
+ %>
+
+<% puts enabled_concourse_deployments %>
+
+<% unless enabled_concourse_deployments.empty? %>
+
+- name: failure-alert
+  icon: slack
+  type: slack-notification
+  source:
+    url: ((slack-webhook))
+    proxy: ((slack-proxy))
+    proxy_https_tunnel: ((slack-proxy-https-tunnel))
+    disable: ((slack-disable))
+
+<% enabled_concourse_deployments.each do |root_deployment_name, _| %>
+- name: concourse-for-<%= root_deployment_name %>
+  icon: concourse-ci
+  type: concourse-pipeline
+  source:
+    target: ((concourse-<%= root_deployment_name %>-target))
+    insecure: ((concourse-<%= root_deployment_name %>-insecure))
+    teams:
+    - name: main
+      username: ((concourse-<%= root_deployment_name %>-username))
+      password: ((concourse-<%= root_deployment_name %>-password))
+
+- name: concourse-legacy-for-<%= root_deployment_name %>
+  icon: concourse-ci
+  type: concourse-pipeline
+  source:
+    target: ((concourse-<%= root_deployment_name %>-target))
+    insecure: ((concourse-<%= root_deployment_name %>-insecure))
+    teams:
+      - name: main
+        username: ((concourse-<%= root_deployment_name %>-username))
+        password: ((concourse-<%= root_deployment_name %>-password))
+<% end %>
+
+- name: cf-ops-automation
+  icon: rocket
+  type: git
+  source:
+    uri: ((cf-ops-automation-uri))
+    branch: ((cf-ops-automation-branch))
+    tag_filter: ((cf-ops-automation-tag-filter))
+    skip_ssl_verification: true
+
+<% enabled_concourse_deployments&.sort.each do |root_deployment_name, root_deployment_info|
+  root_deployment_info&.sort.each do |name, concourse_config|
+  secrets_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: root_deployment_name,
+    name: name,
+    git_submodules: git_submodules,
+    config: concourse_config,
+    config_key: 'secrets',
+    defaults: ["#{root_deployment_name}/#{name}", "shared", "coa/config", "private-config.yml"])
+  paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: root_deployment_name,
+    name: name,
+    git_submodules: git_submodules,
+    config: concourse_config,
+    config_key: 'secrets',
+    defaults: ["#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}", "#{root_deployment_name}/root-deployment.yml", "shared-config.yml", "meta-inf.yml"])
+%>
+- name: secrets-<%= root_deployment_name %>-<%= name %>
+  icon: source-merge
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: <%= secrets_selected_paths %>
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-<%= root_deployment_name %>-<%= name %>
+  icon: home-edit
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: <%= paas_templates_selected_paths %>
+    # We trigger before pipeline-current-<paas-template> to update generated pipelines at first
+    branch: ((paas-templates-branch))
+    skip_ssl_verification: true
+
+<% end %>
+<% end %>
+
+<% end %>
+
+jobs:
+<% if enabled_concourse_deployments.empty? %>
+- name: this-is-an-empty-pipeline
+<% else %>
+<% enabled_concourse_deployments&.sort&.each do |root_deployment_name, root_deployment_info| %>
+  <% root_deployment_info&.sort.each do |name, details| %>
+  <% current_serial_group = configurer.serial_group_strategy.generate(name, details) %>
+  <% pipeline_name = "#{root_deployment_name}-#{name}" %>
+
+- name: deploy-concourse-<%= name %>-pipeline
+  <% jobs[root_deployment_name] << "deploy-concourse-#{name}-pipeline" %>
+  <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
+  on_failure:
+    put: failure-alert
+    params:
+      channel: ((slack-channel))
+      icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+      text: |
+        ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+      username: Concourse
+  plan:
+  - in_parallel:
+    - get: paas-templates-<%= root_deployment_name %>-<%= name %>
+      <% current_git_submodule = git_submodules[root_deployment_name][name] if git_submodules[root_deployment_name] %>
+      params: { submodules: <%= current_git_submodule || 'none' %>, depth: <%= current_git_submodule ? 0 : git_shallow_clone_depth %> }
+      attempts: <%= concourse_retry[:pull] %>
+      trigger: true
+    - get: secrets-<%= root_deployment_name %>-<%= name %>
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+      attempts: <%= concourse_retry[:pull] %>
+      trigger: true
+    - get: cf-ops-automation
+      params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+      attempts: <%= concourse_retry[:pull] %>
+      trigger: false
+
+  - task: spruce-processing-<%= name %>
+    input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-<%= root_deployment_name %>-<%= name %>, additional-resource: paas-templates-<%= root_deployment_name %>-<%= name %>}
+    output_mapping: {generated-files: spruced-files}
+    file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
+    params:
+      SPRUCE_FILE_BASE_PATH: credentials-resource/<%= "#{root_deployment_name}/#{name}" %>
+      YML_TEMPLATE_DIR: additional-resource/<%= "#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
+      YML_FILES: |
+          ./credentials-resource/<%= root_deployment_name %>/<%= name %>/secrets/secrets.yml
+          ./credentials-resource/shared/secrets.yml
+          ./additional-resource/meta-inf.yml
+      CUSTOM_SCRIPT_DIR: additional-resource/<%= "#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
+      IAAS_TYPE: ((iaas-type))
+      PROFILES: ((profiles))
+  - task: execute-<%= name %>-pre-deploy
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= root_deployment_name %>-<%= name %>, credentials-resource: secrets-<%= root_deployment_name %>-<%= name %>, additional-resource: spruced-files}
+    output_mapping: {generated-files: pre-deploy-resource}
+    file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/<%= "#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
+      SECRETS_DIR: credentials-resource/<%= root_deployment_name %>/<%= name %>
+  - task: copy-<%= name %>-required-files
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= root_deployment_name %>-<%= name %>, credentials-resource: secrets-<%= root_deployment_name %>-<%= name %>, additional-resource: pre-deploy-resource}
+    output_mapping: {generated-files: bosh-inputs}
+    file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/<%= "#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
+      SECRETS_DIR: credentials-resource/<%= root_deployment_name %>/<%= name %>
+      MANIFEST_NAME: <%= name %>.yml
+  - task: bosh-interpolate-pipeline-with-ops-and-vars-files
+    input_mapping:
+      bosh-inputs: bosh-inputs
+      manifest-dir: bosh-inputs
+      scripts-resource: cf-ops-automation
+      secrets: secrets-<%= root_deployment_name %>-<%= name %>
+    output_mapping: {result-dir: final-<%= name %>-pipeline}
+    file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
+    params:
+       VARS_FILES_SUFFIX: vars.yml
+       OPS_FILES_SUFFIX:  operators.yml
+       BOSH_YAML_FILE: <%= name %>.yml
+  - task: generate-concourse-pipeline-config
+    input_mapping:
+      config-resource: secrets-<%=name %>
+      pipeline-path: final-<%= name %>-pipeline
+    file: cf-ops-automation/concourse/tasks/generate_single_concourse_pipeline_config/task.yml
+    params:
+      PIPELINE_TEAM: main
+      PIPELINE_NAME: <%= name %>
+      PIPELINE_NAME_PREFIX: <%= root_deployment_name %>-
+      CONFIG_PATH: config-resource/coa/config
+      OUTPUT_CONFIG_PATH: secrets-<%=name %>/coa/config
+      OUTPUT_PIPELINE_PATH: final-<%= name %>-pipeline
+  - try:
+      put: concourse-for-<%= root_deployment_name %>
+      attempts: 3
+      params:
+        pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+      on_success:
+        task: set-success-tag
+        output_mapping: { success-tag: concourse-micro-success}
+        config: &success_tag
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: orangecloudfoundry/git-ssh
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
+          outputs:
+            - name: success-tag
+          run:
+            path: sh
+            args:
+              - -ec
+              - touch success-tag/task.ok
+      on_failure:
+        put: concourse-legacy-for-<%= root_deployment_name %>
+        attempts: 3
+        params:
+          pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
+        on_success:
+          task: set-success-tag
+          output_mapping: { success-tag: concourse-micro-legacy-success}
+          config: *success_tag
+
+  - task: check-success-tag
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: orangecloudfoundry/git-ssh
+          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
+      inputs:
+        - name: concourse-micro-success
+          optional: true
+        - name: concourse-micro-legacy-success
+          optional: true
+      run:
+        path: sh
+        args:
+          - -ec
+          - |
+            if [ -e concourse-micro-success/task.ok ];then
+              echo "Task concourse-micro successfull"
+              exit 0
+            fi
+            if [ -e concourse-micro-legacy-success/task.ok ];then
+              echo "Task concourse-micro-legacy successfull"
+              exit 0
+            fi
+            echo "Failed to update pipelines, please check logs"
+            exit 1
+
+
+
+  - task: execute-<%= name %>-post-deploy
+    input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-<%= root_deployment_name %>-<%= name %>, credentials-resource: secrets-<%= root_deployment_name %>-<%= name %>, additional-resource: final-<%= name %>-pipeline}
+    output_mapping: {generated-files: post-deploy-result}
+    file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
+    params:
+      CUSTOM_SCRIPT_DIR: template-resource/<%= "#{root_deployment_name}/#{name}/#{DeploymentDeployersConfig::CONCOURSE_CONFIG_DIRNAME}" %>
+      SECRETS_DIR: credentials-resource/<%= root_deployment_name %>/<%= name %>
+<% end %>
+<% end %>
+<% end %>
+
+groups:
+  - name: all
+    jobs: ["*"]
+<% jobs.sort.each do |group_name, job_names| %>
+  - name: <%= group_name.downcase %>
+    jobs:
+  <% job_names&.sort.each do |job_name| %>
+      - <%= job_name %>
+  <% end %>
+<% end %>

@@ -14,7 +14,7 @@ class Secrets
       dir_overview[depls_level_name] = subdir_overview(depls_level_dir, depls_level_name)
     end
 
-    dir_overview
+    dir_overview.sort
   end
 
   private
@@ -26,6 +26,6 @@ class Secrets
       puts "Processing Secrets boshrelease level: #{depls_level_name} -- #{boshrelease_level_name}"
       overview << boshrelease_level_name
     end
-    overview
+    overview.sort
   end
 end

@@ -1,17 +1,19 @@
 require 'yaml'
 require_relative 'deployment_factory'
-require_relative 'deployment_deployers_config'
+require_relative './deployment_deployers_config'
 
 class RootDeployment
-  attr_reader :root_deployment_name, :dependency_root_path, :enable_deployment_root_path, :excluded_file
+  attr_reader :root_deployment_name, :dependency_root_path, :enable_deployment_root_path, :excluded_file, :fail_on_inconsistency
+
   ENABLE_DEPLOYMENT_FILENAME = 'enable-deployment.yml'.freeze
   DEFAULT_EXCLUDE = %w[secrets cf-apps-deployments terraform-config template].freeze
 
-  def initialize(root_deployment_name, dependency_root_path, enable_deployment_root_path, exclude_list = DEFAULT_EXCLUDE)
+  def initialize(root_deployment_name, dependency_root_path, enable_deployment_root_path, exclude_list: DEFAULT_EXCLUDE, fail_on_inconsistency: true)
     @root_deployment_name = root_deployment_name
     @dependency_root_path = dependency_root_path
     @enable_deployment_root_path = enable_deployment_root_path
     @excluded_file = exclude_list
+    @fail_on_inconsistency = fail_on_inconsistency
 
     raise 'invalid root_deployment_name' if @root_deployment_name.to_s.empty?
     raise 'invalid dependency_root_path' if @dependency_root_path.to_s.empty?
@@ -43,7 +45,7 @@ class RootDeployment
 
   def create_deployment_deployer_config(deployment_name, deployment_factory, filename)
     base_location = File.join(@dependency_root_path, @root_deployment_name, deployment_name)
-    DeploymentDeployersConfig.new(deployment_name, base_location, filename, deployment_factory)
+    DeploymentDeployersConfig.new(deployment_name, base_location, filename, deployment_factory, fail_on_inconsistency: @fail_on_inconsistency)
   end
 
   def load_deployment_config_files(deployment_name, deployers_config, enable_deployment_path)

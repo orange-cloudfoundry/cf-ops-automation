@@ -3,7 +3,7 @@ require_relative 'deployment_factory'
 #
 # This class creates a list of deployer used by a deployment
 class DeploymentDeployersConfig
-  attr_reader :deployment_name, :public_base_location, :private_base_location
+  attr_reader :deployment_name, :public_base_location, :private_base_location, :fail_on_inconsistency
 
   DEPLOYMENT_DEPENDENCIES_FILENAME = 'deployment-dependencies.yml'.freeze
   CONCOURSE_CONFIG_DIRNAME = 'concourse-pipeline-config'.freeze
@@ -13,11 +13,12 @@ class DeploymentDeployersConfig
   OLD_BOSH_DEPLOYMENT_CONFIG_DIRNAME = 'template'.freeze
   BOSH_DIRECTOR_CONFIG_DIRNAME = 'bosh-director-config'.freeze
 
-  def initialize(deployment_name, public_base_location, private_base_location, deployment_factory)
+  def initialize(deployment_name, public_base_location, private_base_location, deployment_factory, fail_on_inconsistency: true)
     @deployment_name = deployment_name
     @public_base_location = public_base_location
     @private_base_location = private_base_location
     @deployment_factory = deployment_factory
+    @fail_on_inconsistency = fail_on_inconsistency
   end
 
   def load_configs
@@ -26,7 +27,7 @@ class DeploymentDeployersConfig
     load_terraform_config(deployment_details)
     load_concourse_config(deployment_details)
     load_kubernetes_config(deployment_details)
-    raise "Inconsistency detected: deployment <#{@deployment_name}> is marked as active, but no #{DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config directory found (#{CONCOURSE_CONFIG_DIRNAME}, #{KUBERNETES_CONFIG_DIRNAME}) at #{@public_base_location}" if deployment_details.empty?
+    raise "Inconsistency detected: deployment <#{@deployment_name}> is marked as active, but no #{DEPLOYMENT_DEPENDENCIES_FILENAME}, nor other deployer config directory found (#{CONCOURSE_CONFIG_DIRNAME}, #{KUBERNETES_CONFIG_DIRNAME}) at #{@public_base_location}" if @fail_on_inconsistency && deployment_details.empty?
 
     create_and_enable_deployment(deployment_details)
   end
