@@ -172,7 +172,7 @@ resources:
     git_submodules: git_submodules,
     config: boshrelease,
     config_key: 'templates',
-    defaults: ["#{root_deployment_name}/#{name}"])
+    defaults: ["#{root_deployment_name}/#{name}", "meta-inf.yml"])
   paas_templates_selected_paths << "#{root_deployment_name}/root-deployment.yml" if paas_templates_selected_paths
 %>
 <% deployment_details = PipelineHelpers::DeploymentDetails.new(name, boshrelease) %>
@@ -748,7 +748,7 @@ jobs:
       git_submodules: git_submodules,
       config: boshrelease,
       config_key: 'templates',
-      defaults: ["#{root_deployment_name}/#{name}"]
+      defaults: ["#{root_deployment_name}/#{name}", "meta-inf.yml"]
     )
     submodules = PipelineHelpers.git_resource_loaded_submodules(
       depls: root_deployment_name,

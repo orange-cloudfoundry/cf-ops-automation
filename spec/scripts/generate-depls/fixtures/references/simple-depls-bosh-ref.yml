@@ -101,7 +101,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/ntp-with-scan", "simple-depls/root-deployment.yml"]
+    paths: ["simple-depls/ntp-with-scan", "meta-inf.yml", "simple-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: ntp-with-scan-deployment
@@ -118,7 +118,7 @@ resources:
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/zookeeper-without-scan", "simple-depls/root-deployment.yml"]
+    paths: ["simple-depls/zookeeper-without-scan", "meta-inf.yml", "simple-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: zookeeper-without-scan-deployment
@@ -500,7 +500,7 @@ jobs:
     params:
       ROOT_DEPLOYMENT: simple-depls
       DEPLOYMENT: ntp-with-scan
-      SCAN_PATHS: simple-depls/ntp-with-scan
+      SCAN_PATHS: simple-depls/ntp-with-scan meta-inf.yml
       GIT_SUBMODULES: 
       LOCAL_SECRETS_SCAN: true
   - task: generate-ntp-with-scan-manifest
@@ -735,7 +735,7 @@ jobs:
     params:
       ROOT_DEPLOYMENT: simple-depls
       DEPLOYMENT: zookeeper-without-scan
-      SCAN_PATHS: simple-depls/zookeeper-without-scan
+      SCAN_PATHS: simple-depls/zookeeper-without-scan meta-inf.yml
       GIT_SUBMODULES: 
       LOCAL_SECRETS_SCAN: false
   - task: generate-zookeeper-without-scan-manifest

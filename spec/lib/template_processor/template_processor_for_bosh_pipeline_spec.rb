@@ -180,6 +180,18 @@ describe 'BoshPipelineTemplateProcessing' do
       @processed_template = subject.process(@pipelines_dir + '/*')
     end
 
+    context 'when paas-templates deployment is defined' do
+      it 'includes "meta-inf.yml" scan' do
+        paas_templates_resources = generated_pipeline['resources'].select { |resource| resource['name'].start_with?("paas-templates-") && !resource['name'].end_with?("-versions")  }
+        paas_templates_paths_status = paas_templates_resources
+          .filter_map { |resource| resource&.dig("source", "paths")}
+          .map {|path| path.include?('meta-inf.yml')}
+          .reduce(true,:&)
+
+        expect(paas_templates_paths_status).to be_truthy, "meta-inf.yml not found in: " + paas_templates_resources.filter_map { |resource| {resource['name'] => resource&.dig("source", "paths")}}.to_s
+      end
+    end
+
     context 'when an errand job is defined' do
       let(:expected_shield_errand) do
         my_shield_errand_yaml = <<~YAML
@@ -897,9 +909,9 @@ describe 'BoshPipelineTemplateProcessing' do
           ]
 
         generated = generated_pipeline['jobs']
-                      .select { |job| job['name'] == "check-terraform-is-applied" }
-                      .flat_map { |job| job['plan'] }
-                      .select { |step| step['task'] }
+          .select { |job| job['name'] == "check-terraform-is-applied" }
+          .flat_map { |job| job['plan'] }
+          .select { |step| step['task'] }
 
         expect(generated).to match(expected_tf_job)
       end
