@@ -40,7 +40,11 @@ cf --version
 API_OPTIONS="--skip-ssl-validation"
 
 #TODO add an option to manage ssl validation
+BLUE='\033[0;34m'
+STD='\033[0m' # No Color
+printf "%bcf api \"$CF_API_URL\" $API_OPTIONS%b\n" "${BLUE}" "${STD}"
 cf api "$CF_API_URL" $API_OPTIONS
+printf "%bcf auth <CF_USERNAME> <CF_PASSWORD> %b\n" "${BLUE}" "${STD}"
 cf auth "$CF_USERNAME" "$CF_PASSWORD"
 
 echo "copying file from $ADDITIONAL_RESOURCE to $OUTPUT_DIR"
@@ -54,6 +58,7 @@ else
   echo   "ignoring pre CF push. No $CUSTOM_SCRIPT_DIR/pre-cf-push.sh detected"
 fi
 
+printf "%bcf target -o \"$CF_ORG\" -s \"$CF_SPACE\"%b\n" "${BLUE}" "${STD}"
 cf target -o "$CF_ORG" -s "$CF_SPACE"
 
 CF_PUSH_OPTIONS="--strategy rolling"
@@ -65,6 +70,7 @@ if [ -f "$CF_ENV_FILE" ];then
 fi
 
 echo "CF push options: $CF_PUSH_OPTIONS"
+printf "%bcf push -f ${CF_MANIFEST} ${CF_PUSH_OPTIONS}%b\n" "${BLUE}" "${STD}"
 
 set +e
 cf push -f ${CF_MANIFEST} ${CF_PUSH_OPTIONS} 2>&1 | tee /tmp/cf-push.log

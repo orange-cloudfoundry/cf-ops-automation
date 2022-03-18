@@ -132,7 +132,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
       - name: concourse-micro
       run:
@@ -286,7 +286,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
       - name: config-resource
       run:
@@ -313,7 +313,7 @@ jobs:
             source:
               # from https://hub.docker.com/r/orangecloudfoundry/git-ssh/tags
               repository: orangecloudfoundry/git-ssh
-              tag: 317bf1656840ce57682039109ce93b701ffa6a32
+              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
           outputs:
             - name: success-tag
           run:
@@ -339,7 +339,7 @@ jobs:
         source:
           # from https://hub.docker.com/r/orangecloudfoundry/git-ssh/tags
           repository: orangecloudfoundry/git-ssh
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
         - name: concourse-micro-success
           optional: true
@@ -419,7 +419,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/git-ssh
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
       - name: secrets-writer
       outputs:
@@ -465,7 +465,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/git-ssh
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
       - name: paas-templates-full
       outputs:
