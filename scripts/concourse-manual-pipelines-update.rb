@@ -11,7 +11,8 @@ OPTIONS = {
   no_interactive: false,
   fail_fast: false,
   fail_on_error: true,
-  coa_config: true
+  coa_config: true,
+  fly_bin: 'fly'
 }
 
 opt_parser = OptionParser.new do |opts|
@@ -58,6 +59,9 @@ Customization using ENVIRONMENT_VARIABLE:
   opts.on('--team=TEAM', "Concourse team to use to deploy pipelines - Default: #{OPTIONS[:team]}") do |team_string|
     OPTIONS[:team] = team_string
   end
+  opts.on('--fly-bin=BINARY', "Fly binary name - Default: #{OPTIONS[:fly_bin]}") do |bin_string|
+    OPTIONS[:fly_bin] = bin_string
+  end
 end
 opt_parser.parse!
 
@@ -77,18 +81,27 @@ def get_pipeline_name(name)
   "#{PIPELINE_PREFIX}#{name}"
 end
 
-def set_pipeline(target_name:, team_name: 'main', name:, config:, load: [], options: [])
-  return if OPTIONS.key?(:match) && !name.include?(OPTIONS[:match])
-  return if OPTIONS.key?(:without) && name.include?(OPTIONS[:without])
+def set_pipeline(target_name:, fly_bin: 'fly', team_name: 'main', name:, config:, load: [], options: [])
+  if OPTIONS.key?(:match) && !name.include?(OPTIONS[:match])
+    puts "Skipping pipeline loading, '--match' #{OPTIONS[:match]} exclude pipeline #{name}"
+    return
+  end
+
+  if OPTIONS.key?(:without) && name.include?(OPTIONS[:without])
+    puts "Skipping pipeline loading, '--without' #{OPTIONS[:match]} exclude pipeline #{name}"
+    return
+  end
 
   puts "   Setting #{name} pipeline"
 
-  switch_team_cmd = %{bash -c "fly -t #{target_name} edit-target -n #{team_name}"}
+  switch_team_cmd = %{bash -c "#{fly_bin} -t #{target_name} edit-target -n #{team_name}"}
   switch_concourse_team = system(switch_team_cmd)
   puts "Switched to team: #{team_name}"
-  raise "Failed to switch team to #{team_name} to load pipeline #{get_pipeline_name(name)} from template #{name}" unless switch_concourse_team
+  ensure_team_exists_cmd = %{bash -c "#{fly_bin} -t #{target_name} teams|grep #{team_name}"}
+  ensure_team_exists = system(ensure_team_exists_cmd)
+  raise "Failed to switch team to #{team_name}, required to load pipeline #{get_pipeline_name(name)}" unless ensure_team_exists
 
-  fly_cmd = %{bash -c "fly -t #{target_name} set-pipeline \
+  fly_cmd = %{bash -c "#{fly_bin} -t #{target_name} set-pipeline \
     -p #{get_pipeline_name(name)} \
     -c #{config} \
   #{load.collect { |l| "-l #{l}" }.join(' ')} \
@@ -139,8 +152,10 @@ def load_pipeline_into_concourse(pipeline_name, pipeline_vars_files, pipeline_de
   raise "No vars_files detected. Please ensure coa-config option is #{OPTIONS[:coa_config]}" if pipeline_vars_files&.empty?
 
   pipeline_team_name = OPTIONS[:team]
+  fly_bin = OPTIONS[:fly_bin]
   set_pipeline(
     target_name: concourse_target_name,
+    fly_bin: fly_bin,
     name: pipeline_name,
     team_name: pipeline_team_name,
     config: pipeline_definition_filename,

@@ -202,7 +202,7 @@ jobs:
           type: registry-image
           source:
             repository: orangecloudfoundry/curl-ssl
-            tag: 317bf1656840ce57682039109ce93b701ffa6a32
+            tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
         inputs:
           - name: repackaged-releases-fallback
         run:
@@ -553,7 +553,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
         - name: final-release-manifest
         - name: template-resource
@@ -788,7 +788,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       inputs:
         - name: final-release-manifest
         - name: template-resource
@@ -948,7 +948,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       outputs:
         - name: result-dir
       run:
@@ -992,7 +992,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 317bf1656840ce57682039109ce93b701ffa6a32
+          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
       outputs:
         - name: result-dir
       run:
