@@ -12,7 +12,7 @@ outputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
     echo "Selected Iaas Type: <${IAAS_TYPE}>"
     echo "Profiles: <${PROFILES}>"

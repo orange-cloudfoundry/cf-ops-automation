@@ -11,7 +11,7 @@ outputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
     scripts-resource/scripts/terraform/extract_terraform_state_to_yaml.rb <${STATE_FILE} >${OUTPUT_FILE}
     cat ${OUTPUT_FILE}

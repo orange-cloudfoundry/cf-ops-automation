@@ -142,7 +142,7 @@ jobs:
         run:
           path: sh
           args:
-          - -exc
+          - -ec
           - |
             MESSAGE_FILE=message/update_notif
             NEW_VERSION=$(cat boshrelease/version)

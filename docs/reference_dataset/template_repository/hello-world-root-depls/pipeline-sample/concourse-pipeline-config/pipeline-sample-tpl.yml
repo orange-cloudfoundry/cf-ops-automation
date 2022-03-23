@@ -53,7 +53,7 @@ jobs:
         run:
           path: sh
           args:
-          - -exc
+          - -ec
           - (( concat "cd release && bosh create-release releases/" secrets.release-name "/" secrets.release-name "-" secrets.release-version ".yml --tarball ../result-dir/" secrets.release-name "-" secrets.release-version ".tgz" ))
     - put: (( concat secrets.release-name "-s3" ))
       params:
@@ -82,7 +82,7 @@ jobs:
         run:
           path: sh
           args:
-          - -exc
+          - -ec
           - |
             echo "require 'yaml'; puts YAML.load_file('release/releases/' + ENV['RELEASE_NAME'] + '/index.yml')['builds'].sort_by { |sha, info| info['version'].to_i }.last[1]['version']" > get_version.rb
             ruby get_version.rb > release-version/version
@@ -106,7 +106,7 @@ jobs:
         run:
           path: sh
           args:
-          - -exc
+          - -ec
           - (( concat "cd release && RELEASE_VERSION=$(cat ../release-version/version) && bosh create-release releases/" secrets.release-name "/" secrets.release-name "-${RELEASE_VERSION}.yml --tarball ../result-dir/" secrets.release-name "-${RELEASE_VERSION}.tgz" ))
 
     - put: (( concat "latest-" secrets.release-name "-s3" ))
