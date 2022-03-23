@@ -109,7 +109,7 @@ jobs:
         run:
           path: sh
           args:
-          - -exc
+          - -ec
           - |
             <% all_cf_apps.sort.each do |app_name,_| %>
             echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-<%= app_name %>" >> result-dir/flight-plan

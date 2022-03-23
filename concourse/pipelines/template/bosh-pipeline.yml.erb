@@ -832,7 +832,7 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           mkdir -p result-dir/operators
           mkdir -p result-dir/vars
@@ -1036,7 +1036,7 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
   <% enabled_deployments.sort.each do |name, _| %>
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan

@@ -31,7 +31,7 @@ outputs:
 run:
   path: sh
   args:
-  - -exc
+  - -ec
   - |
     env
     git config --global user.email "$GIT_USER_EMAIL"

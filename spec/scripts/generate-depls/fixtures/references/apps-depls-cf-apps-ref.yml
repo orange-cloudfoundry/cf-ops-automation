@@ -84,7 +84,7 @@ jobs:
         run:
           path: sh
           args:
-          - -exc
+          - -ec
           - |
             echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-test-app" >> result-dir/flight-plan
         params:

@@ -562,7 +562,7 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           mkdir -p result-dir/operators
           mkdir -p result-dir/vars
@@ -797,7 +797,7 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           mkdir -p result-dir/operators
           mkdir -p result-dir/vars
@@ -954,7 +954,7 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-ntp-with-scan" >> result-dir/flight-plan
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-zookeeper-without-scan" >> result-dir/flight-plan
