@@ -6,7 +6,7 @@ gem 'rhcl', '>= 0.1.0'
 
 group :development do
   gem 'docker_registry2', '>= 1.10.0'
-  gem 'git', '>=1.9.1'
+  gem 'git', '>= 1.11.0'
   gem 'github_changelog_generator', '>= 1.16.4'
   gem 'mdl', '>=0.11.0'
   gem 'rake', '>=13.0.6'
