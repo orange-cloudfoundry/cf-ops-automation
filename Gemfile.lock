@@ -95,7 +95,7 @@ GEM
     faraday-rack (1.0.0)
     ffi (1.15.3)
     fiber-local (1.0.0)
-    git (1.9.1)
+    git (1.11.0)
       rchardet (~> 1.8)
     github_changelog_generator (1.16.4)
       activesupport
@@ -224,7 +224,7 @@ PLATFORMS
 DEPENDENCIES
   cucumber
   docker_registry2 (>= 1.10.0)
-  git (>= 1.9.1)
+  git (>= 1.11.0)
   github_changelog_generator (>= 1.16.4)
   mdl (>= 0.11.0)
   rake (>= 13.0.6)
