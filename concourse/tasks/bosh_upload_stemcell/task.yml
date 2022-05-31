@@ -32,7 +32,7 @@ run:
       if [ $stemcell_count -eq 0 ];then
         echo "Skipping upload: no stemcell detected. $NO_STEMCELL_ADDITIONAL_MESSAGE"
       else
-        find stemcell/ -maxdepth 1 -name "*.tgz" -exec bosh upload-stemcell {} \;
+        find stemcell/ -maxdepth 1 -name "*.tgz" -exec bosh upload-stemcell {} +
       fi
 params:
   BOSH_ENVIRONMENT:
