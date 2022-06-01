@@ -4,6 +4,7 @@ offline-mode:
    boshreleases: false # Choose where boshreleases are downloaded from. Default: false
    stemcells: false # Choose where stemcells are downloaded from. Default: true
 
+lock-releases: false # Default: false. See https://bosh.io/docs/locking-compiled-releases/
 default:
   reconciliation-loop:
      interval: 6h # Default 4m. You may override concourse k8s pipelines job frequency, ie interval between execution when nothing happen.

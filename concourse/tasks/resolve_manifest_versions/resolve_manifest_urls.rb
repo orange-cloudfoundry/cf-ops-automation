@@ -85,6 +85,7 @@ class PrecompileOfflineReleaseUrlResolver < AbstractReleaseUrlResolver
     @precompile_mode_enabled = true?(config&.dig('PRECOMPILE_MODE_ENABLED'))
     @stemcell_os = config&.dig('STEMCELL_OS') || ''
     @stemcell_version = config&.dig('STEMCELL_VERSION') || ''
+    @lock_release = config&.dig('LOCK_RELEASES') || false
   end
 
   def accept?
@@ -98,7 +99,9 @@ class PrecompileOfflineReleaseUrlResolver < AbstractReleaseUrlResolver
     puts "Resolving #{release_name}-#{release_version} using Compiled Offline resolver"
     namespace = release_repository.split('/').first
     resolved_url = "#{download_server_url.delete_suffix('/')}/#{namespace}/#{release_name}-#{release_version}-#{@stemcell_os}-#{@stemcell_version}.tgz"
-    { 'url' => resolved_url, 'sha1' => '', 'stemcell' => { 'os' => @stemcell_os, 'version' => @stemcell_version }, 'exported_from' => [{ 'os' => @stemcell_os, 'version' => @stemcell_version }] }
+    result = { 'url' => resolved_url, 'sha1' => '', 'stemcell' => { 'os' => @stemcell_os, 'version' => @stemcell_version } }
+    result['exported_from'] = [{ 'os' => @stemcell_os, 'version' => @stemcell_version }] if @lock_release
+    result
   end
 
   def valid?

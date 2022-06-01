@@ -27,6 +27,7 @@
 
   offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
   offline_boshreleases_enabled = config&.dig('offline-mode', 'boshreleases') && true
+  lock_releases_enabled = config&.fetch('lock-releases', false) && true
   precompile_pipeline_enabled = config&.fetch('precompile-mode', true) && true
   precompile_excluded_deployments = config&.dig(root_deployment_name,'precompile','excluded-deployments') || []
 
@@ -48,7 +49,6 @@
 
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-generated")
 %>
-
 ---
 meta:
   tasks:
@@ -899,6 +899,7 @@ jobs:
       DOWNLOAD_SERVER_URL: <%= download_server_url %>
       OFFLINE_MODE_ENABLED: <%= offline_boshreleases_enabled %>
       PRECOMPILE_MODE_ENABLED: <%= precompile_pipeline_enabled %>
+      LOCK_RELEASES: <%= lock_releases_enabled %>
   - put: <%= name %>-deployment
     attempts: <%= concourse_retry[:bosh_push] %>
     on_failure:

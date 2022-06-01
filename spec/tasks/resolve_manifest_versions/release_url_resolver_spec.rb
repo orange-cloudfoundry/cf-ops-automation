@@ -49,7 +49,8 @@ describe PrecompileOfflineReleaseUrlResolver do
     let(:release_name) { 'minio' }
     let(:release_version) { '2.0' }
     let(:release_repository) { 'minio-org/minio-boshrelease' }
-    let(:config) do
+    let(:config) { default_config }
+    let(:default_config) do
       {
         'DOWNLOAD_SERVER_URL' => 'https://private-s3.internal.paas/compiled-releases/',
         'OFFLINE_MODE_ENABLED' => true,
@@ -60,7 +61,23 @@ describe PrecompileOfflineReleaseUrlResolver do
       }
     end
 
-    context 'when valid' do
+    context 'when lock releases is disabled (default)' do
+      let(:expected) do
+        {
+          'url' => "https://private-s3.internal.paas/compiled-releases/minio-org/minio-2.0-my-os-0.0.7.tgz",
+          'sha1' => '',
+          'stemcell' => { 'os' => 'my-os', 'version' => '0.0.7' }
+        }
+      end
+
+      it 'generates updated data' do
+        expect(resolve).to match(expected)
+      end
+    end
+
+
+    context 'when lock releases is enabled' do
+      let(:config) { default_config['LOCK_RELEASES'] = true;default_config }
       let(:expected) do
         {
           'url' => "https://private-s3.internal.paas/compiled-releases/minio-org/minio-2.0-my-os-0.0.7.tgz",
