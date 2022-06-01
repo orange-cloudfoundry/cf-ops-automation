@@ -76,7 +76,8 @@ describe 'resolve_manifest_versions task' do
         'VERSIONS_FILE' => nil,
         'DOWNLOAD_SERVER_URL'  => nil,
         'OFFLINE_MODE_ENABLED'  => nil,
-        'PRECOMPILE_MODE_ENABLED' => nil
+        'PRECOMPILE_MODE_ENABLED' => nil,
+        'LOCK_RELEASES' => nil
       }
       expect(task['params']).to eq(expected_params)
     end
