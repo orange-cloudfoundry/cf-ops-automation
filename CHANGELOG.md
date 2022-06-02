@@ -1,5 +1,31 @@
 # Changelog
 
+## [v5.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.4.0) (2022-06-02)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.3.0...v5.4.0)
+
+**Implemented enhancements:**
+
+- explicit concourse job failure when terraform plan exhibits discrepancy [\#344](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/344)
+- polish pipelines [\#393](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/393)
+- bump to latest images [\#392](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/392)
+- feature\(bosh-pipeline\): display terraform status [\#388](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/388)
+
+**Fixed bugs:**
+
+- pipeline\(bosh\): fix meta-inf.yml detection [\#391](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/391)
+
+**Security fixes:**
+
+- switch pipelines and tasks to our images [\#386](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/386)
+
+**Merged pull requests:**
+
+- pipeline\(bosh\): disable exported\_from [\#398](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/398)
+- Detect stemcell upload errors during precompile [\#397](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/397)
+- feature\(bosh-pipeline\): inject coa-metadata [\#389](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/389)
+- add-display-background: support pipeline background customization [\#387](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/387)
+
 ## [v5.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.3.0) (2022-01-04)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.2.2...v5.3.0)

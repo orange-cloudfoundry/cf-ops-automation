@@ -282,7 +282,7 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-k8s-sample" >> result-dir/flight-plan
       params:

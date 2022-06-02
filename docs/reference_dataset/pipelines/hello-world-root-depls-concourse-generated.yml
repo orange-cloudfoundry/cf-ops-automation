@@ -37,9 +37,9 @@ resources:
     - name: main
       username: ((concourse-hello-world-root-depls-username))
       password: ((concourse-hello-world-root-depls-password))
-- name: concourse-5-legacy-for-hello-world-root-depls
+- name: concourse-legacy-for-hello-world-root-depls
   icon: concourse-ci
-  type: concourse-5-pipeline
+  type: concourse-pipeline
   source:
     target: ((concourse-hello-world-root-depls-target))
     insecure: ((concourse-hello-world-root-depls-insecure))
@@ -173,7 +173,7 @@ jobs:
               - -ec
               - touch success-tag/task.ok
       on_failure:
-        put: concourse-5-legacy-for-hello-world-root-depls
+        put: concourse-legacy-for-hello-world-root-depls
         attempts: 3
         params:
           pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
