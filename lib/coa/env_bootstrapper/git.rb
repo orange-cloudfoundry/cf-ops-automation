@@ -25,6 +25,7 @@ module Coa
         push_secrets_repo(concourse_config, pipeline_vars)
         push_cf_ops_automation
         k8s_configs_repo
+        setup_audit_trail_repo
       end
 
       def k8s_configs_repo
@@ -39,6 +40,10 @@ module Coa
           bosh_sourced_cmd "git checkout -b pipeline-current-master"
           bosh_sourced_cmd "git push origin pipeline-current-master --force"
         end
+      end
+
+      def setup_audit_trail_repo
+        init_and_push(AUDIT_TRAIL_REPO_DIR, "concourse-audit-trail")
       end
 
       def push_secrets_repo(concourse_config, pipeline_vars)
@@ -181,7 +186,8 @@ module Coa
           "cf-ops-automation-uri"                     => "git://#{server_ip}/cf-ops-automation",
           "paas-templates-uri"                        => "git://#{server_ip}/paas-templates",
           "secrets-uri"                               => "git://#{server_ip}/secrets",
-          "k8s-configs-repository-uri"                => "git://#{server_ip}/k8s-configs"
+          "k8s-configs-repository-uri"                => "git://#{server_ip}/k8s-configs",
+          "concourse-audit-trail-uri"                => "git://#{server_ip}/k8s-configs"
         }
       end
     end

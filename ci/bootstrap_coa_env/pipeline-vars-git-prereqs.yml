@@ -7,3 +7,7 @@ pipeline_vars:
   k8s-configs-repository-branch: master
   k8s-configs-repository-username:
   k8s-configs-repository-password:
+  concourse-audit-trail-username:
+  concourse-audit-trail-password:
+  concourse-audit-trail-skip-ssl: true
+  concourse-audit-trail-branch: master

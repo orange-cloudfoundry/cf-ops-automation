@@ -41,6 +41,16 @@ resources:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
     skip_ssl_verification: true
+- name: concourse-audit-trail
+  icon: source-pull
+  type: git
+  source:
+    uri: ((concourse-audit-trail-uri))
+    branch: ((concourse-audit-trail-branch))
+    skip_ssl_verification: ((concourse-audit-trail-skip-ssl))
+    username: ((concourse-audit-trail-username))
+    password: ((concourse-audit-trail-password))
+
 #- name: secrets-full
 #  type: git
 #  source:
@@ -120,10 +130,10 @@ jobs:
     - put: concourse-meta
     - get: cf-ops-automation
       params: { submodules: none}
-    - get: secrets-writer
-      params: { submodules: none}
     - get: concourse-micro
       trigger: true
+    - get: concourse-audit-trail
+      params: { submodules: none}
 #      version: every #not sure we need to trigger on each change
   - task: list-pipelines
     config:
@@ -164,13 +174,13 @@ jobs:
             find sorted-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
 
   - task: update-git-deployed-pipelines
-    input_mapping: {reference-resource: secrets-writer, generated-resource: sorted-pipelines}
+    input_mapping: {reference-resource: concourse-audit-trail, generated-resource: sorted-pipelines}
     output_mapping: {updated-git-resource: updated-pipelines}
     file: cf-ops-automation/concourse/tasks/git_update_a_dir_from_generated.yml
     params:
       COMMIT_MESSAGE: "Deployed pipelines update - [skip ci]"
       OLD_DIR: "coa/pipelines/deployed"
-  - put: secrets-writer
+  - put: concourse-audit-trail
     params:
       repository: updated-pipelines
       rebase: true
