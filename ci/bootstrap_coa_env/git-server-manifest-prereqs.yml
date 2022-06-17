@@ -16,6 +16,7 @@ git_server_manifest:
         - secrets
         - cf-ops-automation
         - k8s-configs
+        - concourse-audit-trail
     vm_type: default
     stemcell: default
     persistent_disk: 10_000

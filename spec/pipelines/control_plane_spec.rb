@@ -18,7 +18,7 @@ describe 'control plane pipeline spec' do
     end
 
     it 'has expected  resources' do
-      expected_resources = %w[cf-ops-automation concourse-meta concourse-micro concourse-micro-legacy failure-alert paas-templates-full paas-templates-scanned paas-templates-versions secrets-generated-pipelines secrets-writer]
+      expected_resources = %w[cf-ops-automation concourse-audit-trail concourse-meta concourse-micro concourse-micro-legacy failure-alert paas-templates-full paas-templates-scanned paas-templates-versions secrets-generated-pipelines secrets-writer]
       resources = control_plane_resources.flat_map { |item| item['name'] }.sort
       expect(resources).to eq(expected_resources)
     end
