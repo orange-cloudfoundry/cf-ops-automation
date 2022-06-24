@@ -146,14 +146,14 @@ resources:
 <% end %>
 
 <% uniq_releases.sort.each do |release, info| %>
-  - name: <%= release %>-deployment
+  - name: precompile-<%= release %>-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: <%= release %>-deployment
+      deployment: precompile-<%= release %>-deployment
       ca_cert: <%= bosh_cert[root_deployment_name]&.dump %>
 
   - name: <%= release %>
@@ -397,7 +397,7 @@ jobs:
             attempts: <%= concourse_retry[:pull] %>
       - task: generate-<%= release %>-deployment-manifest
         <%
-        manifest = {'name' => "#{release}-deployment", 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
+        manifest = {'name' => "precompile-#{release}-deployment", 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
         manifest['releases'] << {'name' => release, 'version' => info.fetch('version', 'latest')}
 
         precompile_manifest = manifest
@@ -428,7 +428,7 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "<%= release %>-deployment.yml"
+            MANIFEST_NAME: "precompile-<%= release %>-deployment.yml"
             MANIFEST_CONTENT: '<%= precompile_manifest %>'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
@@ -459,10 +459,10 @@ jobs:
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
 
-      - put: <%= release %>-deployment
+      - put: precompile-<%= release %>-deployment
         attempts: <%= concourse_retry[:bosh_push] %>
         params:
-          manifest: final-release-manifest/<%= release %>-deployment.yml
+          manifest: final-release-manifest/precompile-<%= release %>-deployment.yml
           cleanup: true
 
       - task: compile-and-export-<%= release %>
@@ -492,7 +492,7 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
-            BOSH_DEPLOYMENT: <%= release %>-deployment
+            BOSH_DEPLOYMENT: precompile-<%= release %>-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
@@ -535,9 +535,9 @@ jobs:
           file: compiled-<%= release %>/*.tgz
           acl: public-read
   <% end %>
-      - put: <%= release %>-deployment
+      - put: precompile-<%= release %>-deployment
         params:
-          manifest: final-release-manifest/<%= release %>-deployment.yml.yml
+          manifest: final-release-manifest/<%= release %>-deployment.yml
           delete:
             enabled: true
             force: true

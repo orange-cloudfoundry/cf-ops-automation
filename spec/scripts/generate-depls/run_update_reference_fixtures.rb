@@ -11,7 +11,7 @@ RSpec.configuration.reporter.register_listener(formatter, :message, :dump_summar
 
 spec_name = File.basename(__FILE__, '.rb').delete_prefix("run_") + "_spec.rb"
 puts "Running spec for #{spec_name}"
-RSpec::Core::Runner.run([spec_name])
+RSpec::Core::Runner.run([File.join(File.dirname(__FILE__), spec_name)])
 
 puts formatter.output.string
 
