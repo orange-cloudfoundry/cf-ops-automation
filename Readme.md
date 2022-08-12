@@ -38,7 +38,6 @@
          * [enable deployment format (enable-deployment.yml)](#enable-deployment-format-enable-deploymentyml)
          * [deployment dependencies format (deployment-dependencies.yml)](#deployment-dependencies-format-deployment-dependenciesyml)
       * [Cloudfoundry application resources template format](#cloudfoundry-application-resources-template-format)
-         * [enable-cf-app.yml file format](#enable-cf-appyml-file-format)
       * [pipeline auto-update](#pipeline-auto-update)
       * [Concourse team](#concourse-team)
       * [terraform](#terraform)
