@@ -5,7 +5,7 @@ require_relative '../tasks/task_spec_helper'
 
 describe 'control plane pipeline spec' do
   let(:pipeline_file) { File.join('concourse', 'pipelines', 'control-plane.yml') }
-  let(:control_plane_pipeline) { YAML.load_file(pipeline_file) }
+  let(:control_plane_pipeline) { YAML.load_file(pipeline_file, aliases: true) }
   let(:control_plane_jobs) { control_plane_pipeline['jobs'] }
   let(:control_plane_resources) { control_plane_pipeline['resources'] }
 

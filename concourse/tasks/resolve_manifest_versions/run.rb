@@ -24,8 +24,8 @@ manifest_file = ENV['MANIFEST_YAML_FILE']
 deployment_name = ENV['DEPLOYMENT_NAME']
 
 manifest = versions = {}
-versions = YAML.load_file(versions_file) || {} if File.exist?(versions_file)
-manifest = YAML.load_file(manifest_file) || {} if File.exist?(manifest_file)
+versions = YAML.load_file(versions_file, aliases: true) || {} if File.exist?(versions_file)
+manifest = YAML.load_file(manifest_file, aliases: true) || {} if File.exist?(manifest_file)
 
 puts "Warning: no version detected !" if versions.empty?
 puts "Warning: no manifest detected !" if manifest.empty?

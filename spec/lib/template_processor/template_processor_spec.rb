@@ -246,7 +246,7 @@ describe TemplateProcessor do
 
         it 'generates an empty pipelines' do
           processed_templates_reduced.each_value do |generated_pipeline_name|
-            generated_pipeline = YAML.load_file(File.join(@pipelines_output_dir, generated_pipeline_name))
+            generated_pipeline = YAML.load_file(File.join(@pipelines_output_dir, generated_pipeline_name), aliases: true)
             generated_jobs = PipelineHelper.to_hashmap(generated_pipeline_name, generated_pipeline['jobs'])
             expected_jobs = PipelineHelper.to_hashmap(generated_pipeline_name, [{ 'name' => 'this-is-an-empty-pipeline' }])
             expect(generated_jobs).to match(expected_jobs)
@@ -255,7 +255,7 @@ describe TemplateProcessor do
 
         it 'does not generate pipelines with resources' do
           processed_templates_reduced.each_value do |generated_pipeline_name|
-            generated_pipeline = YAML.load_file(File.join(@pipelines_output_dir, generated_pipeline_name))
+            generated_pipeline = YAML.load_file(File.join(@pipelines_output_dir, generated_pipeline_name), aliases: true)
             generated_resources = PipelineHelper.to_hashmap(generated_pipeline_name, generated_pipeline['resources'])
             expected_resources = PipelineHelper.to_hashmap(generated_pipeline_name, nil)
 

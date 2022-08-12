@@ -181,7 +181,7 @@ RSpec.configure do |config|
     path = File.join( base_dir, 'lib', 'fixtures', relative_path_from_fixture_dir)
     raise "File not found: #{path}" unless File.exist?(path)
 
-    YAML.load_file(path)
+    YAML.load_file(path, aliases: true)
   end
 
   DOCKER_REGISTRY_PREFIX = "((docker-registry-url))".freeze

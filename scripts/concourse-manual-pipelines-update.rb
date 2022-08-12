@@ -165,7 +165,7 @@ def load_pipeline_into_concourse(pipeline_name, pipeline_vars_files, pipeline_de
 end
 
 def load_pipeline_configuration(root_deployment, pipeline_name)
-  ci_deployment_overview = YAML.load_file(File.join(SECRETS, root_deployment, 'ci-deployment-overview.yml'))
+  ci_deployment_overview = YAML.load_file(File.join(SECRETS, root_deployment, 'ci-deployment-overview.yml'), aliases: true)
 
   pipelines = ci_deployment_overview['ci-deployment'][root_deployment]['pipelines']
   pipelines[pipeline_name]

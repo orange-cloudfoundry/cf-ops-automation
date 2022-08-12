@@ -28,7 +28,7 @@ module Coa
 
       def self.new_from_paths(prereqs_paths)
         prereqs_config = prereqs_paths.inject({}) do |ps, path|
-          ps.deep_merge(YAML.load_file(path))
+          ps.deep_merge(YAML.load_file(path, aliases: true))
         end
         new(prereqs_config)
       end

@@ -74,7 +74,7 @@ class CiDeployment
   def load_ci_deployment_from_file(deployment_file, dir_basename)
     puts "CI deployment detected in #{dir_basename}"
 
-    deployment = YAML.load_file(deployment_file)
+    deployment = YAML.load_file(deployment_file, aliases: true)
     raise "#{deployment} - Invalid deployment: expected 'ci-deployment' key as yaml root" unless deployment && deployment['ci-deployment']
 
     begin

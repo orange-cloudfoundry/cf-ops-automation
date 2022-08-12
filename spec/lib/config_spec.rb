@@ -70,9 +70,9 @@ describe Config do
 
       before do
         allow(File).to receive(:exist?).with('my-public-config.yml').and_return(true)
-        allow(YAML).to receive(:load_file).with('my-public-config.yml').and_return(shared_config_result)
+        allow(YAML).to receive(:load_file).with('my-public-config.yml',any_args).and_return(shared_config_result)
         allow(File).to receive(:exist?).with('private-config.yml').and_return(true)
-        allow(YAML).to receive(:load_file).with('private-config.yml').and_return(private_config_result)
+        allow(YAML).to receive(:load_file).with('private-config.yml',any_args).and_return(private_config_result)
         allow(extended_config).to receive(:default_format).and_return(extended_config_result)
       end
 

@@ -98,7 +98,7 @@ jobs:
         type: registry-image
         source:
             repository: library/ruby
-            tag: 2.7.1-slim
+            tag: 3.1.2-slim
       inputs:
       - name: cf-ops-automation
       - name: config

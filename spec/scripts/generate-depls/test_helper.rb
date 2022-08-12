@@ -6,11 +6,11 @@ RSpec.shared_examples 'pipeline checker' do |generated_pipeline_name, reference_
   test_path = File.dirname(__FILE__)
 
   it "(compares #{generated_pipeline_name} with #{reference_pipeline})" do
-    reference_file = YAML.load_file("#{test_path}/fixtures/references/#{reference_pipeline}") || {}
+    reference_file = YAML.load_file("#{test_path}/fixtures/references/#{reference_pipeline}", aliases: true) || {}
     expected_generated_dir = File.join(output_path, 'pipelines')
     expected_generated_filename = File.join(expected_generated_dir, generated_pipeline_name)
     raise "file not found: #{expected_generated_filename}. Dir content: #{Dir.glob(expected_generated_dir + '/*')}" unless File.exist?(expected_generated_filename)
-    generated_file = YAML.load_file(expected_generated_filename)
+    generated_file = YAML.load_file(expected_generated_filename, aliases: true)
     expect(generated_file.to_yaml).to eq(reference_file.to_yaml)
   end
 end
@@ -20,7 +20,7 @@ class TestHelper
     expected_generated_dir = File.join(output_path, 'pipelines')
     expected_generated_filename = File.join(expected_generated_dir, generated_pipeline_name)
     raise "file not found: #{expected_generated_filename}. Dir content: #{Dir[expected_generated_dir].to_s}" unless File.exist?(expected_generated_filename)
-    YAML.load_file(expected_generated_filename)
+    YAML.load_file(expected_generated_filename, aliases: true)
   end
 
   def self.generate_deployment_bosh_ca_cert(secrets_path)

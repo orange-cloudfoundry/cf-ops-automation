@@ -5,7 +5,7 @@ require 'tempfile'
 require_relative '../../lib/coa'
 
 manifests_filename = ARGV[0]
-manifests = YAML.load_file(manifests_filename)&.dig('bosh', 'manifests')
+manifests = YAML.load_file(manifests_filename, aliases: true)&.dig('bosh', 'manifests')
 raise "Invalid manifests format. Expected format: bosh.manifests.<deployment-name> = manifest-to-deploy" unless manifests
 
 bosh_authentication_info_file = "prereqs/integration-test-prereqs.yml"

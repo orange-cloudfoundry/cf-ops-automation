@@ -173,7 +173,7 @@ describe 'BoshPipelineTemplateProcessing' do
     let(:generated_pipeline) do
       pipeline_template = @processed_template[File.join(@pipelines_dir, @template_pipeline_name)]
       generated_pipeline_path = File.join(@pipelines_output_dir, pipeline_template)
-      YAML.load_file(generated_pipeline_path)
+      YAML.load_file(generated_pipeline_path, aliases: true)
     end
 
     before do

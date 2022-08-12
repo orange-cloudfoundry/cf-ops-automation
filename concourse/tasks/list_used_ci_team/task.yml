@@ -2,7 +2,7 @@
 platform: linux
 image_resource:
   type: registry-image
-  source: {repository: library/ruby, tag: 2.7.1-slim}
+  source: {repository: library/ruby, tag: 3.1.2-slim}
 inputs:
   - name: secrets
   - name: cf-ops-automation

@@ -30,7 +30,7 @@ class DeploymentFactory
     validate_file(filename)
     puts "DeploymentFactory - processing #{filename}"
     deployment_name = File.dirname(filename)&.split(File::SEPARATOR)&.last
-    yaml_file = YAML.load_file(filename) || {}
+    yaml_file = YAML.load_file(filename, aliases: true) || {}
     load(deployment_name, yaml_file)
   end
 

@@ -84,7 +84,7 @@ jobs:
           args:
           - -ec
           - |
-            echo "require 'yaml'; puts YAML.load_file('release/releases/' + ENV['RELEASE_NAME'] + '/index.yml')['builds'].sort_by { |sha, info| info['version'].to_i }.last[1]['version']" > get_version.rb
+            echo "require 'yaml'; puts YAML.load_file('release/releases/' + ENV['RELEASE_NAME'] + '/index.yml', aliases: true)['builds'].sort_by { |sha, info| info['version'].to_i }.last[1]['version']" > get_version.rb
             ruby get_version.rb > release-version/version
         params:
           RELEASE_NAME: (( grab secrets.release-name ))
