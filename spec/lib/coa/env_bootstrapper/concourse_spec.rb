@@ -69,7 +69,7 @@ describe Coa::EnvBootstrapper::Concourse do
 
   describe '#run_pipelines' do
     let(:pipeline_vars_prereqs_path) { File.join(fixtures_dir('lib'), 'coa', 'env_bootstrapper', 'pipeline-vars-prereqs.yml') }
-    let(:pipeline_vars) { YAML.load_file(pipeline_vars_prereqs_path)["pipeline-vars"] }
+    let(:pipeline_vars) { YAML.load_file(pipeline_vars_prereqs_path, aliases: true)["pipeline-vars"] }
     let(:bosh_config) { Coa::Utils::Bosh::Config.new }
     let(:bs) { described_class.new(concourse_config) }
     let(:git_server_ip) { "1.1.1.1" }

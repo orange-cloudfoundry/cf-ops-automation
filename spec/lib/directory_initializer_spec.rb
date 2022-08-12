@@ -39,7 +39,7 @@ describe DirectoryInitializer do
         end
 
         it 'shared/secrets.yml is valid' do
-          shared_secrets = YAML.load_file("#{secrets_dir}/shared/secrets.yml")
+          shared_secrets = YAML.load_file("#{secrets_dir}/shared/secrets.yml", aliases: true)
           # YAML.load_file returns false if file is empty.
 
           expect(shared_secrets).to be_falsey
@@ -59,7 +59,7 @@ describe DirectoryInitializer do
 
         b = binding
         b.local_variable_set(:depls, 'dummy-depls')
-        reference = YAML.safe_load(ERB.new(File.read("#{File.dirname __FILE__}/fixtures/ci-deployment-overview.yml.erb"), 0, '<>').result(b))
+        reference = YAML.safe_load(ERB.new(File.read("#{File.dirname __FILE__}/fixtures/ci-deployment-overview.yml.erb"),trim_mode: '<>').result(b))
 
         expect(generated_ci_overview).to eq(reference) # , "#{secrets_dir}/#{root_deployment_name}/ci-deployment-overview.yml"
       end

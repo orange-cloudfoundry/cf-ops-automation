@@ -32,7 +32,7 @@ raise 'FATAL: Missing base_git_clones_path' if base_git_clones_path.to_s.empty?
 
 missing_s3_releases_filepath = ARGV[0]
 missing_s3_releases = if File.exist?(missing_s3_releases_filepath)
-                        YAML.load_file(missing_s3_releases_filepath) || {}
+                        YAML.load_file(missing_s3_releases_filepath, aliases: true) || {}
                       else
                         {}
                       end

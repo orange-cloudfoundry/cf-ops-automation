@@ -40,7 +40,7 @@ class TemplateProcessor
   end
 
   def generate_pipeline_content(filename)
-    output = ERB.new(File.read(filename), 0, '<>').
+    output = ERB.new(File.read(filename), trim_mode: '<>').
       result(load_context_into_a_binding).
       gsub(/\n\s*\n/, "\n") # removing blank lines
     puts output if config[:dump_output]
@@ -61,7 +61,7 @@ class TemplateProcessor
 
   def parse_pipeline_for_yaml_verification(pipeline_name, pipeline)
     puts "Trying to parse generated Yaml: #{pipeline_name} (#{pipeline&.path})"
-    YAML.load_file(pipeline)
+    YAML.load_file(pipeline, aliases: true)
     puts "> #{pipeline_name} seems a valid Yaml file"
     2.times { puts '####################################################################################' }
   rescue Psych::SyntaxError => e
@@ -70,7 +70,7 @@ class TemplateProcessor
 
   # This method don't fail when a variable is missing in erb file.
   def erb(template, vars = {})
-    ERB.new(File.read(template), 0, '<>').result(OpenStruct.new(vars).instance_eval { binding })
+    ERB.new(File.read(template), trim_mode: '<>').result(OpenStruct.new(vars).instance_eval { binding })
   end
 
   def cleanup_pipeline_name(filename)

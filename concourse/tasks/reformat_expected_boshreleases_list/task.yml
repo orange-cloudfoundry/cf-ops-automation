@@ -29,7 +29,7 @@ run:
     - |
       ruby --version
       ruby -r yaml <<EOF
-       root_deployment = YAML.load_file(File.join('templates-resource',ENV['ROOT_DEPLOYMENT_NAME'],'root-deployment.yml')) || {}
+       root_deployment = YAML.load_file(File.join('templates-resource',ENV['ROOT_DEPLOYMENT_NAME'],'root-deployment.yml'), aliases: true) || {}
        File.open(File.join('to-csv', 'expected-boshreleases.csv'), 'w+') do |file|
          root_deployment.dig('releases')&.each do |name, details|
            puts "Processing #{name}"

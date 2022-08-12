@@ -76,7 +76,7 @@ end
 def extract_secrets_keys(selected_yaml_file)
   file_counter = 0
   selected_yaml_file.each do |filename|
-    current_secrets_yaml = YAML.load_file(filename)
+    current_secrets_yaml = YAML.load_file(filename, aliases: true)
     new_secret_filename = filename.slice(OPTIONS[:secrets_path].length + 1..filename.length)
 
     puts "> processing #{new_secret_filename}"

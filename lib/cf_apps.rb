@@ -40,7 +40,7 @@ class CfApps
   def load_cf_apps_details_from_file(cf_apps, file, subdir)
     puts "Cf App detected: #{subdir} - #{file}"
     dir = File.dirname(file)
-    cf_apps_description = YAML.load_file(file)
+    cf_apps_description = YAML.load_file(file, aliases: true)
 
     cf_apps_description['cf-app'].each do |cf_app_name, cf_app_details|
       cf_apps[cf_app_name] = load_cf_app_details(cf_app_name, cf_app_details, file, dir, cf_apps)

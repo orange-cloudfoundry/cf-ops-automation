@@ -133,7 +133,7 @@ class TaskSpecHelper
     path = File.join(base_dir, task_name, 'fixtures', relative_path_from_fixture_dir)
     raise "File not found: #{path}" unless File.exist?(path)
 
-    YAML.load_file(path)
+    YAML.load_file(path, aliases: true)
   end
 
   def self.resolv_erb_yaml_fixture(task_name, erb_relative_path, context)
@@ -143,6 +143,6 @@ class TaskSpecHelper
       new_binding.local_variable_set k.to_sym, v
     end
     puts "Local var: #{new_binding.local_variables}"
-    YAML.safe_load(ERB.new(File.read(erb_file_full_path), 0, '<>').result(new_binding))
+    YAML.safe_load(ERB.new(File.read(erb_file_full_path), trim_mode: '<>').result(new_binding))
   end
 end

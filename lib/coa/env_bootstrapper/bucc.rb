@@ -26,7 +26,7 @@ module Coa
         @vars ||=
           begin
             command_result = run_cmd("#{cli_path} vars", verbose: false)
-            YAML.safe_load(command_result)
+            YAML.safe_load(command_result, aliases: true)
           rescue ::Errno::ENOENT => error
             raise BuccCommandError, "You may be missing bucc in your $PATH. Error:\n#{error.message}"
           rescue ::Psych::SyntaxError => error

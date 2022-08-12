@@ -53,7 +53,7 @@ module Tasks
       def load_root_deployment_yml(basedir, name)
         root_deployment_file = File.join(basedir, name, 'root-deployment.yml')
         if File.exist?(root_deployment_file)
-          YAML.load_file(root_deployment_file) || {}
+          YAML.load_file(root_deployment_file, aliases: true) || {}
         else
           {}
         end

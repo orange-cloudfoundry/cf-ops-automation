@@ -60,8 +60,8 @@ class Config
 
   def load_config
     public_config = private_config = nil
-    public_config = YAML.load_file(@public_yaml) if File.exist?(@public_yaml)
-    private_config = YAML.load_file(@private_yaml) if File.exist?(@private_yaml)
+    public_config = YAML.load_file(@public_yaml, aliases: true) if File.exist?(@public_yaml)
+    private_config = YAML.load_file(@private_yaml, aliases: true) if File.exist?(@private_yaml)
     @loaded_config = @loaded_config.deep_merge(public_config) unless public_config.nil?
     @loaded_config = @loaded_config.deep_merge(private_config) unless private_config.nil?
     override_with_extended_config

@@ -56,7 +56,7 @@ describe Coa::EnvBootstrapper::Credhub do
         stub_const("Coa::EnvBootstrapper::Credhub::CREDHUB_CREDENTIALS_FILENAME", file)
         credhub.prepare_environment
 
-        expect(YAML.load_file(file)).to eq(expected_credentials_file_content)
+        expect(YAML.load_file(file, aliases: true)).to eq(expected_credentials_file_content)
       end
 
       it 'uses a valid generated filename' do
