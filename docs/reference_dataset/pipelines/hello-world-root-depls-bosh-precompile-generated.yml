@@ -177,7 +177,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/curl-ssl
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: repackaged-releases-fallback
           run:
@@ -265,7 +265,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: stemcell
           outputs:
@@ -295,7 +295,7 @@ jobs:
               type: registry-image
               source:
                 repository: orangecloudfoundry/bosh-cli-v2
-                tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+                tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -326,7 +326,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: stemcell
             - name: secrets
@@ -380,7 +380,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: stemcell
           outputs:
@@ -410,7 +410,7 @@ jobs:
               type: registry-image
               source:
                 repository: orangecloudfoundry/bosh-cli-v2
-                tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+                tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -441,7 +441,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: stemcell
             - name: secrets
@@ -495,7 +495,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: stemcell
           outputs:
@@ -525,7 +525,7 @@ jobs:
               type: registry-image
               source:
                 repository: orangecloudfoundry/bosh-cli-v2
-                tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+                tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -556,7 +556,7 @@ jobs:
             type: registry-image
             source:
               repository: orangecloudfoundry/bosh-cli-v2-cf-cli
-              tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
           inputs:
             - name: stemcell
             - name: secrets
@@ -609,7 +609,7 @@ jobs:
           type: registry-image
           source:
             repository: orangecloudfoundry/curl-ssl
-            tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+            tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
         outputs:
           - name: result-dir
         run:
