@@ -21,11 +21,11 @@ class TaskSpecHelper
   end
 
   def self.orange_default_image_version
-    '49a024793f687c3b4843d7fe5880941cb3f6ab99'
+    'daaa098ccf63a8460a8e88897faba9f8c3aeb79b'
   end
 
   def self.governmentpaas_default_image_version
-    '49a024793f687c3b4843d7fe5880941cb3f6ab99'
+    'daaa098ccf63a8460a8e88897faba9f8c3aeb79b'
   end
 
   def self.spruce_image
@@ -97,7 +97,7 @@ class TaskSpecHelper
   end
 
   def self.ruby_image_version
-    '2.7.1'
+    '3.1.2'
   end
 
   def self.ruby_slim_image_version

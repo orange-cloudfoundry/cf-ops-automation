@@ -16,7 +16,7 @@ describe 'static concourse pipelines spec' do
     let(:pipelines_display) do
       result = []
       pipelines_without_reference_dataset.each do |pipeline_filename|
-        pipeline = YAML.load_file(pipeline_filename)
+        pipeline = YAML.load_file(pipeline_filename, aliases: true)
         result << if pipeline['display']
                     pipeline['display'].to_yaml
                   else
@@ -37,7 +37,7 @@ describe 'static concourse pipelines spec' do
       puts "list: #{pipeline_files}"
       pipeline_files.each do |pipeline_filename|
         puts "processing file #{pipeline_filename}"
-        pipeline = YAML.load_file(pipeline_filename)
+        pipeline = YAML.load_file(pipeline_filename, aliases: true)
         result.concat(pipeline['resource_types']) if pipeline['resource_types']
       end
       result.uniq
@@ -120,7 +120,7 @@ describe 'static concourse pipelines spec' do
       puts "list: #{pipeline_files}"
       pipeline_files.each do |pipeline_filename|
         puts "processing file #{pipeline_filename}"
-        pipeline = YAML.load_file(pipeline_filename)
+        pipeline = YAML.load_file(pipeline_filename, aliases: true)
         image_resources = pipeline['jobs']&.flat_map { |job| job['plan'] }&.compact&.flat_map { |config| config['config'] }&.compact&.flat_map { |image_resource| image_resource['image_resource'] }
         source = image_resources&.map { |job| job['source'] }
         source&.flat_map do |s|

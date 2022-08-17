@@ -186,7 +186,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
       inputs:
         - name: final-control-plane-pipeline
         - name: secrets-full
@@ -253,7 +253,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/bosh-cli-v2
-          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -348,7 +348,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
       inputs:
       - name: concourse-teams
       outputs:
@@ -434,7 +434,7 @@ jobs:
         type: registry-image
         source:
           repository: orangecloudfoundry/curl-ssl
-          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
       inputs:
       - name: all-pipelines
       outputs:

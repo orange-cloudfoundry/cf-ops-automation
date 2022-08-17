@@ -451,7 +451,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                       type: registry-image
                       source:
                         repository: orangecloudfoundry/git-ssh
-                        tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+                        tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
                     outputs:
                       - name: success-tag
                     run:
@@ -473,7 +473,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                         type: registry-image
                         source:
                           repository: orangecloudfoundry/git-ssh
-                          tag: 49a024793f687c3b4843d7fe5880941cb3f6ab99
+                          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
                       outputs:
                         - name: success-tag
                       run:
