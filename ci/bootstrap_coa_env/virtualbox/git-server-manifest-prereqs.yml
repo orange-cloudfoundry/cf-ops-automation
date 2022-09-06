@@ -15,7 +15,9 @@ git_server_manifest:
         - paas-templates
         - secrets
         - cf-ops-automation
-    vm_type: default
+        - k8s-configs
+        - concourse-audit-trail
+    vm_type: small
     stemcell: default
     persistent_disk: 10_000
     networks:

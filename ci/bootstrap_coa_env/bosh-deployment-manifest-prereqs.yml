@@ -34,7 +34,7 @@ bosh:
             - name: status
               release: zookeeper
               properties: {}
-          vm_type: default
+          vm_type: small
           stemcell: default
           persistent_disk: 10240
           networks:

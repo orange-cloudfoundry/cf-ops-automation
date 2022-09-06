@@ -16,7 +16,7 @@
           restrict -6 default kod nomodify notrap nopeer noquery
           restrict 127.0.0.0 mask 255.0.0.0
           restrict -6 ::1
-    vm_type: default
+    vm_type: small
     stemcell: default
     networks:
     - name: concourse-bucc
