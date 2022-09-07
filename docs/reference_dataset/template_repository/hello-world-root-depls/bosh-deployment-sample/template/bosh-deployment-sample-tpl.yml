@@ -9,7 +9,7 @@ update: {} # defined in a operators file
 
 stemcells:
 - alias: default
-  os: ubuntu-jammy
+  os: ubuntu-bionic
   version: latest
 
 instance_groups:
