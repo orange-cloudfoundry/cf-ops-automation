@@ -1,9 +1,10 @@
 # ###################
 # This file list required keys. Thoses keys must be present, but values is ignored on CI enviroments
+# EXCEPT for 'stemcell-main-name', 'iaas-type' keys
 # ###################
 pipeline_vars:
   iaas-type: openstack
   stemcell-name-prefix: ""
-  stemcell-main-name: bosh-openstack-kvm-ubuntu-jammy-go_agent
+  stemcell-main-name: bosh-openstack-kvm-ubuntu-bionic-go_agent
   stemcell-version: "621.76"
   bosh-openstack-cpi-release-version: "39"
