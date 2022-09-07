@@ -1,3 +1,6 @@
+# ###################
+# This file list required keys. Thoses keys must be present, but values is ignored on CI enviroments
+# ###################
 concourse:
   concourse_target: cf-ops-automation
   concourse_url: https://192.168.50.6

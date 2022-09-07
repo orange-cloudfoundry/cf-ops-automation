@@ -2,12 +2,12 @@
 name: hello-world-root-depls
 
 stemcell:
-  version: "1.97" # Mandatory
+  version: "1.8" # Mandatory
   sha1: # Optional
 
 releases:
   nginx:
-    version: "1.21.3" # Mandatory
+    version: "1.21.6" # Mandatory
     repository: cloudfoundry-community/nginx-release # Mandatory
     tag_prefix: '' # Optional - by default, COA assumes boshrelease tag starts with 'v'. Adjust using this prefix.
     github-release-name: '' # Optional - by default, COA uses "<name>-<version>.tgz" - Default: nil
@@ -22,7 +22,7 @@ releases:
     repository: cloudfoundry/bosh-openstack-cpi-release
 
   vault:
-    version: "1.1.5"
+    version: "1.1.6"
     base_location: https://github.com/ # Optional - set to 'https://github.com/' when missing
     repository: cloudfoundry-community/vault-boshrelease
 

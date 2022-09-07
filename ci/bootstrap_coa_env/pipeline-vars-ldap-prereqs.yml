@@ -1,3 +1,6 @@
+# ###################
+# This file list required keys. Thoses keys must be present, but values is ignored on CI enviroments
+# ###################
 pipeline_vars:
   concourse-ldap-admin-groups: my-ldap-group
   concourse-cf-admin-groups: my-cf-org
