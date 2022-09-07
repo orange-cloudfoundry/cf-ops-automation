@@ -13,7 +13,7 @@ update:
 
 stemcells:
 - alias: trusty
-  os: ubuntu-trusty
+  os: ubuntu-bionic
   version: latest
 
 instance_groups:
