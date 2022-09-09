@@ -2,25 +2,53 @@
   require "#{ops_automation_path}/lib/pipeline_helpers"
 
   root_deployment_name = depls
-  disabled_deployments = all_dependencies.select do |_, deployment_info|
+  disabled_deployments = multi_root_dependencies.select do |root_depl_name, deployment_info|
     deployment_info['status'] == 'disabled'
   end
 
-  precompile_excluded_deployments = config&.dig(root_deployment_name,'precompile','excluded-deployments') || []
-
-  filtered_deployments = all_dependencies.select do |deployment_name, deployment_info|
-    !precompile_excluded_deployments.include?(deployment_name) && deployment_info['bosh-deployment']
+  precompile_excluded_deployments = {}
+  root_deployments.each do |name|
+    precompile_excluded_deployments[name] = config&.dig(name,'precompile','excluded-deployments') || []
   end
 
-  uniq_releases = {}
-  filtered_deployments&.sort&.each do |name, boshrelease|
-    boshrelease['releases']&.each do |release, info|
-      previous_info = uniq_releases[release]
-      raise "Inconsitency detected with '#{release}' boshrelease, in '#{name}' deployment: trying to replace\n#{previous_info} with \n#{info}" if previous_info && ! info.eql?(previous_info)
-      uniq_releases[release] = info
+
+  filtered_deployments = {}
+  root_deployments.each do |name|
+    filtered_deployments[name] = multi_root_dependencies[name].select do |deployment_name, deployment_info|
+      !precompile_excluded_deployments[name].include?(deployment_name) && deployment_info['bosh-deployment']
     end
   end
 
+  releases_per_root_deployments = Hash.new { |h, k| h[k] = {} }
+  releases_inconsistencies = Hash.new { |h, k| h[k] = [] }
+  filtered_deployments&.sort
+    &.each do |root_depl, boshreleases|
+      boshreleases.each do |name, boshrelease|
+        boshrelease['releases']&.each do |release, info|
+          previous_info = releases_per_root_deployments[root_depl][release]
+          if previous_info && ! info.eql?(previous_info)
+            releases_inconsistencies[root_depl] << "Inconsistency detected with <#{release}> boshrelease, in <#{name}> deployment: trying to replace\n#{previous_info}\nwith\n#{info}"
+          else
+            releases_per_root_deployments[root_depl][release] = info
+          end
+        end
+      end
+    end
+
+  raise "Inconsitency detected with #{releases_inconsistencies.to_yaml}" if releases_inconsistencies.size >0
+
+  uniq_releases_per_root_deployments = Hash.new { |h, k| h[k] = {} }
+  releases_per_root_deployments.each do |root_depl, releases_info|
+    depends_on = config&.dig(root_depl,'precompile', 'depends-on') || []
+    puts "#{root_depl} depends_on: #{depends_on}"
+    releases_info.each do |release_name, details|
+      already_defined = false
+      depends_on.each { |depend_root_depl| already_defined = already_defined || releases_per_root_deployments&.dig(depend_root_depl, release_name) == details }
+      uniq_releases_per_root_deployments[root_depl][release_name] = details unless already_defined
+    end
+  end
+
+  uniq_releases = uniq_releases_per_root_deployments[root_deployment_name]
   offline_stemcells_enabled = config&.dig('offline-mode', 'stemcells') && true
   offline_boshreleases_enabled = config&.dig('offline-mode', 'boshreleases') && true
   # precompile_skip_upload = config&.dig('precompile','skip-upload') && true
@@ -34,10 +62,13 @@
   concourse_retry = configurer.concourse_retry
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
 
+  all_dependencies = multi_root_dependencies[root_deployment_name] || {}
+  version_reference = multi_root_version_reference[root_deployment_name] || {}
+  all_ci_deployments = multi_root_ci_deployments[root_deployment_name] || {}
+  all_cf_apps = multi_root_cf_apps[root_deployment_name] || {}
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated") || root_deployment_name
 
 %>
-
 ---
 meta:
   tasks:
@@ -146,14 +177,14 @@ resources:
 <% end %>
 
 <% uniq_releases.sort.each do |release, info| %>
-  - name: precompile-<%= release %>-deployment
+  - name: <%= release %>-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: precompile-<%= release %>-deployment
+      deployment: <%= release %>-deployment
       ca_cert: <%= bosh_cert[root_deployment_name]&.dump %>
 
   - name: <%= release %>
@@ -241,7 +272,7 @@ jobs:
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_TARGET: ((bosh-target))
-          BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+          BOSH_CA_CERT: secrets/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
           ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
 
       - task: repackage-releases-fallback
@@ -268,7 +299,7 @@ jobs:
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_ENVIRONMENT: ((bosh-target))
-          BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+          BOSH_CA_CERT: config-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       - task: check-repackaging-errors
         config:
           platform: linux
@@ -374,7 +405,7 @@ jobs:
           BOSH_CLIENT: ((bosh-username))
           BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_ENVIRONMENT: ((bosh-target))
-          BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+          BOSH_CA_CERT: config-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
 
   <% uniq_releases.each do |release, info| %>
   <% current_serial_group = configurer.serial_group_strategy.generate(release, info) %>
@@ -397,7 +428,7 @@ jobs:
             attempts: <%= concourse_retry[:pull] %>
       - task: generate-<%= release %>-deployment-manifest
         <%
-        manifest = {'name' => "precompile-#{release}-deployment", 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
+        manifest = {'name' => "#{release}-deployment", 'instance_groups' => [], 'update' => { 'canaries' => 1, 'max_in_flight' => 1, 'canary_watch_time' => '1000-90000', 'update_watch_time' => '1000-90000' }, 'releases' => [] }
         manifest['releases'] << {'name' => release, 'version' => info.fetch('version', 'latest')}
 
         precompile_manifest = manifest
@@ -428,7 +459,7 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "precompile-<%= release %>-deployment.yml"
+            MANIFEST_NAME: "<%= release %>-deployment.yml"
             MANIFEST_CONTENT: '<%= precompile_manifest %>'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
@@ -457,12 +488,12 @@ jobs:
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
-            BOSH_CA_CERT: config-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+            BOSH_CA_CERT: config-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
 
-      - put: precompile-<%= release %>-deployment
+      - put: <%= release %>-deployment
         attempts: <%= concourse_retry[:bosh_push] %>
         params:
-          manifest: final-release-manifest/precompile-<%= release %>-deployment.yml
+          manifest: final-release-manifest/<%= release %>-deployment.yml
           cleanup: true
 
       - task: compile-and-export-<%= release %>
@@ -492,11 +523,11 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
-            BOSH_DEPLOYMENT: precompile-<%= release %>-deployment
+            BOSH_DEPLOYMENT: <%= release %>-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
-            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+            BOSH_CA_CERT: secrets/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
             RELEASE_NAME: <%= release %>
             RELEASE_VERSION: ((releases.<%= release %>.version))
     <% if offline_boshreleases_enabled %>
@@ -535,9 +566,9 @@ jobs:
           file: compiled-<%= release %>/*.tgz
           acl: public-read
   <% end %>
-      - put: precompile-<%= release %>-deployment
+      - put: <%= release %>-deployment
         params:
-          manifest: final-release-manifest/<%= release %>-deployment.yml
+          manifest: final-release-manifest/<%= release %>-deployment.yml.yml
           delete:
             enabled: true
             force: true
@@ -586,7 +617,7 @@ jobs:
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
-            BOSH_CA_CERT: secrets/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+            BOSH_CA_CERT: secrets/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
     <% end %>
     <% end %>
 

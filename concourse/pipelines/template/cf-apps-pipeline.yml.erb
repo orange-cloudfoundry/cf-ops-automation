@@ -1,14 +1,23 @@
 <%
   require "#{ops_automation_path}/lib/pipeline_helpers"
+  root_deployment_name = depls
+  all_dependencies = multi_root_dependencies[root_deployment_name] || {}
+  version_reference = multi_root_version_reference[root_deployment_name] || {}
+  all_ci_deployments = multi_root_ci_deployments[root_deployment_name] || {}
+  all_cf_apps = multi_root_cf_apps[root_deployment_name] || {}
 
-  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(depls).build
+  pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
   concourse_retry = configurer.concourse_retry
 
-  current_team = CiDeployment.team(all_ci_deployments, depls, "#{depls}-cf-apps-generated")
+  current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-cf-apps-generated")
+  puts "root_deployment_name: #{root_deployment_name}"
+  puts "multi_root_dependencies: #{multi_root_dependencies.keys}"
+  puts "multi_root_dependencies: #{multi_root_cf_apps.keys}"
+  puts "all_cf_apps: #{all_cf_apps}"
 %>
 ---
 display:
@@ -95,8 +104,8 @@ jobs:
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       - get: secrets-full
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-    - task: generate-<%= depls %>-pipeline
-      output_mapping: {result-dir: trigger-<%= depls %>-plan}
+    - task: generate-<%= root_deployment_name %>-pipeline
+      output_mapping: {result-dir: trigger-<%= root_deployment_name %>-plan}
       config:
         platform: linux
         image_resource:
@@ -115,15 +124,15 @@ jobs:
             echo "trigger-job -j $BUILD_PIPELINE_NAME/cf-push-<%= app_name %>" >> result-dir/flight-plan
             <% end %>
         params:
-          BUILD_PIPELINE_NAME: <%= depls %>-cf-apps-generated
+          BUILD_PIPELINE_NAME: <%= root_deployment_name %>-cf-apps-generated
     - task: fly-into-concourse
-      input_mapping: {fly-cmd: trigger-<%= depls %>-plan}
-      output_mapping: {flight-report: concourse-<%= depls %>-trigger-report}
+      input_mapping: {fly-cmd: trigger-<%= root_deployment_name %>-plan}
+      output_mapping: {flight-report: concourse-<%= root_deployment_name %>-trigger-report}
       file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
       params:
-        ATC_EXTERNAL_URL: ((concourse-<%= depls %>-target))
-        FLY_USERNAME: ((concourse-<%= depls %>-username))
-        FLY_PASSWORD: ((concourse-<%= depls %>-password))
+        ATC_EXTERNAL_URL: ((concourse-<%= root_deployment_name %>-target))
+        FLY_USERNAME: ((concourse-<%= root_deployment_name %>-username))
+        FLY_PASSWORD: ((concourse-<%= root_deployment_name %>-password))
         FLY_TEAM: <%= current_team || 'main' %>
 <% end %>
 
@@ -216,7 +225,7 @@ jobs:
 
 <% unless all_cf_apps.empty? %>
 groups:
-- name: <%= depls.downcase %>
+- name: <%= root_deployment_name.downcase %>
   jobs:
     <% jobs.each_value do |job_names| %>
      <% job_names.each do |job_name| %>

@@ -1,0 +1,29 @@
+---
+platform: linux
+image_resource:
+  type: registry-image
+  source: {repository: library/ruby, tag: 3.1.2-slim}
+inputs:
+  - name: scripts-resource
+  - name: secrets-resource
+  - name: templates-resource
+outputs:
+  - name: result-dir
+run:
+  path: sh
+  args:
+  - -ec
+  - |
+    echo "Selected Iaas Type: <${IAAS_TYPE}>"
+    echo "Profiles: <${PROFILES}>"
+    export SECRETS=$(pwd)/secrets-resource
+    export TEMPLATES=$(pwd)/templates-resource
+    export OUTPUT_DIR=$(pwd)/result-dir
+    cd scripts-resource
+    ./scripts/concourse-generate-shared-pipelines.sh
+    du -a ../result-dir
+params:
+  IAAS_TYPE:
+  PIPELINE_TYPE:
+  PROFILES:
+  PROFILES_AUTOSORT: true

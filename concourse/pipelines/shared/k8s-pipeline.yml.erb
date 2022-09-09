@@ -2,11 +2,11 @@
   require "#{ops_automation_path}/lib/pipeline_helpers"
   root_deployment_name = "TODO"
 
-  disabled_deployments = all_dependencies.select do |_, deployment_info|
+  disabled_deployments = multi_root_dependencies.select do |_, deployment_info|
     deployment_info['status'] == 'disabled'
   end
 
-  enabled_deployments_with_empty = all_dependencies.select do |root_deployment, root_deployment_info|
+  enabled_deployments_with_empty = multi_root_dependencies.select do |root_deployment, root_deployment_info|
     root_deployment_info.keep_if {|_, deployment_info| deployment_info['status'] == 'enabled' && deployment_info['kubernetes']}
   end
 
@@ -32,7 +32,7 @@
   concourse_retry = configurer.concourse_retry
   reconciliation_loop_interval = configurer.reconciliation_loop_interval.get # 4m
 
-  current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "shared-k8s-generated")
+  current_team = CiDeployment.team(multi_root_ci_deployments, root_deployment_name, "shared-k8s-generated")
   #  enabled_deployments.to_yaml
 %>
 ---
