@@ -28,6 +28,7 @@ class PipelineGenerator
   BOSH_CERT_LOCATIONS.default = 'shared/certs/internal_paas-ca/server-ca.crt'
 
   DEFAULT_OPTIONS = {
+    depls: 'shared',
     git_submodule_path: '../paas-templates',
     secrets_path: '..',
     output_path: 'bootstrap-generated',

@@ -32,11 +32,7 @@ module PipelineHelpers
     end
 
     def generate_vars_files(templates_dir, config_dir, pipeline_name, root_deployment)
-      vars_files = Dir[File.join(config_dir, 'credentials-*.yml')].reject { |file_path| filter_credentials_file(file_path) }
-      current_pipeline_config_file = generate_pipeline_credentials_filename(config_dir, pipeline_name)
-      vars_files.sort!
-      puts "INFO - checking existence of #{current_pipeline_config_file}"
-      vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
+      vars_files = generate_vars_files_without_versions(config_dir, pipeline_name)
       versions_file = File.join(templates_dir, root_deployment, "root-deployment.yml")
       raise "Missing version file: #{versions_file}" unless File.exist?(versions_file)
 
@@ -63,8 +59,17 @@ module PipelineHelpers
 
       clean_observed_submodules.empty? ? "none" : clean_observed_submodules
     end
+    def generate_vars_files_without_versions(config_dir, pipeline_name)
+      vars_files = Dir[File.join(config_dir, 'credentials-*.yml')].reject { |file_path| filter_credentials_file(file_path) }
+      current_pipeline_config_file = generate_pipeline_credentials_filename(config_dir, pipeline_name)
+      vars_files.sort!
+      puts "INFO - checking existence of #{current_pipeline_config_file}"
+      vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
+      vars_files
+    end
 
     private
+
 
     def generate_pipeline_credentials_filename(config_dir, pipeline_name)
       config_file_suffix = pipeline_name.gsub('-generated', '')

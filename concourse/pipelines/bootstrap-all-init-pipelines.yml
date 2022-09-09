@@ -411,13 +411,13 @@ jobs:
       params: { submodules: none, depth: 5 }
       passed: [ create-teams ]
       trigger: true
-  - task: generate-all-update-pipelines
+  - task: generate-shared-update-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
-    file: cf-ops-automation/concourse/tasks/generate-all-pipelines.yml
+    file: cf-ops-automation/concourse/tasks/generate-shared-pipelines.yml
     params:
       IAAS_TYPE: ((iaas-type))
-      PIPELINE_TYPES: update
+      PIPELINE_TYPE: update
   - task: set-all-update-pipelines
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_init_pipelines.yml
@@ -446,11 +446,11 @@ jobs:
         - |
           DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
-          for aFile in $(ls *update-generated.yml);do
-            echo "Processing ${aFile}"
-            PIPELINE=$(basename ${aFile} .yml)
-            DEPLS=${PIPELINE%%-update-generated}
-            echo "trigger-job -j ${PIPELINE}/update-pipeline-${DEPLS}"  >> ${DEST_DIR}/flight-plan
+          PIPELINE="shared-update-generated"
+          jobs=$(cat $PIPELINE.yml 2>/dev/null|grep -e '[[:space:]]*- name: update-pipeline.*-depls'|cut -d':' -f2|cut -c 2-)
+          for j in $jobs;do
+            echo "Processing ${j}"
+            echo "trigger-job -j ${PIPELINE}/${j}"  >> ${DEST_DIR}/flight-plan
           done
           cat ${DEST_DIR}/flight-plan
       params:

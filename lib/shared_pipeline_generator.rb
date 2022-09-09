@@ -11,6 +11,7 @@ require_relative './cf_apps'
 require_relative './root_deployment'
 require_relative './root_deployment_version'
 require_relative './root_deployment_overview_enhancer'
+require_relative './pipeline_helpers'
 
 class SharedPipelineGenerator
   attr_reader :options, :warnings
@@ -28,6 +29,7 @@ class SharedPipelineGenerator
   BOSH_CERT_LOCATIONS.default = 'shared/certs/internal_paas-ca/server-ca.crt'
 
   DEFAULT_OPTIONS = {
+    depls: 'shared',
     git_submodule_path: '../paas-templates',
     secrets_path: '..',
     output_path: 'bootstrap-generated',
@@ -47,12 +49,26 @@ class SharedPipelineGenerator
     @warnings = []
   end
 
-  def execute
-    pipeline_templates_filter = PipelineTemplatesFiltering.new(@options, "/concourse/pipelines/shared")
-    @options.input_pipelines = pipeline_templates_filter.filter
+  def generate_shared_templates?
+    @options.depls == "shared"
+  end
 
+  def execute
+    input_pipelines_backup = options.input_pipelines
+    unless generate_shared_templates?
+      puts "=== Processing #{@options.depls} templates ==="
+      pipeline_templates_filter = PipelineTemplatesFiltering.new(@options)
+      @options.input_pipelines = pipeline_templates_filter.filter
+      load_erb_context
+      process_templates(@options.depls)
+    end
+    options.input_pipelines = input_pipelines_backup
+    puts "=== Processing shared templates ==="
+    shared_templates_filter = PipelineTemplatesFiltering.new(@options, "/concourse/pipelines/shared")
+    @options.input_pipelines = shared_templates_filter.filter
     load_erb_context
-    process_templates
+    process_templates('shared')
+
   end
 
   def display_warnings
@@ -72,8 +88,7 @@ class SharedPipelineGenerator
     secrets_dir_path = options.secrets_path
     filter_criteria = File.join(secrets_dir_path, '*-depls')
     active_paths =  Dir[filter_criteria]
-    active_root_deployments = active_paths.map { |path| File.basename(path) }
-    active_root_deployments
+    active_paths.map { |path| File.basename(path) }
   end
 
   def set_context
@@ -94,7 +109,6 @@ class SharedPipelineGenerator
     root_deployments.each do |name|
       root_deployment_versions = RootDeploymentVersion.load_file("#{options.paas_templates_path}/#{name}/root-deployment.yml")
       deployment_factory = DeploymentFactory.new(name, root_deployment_versions.versions, config)
-
       root_deployment_overview = RootDeployment.new(name, options.paas_templates_path, options.secrets_path, fail_on_inconsistency: false).overview_from_hash(deployment_factory)
       versions = root_deployment_versions.versions
       enhanced_root_deployment = RootDeploymentOverviewEnhancer.new(name, root_deployment_overview, versions).enhance
@@ -104,13 +118,15 @@ class SharedPipelineGenerator
       all_root_deployments[name] = enhanced_root_deployment
     end
 
+    root_deployment_name = options.depls
+    ctxt.depls                 = root_deployment_name
     ctxt.root_deployments      = root_deployments
     ctxt.bosh_cert             = BoshCertificates.new(options.secrets_path, BOSH_CERT_LOCATIONS).load_from_location.certs
     ctxt.secrets_dirs_overview = Secrets.new("#{options.secrets_path}/*").overview
-    ctxt.version_reference     = all_versions
-    ctxt.all_dependencies      = all_root_deployments
-    ctxt.all_ci_deployments    = all_ci_deployments
-    ctxt.all_cf_apps           = all_cf_apps
+    ctxt.multi_root_version_reference = all_versions
+    ctxt.multi_root_dependencies      = all_root_deployments
+    ctxt.multi_root_ci_deployments    = all_ci_deployments
+    ctxt.multi_root_cf_apps           = all_cf_apps
     ctxt.git_submodules        = GitModules.new(options.git_submodule_path).list
     ctxt.config                = config.loaded_config
     ctxt.ops_automation_path   = options.ops_automation
@@ -121,23 +137,25 @@ class SharedPipelineGenerator
   end
 
   def check_warnings
-    warnings << "### WARNING ### no deployment detected. Please check\n template_dir: #{options.paas_templates_path}\n secrets_dir: #{options.secrets_path}" if ctxt.all_dependencies.empty?
-    warnings << '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if ctxt.all_ci_deployments.empty?
-    warnings << '### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists' if ctxt.all_cf_apps.empty?
+    warnings << "### WARNING ### no deployment detected. Please check\n template_dir: #{options.paas_templates_path}\n secrets_dir: #{options.secrets_path}" if ctxt.multi_root_dependencies&.empty?
+    warnings << '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if ctxt.root_deployments.map { |name| ctxt.multi_root_ci_deployments&.empty? || ctxt.multi_root_ci_deployments[name]&.empty?}
+                                                                                                                          .inject { |memo, element| memo && element }
+    warnings << '### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists' if ctxt.multi_root_cf_apps&.empty?
     warnings << '### WARNING ### no gitsubmodule detected' if ctxt.git_submodules.empty?
   end
 
-  def process_templates
-    processor = TemplateProcessor.new('shared', options.to_h, self.ctxt.to_h)
+  def process_templates(root_deployment_name)
+    processor = TemplateProcessor.new(root_deployment_name, options.to_h, self.ctxt.to_h)
     processed_template_count = generate_templates(processor)
     display_template_procession_messages(processed_template_count)
+    processed_template_count
   end
 
   def generate_templates(processor)
     processed_template_count = 0
-    return processed_template_count unless options.input_pipelines
+    return processed_template_count unless @options.input_pipelines
 
-    options.input_pipelines.each do |dir|
+    @options.input_pipelines.each do |dir|
       processed_template = processor.process(dir)
       processed_template_count += processed_template.length
     end
@@ -162,10 +180,10 @@ class SharedPipelineGenerator
     class << self
       def parse(args)
         options = SharedPipelineGenerator::DEFAULT_OPTIONS.dup
-
+        puts options
         opt_parser = option_parser(options)
         opt_parser.parse!(args)
-        # opt_parser.abort(opt_parser.to_s) if options[:depls].to_s.empty?
+        opt_parser.abort("depls cannot be empty when set !" + opt_parser.to_s) if options[:depls].to_s.empty?
 
         options
       end
@@ -173,6 +191,10 @@ class SharedPipelineGenerator
       def option_parser(options)
         OptionParser.new do |opts|
           opts.banner = "Incomplete/wrong parameter(s): #{opts.default_argv}.\n Usage: ./#{opts.program_name} <options>"
+
+          opts.on('-d', '--depls ROOT_DEPLOYMENT', 'Specify a root deployment name to generate template for') do |deployment_string|
+            options[:depls] = deployment_string
+          end
 
           opts.on('-t', '--templates-path PATH', 'Base location for paas-templates (implies -s)') do |tp_string|
             options[:paas_templates_path] = tp_string
@@ -267,7 +289,7 @@ class SharedPipelineGenerator
     end
 
     def select_all_pipeline_templates
-      Dir["#{@templates_base_dir}/*.yml.erb"]
+      Dir["#{@templates_base_dir}/**/*.yml.erb"]
     end
 
     def remove_excluded_pipeline_templates(excluded_pipeline, pipelines)
@@ -279,13 +301,15 @@ class SharedPipelineGenerator
   end
 
   ErbSharedContext = Struct.new(
+    :depls,
     :root_deployments,
     :bosh_cert,
     :secrets_dirs_overview,
+    :multi_root_version_reference,
+    :multi_root_dependencies,
+    :multi_root_ci_deployments,
+    :multi_root_cf_apps,
     :version_reference,
-    :all_dependencies,
-    :all_ci_deployments,
-    :all_cf_apps,
     :git_submodules,
     :config,
     :ops_automation_path
