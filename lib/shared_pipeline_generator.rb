@@ -1,4 +1,5 @@
 require 'optparse'
+
 require_relative './config'
 require_relative './extended_config'
 require_relative './bosh_certificates'
@@ -12,6 +13,7 @@ require_relative './root_deployment'
 require_relative './root_deployment_version'
 require_relative './root_deployment_overview_enhancer'
 require_relative './pipeline_helpers'
+
 
 class SharedPipelineGenerator
   attr_reader :options, :warnings
@@ -217,7 +219,7 @@ class SharedPipelineGenerator
             options[:ops_automation] = ap_string
           end
 
-          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process without full path and without suffix "-pipeline.yml.erb"') do |ip_array|
+          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process without full path and without suffix "-pipeline.yml.erb". Does not works on shared pipelines') do |ip_array|
             options[:input_pipelines] = ip_array
           end
 

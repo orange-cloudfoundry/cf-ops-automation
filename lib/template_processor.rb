@@ -3,6 +3,7 @@ require 'erb'
 require 'ostruct'
 require 'fileutils'
 require_relative 'pipeline_helpers'
+require "active_support/core_ext/object/deep_dup"
 
 class TemplateProcessor
   attr_reader :root_deployment_name, :config, :context
@@ -83,7 +84,7 @@ class TemplateProcessor
 
   def load_context_into_a_binding
     new_binding = binding
-    context&.each do |k, v|
+    @context&.deep_dup&.each do |k, v|
       new_binding.local_variable_set k.to_sym, v
     end
     puts "Local var: #{new_binding.local_variables}"
