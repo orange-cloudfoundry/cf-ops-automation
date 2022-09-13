@@ -24,7 +24,7 @@ resource_types:
       tag: 2.0.1
 resources:
 
-<% if multi_root_ci_deployments&.any? %>
+<% if root_deployments&.any? %>
 - name: concourse-meta
   icon: file-document-box-search-outline
   type: meta
@@ -75,9 +75,8 @@ resources:
 <% end %>
 
 jobs:
-<% if multi_root_ci_deployments&.any? %>
-
-<% multi_root_ci_deployments&.each do |root_deployment_name, _| %>
+<% if root_deployments&.any? %>
+<% root_deployments&.each do |root_deployment_name| %>
 <% pipeline_name="shared-update-generated" %>
 
   - name: update-pipeline-<%= root_deployment_name %>
@@ -144,7 +143,7 @@ jobs:
             ci_overview_file = File.join("config",root_deployment ,"ci-deployment-overview.yml")
             raise "ERROR - Missing file : #{ci_overview_file}" unless File.exist?(ci_overview_file)
 
-            ci_overview=YAML.load_file(ci_overview_file)
+            ci_overview=YAML.load_file(ci_overview_file, aliases: true)
             ci_overview["ci-deployment"][root_deployment]["pipelines"].each do |pipeline_name,pipeline_details|
               puts "Processing #{pipeline_name} with ${pipeline_details}"
               team = (pipeline_details && pipeline_details["team"]) || "main"
@@ -160,7 +159,7 @@ jobs:
             require 'fileutils'
             require 'yaml'
             Dir[File.join("selected-pipelines","**","*.yml")].each do |file_path|
-              file_content = YAML.load_file(file_path)
+              file_content = YAML.load_file(file_path, aliases: true)
               if file_content["jobs"]&.fetch(0)&.fetch("name") == "this-is-an-empty-pipeline"
                puts " deleting empty pipeline: #{file_path}";
                FileUtils.rm(file_path)
@@ -205,6 +204,83 @@ jobs:
         repository: generated-pipelines
         rebase: true
  <% end %>
+
+
+  - name: update-pipeline-shared
+    <% jobs['shared'] << "update-pipeline-shared" %>
+    serial: true
+    on_failure:
+      put: failure-alert
+      params:
+        channel: ((slack-channel))
+        icon_url: https://pbs.twimg.com/profile_images/714899641628753920/3C8UrVPf.jpg
+        text: |
+          ![failed](https://rawgit.com/orange-cloudfoundry/travis-resource/master/ci/images/concourse-red.png) Failed to deploy [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
+        username: Concourse
+    plan:
+      - in_parallel:
+          - put: concourse-meta
+          - get: paas-templates-limited
+            params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+            attempts: <%= concourse_retry[:pull] %>
+            trigger: true
+          - get: secrets-limited-for-pipeline
+            params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+            attempts: <%= concourse_retry[:pull] %>
+            trigger: true
+          - get: cf-ops-automation
+            params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
+            attempts: <%= concourse_retry[:pull] %>
+            trigger: true
+
+      - task: generate-shared-pipelines
+        input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-limited,secrets-resource: secrets-limited-for-pipeline}
+        output_mapping: {result-dir: concourse-generated-pipeline}
+        file: cf-ops-automation/concourse/tasks/generate-shared-pipelines.yml
+        params:
+          IAAS_TYPE: ((iaas-type))
+          PROFILES: ((profiles))
+      - task: copy-and-format-pipelines
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: teliaoss/concourse-fly
+              tag: "20210905"
+          inputs:
+            - name: concourse-generated-pipeline
+          outputs:
+            - name: formated-pipelines
+          run:
+            path: /bin/sh
+            args:
+              - -ec
+              - |
+                pipeline_input_dir="concourse-generated-pipeline/pipelines"
+                du -a $pipeline_input_dir
+                pipeline_dest_dir="formated-pipelines/main/shared"
+                mkdir -p $pipeline_dest_dir
+                cp -rp $pipeline_input_dir/* ${pipeline_dest_dir}/
+
+                echo "We use fly $(fly --version) to format pipelines"
+                find formated-pipelines -type f -name "*.yml" -print -exec fly format-pipeline -w -c {} \;
+      - task: update-git-generated-pipelines
+        input_mapping: {reference-resource: secrets-limited-for-pipeline, generated-resource: formated-pipelines}
+        output_mapping: {updated-git-resource: generated-pipelines}
+        file: cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml
+        params:
+          COMMIT_MESSAGE: "Generated pipelines update for <%= root_deployment_name %>"
+          OLD_DIR: "coa/pipelines/generated"
+      - put: secrets-writer
+        attempts: <%= concourse_retry[:push] %>
+        params:
+          repository: generated-pipelines
+          rebase: true
+
+
+
+
  <% else %>
   - name: this-is-an-empty-pipeline
 <% end %>

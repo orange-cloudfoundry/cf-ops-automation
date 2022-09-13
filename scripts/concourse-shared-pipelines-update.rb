@@ -163,7 +163,7 @@ def load_pipeline_configuration(root_deployment, pipeline_name)
 end
 
 def filter_root_deployment_pipelines(root_deployment)
-  header("For pipelines in #{PIPELINES_DIR}")
+  header("For pipelines in #{PIPELINES_DIR} - #{root_deployment}")
   Dir["#{PIPELINES_DIR}/*.yml"]
     .reject { |filename| OPTIONS.key?(:depls) && !filename.include?(root_deployment) }
     .reject { |filename| OPTIONS.key?(:template) && !filename.include?(OPTIONS[:template]) }
