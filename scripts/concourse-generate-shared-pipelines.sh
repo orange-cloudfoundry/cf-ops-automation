@@ -62,6 +62,5 @@ fi
 
 echo "Generating shared pipelines using secrets in $SECRET_DIR to ${OUTPUT_DIR}/pipelines for ${IAAS_TYPE} (Iaas Type), with profiles: [${PROFILES}]"
 "${CURRENT_SCRIPT_DIR}/generate-depls.rb" -p "${SECRET_DIR}" -o "${OUTPUT_DIR}" -t "${TEMPLATES}" --iaas "${IAAS_TYPE}" ${PROFILES_AUTOSORT_OPTION} --profiles "${PROFILES}" --no-dump ${PIPELINES_RESTRICTION}
-PIPELINE="shared-${PIPELINE_TYPE}-generated"
-echo "${PIPELINE} generated  to ${OUTPUT_DIR}/pipelines"
+echo "Shared pipelines generated into ${OUTPUT_DIR}/pipelines"
 
