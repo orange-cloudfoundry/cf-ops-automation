@@ -34,14 +34,12 @@ resource_types:
       tag: v1.4.2
 
 resources:
-<%   enabled_deployments_with_empty = multi_root_dependencies.select do |root_deployment, root_deployment_info|
-    root_deployment_info.keep_if {|_, deployment_info| deployment_info['status'] == 'enabled' && deployment_info['concourse']}
-  end
+<% enabled_deployments_with_empty = multi_root_dependencies.select do |root_deployment, root_deployment_info|
+      root_deployment_info.keep_if {|_, deployment_info| deployment_info['status'] == 'enabled' && deployment_info['concourse']}
+   end
 
   enabled_concourse_deployments = enabled_deployments_with_empty.keep_if {|_, deployment_info| deployment_info.size > 0 }
  %>
-
-<% puts enabled_concourse_deployments %>
 
 <% unless enabled_concourse_deployments.empty? %>
 

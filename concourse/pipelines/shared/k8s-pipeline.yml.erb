@@ -5,11 +5,9 @@
   disabled_deployments = multi_root_dependencies.select do |_, deployment_info|
     deployment_info['status'] == 'disabled'
   end
-
   enabled_deployments_with_empty = multi_root_dependencies.select do |root_deployment, root_deployment_info|
     root_deployment_info.keep_if {|_, deployment_info| deployment_info['status'] == 'enabled' && deployment_info['kubernetes']}
   end
-
   enabled_deployments = enabled_deployments_with_empty.keep_if {|_, deployment_info| deployment_info.size > 0 }
   uniq_releases = {}
   enabled_deployments&.sort&.each do |name, boshrelease|
@@ -33,7 +31,7 @@
   reconciliation_loop_interval = configurer.reconciliation_loop_interval.get # 4m
 
   current_team = CiDeployment.team(multi_root_ci_deployments, root_deployment_name, "shared-k8s-generated")
-  #  enabled_deployments.to_yaml
+   enabled_deployments.to_yaml
 %>
 ---
 display:
@@ -290,7 +288,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
-      additional-resource: paas-templates-<%= name %>
+      additional-resource: paas-templates-<%= root_deployment_name %>-<%= name %>
     output_mapping: {generated-files: pre-processed-manifest}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
@@ -307,7 +305,7 @@ jobs:
       COA_DEPLOYMENT_NAME: <%= name %>
   - task: apply-iaas-type-and-profiles
     input_mapping:
-      paas-templates-resource: paas-templates-<%= name %>
+      paas-templates-resource: paas-templates-<%= root_deployment_name %>-<%= name %>
     file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
     params:
       ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
