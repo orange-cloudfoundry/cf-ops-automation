@@ -3,7 +3,7 @@ require 'erb'
 require 'ostruct'
 require 'fileutils'
 require_relative 'pipeline_helpers'
-require "active_support/core_ext/object/deep_dup"
+require_relative 'active_support_deep_dup'
 
 class TemplateProcessor
   attr_reader :root_deployment_name, :config, :context
