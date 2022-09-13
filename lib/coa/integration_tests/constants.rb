@@ -22,10 +22,11 @@ module Coa
             "bootstrap-update-pipelines" => {}
           }
         },
-        "hello-world-root-depls-update-generated" => {
+        "shared-update-generated" => {
           "team" => "main",
           "jobs" => {
-            "update-pipeline-hello-world-root-depls" => {}
+            "update-pipeline-hello-world-root-depls" => {},
+            "update-pipeline-shared" => {}
           }
         },
         "control-plane" => {
@@ -71,17 +72,17 @@ module Coa
             "push-boshreleases" => {}
           }
         },
-        "hello-world-root-depls-concourse-generated" => {
-          "team" => "hello-world-root-depls",
+        "shared-concourse-generated" => {
+          "team" => "main",
           "jobs" => {
             "deploy-concourse-pipeline-sample-pipeline" => {}
           }
         },
-        "hello-world-root-depls-k8s-generated" => {
-          "team" => "hello-world-root-depls",
+        "shared-k8s-generated" => {
+          "team" => "main",
           "jobs" => {
-            "deploy-k8s-sample" => {},
-            "execute-deploy-script" => {}
+            "deploy-k8s-sample-hello-world-root-depls" => {},
+            "execute-deploy-script-hello-world-root-depls" => {}
           }
         },
         "hello-world-root-depls-pipeline-sample" => {
