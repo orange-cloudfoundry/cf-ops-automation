@@ -88,14 +88,14 @@ resources:
       paths: ["simple-depls/root-deployment.yml"]
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
-  - name: precompile-ntp_boshrelease-deployment
+  - name: ntp_boshrelease-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: precompile-ntp_boshrelease-deployment
+      deployment: ntp_boshrelease-deployment
       ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
   - name: ntp_boshrelease
     type: git
@@ -106,14 +106,14 @@ resources:
       skip_ssl_verification: false
     #    access_token: ((bot-github-access-token))
     version: { ref: ((releases.ntp_boshrelease.version)) }
-  - name: precompile-zookeeper_boshrelease-deployment
+  - name: zookeeper_boshrelease-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: precompile-zookeeper_boshrelease-deployment
+      deployment: zookeeper_boshrelease-deployment
       ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
   - name: zookeeper_boshrelease
     type: git
@@ -284,8 +284,8 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "precompile-ntp_boshrelease-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"precompile-ntp_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}]}'
+            MANIFEST_NAME: "ntp_boshrelease-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"ntp_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -313,10 +313,10 @@ jobs:
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-      - put: precompile-ntp_boshrelease-deployment
+      - put: ntp_boshrelease-deployment
         attempts: 5
         params:
-          manifest: final-release-manifest/precompile-ntp_boshrelease-deployment.yml
+          manifest: final-release-manifest/ntp_boshrelease-deployment.yml
           cleanup: true
       - task: compile-and-export-ntp_boshrelease
         attempts: 3
@@ -345,16 +345,16 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
-            BOSH_DEPLOYMENT: precompile-ntp_boshrelease-deployment
+            BOSH_DEPLOYMENT: ntp_boshrelease-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: ntp_boshrelease
             RELEASE_VERSION: ((releases.ntp_boshrelease.version))
-      - put: precompile-ntp_boshrelease-deployment
+      - put: ntp_boshrelease-deployment
         params:
-          manifest: final-release-manifest/ntp_boshrelease-deployment.yml
+          manifest: final-release-manifest/ntp_boshrelease-deployment.yml.yml
           delete:
             enabled: true
             force: true
@@ -399,8 +399,8 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "precompile-zookeeper_boshrelease-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"precompile-zookeeper_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
+            MANIFEST_NAME: "zookeeper_boshrelease-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"zookeeper_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -428,10 +428,10 @@ jobs:
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-      - put: precompile-zookeeper_boshrelease-deployment
+      - put: zookeeper_boshrelease-deployment
         attempts: 5
         params:
-          manifest: final-release-manifest/precompile-zookeeper_boshrelease-deployment.yml
+          manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml
           cleanup: true
       - task: compile-and-export-zookeeper_boshrelease
         attempts: 3
@@ -460,16 +460,16 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
           params:
-            BOSH_DEPLOYMENT: precompile-zookeeper_boshrelease-deployment
+            BOSH_DEPLOYMENT: zookeeper_boshrelease-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: zookeeper_boshrelease
             RELEASE_VERSION: ((releases.zookeeper_boshrelease.version))
-      - put: precompile-zookeeper_boshrelease-deployment
+      - put: zookeeper_boshrelease-deployment
         params:
-          manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml
+          manifest: final-release-manifest/zookeeper_boshrelease-deployment.yml.yml
           delete:
             enabled: true
             force: true

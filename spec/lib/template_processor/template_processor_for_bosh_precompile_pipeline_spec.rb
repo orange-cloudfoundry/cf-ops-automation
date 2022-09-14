@@ -4,7 +4,7 @@ require 'tmpdir'
 require 'template_processor'
 require 'ci_deployment'
 require 'deployment_deployers_config'
-require 'pipeline_generator'
+require 'shared_pipeline_generator'
 require_relative 'test_fixtures'
 
 describe 'BoshPrecompilePipelineTemplateProcessing' do
@@ -13,17 +13,19 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
   let(:ops_automation_path) { '.' }
   let(:processor_context) do
     { depls: root_deployment_name,
+      root_deployments: [root_deployment_name, 'dummy-root-depls'],
       bosh_cert: bosh_cert,
-      all_dependencies: all_dependencies,
-      all_ci_deployments: all_ci_deployments,
+      multi_root_dependencies: multi_root_dependencies,
+      multi_root_ci_deployments: multi_root_ci_deployments,
       git_submodules: git_submodules,
       config: loaded_config,
       ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }
-  let(:all_dependencies) do
+  let(:multi_root_dependencies) do
     deps_yaml = <<~YAML
+    #{root_deployment_name}:
       bosh-bats:
         status: disabled
         stemcells:
@@ -73,7 +75,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     YAML
     YAML.safe_load(deps_yaml)
   end
-  let(:all_ci_deployments) { {} }
+  let(:multi_root_ci_deployments) { {} }
   let(:git_submodules) { {} }
   let(:loaded_config) do
     my_config_yaml = <<~YAML
@@ -178,12 +180,12 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
       it 'generates compile and export job for dependencies describe in disabled deployments' do
         filtered_generated_jobs = generated_pipeline['jobs'].select { |job| job['name']&.start_with?('compile-and-export') }.flat_map { |job| job['name'] }
-        expect(filtered_generated_jobs).to match(expected_compiled_exported_deployments)
+        expect(filtered_generated_jobs).to match_array(expected_compiled_exported_deployments)
       end
 
       it 'generates upload job for dependencies describe in disabled deployments' do
         filtered_generated_jobs = generated_pipeline['jobs'].select { |job| job['name']&.start_with?('upload-compiled') }.flat_map { |job| job['name'] }
-        expect(filtered_generated_jobs).to match(expected_uploaded_deployments)
+        expect(filtered_generated_jobs).to match_array(expected_uploaded_deployments)
       end
     end
 
@@ -207,7 +209,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
       it 'generates compile jobs only for non excluded deployments' do
         filtered_generated_jobs = generated_pipeline['jobs'].select { |job| job['name']&.start_with?('compile-and-export') }.flat_map { |job| job['name'] }
-        expect(filtered_generated_jobs).to match(expected_compiled_exported_deployments)
+        expect(filtered_generated_jobs).to match_array(expected_compiled_exported_deployments)
       end
 
       it 'does not generate upload jobs' do
@@ -549,7 +551,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
 
     context 'with ci deployment overview without terraform' do
-      let(:all_ci_deployments) do
+      let(:multi_root_ci_deployments) do
         ci_deployments_yaml = <<~YAML
           #{root_deployment_name}:
             target_name: my-concourse-name
@@ -594,8 +596,9 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
   context 'when a boshrelease overrides with another value' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
 
-    let(:all_dependencies) do
+    let(:multi_root_dependencies) do
       deps_yaml = <<~YAML
+      #{root_deployment_name}:
         shield-expe:
           stemcells:
             bosh-openstack-kvm-ubuntu-bionic-go_agent:
@@ -637,7 +640,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
 
     it 'raises an error' do
-      expect { template_processing_error }.to raise_error(RuntimeError, /Inconsitency detected with 'cf-routing-release' boshrelease, in 'shield-expe' deployment: trying to replace.*/)
+      expect { template_processing_error }.to raise_error(RuntimeError, /Inconsistency detected on #{root_deployment_name}:.*/)
     end
   end
 end

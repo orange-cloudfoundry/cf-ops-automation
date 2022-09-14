@@ -4,11 +4,7 @@
   root_deployment_name = depls
   all_dependencies = multi_root_dependencies[root_deployment_name] || {}
   version_reference = multi_root_version_reference[root_deployment_name] || {}
-  all_ci_deployments = multi_root_ci_deployments[root_deployment_name] || {}
-  all_cf_apps = multi_root_cf_apps[root_deployment_name] || {}
-  puts "root_deployment_name: #{root_deployment_name}"
-  puts "multi_root_dependencies: #{multi_root_dependencies.keys}"
-  puts "all_ci_deployments: #{all_ci_deployments}"
+  all_ci_deployments = multi_root_ci_deployments || {}
   terraform_config_path = nil
   if all_ci_deployments&.any? && all_ci_deployments&.dig(root_deployment_name, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY)
     terraform_config_path = all_ci_deployments.dig(root_deployment_name, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY, 'state_file_path')

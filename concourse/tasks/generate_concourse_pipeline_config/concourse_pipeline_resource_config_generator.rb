@@ -13,6 +13,7 @@ class ConcoursePipelineResourceConfigGenerator
     validate_dir
     puts "execute"
     teams = list_teams
+    puts "teams: #{teams}"
     teams.each do |team_name|
       puts "processing team #{team_name}"
       root_deployments = list_root_deployments(team_name)
@@ -70,9 +71,11 @@ class ConcoursePipelineResourceConfigGenerator
     puts "INFO - checking existence of #{current_pipeline_config_file}"
     vars_files << current_pipeline_config_file if File.exist?(current_pipeline_config_file)
     versions_file = File.join(@templates_dir, root_deployment, "root-deployment.yml")
-    raise "Missing version file: #{versions_file}" unless File.exist?(versions_file)
-
-    vars_files << versions_file
+    if File.exist?(versions_file)
+      vars_files << versions_file
+    else
+      puts "WARNING: missing version file: #{versions_file} for #{root_deployment}"
+    end
     vars_files
   end
 

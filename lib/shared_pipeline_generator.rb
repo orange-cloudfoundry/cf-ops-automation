@@ -57,19 +57,11 @@ class SharedPipelineGenerator
 
   def execute
     input_pipelines_backup = options.input_pipelines
-    unless generate_shared_templates?
-      puts "=== Processing #{@options.depls} templates ==="
-      pipeline_templates_filter = PipelineTemplatesFiltering.new(@options)
-      @options.input_pipelines = pipeline_templates_filter.filter
-      load_erb_context
-      process_templates(@options.depls)
-    end
-    options.input_pipelines = input_pipelines_backup
-    puts "=== Processing shared templates ==="
-    shared_templates_filter = PipelineTemplatesFiltering.new(@options, "/concourse/pipelines/shared")
-    @options.input_pipelines = shared_templates_filter.filter
+    puts "=== Processing #{@options.depls} templates ==="
+    pipeline_templates_filter = PipelineTemplatesFiltering.new(@options, templates_location)
+    @options.input_pipelines = pipeline_templates_filter.filter
     load_erb_context
-    process_templates('shared')
+    process_templates(@options.depls)
 
   end
 
@@ -78,6 +70,14 @@ class SharedPipelineGenerator
   end
 
   private
+
+  def templates_location
+    if generate_shared_templates?
+      "/concourse/pipelines/shared"
+    else
+      "/concourse/pipelines/template"
+    end
+  end
 
   def load_erb_context
     deployment_versions_path = "#{options.paas_templates_path}/#{options.depls}/root-deployment.yml"
@@ -114,8 +114,9 @@ class SharedPipelineGenerator
       root_deployment_overview = RootDeployment.new(name, options.paas_templates_path, options.secrets_path, fail_on_inconsistency: false).overview_from_hash(deployment_factory)
       versions = root_deployment_versions.versions
       enhanced_root_deployment = RootDeploymentOverviewEnhancer.new(name, root_deployment_overview, versions).enhance
-      all_ci_deployments.merge!(CiDeployment.new(File.join(options.secrets_path, name)).overview)
-      all_cf_apps = CfApps.new(File.join(options.secrets_path, name, '/*'), name).overview
+      ci_deployments_overview = CiDeployment.new(File.join(options.secrets_path, name)).overview
+      all_ci_deployments[name] = ci_deployments_overview[name]
+      all_cf_apps[name] = CfApps.new(File.join(options.secrets_path, name, '/*'), name).overview
       all_versions[name] = versions
       all_root_deployments[name] = enhanced_root_deployment
     end
@@ -169,8 +170,8 @@ class SharedPipelineGenerator
     if processed_template_count.positive?
       puts "#{processed_template_count} concourse pipeline templates were processed"
     else
-      puts "ERROR: no concourse pipeline templates found in #{options.ops_automation}/concourse/pipelines/template/"
-      puts 'ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/concourse/pipelines/template/'
+      puts "ERROR: no concourse pipeline templates found in #{options.ops_automation}/#{templates_location}"
+      puts 'ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/#{templates_location}'
       false
     end
 
@@ -182,7 +183,6 @@ class SharedPipelineGenerator
     class << self
       def parse(args)
         options = SharedPipelineGenerator::DEFAULT_OPTIONS.dup
-        puts options
         opt_parser = option_parser(options)
         opt_parser.parse!(args)
         opt_parser.abort("depls cannot be empty when set !" + opt_parser.to_s) if options[:depls].to_s.empty?
@@ -219,7 +219,7 @@ class SharedPipelineGenerator
             options[:ops_automation] = ap_string
           end
 
-          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process without full path and without suffix "-pipeline.yml.erb". Does not works on shared pipelines') do |ip_array|
+          opts.on('-i', '--input PIPELINE1,PIPELINE2', Array, 'List of pipelines to process without full path and without suffix "-pipeline.yml.erb".') do |ip_array|
             options[:input_pipelines] = ip_array
           end
 

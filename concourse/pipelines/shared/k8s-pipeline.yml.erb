@@ -49,6 +49,8 @@ resource_types:
     tag: 2.0.1
 
 resources:
+<% unless enabled_deployments.empty? %>
+
 - name: failure-alert
   icon: slack
   type: slack-notification
@@ -75,7 +77,6 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
-<% unless enabled_deployments.empty? %>
 - name: concourse-meta
   icon: file-document-box-search-outline
   type: meta
@@ -144,19 +145,6 @@ resources:
   source:
     interval: <%= reconciliation_loop_interval %>
     location: Europe/Paris
-<% enabled_deployments.sort.each do |root_deployment_name, _| %>
-
-# not required
-#- name: secrets-<%#= root_deployment_name %>-trigger
-#  icon: source-commit
-#  type: git
-#  source:
-#    uri: ((secrets-uri))
-#    paths: ["private-config.yml", "<%= root_deployment_name %>", "shared"]
-#    branch: ((secrets-branch))
-#    skip_ssl_verification: true
-<% end %>
-<% end %>
 
 - name: k8s-configs-repository
   icon: source-pull
@@ -167,8 +155,11 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-
+<% end %>
 jobs:
+<% if enabled_deployments.empty? %>
+  - name: this-is-an-empty-pipeline
+<% else %>
 <% enabled_deployments.sort.each do |root_deployment_name, _ | %>
 - name: execute-deploy-script-<%=root_deployment_name %>
   <% jobs['utils'] << "execute-deploy-script-#{root_deployment_name}" %>
@@ -422,7 +413,7 @@ jobs:
       FLY_PASSWORD: "((concourse-<%= root_deployment_name %>-password))"
       FLY_TEAM: <%= current_team || 'main' %>
 <% end %>
-
+<% end %>
 groups:
 - name: all
   jobs: ["*"]

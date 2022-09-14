@@ -22,28 +22,12 @@ resources:
     proxy: ((slack-proxy))
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
-- name: secrets-simple-depls-limited
-  icon: source-branch
-  type: git
-  source:
-    uri: ((secrets-uri))
-    paths: ["private-config.yml", "simple-depls/ci-deployment-overview.yml", "simple-depls/secrets", "shared"]
-    branch: ((secrets-branch))
-    skip_ssl_verification: true
 - name: secrets-full-writer
   icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
-    skip_ssl_verification: true
-- name: paas-templates-simple-depls
-  icon: home-analytics
-  type: git
-  source:
-    uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml", "simple-depls/root-deployment.yml", "simple-depls/template"]
-    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: cf-ops-automation
   type: git
@@ -56,7 +40,23 @@ resources:
 - name: concourse-meta
   icon: file-document-box-search-outline
   type: meta
-- name: paas-templates-k8s-sample
+- name: secrets-limited
+  icon: source-branch
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml", "*/ci-deployment-overview.yml", "*/secrets", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+- name: paas-templates-limited
+  icon: home-analytics
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["shared-config.yml", "meta-inf.yml", "*/root-deployment.yml", "*/template"]
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
+- name: paas-templates-simple-depls-k8s-sample
   icon: home-edit
   type: git
   source:
@@ -69,14 +69,6 @@ resources:
   source:
     interval: 4m
     location: Europe/Paris
-- name: secrets-simple-depls-trigger
-  icon: source-commit
-  type: git
-  source:
-    uri: ((secrets-uri))
-    paths: ["private-config.yml", "simple-depls", "shared"]
-    branch: ((secrets-branch))
-    skip_ssl_verification: true
 - name: k8s-configs-repository
   icon: source-pull
   type: git
@@ -87,7 +79,7 @@ resources:
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
 jobs:
-- name: execute-deploy-script
+- name: execute-deploy-script-simple-depls
   serial: true
   on_failure:
     put: failure-alert
@@ -100,10 +92,10 @@ jobs:
     - in_parallel:
       - get: secrets-full-writer
         params: { submodules: none, depth: 0 }
-      - get: secrets-simple-depls-limited
+      - get: secrets-limited
         params: { submodules: none, depth: 0 }
         trigger: true
-      - get: paas-templates-simple-depls
+      - get: paas-templates-limited
         params: { submodules: none, depth: 0 }
         trigger: true
       - get: cf-ops-automation
@@ -112,7 +104,7 @@ jobs:
         params: { submodules: none }
     - task: apply-iaas-type-and-profiles
       input_mapping:
-        paas-templates-resource: paas-templates-simple-depls
+        paas-templates-resource: paas-templates-limited
       file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
       params:
         ROOT_DEPLOYMENT_NAME: simple-depls
@@ -121,7 +113,7 @@ jobs:
         IAAS_TYPE: ((iaas-type))
         PROFILES: ((profiles))
     - task: run-deploy.sh
-      input_mapping: { paas-templates-resource: paas-templates-simple-depls,  credentials-resource: secrets-full-writer }
+      input_mapping: { paas-templates-resource: paas-templates-limited,  credentials-resource: secrets-full-writer }
       output_mapping: { result-dir: updated-k8s-repo }
       file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
       params:
@@ -141,7 +133,7 @@ jobs:
       params:
         repository: updated-k8s-repo
         rebase: true
-- name: deploy-k8s-sample
+- name: deploy-k8s-sample-simple-depls
   serial: true
   serial_groups: [concurrent-group-0]
   on_failure:
@@ -163,7 +155,7 @@ jobs:
       trigger: true
     - get: reconciliation-loop
       trigger: true
-    - get: paas-templates-k8s-sample
+    - get: paas-templates-simple-depls-k8s-sample
       trigger: true
       params:
         submodules: none
@@ -173,7 +165,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       credentials-resource: secrets-full-writer
-      additional-resource: paas-templates-k8s-sample
+      additional-resource: paas-templates-simple-depls-k8s-sample
     output_mapping: {generated-files: pre-processed-manifest}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
@@ -190,7 +182,7 @@ jobs:
       COA_DEPLOYMENT_NAME: k8s-sample
   - task: apply-iaas-type-and-profiles
     input_mapping:
-      paas-templates-resource: paas-templates-k8s-sample
+      paas-templates-resource: paas-templates-simple-depls-k8s-sample
     file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
     params:
       ROOT_DEPLOYMENT_NAME: simple-depls
@@ -266,10 +258,10 @@ jobs:
   - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
-    - get: secrets-simple-depls-trigger
+    - get: secrets-full-writer
       params: { submodules: none, depth: 0 }
-  - task: generate-simple-depls-pipeline
-    output_mapping: {result-dir: trigger-simple-depls-plan}
+  - task: generate-pipeline
+    output_mapping: {result-dir: trigger-plan}
     config:
       platform: linux
       image_resource:
@@ -282,30 +274,31 @@ jobs:
       run:
         path: sh
         args:
-        - -ec
+        - -exc
         - |
-          echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-k8s-sample" >> result-dir/flight-plan
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-k8s-sample-simple-depls" >> result-dir/flight-plan
       params:
-        BUILD_PIPELINE_NAME: simple-depls-bosh-generated
+        BUILD_PIPELINE_NAME: shared-k8s-generated # TODO
   - task: fly-into-concourse
-    input_mapping: {fly-cmd: trigger-simple-depls-plan}
-    output_mapping: {flight-report: concourse-simple-depls-trigger-report}
+    input_mapping: {fly-cmd: trigger-plan}
+    output_mapping: {flight-report: concourse-trigger-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: ((concourse-simple-depls-target))
-      FLY_USERNAME: ((concourse-simple-depls-username))
-      FLY_PASSWORD: "((concourse-simple-depls-password))"
+      ATC_EXTERNAL_URL: ((concourse-TODO-target))
+      FLY_USERNAME: ((concourse-TODO-username))
+      FLY_PASSWORD: "((concourse-TODO-password))"
       FLY_TEAM: main
 groups:
-- name: simple-depls
-  jobs:
-    - deploy-k8s-sample
-    - execute-deploy-script
-    - retrigger-all-jobs
+- name: all
+  jobs: ["*"]
 - name: deploy-k
   jobs:
-    - deploy-k8s-sample
+    - deploy-k8s-sample-simple-depls
+- name: simple-depls
+  jobs:
+    - deploy-k8s-sample-simple-depls
+    - execute-deploy-script-simple-depls
 - name: utils
   jobs:
-    - execute-deploy-script
+    - execute-deploy-script-simple-depls
     - retrigger-all-jobs

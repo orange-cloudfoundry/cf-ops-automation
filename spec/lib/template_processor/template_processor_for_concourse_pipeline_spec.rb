@@ -9,61 +9,68 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
   subject { TemplateProcessor.new root_deployment_name, config, processor_context }
 
   let(:root_deployment_name) { 'my-root-depls' }
+  let(:config) { { dump_output: true, output_path: @output_dir } }
+  let(:generated_pipeline) do
+    pipeline_template = @processed_template[File.join(@pipelines_dir, @template_pipeline_name)]
+    generated_pipeline_path = File.join(@pipelines_output_dir, pipeline_template)
+    YAML.load_file(generated_pipeline_path, aliases: true)
+  end
   let(:ops_automation_path) { '.' }
   let(:secrets_dirs_overview) { {} }
-  let(:root_deployment_versions) { {} }
-  let(:all_ci_deployments) { {} }
+  let(:root_deployment_versions) { Hash.new { |h, k| h[k] = [] } }
+  let(:multi_root_ci_deployments) { Hash.new { |h, k| h[k] = [] } }
   let(:git_submodules) { {} }
   let(:processor_context) do
     { depls: root_deployment_name,
-      all_dependencies: all_dependencies,
-      all_ci_deployments: all_ci_deployments,
+      multi_root_dependencies: multi_root_dependencies,
+      multi_root_ci_deployments: multi_root_ci_deployments,
       git_submodules: git_submodules,
       config: loaded_config,
       ops_automation_path: ops_automation_path }
   end
-  let(:all_dependencies) do
+  let(:multi_root_dependencies) do
     deps_yaml = <<~YAML
-      bosh-bats:
-          status: disabled
-      maria-db:
-          status: disabled
-      shield-expe:
-          stemcells:
-          bosh-openstack-kvm-ubuntu-bionic-go_agent:
-          releases:
-            cf-routing-release:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-incubator/cf-routing-release
-              version: 0.169.0
-              errands:
-                  import:
-          status: enabled
-      bui:
-          stemcells:
-          bosh-openstack-kvm-ubuntu-bionic-go_agent:
-          releases:
-            route-registrar-boshrelease:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-community/route-registrar-boshrelease
-              version: '3'
-            haproxy-boshrelease:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-community/haproxy-boshrelease
-              version: 8.0.12
-          status: enabled
-      cached-buildpack:
-          concourse:
-            active: true
-          status: enabled
-      another-cached-buildpack:
-          concourse:
-            active: true
-          status: enabled
+      #{root_deployment_name}:
+        bosh-bats:
+            status: disabled
+        maria-db:
+            status: disabled
+        shield-expe:
+            stemcells:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+                errands:
+                    import:
+            status: enabled
+        bui:
+            stemcells:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              route-registrar-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/route-registrar-boshrelease
+                version: '3'
+              haproxy-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/haproxy-boshrelease
+                version: 8.0.12
+            status: enabled
+        cached-buildpack:
+            concourse:
+              active: true
+            status: enabled
+        another-cached-buildpack:
+            concourse:
+              active: true
+            status: enabled
     YAML
     YAML.safe_load(deps_yaml)
   end
-  let(:concourse_active_deployments) { all_dependencies.select { |_, info| info['concourse'] && info['concourse']['active'] } }
+  let(:concourse_active_deployments) { multi_root_dependencies[root_deployment_name].select { |_, info| info['concourse'] && info['concourse']['active'] } }
   let(:loaded_config) do
     my_config_yaml = <<~YAML
       offline-mode:
@@ -100,7 +107,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
     @pipelines_output_dir = File.join(@output_dir, 'pipelines')
     @pipelines_dir = Dir.mktmpdir('pipeline-templates')
 
-    FileUtils.copy("concourse/pipelines/template/#{@template_pipeline_name}", @pipelines_dir)
+    FileUtils.copy("concourse/pipelines/shared/#{@template_pipeline_name}", @pipelines_dir)
   end
 
   after(:context) do
@@ -108,14 +115,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
     FileUtils.rm_rf(@pipelines_dir)
   end
 
-  let(:config) { { dump_output: true, output_path: @output_dir } }
-  let(:generated_pipeline) do
-    pipeline_template = @processed_template[File.join(@pipelines_dir, @template_pipeline_name)]
-    generated_pipeline_path = File.join(@pipelines_output_dir, pipeline_template)
-    YAML.load_file(generated_pipeline_path, aliases: true)
-  end
-
-  before { @processed_template = subject.process(@pipelines_dir + '/*') }
+  before { @processed_template = subject.process("#{@pipelines_dir}/*") }
 
   context 'when coucourse-pipeline is valid' do
     it 'processes only one template' do
@@ -134,9 +134,10 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       expect(generated_pipeline['resource_types']).to match_array(expected_resource_types)
     end
 
-    it 'does not generate any groups' do
-      expected_group = generated_pipeline['groups']
-      expect(expected_group).to be_nil
+    it 'generates groups' do
+      current_group = generated_pipeline['groups']
+      expected_group = [{ "jobs" => ["*"], "name" => "all" }, { "jobs" => %w[deploy-concourse-another-cached-buildpack-pipeline deploy-concourse-cached-buildpack-pipeline], "name" => "my-root-depls" }]
+      expect(current_group).to match(expected_group)
     end
   end
 
@@ -214,7 +215,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         my_yaml = ''
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
-            - name: paas-templates-#{name}
+            - name: paas-templates-#{root_deployment_name}-#{name}
               icon: home-edit
               type: git
               source:
@@ -234,7 +235,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         my_yaml = ''
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
-            - name: secrets-#{name}
+            - name: secrets-#{root_deployment_name}-#{name}
               icon: source-merge
               type: git
               source:
@@ -253,10 +254,10 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
 
       let(:expected_dynamic_resources) do
         resources = []
-        concourse_deployment = all_dependencies.select { |_, info| info['concourse'] && info['concourse']['active'] }
+        concourse_deployment = multi_root_dependencies[root_deployment_name].select { |_, info| info['concourse'] && info['concourse']['active'] }
         concourse_deployment.each_key do |deployment_name|
-          resources << "paas-templates-#{deployment_name}"
-          resources << "secrets-#{deployment_name}"
+          resources << "paas-templates-#{root_deployment_name}-#{deployment_name}"
+          resources << "secrets-#{root_deployment_name}-#{deployment_name}"
         end
         resources
       end
@@ -312,7 +313,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
             - task: spruce-processing-#{name}
-              input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-#{name}, additional-resource: paas-templates-#{name}}
+              input_mapping: {scripts-resource: cf-ops-automation, credentials-resource: secrets-#{root_deployment_name}-#{name}, additional-resource: paas-templates-#{root_deployment_name}-#{name}}
               output_mapping: {generated-files: spruced-files}
               file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
               params:
@@ -342,7 +343,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
             - task: execute-#{name}-pre-deploy
-              input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{name}, credentials-resource: secrets-#{name}, additional-resource: spruced-files}
+              input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{root_deployment_name}-#{name}, credentials-resource: secrets-#{root_deployment_name}-#{name}, additional-resource: spruced-files}
               output_mapping: {generated-files: pre-deploy-resource}
               file: cf-ops-automation/concourse/tasks/pre_bosh_deploy.yml
               params:
@@ -350,12 +351,12 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 SECRETS_DIR: credentials-resource/#{root_deployment_name}/#{name}
           YAML
         end
-        YAML.safe_load my_yaml
+        YAML.safe_load(my_yaml).sort_by { |key,value | value }.reverse
       end
 
       it 'is valid' do
         generated_pre_deploy_tasks = deploy_concourse_tasks.select { |task| task['task']&.end_with?('-pre-deploy') }
-        expect(generated_pre_deploy_tasks).to match_array(expected_execute_pre_deploy_tasks)
+        expect(generated_pre_deploy_tasks.to_yaml).to match(expected_execute_pre_deploy_tasks.to_yaml)
       end
     end
 
@@ -365,7 +366,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
             - task: execute-#{name}-post-deploy
-              input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{name}, credentials-resource: secrets-#{name}, additional-resource: final-#{name}-pipeline}
+              input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{root_deployment_name}-#{name}, credentials-resource: secrets-#{root_deployment_name}-#{name}, additional-resource: final-#{name}-pipeline}
               output_mapping: {generated-files: post-deploy-result}
               file: cf-ops-automation/concourse/tasks/post_bosh_deploy.yml
               params:
@@ -373,7 +374,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 SECRETS_DIR: credentials-resource/#{root_deployment_name}/#{name}
           YAML
         end
-        YAML.safe_load my_yaml
+        YAML.safe_load(my_yaml).sort_by { |key,value | value }.reverse
       end
 
       it 'is valid' do
@@ -388,7 +389,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         concourse_active_deployments.each_key do |name|
           my_yaml += <<~YAML
             - task: copy-#{name}-required-files
-              input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{name}, credentials-resource: secrets-#{name}, additional-resource: pre-deploy-resource}
+              input_mapping: {scripts-resource: cf-ops-automation, template-resource: paas-templates-#{root_deployment_name}-#{name}, credentials-resource: secrets-#{root_deployment_name}-#{name}, additional-resource: pre-deploy-resource}
               output_mapping: {generated-files: bosh-inputs}
               file: cf-ops-automation/concourse/tasks/copy_deployment_required_files.yml
               params:
@@ -417,7 +418,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
               PIPELINE_NAME: #{name}
               PIPELINE_NAME_PREFIX: #{root_deployment_name}-
               CONFIG_PATH: config-resource/coa/config
-              OUTPUT_CONFIG_PATH: secrets-#{name}/coa/config
+              OUTPUT_CONFIG_PATH: secrets-#{root_deployment_name}-#{name}/coa/config
               OUTPUT_PIPELINE_PATH: final-#{name}-pipeline
           YAML
         end

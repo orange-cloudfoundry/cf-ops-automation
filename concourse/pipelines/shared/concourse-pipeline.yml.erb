@@ -205,7 +205,7 @@ jobs:
        BOSH_YAML_FILE: <%= name %>.yml
   - task: generate-concourse-pipeline-config
     input_mapping:
-      config-resource: secrets-<%=name %>
+      config-resource: secrets-<%= root_deployment_name %>-<%= name %>
       pipeline-path: final-<%= name %>-pipeline
     file: cf-ops-automation/concourse/tasks/generate_single_concourse_pipeline_config/task.yml
     params:
@@ -213,7 +213,7 @@ jobs:
       PIPELINE_NAME: <%= name %>
       PIPELINE_NAME_PREFIX: <%= root_deployment_name %>-
       CONFIG_PATH: config-resource/coa/config
-      OUTPUT_CONFIG_PATH: secrets-<%=name %>/coa/config
+      OUTPUT_CONFIG_PATH: secrets-<%= root_deployment_name %>-<%= name %>/coa/config
       OUTPUT_PIPELINE_PATH: final-<%= name %>-pipeline
   - try:
       put: concourse-for-<%= root_deployment_name %>

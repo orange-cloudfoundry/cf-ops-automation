@@ -8,7 +8,7 @@ class RootDeployment
   ENABLE_DEPLOYMENT_FILENAME = 'enable-deployment.yml'.freeze
   DEFAULT_EXCLUDE = %w[secrets cf-apps-deployments terraform-config template].freeze
 
-  def initialize(root_deployment_name, dependency_root_path, enable_deployment_root_path, exclude_list: DEFAULT_EXCLUDE, fail_on_inconsistency: true)
+  def initialize(root_deployment_name, dependency_root_path, enable_deployment_root_path, fail_on_inconsistency: true, exclude_list: DEFAULT_EXCLUDE)
     @root_deployment_name = root_deployment_name
     @dependency_root_path = dependency_root_path
     @enable_deployment_root_path = enable_deployment_root_path

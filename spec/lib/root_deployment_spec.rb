@@ -74,8 +74,7 @@ describe RootDeployment do
     end
 
     context 'when no directory is excluded' do
-      let(:root_deployment) { described_class.new(root_deployment_name, templates, secrets, []) }
-
+      let(:root_deployment) { described_class.new(root_deployment_name, templates, secrets, exclude_list: []) }
       let(:overview) { root_deployment.overview_from_hash(deployment_factory) }
 
       xit 'returns directories in enable_deployment_root_path as inactive deployment' do
@@ -98,6 +97,7 @@ describe RootDeployment do
       end
 
     end
+
     context 'when no enable-deployment.yml found' do
 
       let(:overview) { root_deployment.overview_from_hash(deployment_factory) }
@@ -170,6 +170,26 @@ describe RootDeployment do
         expect { overview }.to raise_error(RuntimeError, "Inconsistency detected: deployment <ntp> is marked as active, but no deployment-dependencies.yml, nor other deployer config directory found (concourse-pipeline-config, k8s-config) at #{File.join(templates, root_deployment_name, 'ntp')}")
       end
     end
+
+    context 'when failure on inconsistency is disabled' do
+      let(:root_deployment) { described_class.new(root_deployment_name, templates, secrets, fail_on_inconsistency: false) }
+      let(:overview) { root_deployment.overview_from_hash(deployment_factory) }
+
+      before do
+        init = dir_init
+        init.add_deployment('ntp')
+        init.enable_deployment('ntp')
+        filename = File.join(templates, root_deployment_name, 'ntp', 'deployment-dependencies.yml')
+        File.delete(filename) if File.exist?(filename)
+
+      end
+
+      it 'does not raise an error' do
+        expected_overview = {"ntp"=>{"status"=>"enabled"}}
+        expect(overview).to eq(expected_overview)
+      end
+    end
+
   end
 end
 

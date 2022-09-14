@@ -7,7 +7,6 @@ describe 'generate_concourse_pipeline_config task' do
   let(:pipelines_definitions_file) { File.join(@concourse_pipeline_config, 'pipelines-definitions.yml') }
   let(:expected_pipelines_definitions_content) do
     expected_yaml = <<~YAML
-      ---
       pipelines:
       - name: sample-a-generated
         team: main
@@ -24,6 +23,12 @@ describe 'generate_concourse_pipeline_config task' do
         - config-resource/coa/config/credentials-one.yml
         - config-resource/coa/config/credentials-two.yml
         - templates-resource/a-root-depls/root-deployment.yml
+      - name: shared-update-generated
+        team: main
+        config_file: config-resource/coa/pipelines/generated/main/shared/shared-update-generated.yml
+        vars_files:
+        - config-resource/coa/config/credentials-one.yml
+        - config-resource/coa/config/credentials-two.yml
       - name: sync-feature-branches
         team: main
         config_file: config-resource/coa/pipelines/generated/main/a-root-depls/sync-feature-branches.yml
@@ -78,7 +83,7 @@ describe 'generate_concourse_pipeline_config task' do
 
     it 'generates a valid pipeline definition' do
       generated_content = YAML.load_file(pipelines_definitions_file)
-      expect(generated_content).to match(expected_pipelines_definitions_content)
+      expect(generated_content.to_yaml).to match(expected_pipelines_definitions_content.to_yaml)
     end
   end
 
