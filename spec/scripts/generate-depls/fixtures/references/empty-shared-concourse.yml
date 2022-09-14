@@ -21,3 +21,6 @@ resource_types:
 resources:
 jobs:
 - name: this-is-an-empty-pipeline
+groups:
+  - name: all
+    jobs: ["*"]

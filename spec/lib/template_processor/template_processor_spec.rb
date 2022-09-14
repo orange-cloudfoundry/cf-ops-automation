@@ -191,24 +191,27 @@ describe TemplateProcessor do
         let(:root_deployment_name) { 'my-root-depls' }
         let(:ops_automation_path) { '.' }
         let(:secrets_dirs_overview) { {} }
-        let(:root_deployment_versions) { {} }
-        let(:all_ci_deployments) { {} }
+        let(:multi_root_version_reference) { {} }
+        let(:multi_root_ci_deployments) { {} }
         let(:git_submodules) { {} }
         let(:all_cf_apps) { {} }
         let(:bosh_cert) { BOSH_CERT_LOCATIONS = { root_deployment_name => 'shared/certificate.pem' }.freeze }
         let(:processor_context) do
           { depls: root_deployment_name,
+            root_deployments: [root_deployment_name],
             bosh_cert: bosh_cert,
-            all_dependencies: all_dependencies,
-            all_ci_deployments: all_ci_deployments,
+            multi_root_dependencies: all_dependencies,
+            multi_root_ci_deployments: multi_root_ci_deployments,
+            multi_root_version_reference: multi_root_version_reference,
             git_submodules: git_submodules,
-            all_cf_apps: all_cf_apps,
+            multi_root_cf_apps: all_cf_apps,
             secrets_dirs_overview: secrets_dirs_overview,
             config: loaded_config,
             ops_automation_path: ops_automation_path }
         end
         let(:all_dependencies) do
           deps_yaml = <<~YAML
+          #{root_deployment_name}:
             bosh-bats:
               status: disabled
             maria-db:

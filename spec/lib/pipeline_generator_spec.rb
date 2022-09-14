@@ -49,7 +49,7 @@ describe PipelineGenerator do
       DeploymentFactory.new(depls, root_deployment_versions.versions, config)
     end
     let(:all_dependencies) { {} }
-    let(:all_ci_deployments) { [] }
+    let(:multi_root_ci_deployments) { [] }
     let(:all_cf_apps) { [] }
     let(:git_submodules) { {} }
     let(:loaded_config) { { "key" => "value" } }
@@ -63,7 +63,7 @@ describe PipelineGenerator do
         secrets_dirs_overview: secrets_dirs_overview,
         version_reference: root_deployment_versions.versions,
         all_dependencies: all_dependencies,
-        all_ci_deployments: all_ci_deployments,
+        multi_root_ci_deployments: all_ci_deployments,
         all_cf_apps: all_cf_apps,
         git_submodules: git_submodules,
         config: loaded_config

@@ -14,16 +14,18 @@ describe 'BoshPipelineTemplateProcessing' do
   let(:processor_context) do
     { depls: root_deployment_name,
       bosh_cert: bosh_cert,
-      all_dependencies: all_dependencies,
-      all_ci_deployments: all_ci_deployments,
+      multi_root_dependencies: multi_root_dependencies,
+      multi_root_ci_deployments: multi_root_ci_deployments,
+      multi_root_version_reference: multi_root_version_reference,
       git_submodules: git_submodules,
       config: loaded_config,
       ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
-  let(:root_deployment_versions) { {} }
-  let(:all_dependencies) do
+  let(:multi_root_version_reference) { Hash.new { |h, k| h[k] = [] } }
+  let(:multi_root_dependencies) do
     deps_yaml = <<~YAML
+    #{root_deployment_name}:
       bosh-bats:
         status: disabled
       maria-db:
@@ -65,7 +67,7 @@ describe 'BoshPipelineTemplateProcessing' do
     YAML
     YAML.safe_load(deps_yaml)
   end
-  let(:all_ci_deployments) { {} }
+  let(:multi_root_ci_deployments) { {} }
   let(:git_submodules) { {} }
   let(:loaded_config) do
     my_config_yaml = <<~YAML
@@ -235,6 +237,7 @@ describe 'BoshPipelineTemplateProcessing' do
     context 'when bosh-options are defined' do
       let(:shield_dependencies_only_with_manual_errands_definition_only) do
         shield_only = <<~YAML
+        #{root_deployment_name}:
           shield-expe:
             stemcells:
               bosh-openstack-kvm-ubuntu-bionic-go_agent:
@@ -253,7 +256,7 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML
         YAML.safe_load(shield_only)
       end
-      let(:all_dependencies) { shield_dependencies_only_with_manual_errands_definition_only }
+      let(:multi_root_dependencies) { shield_dependencies_only_with_manual_errands_definition_only }
       let(:expected_shield_manual_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
@@ -296,6 +299,7 @@ describe 'BoshPipelineTemplateProcessing' do
     context 'when git-options are defined' do
       let(:shield_dependencies_with_git_options) do
         shield_only = <<~YAML
+        #{root_deployment_name}:
           custom-shield:
             stemcells:
               bosh-openstack-kvm-ubuntu-bionic-go_agent:
@@ -325,7 +329,7 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML
         YAML.safe_load(shield_only)
       end
-      let(:all_dependencies) { shield_dependencies_with_git_options }
+      let(:multi_root_dependencies) { shield_dependencies_with_git_options }
       let(:expected_custom_shield_resource_definition) do
         my_shield_yaml = <<~YAML
           - get: paas-templates-custom-shield
@@ -370,6 +374,7 @@ describe 'BoshPipelineTemplateProcessing' do
     context 'when an manual errand job is defined' do
       let(:shield_dependencies_only_with_manual_errands_definition_only) do
         shield_only = <<~YAML
+        #{root_deployment_name}:
           shield-expe:
             stemcells:
               bosh-openstack-kvm-ubuntu-bionic-go_agent:
@@ -388,7 +393,7 @@ describe 'BoshPipelineTemplateProcessing' do
         YAML
         YAML.safe_load(shield_only)
       end
-      let(:all_dependencies) { shield_dependencies_only_with_manual_errands_definition_only }
+      let(:multi_root_dependencies) { shield_dependencies_only_with_manual_errands_definition_only }
       let(:expected_shield_manual_errand) do
         my_shield_errand_yaml = <<~YAML
           - in_parallel:
@@ -758,7 +763,7 @@ describe 'BoshPipelineTemplateProcessing' do
     end
 
     context 'with ci deployment overview without terraform' do
-      let(:all_ci_deployments) do
+      let(:multi_root_ci_deployments) do
         ci_deployments_yaml = <<~YAML
           #{root_deployment_name}:
             target_name: my-concourse-name
@@ -800,7 +805,7 @@ describe 'BoshPipelineTemplateProcessing' do
     end
 
     context 'when terraform is enabled ' do
-      let(:all_ci_deployments) do
+      let(:multi_root_ci_deployments) do
         ci_deployments_yaml = <<~YAML
           #{root_deployment_name}:
             terraform_config:
@@ -924,7 +929,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:check_terraform_applied_jobs_serial) { check_terraform_applied_jobs.first['serial_groups'] }
       let(:enforce_terraform_jobs) { generated_pipeline['jobs'].select { |resource| resource['name'].start_with?('approve-and-enforce-terraform-consistency') } }
       let(:enforce_terraform_jobs_serial) { enforce_terraform_jobs.first['serial_groups'] }
-      let(:all_ci_deployments) { enable_root_deployment_terraform }
+      let(:multi_root_ci_deployments) { enable_root_deployment_terraform }
 
       it 'ensures enforce exclude check jobs' do
         expect(enforce_terraform_jobs_serial).to match(check_terraform_jobs_serial + check_terraform_applied_jobs_serial)
@@ -946,7 +951,7 @@ describe 'BoshPipelineTemplateProcessing' do
       let(:enforce_terraform_in_parallel) { enforce_terraform_plans.flat_map { |tasks| tasks['in_parallel'] }.compact }
       let(:enforce_terraform_all_secrets_triggering) { enforce_terraform_in_parallel.select { |task| task['get']&.start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
       let(:enforce_terraform_paas_templates_triggering) { enforce_terraform_in_parallel.select { |task| task['get']&.start_with?('paas-templates-') }.flat_map { |task| task['trigger'] } }
-      let(:all_ci_deployments) { enable_root_deployment_terraform }
+      let(:multi_root_ci_deployments) { enable_root_deployment_terraform }
 
       it 'triggers check-consistency automatically on each commit on secrets' do
         expect(check_terraform_secrets_triggering.uniq).to match([true])
@@ -969,8 +974,9 @@ describe 'BoshPipelineTemplateProcessing' do
   context 'when a boshrelease overrides with another value' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
 
-    let(:all_dependencies) do
+    let(:multi_root_dependencies) do
       deps_yaml = <<~YAML
+      #{root_deployment_name}:
         shield-expe:
           stemcells:
             bosh-openstack-kvm-ubuntu-bionic-go_agent:

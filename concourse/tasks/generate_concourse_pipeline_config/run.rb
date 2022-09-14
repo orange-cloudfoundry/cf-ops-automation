@@ -7,6 +7,11 @@ templates_path = ENV.fetch('TEMPLATES_PATH')
 output_path = ENV.fetch('OUTPUT_PATH')
 
 puts "Extracted environment variables"
+puts pipelines_path
+puts config_path
+puts templates_path
+puts output_path
+
 pipeline_generator = ConcoursePipelineResourceConfigGenerator.new(pipelines_path, config_path, templates_path, output_path)
 
 puts "Executing concourse pipeline generator"

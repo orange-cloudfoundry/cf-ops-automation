@@ -15,19 +15,20 @@ describe 'UpdatePipelineTemplateProcessing' do
   let(:bosh_cert) { BOSH_CERT_LOCATIONS = { root_deployment_name => 'shared/certificate.pem' }.freeze }
   let(:git_submodules) { {} }
   let(:loaded_config) { {} }
-  let(:all_dependencies) {}
+  let(:multi_root_dependencies) {}
   let(:processor_context) do
     { depls: root_deployment_name,
+      root_deployments: [root_deployment_name, 'dummy_root_depls'],
       bosh_cert: bosh_cert,
-      all_dependencies: all_dependencies,
-      all_ci_deployments: all_ci_deployments,
+      multi_root_dependencies: multi_root_dependencies,
+      multi_root_ci_deployments: multi_root_ci_deployments,
       git_submodules: git_submodules,
       config: loaded_config,
       ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }
-  let(:all_ci_deployments) do
+  let(:multi_root_ci_deployments) do
     ci_deployments_yaml = <<~YAML
       #{root_deployment_name}:
         terraform_config:
@@ -56,7 +57,7 @@ describe 'UpdatePipelineTemplateProcessing' do
       @template_pipeline_name = 'update-pipeline.yml.erb'
       @pipelines_dir = Dir.mktmpdir('pipeline-templates')
 
-      FileUtils.copy("concourse/pipelines/template/#{@template_pipeline_name}", @pipelines_dir)
+      FileUtils.copy("concourse/pipelines/shared/#{@template_pipeline_name}", @pipelines_dir)
     end
 
     after(:context) do
@@ -76,9 +77,26 @@ describe 'UpdatePipelineTemplateProcessing' do
     context 'when validating resources' do
       let(:expected_meta) { Coa::TestFixtures::RESOURCES['concourse-meta'] }
       let(:expected_slack_notification) { Coa::TestFixtures::RESOURCES['failure-alert'] }
-      let(:expected_secrets_depls) { Coa::TestFixtures.expand_resource_template('secrets-DEPLS-for-pipeline', processor_context) }
+      let(:expected_secrets_depls) do
+        secrets = <<~YAML
+          name: secrets-limited-for-pipeline
+          type: git
+          source:
+            uri: ((secrets-uri))
+            branch: ((secrets-branch))
+            skip_ssl_verification: true
+            paths: [ "*-depls/ci-deployment-overview.yml", coa/config, "coa/pipelines/generated/**/*-generated.yml", shared, private-config.yml, "*-depls/**/enable-cf-app.yml", "*-depls/**/enable-deployment.yml" ]
+        YAML
+        YAML.safe_load(secrets)
+      end
       let(:expected_secrets_writer) { Coa::TestFixtures::RESOURCES['secrets-writer'] }
-      let(:expected_paas_templates_depls) { Coa::TestFixtures.expand_resource_template('paas-templates-DEPLS', processor_context) }
+      let(:expected_paas_templates_limited) do
+        { "icon" => "home-analytics",
+          "name" => "paas-templates-limited",
+          "source" => {"branch"=>"((paas-templates-branch))", "paths"=>["*-depls/", ".gitmodules", "shared-config.yml", "meta-inf.yml"], "skip_ssl_verification"=>true, "uri"=>"((paas-templates-uri))" },
+          "type" => "git"
+        }
+      end
       let(:expected_coa) { Coa::TestFixtures::RESOURCES['cf-ops-automation'] }
 
       it 'generates concourse meta' do
@@ -92,7 +110,7 @@ describe 'UpdatePipelineTemplateProcessing' do
       end
 
       it 'generates secrets_DEPLS' do
-        generated_resource = generated_pipeline['resources'].select { |resource| resource['name'] == "secrets-#{root_deployment_name}-for-pipeline" }.first
+        generated_resource = generated_pipeline['resources'].select { |resource| resource['name'] == "secrets-limited-for-pipeline" }.first
         expect(generated_resource).to match(expected_secrets_depls).and not_be(nil)
       end
 
@@ -101,9 +119,9 @@ describe 'UpdatePipelineTemplateProcessing' do
         expect(generated_resource).to match(expected_secrets_writer).and not_be(nil)
       end
 
-      it 'generates paas_templates_DEPLS' do
-        generated_resource = generated_pipeline['resources'].select { |resource| resource['name'] == "paas-templates-#{root_deployment_name}" }.first
-        expect(generated_resource).to match(expected_paas_templates_depls).and not_be(nil)
+      it 'generates paas_templates_limited' do
+        generated_resource = generated_pipeline['resources'].select { |resource| resource['name'] == "paas-templates-limited" }.first
+        expect(generated_resource).to match(expected_paas_templates_limited).and not_be(nil)
       end
 
       it 'generates cf_ops_automation' do
@@ -113,7 +131,7 @@ describe 'UpdatePipelineTemplateProcessing' do
     end
 
     context 'without ci deployment overview' do
-      let(:all_ci_deployments) {}
+      let(:multi_root_ci_deployments) {}
 
       it 'processes only one template' do
         expect(@processed_template.length).to eq(1)
@@ -131,8 +149,10 @@ describe 'UpdatePipelineTemplateProcessing' do
         expect(generated_pipeline['resource_types'].length).to eq(2)
       end
 
-      it 'generates no group' do
-        expect(generated_pipeline['groups']).to match(groups)
+      it 'generates groups' do
+        current_group = generated_pipeline['groups']
+        expected_group = [{"jobs"=>["*"], "name"=>"all"}, {"jobs"=>["update-pipeline-dummy_root_depls"], "name"=>"dummy_root_depls"}, {"jobs"=>["update-pipeline-my-root-depls"], "name"=>"my-root-depls"}, {"jobs"=>["update-pipeline-shared"], "name"=>"shared"}]
+        expect(current_group).to match(expected_group)
       end
     end
 
@@ -185,7 +205,7 @@ describe 'UpdatePipelineTemplateProcessing' do
     end
 
     context 'with ci deployment overview' do
-      let(:all_ci_deployments) do
+      let(:multi_root_ci_deployments) do
         ci_deployments_yaml = <<~YAML
           #{root_deployment_name}:
             target_name: my-concourse-name
@@ -207,10 +227,11 @@ describe 'UpdatePipelineTemplateProcessing' do
         expect(generated_pipeline['resource_types'].length).to eq(2)
       end
 
-      it 'generates no group' do
-        expect(generated_pipeline['groups']).to match(groups)
-      end
-    end
+      it 'generates groups' do
+        current_group = generated_pipeline['groups']
+        expected_group = [{"jobs"=>["*"], "name"=>"all"}, {"jobs"=>["update-pipeline-dummy_root_depls"], "name"=>"dummy_root_depls"}, {"jobs"=>["update-pipeline-my-root-depls"], "name"=>"my-root-depls"}, {"jobs"=>["update-pipeline-shared"], "name"=>"shared"}]
+        expect(current_group).to match(expected_group)
+      end    end
 
     context 'when validating update-pipeline-hello-world-root-depls triggering' do
       let(:secrets_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get']&.start_with?('secrets-') }.flat_map { |task| task['trigger'] } }

@@ -10,16 +10,16 @@ describe 'CfAppsPipelineTemplateProcessing' do
   let(:ops_automation_path) { '.' }
   let(:processor_context) do
     { depls: root_deployment_name,
-      all_ci_deployments: all_ci_deployments,
-      all_cf_apps: all_cf_apps,
+      multi_root_ci_deployments: multi_root_ci_deployments,
+      multi_root_cf_apps: multi_root_cf_apps,
       config: loaded_config,
       ops_automation_path: ops_automation_path }
   end
   let(:secrets_dirs_overview) { {} }
   let(:root_deployment_versions) { {} }
-  let(:all_cf_apps) do
+  let(:multi_root_cf_apps) do
     cf_apps_yaml = <<~YAML
-      ---
+    #{root_deployment_name}:
       ops-dataflow:
         cf_api_url: https://api.my-cloudfoundry.org
         cf_username: my_user
@@ -52,7 +52,7 @@ describe 'CfAppsPipelineTemplateProcessing' do
     YAML.safe_load(cf_apps_yaml)
   end
   let(:custom_team) { 'my-custom-team' }
-  let(:all_ci_deployments) do
+  let(:multi_root_ci_deployments) do
     ci_deployments_yaml = <<~YAML
       #{root_deployment_name}:
         target_name: my-concourse-name

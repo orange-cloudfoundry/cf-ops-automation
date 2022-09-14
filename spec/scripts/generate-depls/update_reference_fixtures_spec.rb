@@ -11,7 +11,7 @@ describe 'generating new reference' do
   test_path = File.join(ci_path, '/spec/scripts/generate-depls')
   fixture_path = File.join(test_path, '/fixtures')
 
-  let(:output_path) { "#{fixture_path}/" }
+  let(:output_path) { "#{fixture_path}/generated/#{test_type}" }
   let(:templates_path) { "#{fixture_path}/templates" }
   let(:secrets_path) { "#{fixture_path}/secrets" }
   let(:depls_name) { 'simple-depls' }
@@ -31,20 +31,59 @@ describe 'generating new reference' do
   end
 
   context 'when processing "simple-depls"' do
+    let(:test_type) { "simple-tests" }
+
+    context 'when processing shared pipelines' do
+      let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
+
+      it 'process all pipelines' do
+        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+      end
+
+      it 'does not display an error message' do
+        expect(@stderr_str).to eq('')
+      end
+    end
+
     it 'process all pipelines' do
-      expect(@stdout_str).to include("7 concourse pipeline templates were processed")
+      expect(@stdout_str).to include("2 concourse pipeline templates were processed")
     end
 
     it 'does not display an error message' do
       expect(@stderr_str).to eq('')
     end
+
+    context 'when processing shared pipelines' do
+      let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
+
+      it 'process all pipelines' do
+        expect(@stdout_str).to include(" concourse pipeline templates were processed")
+      end
+
+      it 'does not display an error message' do
+        expect(@stderr_str).to eq('')
+      end
+    end
   end
 
   context 'when processing "delete-depls"' do
     let(:depls_name) { 'delete-depls' }
+    let(:test_type) { "delete-tests" }
+
+    context 'when processing shared pipelines' do
+      let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
+
+      it 'process all pipelines' do
+        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+      end
+
+      it 'does not display an error message' do
+        expect(@stderr_str).to eq('')
+      end
+    end
 
     it 'process all pipelines' do
-      expect(@stdout_str).to include("7 concourse pipeline templates were processed")
+      expect(@stdout_str).to include("2 concourse pipeline templates were processed")
     end
 
     it 'no error message are displayed' do
@@ -57,6 +96,19 @@ describe 'generating new reference' do
     let(:templates_path) { Dir.mktmpdir }
     let(:secrets_path) { Dir.mktmpdir }
     let(:include_exclude_pipelines) { "" }
+    let(:test_type) { "empty-tests" }
+
+    context 'when processing shared pipelines' do
+      let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
+
+      it 'process all pipelines' do
+        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+      end
+
+      it 'does not display an error message' do
+        expect(@stderr_str).to eq('')
+      end
+    end
 
     before do
       TestHelper.generate_deployment_bosh_ca_cert(secrets_path)
@@ -67,7 +119,7 @@ describe 'generating new reference' do
     end
 
     it 'process all pipelines' do
-      expect(@stdout_str).to include("8 concourse pipeline templates were processed")
+      expect(@stdout_str).to include("3 concourse pipeline templates were processed")
     end
 
     it 'no error message expected' do
@@ -78,6 +130,19 @@ describe 'generating new reference' do
   context 'when processing "apps-depls"' do
     let(:depls_name) { 'apps-depls' }
     let(:include_exclude_pipelines) { "-i cf-apps" }
+    let(:test_type) { "apps-tests" }
+
+    context 'when processing shared pipelines' do
+      let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump" }
+
+      it 'process all pipelines' do
+        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+      end
+
+      it 'does not display an error message' do
+        expect(@stderr_str).to eq('')
+      end
+    end
 
     it 'process all pipelines' do
       expect(@stdout_str).to include("1 concourse pipeline templates were processed")

@@ -14,7 +14,7 @@
 
   filtered_deployments = {}
   root_deployments.each do |name|
-    filtered_deployments[name] = multi_root_dependencies[name].select do |deployment_name, deployment_info|
+    filtered_deployments[name] = multi_root_dependencies[name]&.select do |deployment_name, deployment_info|
       !precompile_excluded_deployments[name].include?(deployment_name) && deployment_info['bosh-deployment']
     end
   end
@@ -23,19 +23,19 @@
   releases_inconsistencies = Hash.new { |h, k| h[k] = [] }
   filtered_deployments&.sort
     &.each do |root_depl, boshreleases|
-      boshreleases.each do |name, boshrelease|
+      boshreleases&.each do |name, boshrelease|
         boshrelease['releases']&.each do |release, info|
           previous_info = releases_per_root_deployments[root_depl][release]
           if previous_info && ! info.eql?(previous_info)
-            releases_inconsistencies[root_depl] << "Inconsistency detected with <#{release}> boshrelease, in <#{name}> deployment: trying to replace\n#{previous_info}\nwith\n#{info}"
+            releases_inconsistencies[root_depl] << "with <#{release}> boshrelease, in <#{name}> deployment: trying to replace\n#{previous_info}\nwith\n#{info}"
           else
             releases_per_root_deployments[root_depl][release] = info
           end
         end
       end
     end
-
-  raise "Inconsitency detected with #{releases_inconsistencies.to_yaml}" if releases_inconsistencies.size >0
+# Psych.dump
+  raise "Inconsistency detected on #{root_deployment_name}: #{releases_inconsistencies[root_deployment_name].to_yaml}" if releases_inconsistencies[root_deployment_name].size >0
 
   uniq_releases_per_root_deployments = Hash.new { |h, k| h[k] = {} }
   releases_per_root_deployments.each do |root_depl, releases_info|
@@ -62,10 +62,10 @@
   concourse_retry = configurer.concourse_retry
   enabled_parallel_execution_limit = configurer.parallel_execution_limit.overridden?
 
-  all_dependencies = multi_root_dependencies[root_deployment_name] || {}
-  version_reference = multi_root_version_reference[root_deployment_name] || {}
-  all_ci_deployments = multi_root_ci_deployments[root_deployment_name] || {}
-  all_cf_apps = multi_root_cf_apps[root_deployment_name] || {}
+  # all_dependencies = multi_root_dependencies[root_deployment_name] || {}
+  # version_reference = multi_root_version_reference[root_deployment_name] || {}
+  all_ci_deployments = multi_root_ci_deployments || {}
+  # all_cf_apps = multi_root_cf_apps[root_deployment_name] || {}
   current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-bosh-precompile-generated") || root_deployment_name
 
 %>
