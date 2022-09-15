@@ -141,20 +141,30 @@ describe 'generate-depls' do
         it_behaves_like 'pipeline checker', 'empty-depls-cf-apps-generated.yml', 'empty-cf-apps.yml'
       end
 
-      context 'when news pipeline is empty' do
-        it_behaves_like 'pipeline checker', 'empty-depls-news-generated.yml', 'empty-news.yml'
-      end
-
-      context 'when concourse pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'empty-depls-concourse-generated.yml', 'empty-concourse.yml'
-      end
-
       context 'when bosh-precompile pipeline is checked' do
         it_behaves_like 'pipeline checker', 'empty-depls-bosh-precompile-generated.yml', 'empty-bosh-precompile.yml'
       end
 
-      context 'when k8s pipeline is checked' do
-        it_behaves_like 'pipeline checker', 'empty-depls-k8s-generated.yml', 'empty-k8s.yml'
+      context 'when shared context' do
+        let(:options) { "-o #{output_path} -t #{templates_path} -p #{secrets_path}" }
+
+        it 'no error message expected' do
+          expect(stderr_str).to eq('')
+        end
+
+        it 'generate a pipeline for each shared pipeline template' do
+          erb_file_counter = 0
+          Dir["#{ci_path}/concourse/pipelines/shared/*.erb"]&.each { erb_file_counter += 1 }
+          expect(stdout_str).to include("#{erb_file_counter} concourse pipeline templates were processed")
+        end
+
+        context 'when concourse shared pipeline is checked' do
+          it_behaves_like 'pipeline checker', 'shared-concourse-generated.yml', 'empty-shared-concourse.yml'
+        end
+
+        context 'when k8s shared pipeline is checked' do
+          it_behaves_like 'pipeline checker', 'shared-k8s-generated.yml', 'empty-shared-k8s.yml'
+        end
       end
     end
   end
