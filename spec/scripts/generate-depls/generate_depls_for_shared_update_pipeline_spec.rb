@@ -5,7 +5,7 @@ require 'rspec'
 require 'tmpdir'
 require_relative 'test_helper'
 
-describe 'generate-depls for k8s pipeline' do
+describe 'generate-depls for update pipeline' do
   let(:ci_path) { Dir.pwd }
   let(:test_path) { File.join(ci_path, '/spec/scripts/generate-depls') }
   let(:fixture_path) { File.join(test_path, '/fixtures') }
@@ -23,7 +23,7 @@ describe 'generate-depls for k8s pipeline' do
     end
 
     context 'when valid' do
-      let(:options) { "-o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i k8s --profiles #{profiles.join(',')}" }
+      let(:options) { "-o #{output_path} -t #{templates_path} -p #{secrets_path} --iaas #{iaas_type} --no-dump -i update --profiles #{profiles.join(',')}" }
 
       stdout_str = stderr_str = ''
       before do
@@ -34,13 +34,13 @@ describe 'generate-depls for k8s pipeline' do
         expect(stderr_str).to eq('')
       end
 
-      it 'only k8s template is processed' do
-        expect(stdout_str).to include('processing ./concourse/pipelines/shared/k8s-pipeline.yml.erb').and \
+      it 'only update template is processed' do
+        expect(stdout_str).to include('processing ./concourse/pipelines/shared/update-pipeline.yml.erb').and \
           include('1 concourse pipeline templates were processed')
       end
 
-      context 'when k8s pipeline is generated' do
-        it_behaves_like 'pipeline checker', 'shared-k8s-generated.yml', 'simple-shared-k8s.yml'
+      context 'when update pipeline is generated' do
+        it_behaves_like 'pipeline checker', 'shared-update-generated.yml', 'simple-shared-update.yml'
       end
     end
   end
