@@ -2,7 +2,7 @@
 set -e
 SECRETS=${SECRETS:-../int-secrets}
 TEMPLATES=${TEMPLATES:-../paas-templates}
-DYNAMIC_DEPLS_FILE_LIST=$(cd $SECRETS && find . -maxdepth 1 -type d -name "*-depls")
+DYNAMIC_DEPLS_FILE_LIST=$(cd $SECRETS && find . -maxdepth 1 -type d -name "*-depls" -o -name "shared")
 for i in ${DYNAMIC_DEPLS_FILE_LIST};
 do
  export DYNAMIC_DEPLS_LIST="$DYNAMIC_DEPLS_LIST $(basename $i)"

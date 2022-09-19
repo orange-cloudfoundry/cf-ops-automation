@@ -17,7 +17,7 @@ describe 'generate_depls task' do
     let(:output_pipeline_filenames) { Dir["#{@concourse_task_helper.result_dir}/concourse/pipelines/*.yml"] }
     let(:generated_pipeline_filenames) { output_pipeline_filenames.filter { |filename| File.basename(filename).start_with?(root_deployment) || File.basename(filename).start_with?('shared') } }
     let(:copied_pipeline_filenames) { output_pipeline_filenames.reject { |filename| File.basename(filename).start_with?(root_deployment) || File.basename(filename).start_with?('shared') } }
-    let(:expected_generated_pipelines) { GeneratedTemplatesHelper.new(@root_dir, root_deployment).generated_pipelines }
+    let(:expected_generated_pipelines) { GeneratedTemplatesHelper.new(@root_dir, root_deployment_name: root_deployment).generated_pipelines }
 
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))
