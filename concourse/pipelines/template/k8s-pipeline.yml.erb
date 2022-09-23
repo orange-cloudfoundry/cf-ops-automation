@@ -1,16 +1,19 @@
 <%
   require "#{ops_automation_path}/lib/pipeline_helpers"
+  root_deployment_name = depls
+  all_dependencies = multi_root_dependencies[root_deployment_name] || {}
+  version_reference = multi_root_version_reference[root_deployment_name] || {}
+  all_ci_deployments = multi_root_ci_deployments[root_deployment_name] || {}
+  all_cf_apps = multi_root_cf_apps[root_deployment_name] || {}
 
-  excluded_shared_k8s_root_deployments = config&.dig('shared', 'excluded_root_deployments','k8s') || []
-  multi_root_dependencies.delete_if {|root_deployment_name, _| excluded_shared_k8s_root_deployments.include?(root_deployment_name) }
-
-  disabled_deployments = multi_root_dependencies.select do |_, deployment_info|
+  disabled_deployments = all_dependencies.select do |_, deployment_info|
     deployment_info['status'] == 'disabled'
   end
-  enabled_deployments_with_empty = multi_root_dependencies.select do |root_deployment, root_deployment_info|
-    root_deployment_info.keep_if {|_, deployment_info| deployment_info['status'] == 'enabled' && deployment_info['kubernetes']}
+
+  enabled_deployments = all_dependencies.select do |_, deployment_info|
+    deployment_info['status'] == 'enabled' && deployment_info['kubernetes']
   end
-  enabled_deployments = enabled_deployments_with_empty.keep_if {|_, deployment_info| deployment_info.size > 0 }
+
   uniq_releases = {}
   enabled_deployments&.sort&.each do |name, boshrelease|
     boshrelease['releases']&.each do |release, info|
@@ -32,8 +35,9 @@
   concourse_retry = configurer.concourse_retry
   reconciliation_loop_interval = configurer.reconciliation_loop_interval.get # 4m
 
-  current_team = CiDeployment.team(multi_root_ci_deployments, "shared", "shared-k8s-generated")
+  current_team = CiDeployment.team(all_ci_deployments, root_deployment_name, "#{root_deployment_name}-k8s-generated")
 %>
+
 ---
 display:
   background_image: ((background-image-url))
@@ -50,8 +54,6 @@ resource_types:
     tag: 2.0.1
 
 resources:
-<% unless enabled_deployments.empty? %>
-
 - name: failure-alert
   icon: slack
   type: slack-notification
@@ -61,12 +63,30 @@ resources:
     proxy_https_tunnel: ((slack-proxy-https-tunnel))
     disable: ((slack-disable))
 
+- name: secrets-<%= root_deployment_name %>-limited
+  icon: source-branch
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml", "<%= root_deployment_name %>/ci-deployment-overview.yml", "<%= root_deployment_name %>/secrets", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+
 - name: secrets-full-writer
   icon: source-pull
   type: git
   source:
     uri: ((secrets-uri))
     branch: ((secrets-branch))
+    skip_ssl_verification: true
+
+- name: paas-templates-<%= root_deployment_name %>
+  icon: home-analytics
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: ["shared-config.yml", "meta-inf.yml", "<%= root_deployment_name %>/root-deployment.yml", "<%= root_deployment_name %>/template"]
+    branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 
 - name: cf-ops-automation
@@ -78,50 +98,47 @@ resources:
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
 
+<% unless enabled_deployments.empty? %>
 - name: concourse-meta
   icon: file-document-box-search-outline
   type: meta
-- name: secrets-limited
-  icon: source-branch
-  type: git
-  source:
-    uri: ((secrets-uri))
-    paths: ["private-config.yml", "*/ci-deployment-overview.yml", "*/secrets", "shared"]
-    branch: ((secrets-branch))
-    skip_ssl_verification: true
 
-- name: paas-templates-limited
-  icon: home-analytics
-  type: git
-  source:
-    uri: ((paas-templates-uri))
-    paths: ["shared-config.yml", "meta-inf.yml", "*/root-deployment.yml", "*/template"]
-    branch: pipeline-current-((paas-templates-branch))
-    skip_ssl_verification: true
-
-- name: paas-templates-full
-  icon: home-edit
-  type: git
-  source:
-    uri: ((paas-templates-uri))
-    branch: pipeline-current-((paas-templates-branch))
-    skip_ssl_verification: true
-
-
-<% enabled_deployments.sort.each do |root_deployment_name, root_deployment_info|
-  root_deployment_info.sort.each do |name, boshrelease|
+<% enabled_deployments.sort.each do |name, boshrelease|
+  secrets_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: root_deployment_name,
+    name: name,
+    git_submodules: git_submodules,
+    config: boshrelease,
+    config_key: 'secrets',
+    defaults: ["#{root_deployment_name}/#{name}", "shared"])
+  paas_templates_selected_paths = PipelineHelpers.git_resource_selected_paths(
+    depls: root_deployment_name,
+    name: name,
+    git_submodules: git_submodules,
+    config: boshrelease,
+    config_key: 'templates',
+    defaults: ["#{root_deployment_name}/#{name}"])
+  paas_templates_selected_paths << "#{root_deployment_name}/root-deployment.yml" if paas_templates_selected_paths
 %>
 <% deployment_details = PipelineHelpers::DeploymentDetails.new(name, boshrelease) %>
 <% if deployment_details.local_deployment_secrets_scan? %>
-- name: secrets-<%= root_deployment_name %><%= name %>
+- name: secrets-<%= name %>
   icon: source-merge
   type: git
   source:
     uri: ((secrets-uri))
+    paths: <%= secrets_selected_paths %>
     branch: ((secrets-branch))
     skip_ssl_verification: true
 <% end %>
-<% end %>
+- name: paas-templates-<%= name %>
+  icon: home-edit
+  type: git
+  source:
+    uri: ((paas-templates-uri))
+    paths: <%= paas_templates_selected_paths %>
+    branch: pipeline-current-((paas-templates-branch))
+    skip_ssl_verification: true
 <% end %>
 <% end %>
 <% if enabled_deployments.any? %>
@@ -130,6 +147,15 @@ resources:
   source:
     interval: <%= reconciliation_loop_interval %>
     location: Europe/Paris
+- name: secrets-<%= root_deployment_name %>-trigger
+  icon: source-commit
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml", "<%= root_deployment_name %>", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
+<% end %>
 
 - name: k8s-configs-repository
   icon: source-pull
@@ -140,15 +166,10 @@ resources:
     password: ((k8s-configs-repository-password))
     branch: ((k8s-configs-repository-branch))
     skip_ssl_verification: true
-<% end %>
+
 jobs:
-<% if enabled_deployments.empty? %>
-  - name: this-is-an-empty-pipeline
-<% else %>
-<% enabled_deployments.sort.each do |root_deployment_name, _ | %>
-- name: execute-deploy-script-<%=root_deployment_name %>
-  <% jobs['utils'] << "execute-deploy-script-#{root_deployment_name}" %>
-  <% jobs["#{root_deployment_name}"] << "execute-deploy-script-#{root_deployment_name}" %>
+- name: execute-deploy-script
+  <% jobs['utils'] << 'execute-deploy-script' %>
   serial: true
   on_failure:
     put: failure-alert
@@ -161,10 +182,10 @@ jobs:
     - in_parallel:
       - get: secrets-full-writer
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-      - get: secrets-limited
+      - get: secrets-<%= root_deployment_name %>-limited
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
-      - get: paas-templates-limited
+      - get: paas-templates-<%= root_deployment_name %>
         params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
         trigger: true
       - get: cf-ops-automation
@@ -173,7 +194,7 @@ jobs:
         params: { submodules: none }
     - task: apply-iaas-type-and-profiles
       input_mapping:
-        paas-templates-resource: paas-templates-limited
+        paas-templates-resource: paas-templates-<%= root_deployment_name %>
       file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
       params:
         ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
@@ -182,7 +203,7 @@ jobs:
         IAAS_TYPE: ((iaas-type))
         PROFILES: ((profiles))
     - task: run-deploy.sh
-      input_mapping: { paas-templates-resource: paas-templates-limited,  credentials-resource: secrets-full-writer }
+      input_mapping: { paas-templates-resource: paas-templates-<%= root_deployment_name %>,  credentials-resource: secrets-full-writer }
       output_mapping: { result-dir: updated-k8s-repo }
       file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
       params:
@@ -192,7 +213,7 @@ jobs:
         CREDHUB_SERVER: ((credhub-server))
         CREDHUB_CLIENT: ((credhub-client))
         CREDHUB_SECRET: "((credhub-secret))"
-        CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+        CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
         IAAS_TYPE: ((iaas-type))
         PROFILES: ((profiles))
         FILE_EXECUTION_FILTER: "deploy*.sh"
@@ -203,15 +224,12 @@ jobs:
       params:
         repository: updated-k8s-repo
         rebase: true
-<% end %>
-<% enabled_deployments.sort.each do |root_deployment_name, root_deployment_info|
-  root_deployment_info.sort.each do |name, boshrelease|
- %>
+
+<% enabled_deployments.sort.each do |name, boshrelease| %>
 <% current_serial_group = configurer.serial_group_strategy.generate(name, boshrelease) %>
 <% deployment_details = PipelineHelpers::DeploymentDetails.new(name, boshrelease) %>
-- name: deploy-<%= name %>-<%= root_deployment_name %>
-  <% jobs["deploy-#{name[0]}"] << "deploy-#{name}-#{root_deployment_name}" %>
-  <% jobs["#{root_deployment_name}"] << "deploy-#{name}-#{root_deployment_name}" %>
+- name: deploy-<%= name %>
+  <% jobs["deploy-#{name[0]}"] << "deploy-#{name}" %>
   serial: true
   <%= "serial_groups: [#{current_serial_group}]" if enabled_parallel_execution_limit%>
   on_failure:
@@ -234,11 +252,11 @@ jobs:
     - get: reconciliation-loop
       trigger: true
   <% if deployment_details.local_deployment_secrets_scan? %>
-    - get: secrets-<%= root_deployment_name %><%= name %>
+    - get: secrets-<%= name %>
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
       trigger: <%= deployment_details.local_deployment_secrets_trigger? %>
   <% end %>
-    - get: paas-templates-full
+    - get: paas-templates-<%= name %>
       trigger: true
       params:
   <%
@@ -264,7 +282,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
-      additional-resource: paas-templates-full
+      additional-resource: paas-templates-<%= name %>
     output_mapping: {generated-files: pre-processed-manifest}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
@@ -281,7 +299,7 @@ jobs:
       COA_DEPLOYMENT_NAME: <%= name %>
   - task: apply-iaas-type-and-profiles
     input_mapping:
-      paas-templates-resource: paas-templates-full
+      paas-templates-resource: paas-templates-<%= name %>
     file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
     params:
       ROOT_DEPLOYMENT_NAME: <%= root_deployment_name %>
@@ -301,7 +319,7 @@ jobs:
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
       CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
       FILE_EXECUTION_FILTER: "pre-deploy*.sh"
@@ -318,7 +336,7 @@ jobs:
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
       CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
   - put: k8s-configs-repository
@@ -341,12 +359,11 @@ jobs:
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
       CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
       FILE_EXECUTION_FILTER: "post-deploy*.sh"
 
-<% end %>
 <% end %>
 
 <% if enabled_deployments.any? %>
@@ -363,10 +380,10 @@ jobs:
   - in_parallel:
     - get: cf-ops-automation
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-    - get: secrets-full-writer
+    - get: secrets-<%= root_deployment_name %>-trigger
       params: { submodules: none, depth: <%= git_shallow_clone_depth %> }
-  - task: generate-pipeline
-    output_mapping: {result-dir: trigger-plan}
+  - task: generate-<%= root_deployment_name %>-pipeline
+    output_mapping: {result-dir: trigger-<%= root_deployment_name %>-plan}
     config:
       platform: linux
       image_resource:
@@ -379,18 +396,16 @@ jobs:
       run:
         path: sh
         args:
-        - -exc
+        - -ec
         - |
-  <% enabled_deployments.sort.each do |root_deployment_name, root_deployment_info|
-    root_deployment_info.sort.each do |name, _| %>
-          echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>-<%= root_deployment_name %>" >> result-dir/flight-plan
-    <% end %>
+  <% enabled_deployments.sort.each do |name, _| %>
+          echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-<%= name %>" >> result-dir/flight-plan
   <% end %>
       params:
-        BUILD_PIPELINE_NAME: shared-k8s-generated # TODO
+        BUILD_PIPELINE_NAME: <%= root_deployment_name %>-bosh-generated
   - task: fly-into-concourse
-    input_mapping: {fly-cmd: trigger-plan}
-    output_mapping: {flight-report: concourse-trigger-report}
+    input_mapping: {fly-cmd: trigger-<%= root_deployment_name %>-plan}
+    output_mapping: {flight-report: concourse-<%= root_deployment_name %>-trigger-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
       ATC_EXTERNAL_URL: ((concourse-<%= root_deployment_name %>-target))
@@ -398,10 +413,13 @@ jobs:
       FLY_PASSWORD: "((concourse-<%= root_deployment_name %>-password))"
       FLY_TEAM: <%= current_team || 'main' %>
 <% end %>
-<% end %>
+
 groups:
-- name: all
-  jobs: ["*"]
+- name: <%= root_deployment_name.downcase %>
+  jobs:
+<% jobs.map {|_, job_names| job_names }.flatten.uniq.sort.each do |job_name| %>
+    - <%= job_name %>
+<% end %>
 <% jobs.sort.each do |group_name, job_names| %>
 - name: <%= group_name.downcase %>
   jobs:
