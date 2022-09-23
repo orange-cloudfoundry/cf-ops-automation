@@ -56,7 +56,6 @@ class SharedPipelineGenerator
   end
 
   def execute
-    input_pipelines_backup = options.input_pipelines
     puts "=== Processing #{@options.depls} templates ==="
     pipeline_templates_filter = PipelineTemplatesFiltering.new(@options, templates_location)
     @options.input_pipelines = pipeline_templates_filter.filter
@@ -114,11 +113,11 @@ class SharedPipelineGenerator
       root_deployment_overview = RootDeployment.new(name, options.paas_templates_path, options.secrets_path, fail_on_inconsistency: false).overview_from_hash(deployment_factory)
       versions = root_deployment_versions.versions
       enhanced_root_deployment = RootDeploymentOverviewEnhancer.new(name, root_deployment_overview, versions).enhance
+      all_root_deployments[name] = enhanced_root_deployment
       ci_deployments_overview = CiDeployment.new(File.join(options.secrets_path, name)).overview
       all_ci_deployments[name] = ci_deployments_overview[name]
       all_cf_apps[name] = CfApps.new(File.join(options.secrets_path, name, '/*'), name).overview
       all_versions[name] = versions
-      all_root_deployments[name] = enhanced_root_deployment
     end
 
     root_deployment_name = options.depls
@@ -134,9 +133,6 @@ class SharedPipelineGenerator
     ctxt.config                = config.loaded_config
     ctxt.ops_automation_path   = options.ops_automation
 
-    File.open("coa-context.yml", 'w') { |file| file.write YAML.dump(ctxt) }
-    # puts("Forced exit")
-    # exit(1)
   end
 
   def check_warnings

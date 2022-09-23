@@ -8,7 +8,7 @@ require_relative '../../concourse_tasks_helper'
 describe 'generate-all-manifest task' do
   context 'when environment variables are valid' do
     let(:generated_pipeline_filenames) { Dir["#{@concourse_task_helper.result_dir}/pipelines/*.yml"] }
-    let(:expected_generated_pipelines) { GeneratedTemplatesHelper.new(@root_dir, ignore_templates_pipelines: false).generated_pipelines }
+    let(:expected_generated_pipelines) { GeneratedTemplatesHelper.new(@root_dir, ignore_shared_pipelines: false).generated_pipelines }
 
     before(:context) do
       @root_dir = File.expand_path(File.join(File.dirname(__FILE__), '..', '..', '..'))

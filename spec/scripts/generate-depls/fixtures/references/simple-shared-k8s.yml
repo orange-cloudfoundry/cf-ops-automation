@@ -56,12 +56,11 @@ resources:
     paths: ["shared-config.yml", "meta-inf.yml", "*/root-deployment.yml", "*/template"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
-- name: paas-templates-simple-depls-k8s-sample
+- name: paas-templates-full
   icon: home-edit
   type: git
   source:
     uri: ((paas-templates-uri))
-    paths: ["simple-depls/k8s-sample", "simple-depls/root-deployment.yml"]
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
 - name: reconciliation-loop
@@ -155,7 +154,7 @@ jobs:
       trigger: true
     - get: reconciliation-loop
       trigger: true
-    - get: paas-templates-simple-depls-k8s-sample
+    - get: paas-templates-full
       trigger: true
       params:
         submodules: none
@@ -165,7 +164,7 @@ jobs:
     input_mapping:
       scripts-resource: cf-ops-automation
       credentials-resource: secrets-full-writer
-      additional-resource: paas-templates-simple-depls-k8s-sample
+      additional-resource: paas-templates-full
     output_mapping: {generated-files: pre-processed-manifest}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
     params:
@@ -182,7 +181,7 @@ jobs:
       COA_DEPLOYMENT_NAME: k8s-sample
   - task: apply-iaas-type-and-profiles
     input_mapping:
-      paas-templates-resource: paas-templates-simple-depls-k8s-sample
+      paas-templates-resource: paas-templates-full
     file: cf-ops-automation/concourse/tasks/apply_iaas_type_and_profiles/task.yml
     params:
       ROOT_DEPLOYMENT_NAME: simple-depls
@@ -284,9 +283,9 @@ jobs:
     output_mapping: {flight-report: concourse-trigger-report}
     file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
     params:
-      ATC_EXTERNAL_URL: ((concourse-TODO-target))
-      FLY_USERNAME: ((concourse-TODO-username))
-      FLY_PASSWORD: "((concourse-TODO-password))"
+      ATC_EXTERNAL_URL: ((concourse-shared-target))
+      FLY_USERNAME: ((concourse-shared-username))
+      FLY_PASSWORD: "((concourse-shared-password))"
       FLY_TEAM: main
 groups:
 - name: all

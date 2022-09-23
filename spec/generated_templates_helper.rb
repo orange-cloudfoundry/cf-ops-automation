@@ -21,8 +21,9 @@ class GeneratedTemplatesHelper
 
   def generated_pipelines
     pipelines = []
-    pipelines + add_generated_shared_pipelines unless @ignore_shared_pipelines
-    pipelines + add_generated_templates_pipelines unless @ignore_templates_pipelines
+    pipelines += add_generated_shared_pipelines unless @ignore_shared_pipelines
+    pipelines += add_generated_templates_pipelines unless @ignore_templates_pipelines
+    pipelines
   end
 
   private
@@ -33,7 +34,7 @@ class GeneratedTemplatesHelper
       'shared-' + new_name
     end
   end
-  JSON.dump
+
   def add_generated_templates_pipelines
     @templates_pipelines.map do |name|
       new_name = name.gsub('-pipeline.yml.erb', '-generated.yml')

@@ -66,169 +66,6 @@ jobs:
     - get: secrets-full
       params: { submodules: none}
 
-- name: bootstrap-control-plane
-  serial: true
-  on_failure:
-    put: failure-alert
-    params:
-      channel: ((slack-channel))
-      text: Failed [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
-      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-      username: Concourse
-  plan:
-  - in_parallel:
-    - get: cf-ops-automation
-      params: { submodules: none}
-      trigger: true
-      passed: [ bootstrap-pipelines ]
-    - get: secrets-full
-      params: { submodules: none}
-      passed: [ bootstrap-pipelines ]
-      trigger: true
-  - task: get-pipeline-teams
-    input_mapping: {secrets: secrets-full}
-    output_mapping: {ci-deployment-overview: concourse-teams}
-    file: cf-ops-automation/concourse/tasks/list_used_ci_team/task.yml
-  - task: generate-team-operator
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: library/ruby
-          tag: 3.1.2
-      inputs:
-        - name: concourse-teams
-      outputs:
-        - name: concourse-pipeline-resource-team-operator
-      run:
-        path: /bin/bash
-        args:
-          - -ec
-          - |
-            cat << EOF >generate_team_operator.rb
-            require 'yaml'
-
-            fly_username = ENV['FLY_USERNAME']
-            fly_password = ENV['FLY_PASSWORD']
-            OPERATOR_FILENAME = 'team-operators.yml'
-            operator_file = File.join('concourse-pipeline-resource-team-operator', OPERATOR_FILENAME)
-            team_filepath = File.join('concourse-teams',"teams.yml")
-            teams_list = YAML.load_file(team_filepath)
-            teams_list << 'main' # ensure main team always exists
-            teams_list.uniq.sort! # ensure only one main team exists
-            content =  "- type: remove\n"
-            content += "  path: /resources/name=concourse-micro/source/teams\n"
-            content +=  "- type: replace\n"
-            content += "  path: /resources/name=concourse-micro/source/teams?\n"
-            content += "  value:\n"
-            teams_list.each do |team_name|
-              content += "  - name: #{team_name}\n"
-              content += "    username: #{fly_username}\n"
-              content += "    password: \"#{fly_password}\"\n"
-            end
-            content +=  "- type: remove\n"
-            content += "  path: /resources/name=concourse-micro-legacy/source/teams\n"
-            content +=  "- type: replace\n"
-            content += "  path: /resources/name=concourse-micro-legacy/source/teams?\n"
-            content += "  value:\n"
-            teams_list.each do |team_name|
-              content += "  - name: #{team_name}\n"
-              content += "    username: #{fly_username}\n"
-              content += "    password: \"#{fly_password}\"\n"
-            end
-
-            File.open(operator_file, 'w') { |file| file.write content }
-            EOF
-            cat generate_team_operator.rb
-            ruby generate_team_operator.rb
-            cat concourse-pipeline-resource-team-operator/*.yml
-      params:
-        FLY_USERNAME: ((concourse-micro-depls-username))
-        FLY_PASSWORD: "((concourse-micro-depls-password))"
-        CONTROL_PLANE_FILE_PATH: "cf-ops-automation/concourse/pipelines/control-plane.yml"
-  - task: get-original-control-plane-pipeline
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: library/alpine
-          tag: "3.13"
-      inputs:
-        - name: cf-ops-automation
-      outputs:
-        - name: manifest-dir
-      run:
-        path: /bin/sh
-        args:
-          - -ec
-          - |
-            cp -v ${PIPELINE_FILE_PATH} manifest-dir
-      params:
-        PIPELINE_FILE_PATH: "cf-ops-automation/concourse/pipelines/control-plane.yml"
-  - task: amend-control-plane-with-team
-    input_mapping:
-      bosh-inputs: concourse-pipeline-resource-team-operator
-      manifest-dir: manifest-dir
-      scripts-resource: cf-ops-automation
-      secrets: secrets-full
-    output_mapping: {result-dir: final-control-plane-pipeline}
-    file: cf-ops-automation/concourse/tasks/bosh_interpolate/task.yml
-    params:
-      VARS_FILES_SUFFIX: vars.yml
-      OPS_FILES_SUFFIX:  operators.yml
-      BOSH_YAML_FILE: control-plane.yml
-  - task: set-control-plane-pipeline
-    config:
-      platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: orangecloudfoundry/curl-ssl
-          tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
-      inputs:
-        - name: final-control-plane-pipeline
-        - name: secrets-full
-      outputs:
-        - name: initialized-flight-plan
-      run:
-        path: sh
-        args:
-        - -ec
-        - |
-          mkdir -p /usr/local/bin
-          FLY=/usr/local/bin/fly
-          if [ ! -d secrets-full/coa/config/ ];then
-            echo "Missing coa/config directory. Please adjust your configuration"
-            exit 1
-          fi
-          echo "Fetching fly...";
-          curl -SsL "$ATC_EXTERNAL_URL/api/v1/cli?arch=amd64&platform=linux" -k > $FLY;
-          chmod +x ${FLY};
-
-          ${FLY} login -t main -c "$ATC_EXTERNAL_URL" --username="$FLY_USERNAME" --password="$FLY_PASSWORD" -k 2>&1
-          echo "set pipeline ${PIPELINE_FILE_PATH}"
-          CONFIG_DIR=secrets-full/coa/config
-          FILTERED_CONFIG_FILES=$(cd ${CONFIG_DIR} && ls -1 credentials-*.yml|grep -v pipeline)
-          VARS_FILES=""
-          for config_file in ${FILTERED_CONFIG_FILES}; do
-            VARS_FILES="${VARS_FILES}-l \"${CONFIG_DIR}/${config_file}\" "
-          done
-          echo ${VARS_FILES}
-          FLY_TARGET=main
-          PIPELINE=control-plane
-          export FLY_SET_PIPELINE_OPTION="--non-interactive"
-          set +e
-          ${FLY} -t ${FLY_TARGET} set-pipeline ${FLY_SET_PIPELINE_OPTION} -p ${PIPELINE} -c ${PIPELINE_FILE_PATH} ${VARS_FILES}
-          set -e
-
-      params:
-        ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
-        FLY_USERNAME: ((concourse-micro-depls-username))
-        FLY_PASSWORD: "((concourse-micro-depls-password))"
-        PIPELINE_FILE_PATH: "final-control-plane-pipeline/interpolated-control-plane.yml"
-
 - name: reload-this-pipeline-from-git
   serial: true
   on_failure:
@@ -388,7 +225,7 @@ jobs:
       FLY_PASSWORD: "((concourse-micro-depls-password))"
 
 
-- name: bootstrap-update-pipelines
+- name: bootstrap-control-plane
   serial: true
   on_failure:
     put: failure-alert
@@ -418,14 +255,14 @@ jobs:
     params:
       IAAS_TYPE: ((iaas-type))
       PIPELINE_TYPE: update
-  - task: set-all-update-pipelines
+  - task: set-control-plane
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_shared_pipelines.yml
     params:
       ATC_EXTERNAL_URL: ((concourse-micro-depls-target))
       FLY_USERNAME: ((concourse-micro-depls-username))
       FLY_PASSWORD: "((concourse-micro-depls-password))"
-      PIPELINE_TYPE: update
+      PIPELINE_TYPE: control-plane
   - task: generate-flight-plan
     output_mapping: {result-dir: initialized-flight-plan}
     config:
@@ -446,7 +283,6 @@ jobs:
         - |
           DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
-          PIPELINE="shared-update-generated"
           jobs=$(cat $PIPELINE.yml 2>/dev/null|grep -e '[[:space:]]*- name: update-pipeline.*-depls'|cut -d':' -f2|cut -c 2-)
           for j in $jobs;do
             echo "Processing ${j}"
@@ -456,6 +292,7 @@ jobs:
       params:
         FLY_USERNAME: ((concourse-micro-depls-username))
         FLY_PASSWORD: "((concourse-micro-depls-password))"
+        PIPELINE: shared-control-plane-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: initialized-flight-plan}
     output_mapping: {flight-report: concourse-<%= depls %>-init-report}

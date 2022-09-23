@@ -22,16 +22,11 @@ module Coa
             "bootstrap-update-pipelines" => {}
           }
         },
-        "shared-update-generated" => {
+        "shared-control-plane-generated" => {
           "team" => "main",
           "jobs" => {
             "update-pipeline-hello-world-root-depls" => {},
-            "update-pipeline-shared" => {}
-          }
-        },
-        "control-plane" => {
-          "team" => "main",
-          "jobs" => {
+            "update-pipeline-shared" => {},
             "on-git-commit" => {},
             "load-generated-pipelines" => {},
             "push-changes" => {},

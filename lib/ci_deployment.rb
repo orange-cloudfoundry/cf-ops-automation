@@ -46,7 +46,7 @@ class CiDeployment
 
   def self.teams(overview)
     ci_deployment_details_per_root_depls = overview.map { |_, ci_deployment_details_for_root_depls| ci_deployment_details_for_root_depls }
-    pipelines_per_root_depls = ci_deployment_details_per_root_depls.map { |ci_deployment_details| ci_deployment_details['pipelines'] }
+    pipelines_per_root_depls = ci_deployment_details_per_root_depls.map { |ci_deployment_details| ci_deployment_details && ci_deployment_details['pipelines'] }
     pipelines_and_pipeline_configs_2_tuple = pipelines_per_root_depls.inject([]) { |array, item| array + item.to_a }
     defined_teams = pipelines_and_pipeline_configs_2_tuple.map { |_, pipeline_config| pipeline_config && pipeline_config['team'] }
     defined_teams.compact

@@ -63,8 +63,8 @@ describe PipelineGenerator do
         secrets_dirs_overview: secrets_dirs_overview,
         version_reference: root_deployment_versions.versions,
         all_dependencies: all_dependencies,
-        multi_root_ci_deployments: all_ci_deployments,
-        all_cf_apps: all_cf_apps,
+        multi_root_ci_deployments: multi_root_ci_deployments,
+        multi_root_cf_apps: all_cf_apps,
         git_submodules: git_submodules,
         config: loaded_config
       }
@@ -108,7 +108,7 @@ describe PipelineGenerator do
         and_return(all_dependencies)
 
       expect_any_instance_of(CiDeployment).to receive(:overview).
-        and_return(all_ci_deployments)
+        and_return(multi_root_ci_deployments)
 
       expect_any_instance_of(CfApps).to receive(:overview).
         and_return(all_cf_apps)
@@ -164,9 +164,9 @@ describe PipelineGenerator::PipelineTemplatesFiltering do
   end
 
   context "when include filter is set" do
-    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: %w[bosh update dummy], exclude_pipelines: []) }
+    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: %w[bosh cf-apps dummy], exclude_pipelines: []) }
     let(:include_templates) { subject.filter }
-    let(:expected_include_templates) { %w[./concourse/pipelines/template/bosh-pipeline.yml.erb ./concourse/pipelines/template/update-pipeline.yml.erb] }
+    let(:expected_include_templates) { %w[./concourse/pipelines/template/bosh-pipeline.yml.erb ./concourse/pipelines/template/cf-apps-pipeline.yml.erb] }
 
     it 'contains only filtered templates' do
       expect(include_templates).to match_array(expected_include_templates)
@@ -178,9 +178,9 @@ describe PipelineGenerator::PipelineTemplatesFiltering do
   end
 
   context "when exclude filter is set" do
-    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: [], exclude_pipelines: %w[bosh-pipeline update-pipeline]) }
+    let(:options) { OpenStruct.new(ops_automation: '.', input_pipelines: [], exclude_pipelines: %w[bosh-pipeline cf-apps-pipeline]) }
     let(:include_templates) { subject.filter }
-    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh-pipeline') || path.include?('update-pipeline') } }
+    let(:expected_excluded_templates) { expected_all_pipelines_templates.reject { |path| path.include?('bosh-pipeline') || path.include?('cf-apps-pipeline') } }
 
     it 'contains only filtered templates' do
       expect(include_templates).to match_array(expected_excluded_templates)

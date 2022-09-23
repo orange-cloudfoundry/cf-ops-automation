@@ -46,7 +46,7 @@ describe 'generating new reference' do
     end
 
     it 'process all pipelines' do
-      expect(@stdout_str).to include("2 concourse pipeline templates were processed")
+      expect(@stdout_str).to include("3 concourse pipeline templates were processed")
     end
 
     it 'does not display an error message' do
@@ -83,7 +83,7 @@ describe 'generating new reference' do
     end
 
     it 'process all pipelines' do
-      expect(@stdout_str).to include("2 concourse pipeline templates were processed")
+      expect(@stdout_str).to include("3 concourse pipeline templates were processed")
     end
 
     it 'no error message are displayed' do
@@ -119,7 +119,7 @@ describe 'generating new reference' do
     end
 
     it 'process all pipelines' do
-      expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+      expect(@stdout_str).to include("4 concourse pipeline templates were processed")
     end
 
     it 'no error message expected' do

@@ -5,6 +5,13 @@ offline-mode:
    stemcells: false # Choose where stemcells are downloaded from. Default: true
 
 lock-releases: false # Default: false. See https://bosh.io/docs/locking-compiled-releases/
+# Shared pipelines configuration
+shared:
+  excluded_root_deployments:
+    k8s: # exclude some root deployments from k8s shared pipelines management
+      - a_root_deployment
+      - another_root_deployment
+
 default:
   reconciliation-loop:
      interval: 6h # Default 4m. You may override concourse k8s pipelines job frequency, ie interval between execution when nothing happen.

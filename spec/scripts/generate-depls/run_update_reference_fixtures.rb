@@ -39,16 +39,17 @@ FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/empty-depls-bosh
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/empty-depls-bosh-precompile-generated.yml", "#{references_dir}/empty-bosh-precompile.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-concourse-generated.yml", "#{references_dir}/empty-shared-concourse.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-k8s-generated.yml", "#{references_dir}/empty-shared-k8s.yml", verbose: true)
-FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-update-generated.yml", "#{references_dir}/empty-shared-update.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-control-plane-generated.yml", "#{references_dir}/empty-control-plane-update.yml", verbose: true)
 
 puts "Processing Simple Pipelines"
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/simple-depls-bosh-generated.yml", "#{references_dir}/simple-depls-bosh-ref.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/simple-depls-bosh-precompile-generated.yml", "#{references_dir}/simple-depls-bosh-precompile-ref.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/simple-depls-k8s-generated.yml", "#{references_dir}/simple-depls-k8s-ref.yml", verbose: true)
 
 puts "Processing Shared"
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-concourse-generated.yml", "#{references_dir}/simple-shared-concourse.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-k8s-generated.yml", "#{references_dir}/simple-shared-k8s.yml", verbose: true)
-FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-update-generated.yml", "#{references_dir}/simple-shared-update.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-control-plane-generated.yml", "#{references_dir}/simple-shared-control-plane.yml", verbose: true)
 
 
 FileUtils.rm_rf(pipelines_dir)
