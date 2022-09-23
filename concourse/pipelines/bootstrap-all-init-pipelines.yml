@@ -248,13 +248,13 @@ jobs:
       params: { submodules: none, depth: 5 }
       passed: [ create-teams ]
       trigger: true
-  - task: generate-shared-update-pipelines
+  - task: generate-shared-control-plane
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full}
     output_mapping: {result-dir: all-pipelines}
     file: cf-ops-automation/concourse/tasks/generate-shared-pipelines.yml
     params:
       IAAS_TYPE: ((iaas-type))
-      PIPELINE_TYPE: update
+      PIPELINE_TYPE: control-plane
   - task: set-control-plane
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_shared_pipelines.yml
