@@ -18,8 +18,7 @@ module Coa
             "bootstrap-pipelines" => { "trigger" => true },
             "reload-this-pipeline-from-git" => { "trigger" => true },
             "create-teams" => {},
-            "bootstrap-control-plane" => {},
-            "bootstrap-update-pipelines" => {}
+            "bootstrap-control-plane" => {}
           }
         },
         "shared-control-plane-generated" => {
@@ -28,7 +27,6 @@ module Coa
             "update-pipeline-hello-world-root-depls" => {},
             "update-pipeline-shared" => {},
             "on-git-commit" => {},
-            "load-generated-pipelines" => {},
             "push-changes" => {},
             "save-deployed-pipelines" => {}
           }

@@ -5,6 +5,7 @@
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 
   teams = CiDeployment.teams(multi_root_ci_deployments)
+  teams << 'main' unless teams.include?('main')
   git_shallow_clone_depth = configurer.git_shallow_clone_depth.get
   concourse_retry = configurer.concourse_retry
   jobs = Hash.new {|h,k| h[k]=[]}
@@ -92,7 +93,7 @@ resources:
     insecure: "true"
     teams:
       <% teams&.each do |name| %>
-      - name: <%= name %>>
+      - name: <%= name %>
         username: ((concourse-micro-depls-username))
         password: "((concourse-micro-depls-password))"
       <% end %>
