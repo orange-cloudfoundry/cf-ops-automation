@@ -53,11 +53,11 @@ describe 'generating new reference' do
       expect(@stderr_str).to eq('')
     end
 
-    context 'when processing shared pipelines' do
-      let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
+    context 'when processing non shared pipelines' do
+      let(:options) { "-d #{depls_name} --automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
 
       it 'process all pipelines' do
-        expect(@stdout_str).to include(" concourse pipeline templates were processed")
+        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
       end
 
       it 'does not display an error message' do
@@ -66,7 +66,7 @@ describe 'generating new reference' do
     end
   end
 
-  context 'when processing "delete-depls"' do
+  context 'when processing "delete-depls excluding cf-apps pipeline"' do
     let(:depls_name) { 'delete-depls' }
     let(:test_type) { "delete-tests" }
 

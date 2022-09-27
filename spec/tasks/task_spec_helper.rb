@@ -12,14 +12,6 @@ class TaskSpecHelper
     '20210905'
   end
 
-  def self.alpine_image
-    'library/alpine'
-  end
-
-  def self.alpine_image_version
-    '3.13'
-  end
-
   def self.orange_default_image_version
     'daaa098ccf63a8460a8e88897faba9f8c3aeb79b'
   end

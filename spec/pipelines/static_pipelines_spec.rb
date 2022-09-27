@@ -105,9 +105,7 @@ describe 'static concourse pipelines spec' do
   context 'when job image_resources is defined' do
     let(:expected_task_images) do
       [
-       { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_image_version },
        { "repository" => TaskSpecHelper.ruby_image, "tag" => TaskSpecHelper.ruby_slim_image_version },
-       { "repository" => TaskSpecHelper.alpine_image, "tag" => TaskSpecHelper.alpine_image_version },
        { "repository" => TaskSpecHelper.curl_image, "tag" => TaskSpecHelper.curl_image_version },
        { "repository" => TaskSpecHelper.git_image, "tag" => TaskSpecHelper.git_image_version },
        { "repository" => TaskSpecHelper.bosh_cli_v2_image, "tag" => TaskSpecHelper.bosh_cli_v2_image_version },

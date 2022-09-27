@@ -29,6 +29,8 @@ if [ ! -s "$K8S_OUTPUT_DIR"/ytt-interpolated.yml ]; then
   exit 1
 fi
 
-credhub interpolate -f "$K8S_OUTPUT_DIR"/ytt-interpolated.yml > "$K8S_OUTPUT_DIR"/credhub-interpolated.yml
+TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
+
+credhub interpolate -f "$K8S_OUTPUT_DIR"/ytt-interpolated.yml > "$K8S_OUTPUT_DIR"/"credhub-interpolated-${TIMESTAMP}".yml
 
 #conf test: assert syntax level

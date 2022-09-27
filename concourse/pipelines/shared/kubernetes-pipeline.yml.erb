@@ -32,7 +32,7 @@
   concourse_retry = configurer.concourse_retry
   reconciliation_loop_interval = configurer.reconciliation_loop_interval.get # 4m
 
-  current_team = CiDeployment.team(multi_root_ci_deployments, "shared", "shared-k8s-generated")
+  current_team = CiDeployment.team(multi_root_ci_deployments, "shared", "shared-kubernetes-generated")
 %>
 ---
 display:
@@ -387,7 +387,7 @@ jobs:
     <% end %>
   <% end %>
       params:
-        BUILD_PIPELINE_NAME: shared-k8s-generated # TODO
+        BUILD_PIPELINE_NAME: shared-kubernetes-generated # TODO
   - task: fly-into-concourse
     input_mapping: {fly-cmd: trigger-plan}
     output_mapping: {flight-report: concourse-trigger-report}

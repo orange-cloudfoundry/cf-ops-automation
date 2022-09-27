@@ -13,6 +13,8 @@ module Coa
         source:
           repository: olhtbr/metadata-resource
           tag: 2.0.1
+
+
     YAML
   end
 end

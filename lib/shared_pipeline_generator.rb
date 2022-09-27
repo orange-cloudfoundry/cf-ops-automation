@@ -137,8 +137,8 @@ class SharedPipelineGenerator
 
   def check_warnings
     warnings << "### WARNING ### no deployment detected. Please check\n template_dir: #{options.paas_templates_path}\n secrets_dir: #{options.secrets_path}" if ctxt.multi_root_dependencies&.empty?
-    warnings << '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if ctxt.root_deployments.map { |name| ctxt.multi_root_ci_deployments&.empty? || ctxt.multi_root_ci_deployments[name]&.empty?}
-                                                                                                                          .inject { |memo, element| memo && element }
+    warnings << '### WARNING ### no ci deployment detected. Please check a valid ci-deployment-overview.yml exists' if ctxt.root_deployments.map { |name| ctxt.multi_root_ci_deployments&.empty? || ctxt.multi_root_ci_deployments[name]&.empty? }
+                                                                                                                           .inject { |memo, element| memo && element }
     warnings << '### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists' if ctxt.multi_root_cf_apps&.empty?
     warnings << '### WARNING ### no gitsubmodule detected' if ctxt.git_submodules.empty?
   end
