@@ -35,11 +35,12 @@ FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'delete')}/delete-depls-bo
 
 puts "Processing Empty Pipelines"
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/empty-depls-cf-apps-generated.yml", "#{references_dir}/empty-cf-apps.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/empty-depls-k8s-generated.yml", "#{references_dir}/empty-k8s-depls.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/empty-depls-bosh-generated.yml", "#{references_dir}/empty-depls.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/empty-depls-bosh-precompile-generated.yml", "#{references_dir}/empty-bosh-precompile.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-concourse-generated.yml", "#{references_dir}/empty-shared-concourse.yml", verbose: true)
-FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-k8s-generated.yml", "#{references_dir}/empty-shared-k8s.yml", verbose: true)
-FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-control-plane-generated.yml", "#{references_dir}/empty-control-plane-update.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-kubernetes-generated.yml", "#{references_dir}/empty-shared-kubernetes.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'empty')}/shared-control-plane-generated.yml", "#{references_dir}/empty-shared-control-plane.yml", verbose: true)
 
 puts "Processing Simple Pipelines"
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/simple-depls-bosh-generated.yml", "#{references_dir}/simple-depls-bosh-ref.yml", verbose: true)
@@ -48,7 +49,7 @@ FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/simple-depls-k8
 
 puts "Processing Shared"
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-concourse-generated.yml", "#{references_dir}/simple-shared-concourse.yml", verbose: true)
-FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-k8s-generated.yml", "#{references_dir}/simple-shared-k8s.yml", verbose: true)
+FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-kubernetes-generated.yml", "#{references_dir}/simple-shared-kubernetes.yml", verbose: true)
 FileUtils.cp("#{generated_pipeline_dir(pipelines_dir, 'simple')}/shared-control-plane-generated.yml", "#{references_dir}/simple-shared-control-plane.yml", verbose: true)
 
 

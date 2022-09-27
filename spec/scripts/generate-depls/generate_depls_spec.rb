@@ -50,19 +50,34 @@ describe 'generate-depls' do
         TEXT
       end
 
-      it 'display help message' do
-        stdout_stderr_str, status = Open3.capture2e("#{ci_path}/scripts/generate-depls.rb")
-        expect(status.exitstatus).to eq(1)
-        expect(stdout_stderr_str).to eq(expected_usage)
+      it 'generates shared pipelines' do
+        stdout, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb")
+        expect(stdout).to include('3 concourse pipeline templates were processed').and \
+                          include('shared-control-plane-generated.yml seems a valid Yaml file').and \
+                          include('shared-concourse-generated.yml seems a valid Yaml file').and \
+                          include('shared-kubernetes-generated.yml seems a valid Yaml file')
+      end
+
+      it 'no error message expected' do
+        _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb")
+        expect(stderr_str).to eq('')
       end
     end
 
     context 'when depls parameter is missing' do
       let(:options) { "-o #{output_path} -t #{templates_path} -p #{secrets_path}" }
 
-      it 'an error occurs' do
+      it 'generates shared pipelines' do
+        stdout, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+        expect(stdout).to include('3 concourse pipeline templates were processed').and \
+                          include('shared-control-plane-generated.yml seems a valid Yaml file').and \
+                          include('shared-concourse-generated.yml seems a valid Yaml file').and \
+                          include('shared-kubernetes-generated.yml seems a valid Yaml file')
+      end
+
+      it 'no error message expected' do
         _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-        expect(stderr_str).to include('generate-depls: Incomplete/wrong parameter(s):')
+        expect(stderr_str).to eq('')
       end
     end
 
@@ -103,12 +118,20 @@ describe 'generate-depls' do
     end
 
     context 'when templates dir is empty' do
-      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path} -p #{secrets_path}" }
+      let(:options) { "-d #{depls_name} -o #{output_path} -t #{templates_path}xx -p #{secrets_path}" }
 
-      it 'failed because root-deployment.yml is missing' do
+      it 'does not have error' do
         _, stderr_str, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-        expect(stderr_str).to include('root-deployment.yml: file not found')
+        expect(stderr_str).to eq('')
       end
+
+      it 'generate empty pipelines' do
+        stdout, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
+        expect(stdout).to include('4 concourse pipeline templates were processed').and \
+                           include('### WARNING ### no deployment detected. Please check').and \
+                           include('### WARNING ### no cf app deployment detected. Please check a valid enable-cf-app.yml exists').and \
+                           include('### WARNING ### no gitsubmodule detected')
+        end
     end
 
     context 'when only templates dir is initialized' do
@@ -163,7 +186,7 @@ describe 'generate-depls' do
         end
 
         context 'when k8s shared pipeline is checked' do
-          it_behaves_like 'pipeline checker', 'shared-k8s-generated.yml', 'empty-shared-k8s.yml'
+          it_behaves_like 'pipeline checker', 'shared-kubernetes-generated.yml', 'empty-shared-kubernetes.yml'
         end
       end
     end

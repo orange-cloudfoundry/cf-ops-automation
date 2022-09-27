@@ -9,7 +9,9 @@ require 'pipeline_generator'
 require_relative 'test_fixtures'
 
 RSpec::Matchers.define_negated_matcher :not_be, :be
-describe 'UpdatePipelineTemplateProcessing' do
+
+
+describe 'ControlPlanePipelineTemplateProcessing' do
   let(:root_deployment_name) { 'my-root-depls' }
   let(:ops_automation_path) { '.' }
   let(:bosh_cert) { BOSH_CERT_LOCATIONS = { root_deployment_name => 'shared/certificate.pem' }.freeze }
@@ -40,7 +42,22 @@ describe 'UpdatePipelineTemplateProcessing' do
     YAML
     YAML.safe_load ci_deployments_yaml
   end
-
+  let(:expected_groups) do
+    [
+      { "jobs" => ["*"],
+        "name" => "all" },
+      {"jobs"=> ["load-generated-pipelines", "manual-reset-avoid-please", "manual-setup", "on-git-commit", "push-changes", "reset-secrets-pipeline-generation", "save-deployed-pipelines"],
+       "name"=>"control-plane"},
+      {"jobs"=> ["update-pipeline-dummy_root_depls", "update-pipeline-my-root-depls", "update-pipeline-shared"],
+       "name"=>"update"},
+      { "jobs" => ["update-pipeline-dummy_root_depls"],
+        "name" => "dummy_root_depls" },
+      { "jobs" => ["update-pipeline-my-root-depls"],
+        "name" => "my-root-depls" },
+      { "jobs" => ["update-pipeline-shared"],
+        "name" => "shared" }
+    ]
+  end
   let(:groups) { nil }
   let(:expected_meta_resource_type) { Coa::TestFixtures::RESOURCE_TYPES['meta'] }
   let(:expected_slack_notification_resource_type) { Coa::TestFixtures::RESOURCE_TYPES['slack-notification'] }
@@ -48,13 +65,13 @@ describe 'UpdatePipelineTemplateProcessing' do
   let(:update_pipeline_DEPLS_plan) { update_pipeline_DEPLS_jobs.flat_map { |job| job['plan'] } }
   let(:update_pipeline_DEPLS_in_parallel) { update_pipeline_DEPLS_plan.flat_map { |tasks| tasks['in_parallel'] }.compact }
 
-  context 'when processing update-pipeline.yml.erb' do
+  context 'when processing control-plane-pipeline.yml.erb' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
 
     before(:context) do
       @output_dir = Dir.mktmpdir('generated-pipelines')
       @pipelines_output_dir = File.join(@output_dir, 'pipelines')
-      @template_pipeline_name = 'update-pipeline.yml.erb'
+      @template_pipeline_name = 'control-plane-pipeline.yml.erb'
       @pipelines_dir = Dir.mktmpdir('pipeline-templates')
 
       FileUtils.copy("concourse/pipelines/shared/#{@template_pipeline_name}", @pipelines_dir)
@@ -109,6 +126,12 @@ describe 'UpdatePipelineTemplateProcessing' do
         expect(generated_resource).to match(expected_slack_notification) .and not_be(nil)
       end
 
+      it 'generates slack' do
+        expected_x = Coa::TestFixtures::RESOURCE_TYPES['slack-notification']
+        generated_resource = generated_pipeline['resources'].select { |resource| resource['name'] == 'failure-alert' }.first
+        expect(generated_resource).to match(expected_slack_notification) .and not_be(nil)
+      end
+
       it 'generates secrets_DEPLS' do
         generated_resource = generated_pipeline['resources'].select { |resource| resource['name'] == "secrets-limited-for-pipeline" }.first
         expect(generated_resource).to match(expected_secrets_depls).and not_be(nil)
@@ -146,13 +169,12 @@ describe 'UpdatePipelineTemplateProcessing' do
       end
 
       it 'generates expected number of resource_types' do
-        expect(generated_pipeline['resource_types'].length).to eq(2)
+        expect(generated_pipeline['resource_types'].length).to eq(4)
       end
 
       it 'generates groups' do
         current_group = generated_pipeline['groups']
-        expected_group = [{"jobs"=>["*"], "name"=>"all"}, {"jobs"=>["update-pipeline-dummy_root_depls"], "name"=>"dummy_root_depls"}, {"jobs"=>["update-pipeline-my-root-depls"], "name"=>"my-root-depls"}, {"jobs"=>["update-pipeline-shared"], "name"=>"shared"}]
-        expect(current_group).to match(expected_group)
+        expect(current_group).to match(expected_groups)
       end
     end
 
@@ -224,14 +246,14 @@ describe 'UpdatePipelineTemplateProcessing' do
       end
 
       it 'generates expected number of resource_types' do
-        expect(generated_pipeline['resource_types'].length).to eq(2)
+        expect(generated_pipeline['resource_types'].length).to eq(4)
       end
 
       it 'generates groups' do
         current_group = generated_pipeline['groups']
-        expected_group = [{"jobs"=>["*"], "name"=>"all"}, {"jobs"=>["update-pipeline-dummy_root_depls"], "name"=>"dummy_root_depls"}, {"jobs"=>["update-pipeline-my-root-depls"], "name"=>"my-root-depls"}, {"jobs"=>["update-pipeline-shared"], "name"=>"shared"}]
-        expect(current_group).to match(expected_group)
-      end    end
+        expect(current_group).to match(expected_groups)
+      end
+    end
 
     context 'when validating update-pipeline-hello-world-root-depls triggering' do
       let(:secrets_triggering) { update_pipeline_DEPLS_in_parallel.select { |task| task['get']&.start_with?('secrets-') }.flat_map { |task| task['trigger'] } }
@@ -267,6 +289,26 @@ describe 'UpdatePipelineTemplateProcessing' do
 
       it 'defines on_failure at job level' do
         expect(on_failure.uniq.first).to match(expected_on_failure_config)
+      end
+    end
+
+    let(:control_plane_jobs) { generated_pipeline['jobs'] }
+    let(:control_plane_resources) { generated_pipeline['resources'] }
+
+    context 'when checking pipelines definition' do
+      let(:expected_control_plane_jobs) { %w[load-generated-pipelines manual-reset-avoid-please manual-setup on-git-commit push-changes reset-secrets-pipeline-generation save-deployed-pipelines] }
+      let(:expected_update_jobs) { %w[update-pipeline-dummy_root_depls update-pipeline-my-root-depls update-pipeline-shared] }
+      let(:expected_jobs) { (expected_control_plane_jobs + expected_update_jobs).sort }
+
+      it 'has expected jobs' do
+        jobs = control_plane_jobs.flat_map { |item| item['name'] }.sort
+        expect(jobs).to eq(expected_jobs)
+      end
+
+      it 'has expected  resources' do
+        expected_resources = %w[cf-ops-automation concourse-audit-trail concourse-meta concourse-micro concourse-micro-legacy failure-alert paas-templates-full paas-templates-limited paas-templates-scanned paas-templates-versions secrets-generated-pipelines secrets-limited-for-pipeline secrets-writer]
+        resources = control_plane_resources.flat_map { |item| item['name'] }.sort
+        expect(resources).to eq(expected_resources)
       end
     end
   end

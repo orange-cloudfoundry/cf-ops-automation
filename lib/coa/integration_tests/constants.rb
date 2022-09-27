@@ -31,6 +31,19 @@ module Coa
             "save-deployed-pipelines" => {}
           }
         },
+        "shared-concourse-generated" => {
+          "team" => "main",
+          "jobs" => {
+            "deploy-concourse-pipeline-sample-pipeline" => {}
+          }
+        },
+        "shared-kubernetes-generated" => {
+          "team" => "main",
+          "jobs" => {
+            "deploy-k8s-sample-hello-world-root-depls" => {},
+            "execute-deploy-script-hello-world-root-depls" => {}
+          }
+        },
         "hello-world-root-depls-cf-apps-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
@@ -65,17 +78,11 @@ module Coa
             "push-boshreleases" => {}
           }
         },
-        "shared-concourse-generated" => {
-          "team" => "main",
+        "hello-world-root-depls-k8s-generated" => {
+          "team" => "hello-world-root-depls",
           "jobs" => {
-            "deploy-concourse-pipeline-sample-pipeline" => {}
-          }
-        },
-        "shared-k8s-generated" => {
-          "team" => "main",
-          "jobs" => {
-            "deploy-k8s-sample-hello-world-root-depls" => {},
-            "execute-deploy-script-hello-world-root-depls" => {}
+            "deploy-k8s-sample" => {},
+            "execute-deploy-script" => {}
           }
         },
         "hello-world-root-depls-pipeline-sample" => {

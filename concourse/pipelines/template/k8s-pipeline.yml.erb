@@ -213,7 +213,7 @@ jobs:
         CREDHUB_SERVER: ((credhub-server))
         CREDHUB_CLIENT: ((credhub-client))
         CREDHUB_SECRET: "((credhub-secret))"
-        CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+        CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
         IAAS_TYPE: ((iaas-type))
         PROFILES: ((profiles))
         FILE_EXECUTION_FILTER: "deploy*.sh"
@@ -319,7 +319,7 @@ jobs:
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
       CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
       FILE_EXECUTION_FILTER: "pre-deploy*.sh"
@@ -336,7 +336,7 @@ jobs:
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
       CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
   - put: k8s-configs-repository
@@ -359,7 +359,7 @@ jobs:
       CREDHUB_SERVER: ((credhub-server))
       CREDHUB_CLIENT: ((credhub-client))
       CREDHUB_SECRET: "((credhub-secret))"
-      CREDHUB_CA_CERT: credentials-resource/<%= PipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
+      CREDHUB_CA_CERT: credentials-resource/<%= SharedPipelineGenerator::BOSH_CERT_LOCATIONS[root_deployment_name] %>
       IAAS_TYPE: ((iaas-type))
       PROFILES: ((profiles))
       FILE_EXECUTION_FILTER: "post-deploy*.sh"

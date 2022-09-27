@@ -45,6 +45,8 @@ class CiDeployment
   end
 
   def self.teams(overview)
+    return [] if overview.to_s.empty? || overview.size.zero?
+
     ci_deployment_details_per_root_depls = overview.map { |_, ci_deployment_details_for_root_depls| ci_deployment_details_for_root_depls }
     pipelines_per_root_depls = ci_deployment_details_per_root_depls.map { |ci_deployment_details| ci_deployment_details && ci_deployment_details['pipelines'] }
     pipelines_and_pipeline_configs_2_tuple = pipelines_per_root_depls.inject([]) { |array, item| array + item.to_a }
