@@ -283,6 +283,7 @@ jobs:
         - |
           DEST_DIR=$(pwd)/result-dir
           cd all-pipelines/pipelines
+          echo "unpause-pipeline -p ${PIPELINE}"  >> ${DEST_DIR}/flight-plan
           jobs=$(cat $PIPELINE.yml 2>/dev/null|grep -e '[[:space:]]*- name: update-pipeline.*-depls'|cut -d':' -f2|cut -c 2-)
           for j in $jobs;do
             echo "Processing ${j}"
