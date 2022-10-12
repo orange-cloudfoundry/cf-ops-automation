@@ -601,7 +601,7 @@ jobs:
         output_mapping: {updated-git-resource: generated-pipelines}
         file: cf-ops-automation/concourse/tasks/git_append_a_dir_from_generated/task.yml
         params:
-          COMMIT_MESSAGE: "Generated pipelines update for TODO"
+          COMMIT_MESSAGE: "Generated pipelines update for shared"
           OLD_DIR: "coa/pipelines/generated"
       - put: secrets-writer
         attempts: 6

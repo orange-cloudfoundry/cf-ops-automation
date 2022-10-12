@@ -1,6 +1,6 @@
 <%
   require "#{ops_automation_path}/lib/pipeline_helpers"
-  root_deployment_name = "TODO"
+  root_deployment_name = "shared"
   pipeline_options = PipelineHelpers::PipelineConfigurerOptions.new.with_config(config).with_root_deployment(root_deployment_name).build
   configurer = PipelineHelpers::PipelineConfigurer.new(pipeline_options)
 

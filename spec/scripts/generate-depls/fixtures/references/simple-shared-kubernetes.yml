@@ -277,7 +277,7 @@ jobs:
         - |
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-k8s-sample-simple-depls" >> result-dir/flight-plan
       params:
-        BUILD_PIPELINE_NAME: shared-kubernetes-generated # TODO
+        BUILD_PIPELINE_NAME: shared-kubernetes-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: trigger-plan}
     output_mapping: {flight-report: concourse-trigger-report}
