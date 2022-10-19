@@ -110,7 +110,7 @@ describe 'ControlPlanePipelineTemplateProcessing' do
       let(:expected_paas_templates_limited) do
         { "icon" => "home-analytics",
           "name" => "paas-templates-limited",
-          "source" => {"branch"=>"((paas-templates-branch))", "paths"=>["*-depls/", ".gitmodules", "shared-config.yml", "meta-inf.yml"], "skip_ssl_verification"=>true, "uri"=>"((paas-templates-uri))" },
+          "source" => {"branch"=>"((paas-templates-branch))", "paths"=>["*-depls/**", ".gitmodules", "shared-config.yml", "meta-inf.yml"], "skip_ssl_verification"=>true, "uri"=>"((paas-templates-uri))" },
           "type" => "git"
         }
       end
