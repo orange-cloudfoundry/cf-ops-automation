@@ -1,5 +1,25 @@
 # Changelog
 
+## [v6.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.0) (2022-11-14)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.4.0...v6.0.0)
+
+**Implemented enhancements:**
+
+- support multi root deployment pipelines [\#404](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/404)
+- bump ruby to 3.1.2 [\#402](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/402)
+- feature\(easily-identify-precompile-deployments\) [\#400](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/400)
+- feature: externalize control plane audit trail [\#399](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/399)
+
+**Miscellaneous:**
+
+- chore\(ci\): downsize flavor used in test [\#403](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/403)
+- chore\(ci\): bump to concourse 7.8.2 and bosh-cli 6.4.17 [\#401](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/401)
+
+**Merged pull requests:**
+
+- concourse\(pipelines\): polishing unpause mechanism [\#405](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/405)
+
 ## [v5.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.4.0) (2022-06-02)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.3.0...v5.4.0)

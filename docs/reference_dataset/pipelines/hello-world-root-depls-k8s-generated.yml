@@ -295,7 +295,7 @@ jobs:
       ATC_EXTERNAL_URL: ((concourse-hello-world-root-depls-target))
       FLY_USERNAME: ((concourse-hello-world-root-depls-username))
       FLY_PASSWORD: "((concourse-hello-world-root-depls-password))"
-      FLY_TEAM: hello-world-root-depls
+      FLY_TEAM: main
 groups:
 - name: hello-world-root-depls
   jobs:

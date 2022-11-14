@@ -163,11 +163,7 @@ hello-world-root-depls
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### bosh-password
 
@@ -188,51 +184,33 @@ hello-world-root-depls
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
-* hello-world-root-depls-news-generated.yml
 
 ### cf-ops-automation-branch
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### cf-ops-automation-tag-filter
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### cf-ops-automation-uri
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
-
-### concourse-hello-world-root-depls-insecure
-
-* hello-world-root-depls-concourse-generated.yml
 
 ### concourse-hello-world-root-depls-password
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
 
 ### concourse-hello-world-root-depls-target
@@ -240,7 +218,6 @@ hello-world-root-depls
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
 
 ### concourse-hello-world-root-depls-username
@@ -248,7 +225,6 @@ hello-world-root-depls
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
 
 ### credhub-client
@@ -269,10 +245,7 @@ hello-world-root-depls
 ### iaas-type
 
 * hello-world-root-depls-bosh-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### k8s-configs-repository-branch
 
@@ -294,11 +267,7 @@ hello-world-root-depls
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### paas-templates-precompile-branch
 
@@ -309,95 +278,62 @@ hello-world-root-depls
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### profiles
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### secrets-branch
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### secrets-uri
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### slack-channel
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### slack-disable
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### slack-proxy
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### slack-proxy-https-tunnel
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### slack-webhook
 
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-bosh-precompile-generated.yml
 * hello-world-root-depls-cf-apps-generated.yml
-* hello-world-root-depls-concourse-generated.yml
 * hello-world-root-depls-k8s-generated.yml
-* hello-world-root-depls-news-generated.yml
-* hello-world-root-depls-tf-generated.yml
-* hello-world-root-depls-update-generated.yml
 
 ### stemcell-main-name
 
@@ -486,28 +422,6 @@ hello-world-root-depls
 * slack-proxy-https-tunnel
 * slack-webhook
 
-### hello-world-root-depls-concourse-generated.yml
-
-* background-image-url
-* cf-ops-automation-branch
-* cf-ops-automation-tag-filter
-* cf-ops-automation-uri
-* concourse-hello-world-root-depls-insecure
-* concourse-hello-world-root-depls-password
-* concourse-hello-world-root-depls-target
-* concourse-hello-world-root-depls-username
-* iaas-type
-* paas-templates-branch
-* paas-templates-uri
-* profiles
-* secrets-branch
-* secrets-uri
-* slack-channel
-* slack-disable
-* slack-proxy
-* slack-proxy-https-tunnel
-* slack-webhook
-
 ### hello-world-root-depls-k8s-generated.yml
 
 * background-image-url
@@ -525,57 +439,6 @@ hello-world-root-depls
 * k8s-configs-repository-password
 * k8s-configs-repository-uri
 * k8s-configs-repository-username
-* paas-templates-branch
-* paas-templates-uri
-* profiles
-* secrets-branch
-* secrets-uri
-* slack-channel
-* slack-disable
-* slack-proxy
-* slack-proxy-https-tunnel
-* slack-webhook
-
-### hello-world-root-depls-news-generated.yml
-
-* background-image-url
-* bot-github-access-token
-* cf-ops-automation-branch
-* cf-ops-automation-tag-filter
-* cf-ops-automation-uri
-* paas-templates-branch
-* paas-templates-uri
-* slack-channel
-* slack-disable
-* slack-proxy
-* slack-proxy-https-tunnel
-* slack-webhook
-
-### hello-world-root-depls-tf-generated.yml
-
-* background-image-url
-* cf-ops-automation-branch
-* cf-ops-automation-tag-filter
-* cf-ops-automation-uri
-* iaas-type
-* paas-templates-branch
-* paas-templates-uri
-* profiles
-* secrets-branch
-* secrets-uri
-* slack-channel
-* slack-disable
-* slack-proxy
-* slack-proxy-https-tunnel
-* slack-webhook
-
-### hello-world-root-depls-update-generated.yml
-
-* background-image-url
-* cf-ops-automation-branch
-* cf-ops-automation-tag-filter
-* cf-ops-automation-uri
-* iaas-type
 * paas-templates-branch
 * paas-templates-uri
 * profiles

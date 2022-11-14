@@ -398,7 +398,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "nginx-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.21.3"}]}'
+            MANIFEST_CONTENT: '{"name"=>"nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.21.6"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -513,7 +513,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "vault-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.5"}]}'
+            MANIFEST_CONTENT: '{"name"=>"vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.6"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director

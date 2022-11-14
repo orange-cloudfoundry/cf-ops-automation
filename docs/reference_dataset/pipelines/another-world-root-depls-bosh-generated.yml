@@ -75,6 +75,14 @@ resources:
     branch: ((cf-ops-automation-branch))
     tag_filter: ((cf-ops-automation-tag-filter))
     skip_ssl_verification: true
+- name: secrets-another-world-root-depls-trigger
+  icon: source-commit
+  type: git
+  source:
+    uri: ((secrets-uri))
+    paths: ["private-config.yml", "another-world-root-depls", "shared"]
+    branch: ((secrets-branch))
+    skip_ssl_verification: true
 jobs:
 - name: push-boshreleases
   on_failure: *on_failure
