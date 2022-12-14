@@ -174,6 +174,25 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
       @processed_template = subject.process(@pipelines_dir + '/*')
     end
 
+    context 'when precompile is enabled without bosh deployment' do
+      let(:multi_root_dependencies) { {root_deployment_name => {} } }
+      let(:loaded_config) do
+        my_config_yaml = <<~YAML
+          offline-mode:
+            stemcells: true
+          precompile-mode: true
+        YAML
+        YAML.safe_load(my_config_yaml)
+      end
+      let(:expected_jobs) { %W[init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name} upload-stemcell-to-director upload-stemcell-to-s3] }
+
+      it 'generates compile and export job for dependencies describe in disabled deployments' do
+        filtered_generated_jobs = generated_pipeline['jobs']&.flat_map { |job| job['name'] }
+        expect(filtered_generated_jobs).to match_array(expected_jobs)
+      end
+
+    end
+
     context 'when disabled deployments are presents' do
       let(:expected_compiled_exported_deployments) { %W[compile-and-export-bosh compile-and-export-route-registrar-boshrelease compile-and-export-haproxy-boshrelease compile-and-export-cf-routing-release] }
       let(:expected_uploaded_deployments) { %W[upload-compiled-bosh upload-compiled-route-registrar-boshrelease upload-compiled-haproxy-boshrelease upload-compiled-cf-routing-release] }
