@@ -227,6 +227,7 @@ describe TemplateProcessor do
               boshreleases: true
               stemcells: true
               docker-images: false
+            precompile-mode: false
           YAML
           YAML.safe_load(my_config_yaml)
         end

@@ -5,7 +5,7 @@
   disabled_deployments = multi_root_dependencies.select do |root_depl_name, deployment_info|
     deployment_info['status'] == 'disabled'
   end
-
+  precompile_pipeline_enabled = config&.fetch('precompile-mode', true) && true
   precompile_excluded_deployments = {}
   root_deployments.each do |name|
     precompile_excluded_deployments[name] = config&.dig(name,'precompile','excluded-deployments') || []
@@ -94,7 +94,7 @@ resource_types:
     tag: v2.12.0
 
 resources:
-<% unless uniq_releases.empty? %>
+<% if precompile_pipeline_enabled || ! uniq_releases.empty? %>
   - name: failure-alert
     icon: slack
     type: slack-notification
@@ -229,10 +229,10 @@ resources:
 <% end %>
 
 jobs:
-<% if uniq_releases.empty? %>
+<% if uniq_releases.empty? && !precompile_pipeline_enabled %>
   - name: this-is-an-empty-pipeline
 <%else %>
-
+  <% if ! uniq_releases.empty? %>
   - name: push-boshreleases
     <% jobs['Utils'] << 'push-boshreleases' %>
     on_failure: *on_failure
@@ -337,6 +337,7 @@ jobs:
                   else
                     echo "No errors detected"
                   fi
+  <% end %>
   <% if offline_stemcells_enabled %>
   - name: upload-stemcell-to-s3
     <% jobs['Utils'] << 'upload-stemcell-to-s3' %>
@@ -621,7 +622,6 @@ jobs:
     <% end %>
     <% end %>
 
-  <% if filtered_deployments.any? %>
   - name: init-concourse-boshrelease-and-stemcell-for-<%= root_deployment_name %>
     <% jobs["Utils"] << "init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name}" %>
     on_failure: *on_failure
@@ -679,8 +679,6 @@ jobs:
         FLY_USERNAME: ((concourse-<%= root_deployment_name %>-username))
         FLY_PASSWORD: "((concourse-<%= root_deployment_name %>-password))"
         FLY_TEAM: <%= current_team %>
-  <% end %>
-
 
 groups:
   - name: <%= root_deployment_name.downcase %>
