@@ -23,5 +23,148 @@ resource_types:
     repository: cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 resources:
+  - name: failure-alert
+    icon: slack
+    type: slack-notification
+    source:
+      url: ((slack-webhook))
+      proxy: ((slack-proxy))
+      proxy_https_tunnel: ((slack-proxy-https-tunnel))
+      disable: ((slack-disable))
+  - name: secrets-full-writer
+    icon: source-pull
+    type: git
+    source:
+      uri: ((secrets-uri))
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+  - name: paas-templates-another-world-root-depls-limited
+    icon: home-analytics
+    type: git
+    source:
+      uri: ((paas-templates-uri))
+      paths:
+        - ".gitmodules"
+        - "shared-config.yml"
+        - "meta-inf.yml"
+        - "another-world-root-depls/template"
+        - "another-world-root-depls/**/deployment-dependencies*.yml"
+        - "another-world-root-depls/root-deployment.yml"
+      branch: ((paas-templates-precompile-branch))
+      skip_ssl_verification: true
+  - name: cf-ops-automation
+    type: git
+    icon: rocket
+    source:
+      uri: ((cf-ops-automation-uri))
+      branch: ((cf-ops-automation-branch))
+      tag_filter: ((cf-ops-automation-tag-filter))
+      skip_ssl_verification: true
+  - name: ((stemcell-main-name))
+    type: bosh-io-stemcell
+    icon: home-floor-g
+    source:
+      name: ((stemcell-name-prefix))((stemcell-main-name))
+    version: { version: "((stemcell.version))" }
+  - name: secrets-another-world-root-depls-trigger
+    icon: source-commit
+    type: git
+    source:
+      uri: ((secrets-uri))
+      paths: ["private-config.yml", "another-world-root-depls", "shared"]
+      branch: ((secrets-branch))
+      skip_ssl_verification: true
+  - name: paas-templates-another-world-root-depls-versions
+    icon: home-thermometer
+    type: git
+    source:
+      uri: ((paas-templates-uri))
+      paths: ["another-world-root-depls/root-deployment.yml"]
+      branch: ((paas-templates-precompile-branch))
+      skip_ssl_verification: true
 jobs:
-  - name: this-is-an-empty-pipeline
+  - name: upload-stemcell-to-director
+    on_failure: *on_failure
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: ((stemcell-main-name))
+            trigger: true
+            attempts: 2
+          - get: paas-templates-another-world-root-depls-limited
+            params: { submodules: none }
+            trigger: true
+      - task: download-stemcell
+        attempts: 2
+        input_mapping: { templates-resource: paas-templates-another-world-root-depls-limited }
+        output_mapping: { stemcell: ((stemcell-main-name)) }
+        file:  cf-ops-automation/concourse/tasks/download_stemcell/task.yml
+        params:
+          VERSIONS_FILE: templates-resource/another-world-root-depls/root-deployment.yml
+          STEMCELL_PREFIX: ((stemcell-name-prefix))
+          STEMCELL_MAIN_NAME: ((stemcell-main-name))
+          STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
+      - task: upload-to-director
+        attempts: 2
+        input_mapping: { stemcell: ((stemcell-main-name)), config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+  - name: init-concourse-boshrelease-and-stemcell-for-another-world-root-depls
+    on_failure: *on_failure
+    plan:
+    - in_parallel:
+        - get: cf-ops-automation
+          params: { submodules: none}
+          attempts: 2
+          #trigger: true
+        - get: secrets-another-world-root-depls-trigger
+          params: { submodules: none}
+          attempts: 2
+        - get: paas-templates-another-world-root-depls-versions
+          params: { submodules: none}
+          attempts: 2
+          trigger: true
+    - task: generate-another-world-root-depls-flight-plan
+      output_mapping: {result-dir: init-another-world-root-depls-plan}
+      config:
+        platform: linux
+        image_resource:
+          type: registry-image
+          source:
+            repository: orangecloudfoundry/curl-ssl
+            tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
+        outputs:
+          - name: result-dir
+        run:
+          path: sh
+          args:
+          - -ec
+          - |
+            echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
+        params:
+          BUILD_PIPELINE_NAME: another-world-root-depls-bosh-precompile-generated
+    - task: fly-into-concourse
+      input_mapping: {fly-cmd: init-another-world-root-depls-plan}
+      output_mapping: {flight-report: concourse-another-world-root-depls-init-report}
+      file: cf-ops-automation/concourse/tasks/fly_execute_commands.yml
+      params:
+        ATC_EXTERNAL_URL: ((concourse-another-world-root-depls-target))
+        FLY_USERNAME: ((concourse-another-world-root-depls-username))
+        FLY_PASSWORD: "((concourse-another-world-root-depls-password))"
+        FLY_TEAM: another-world-root-depls
+groups:
+  - name: another-world-root-depls
+    jobs:
+      - "*"
+  - name: "utils"
+    jobs:
+      - init-concourse-boshrelease-and-stemcell-for-another-world-root-depls
+      - upload-stemcell-to-director

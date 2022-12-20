@@ -1,6 +1,14 @@
 # Changelog
 
-## [v6.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.0) (2022-11-14)
+## [v6.0.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.2) (2022-12-20)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.0...v6.0.2)
+
+**Fixed bugs:**
+
+- concourse\(bosh-precompile\): ensure stemcell upload [\#406](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/406)
+
+## [v6.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.0) (2022-10-19)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.4.0...v6.0.0)
 

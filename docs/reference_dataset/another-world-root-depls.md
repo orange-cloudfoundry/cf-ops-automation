@@ -68,29 +68,47 @@ another-world-root-depls
 ### bosh-password
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 
 ### bosh-target
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 
 ### bosh-username
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 
 ### cf-ops-automation-branch
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### cf-ops-automation-tag-filter
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### cf-ops-automation-uri
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
+
+### concourse-another-world-root-depls-password
+
+* another-world-root-depls-bosh-precompile-generated.yml
+
+### concourse-another-world-root-depls-target
+
+* another-world-root-depls-bosh-precompile-generated.yml
+
+### concourse-another-world-root-depls-username
+
+* another-world-root-depls-bosh-precompile-generated.yml
 
 ### credhub-client
 
@@ -133,9 +151,14 @@ another-world-root-depls
 * another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
+### paas-templates-precompile-branch
+
+* another-world-root-depls-bosh-precompile-generated.yml
+
 ### paas-templates-uri
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### profiles
@@ -146,11 +169,13 @@ another-world-root-depls
 ### secrets-branch
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### secrets-uri
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### slack-channel
@@ -162,30 +187,36 @@ another-world-root-depls
 ### slack-disable
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### slack-proxy
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### slack-proxy-https-tunnel
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### slack-webhook
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
 ### stemcell-main-name
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 
 ### stemcell-name-prefix
 
 * another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
 
 ## Required pipeline credentials for another-world-root-depls
 
@@ -218,7 +249,26 @@ another-world-root-depls
 ### another-world-root-depls-bosh-precompile-generated.yml
 
 * background-image-url
+* bosh-password
+* bosh-target
+* bosh-username
+* cf-ops-automation-branch
+* cf-ops-automation-tag-filter
+* cf-ops-automation-uri
+* concourse-another-world-root-depls-password
+* concourse-another-world-root-depls-target
+* concourse-another-world-root-depls-username
+* paas-templates-precompile-branch
+* paas-templates-uri
+* secrets-branch
+* secrets-uri
 * slack-channel
+* slack-disable
+* slack-proxy
+* slack-proxy-https-tunnel
+* slack-webhook
+* stemcell-main-name
+* stemcell-name-prefix
 
 ### another-world-root-depls-cf-apps-generated.yml
 
