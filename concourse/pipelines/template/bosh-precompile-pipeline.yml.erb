@@ -1,6 +1,12 @@
 <%
   require "#{ops_automation_path}/lib/pipeline_helpers"
 
+  def extract_repo_and_version(an_hash)
+    return {} if an_hash.to_s.empty?
+
+    an_hash&.select {|key, _| %w[repository version].include?(key) }
+  end
+
   root_deployment_name = depls
   disabled_deployments = multi_root_dependencies.select do |root_depl_name, deployment_info|
     deployment_info['status'] == 'disabled'
@@ -38,12 +44,17 @@
   raise "Inconsistency detected on #{root_deployment_name}: #{releases_inconsistencies[root_deployment_name].to_yaml}" if releases_inconsistencies[root_deployment_name].size >0
 
   uniq_releases_per_root_deployments = Hash.new { |h, k| h[k] = {} }
+  releases_per_root_deployments_reference = releases_per_root_deployments.dup
   releases_per_root_deployments.each do |root_depl, releases_info|
     depends_on = config&.dig(root_depl,'precompile', 'depends-on') || []
     puts "#{root_depl} depends_on: #{depends_on}"
     releases_info.each do |release_name, details|
       already_defined = false
-      depends_on.each { |depend_root_depl| already_defined = already_defined || releases_per_root_deployments&.dig(depend_root_depl, release_name) == details }
+      depends_on.each do |depend_root_depl|
+        details_from_parent = releases_per_root_deployments_reference&.dig(depend_root_depl, release_name)
+        standardized_parent_details = extract_repo_and_version(details_from_parent);
+        already_defined = already_defined || standardized_parent_details == extract_repo_and_version(details)
+      end
       uniq_releases_per_root_deployments[root_depl][release_name] = details unless already_defined
     end
   end
