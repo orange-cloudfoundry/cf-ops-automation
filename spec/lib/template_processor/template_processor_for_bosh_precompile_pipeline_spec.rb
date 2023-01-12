@@ -190,7 +190,6 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         filtered_generated_jobs = generated_pipeline['jobs']&.flat_map { |job| job['name'] }
         expect(filtered_generated_jobs).to match_array(expected_jobs)
       end
-
     end
 
     context 'when disabled deployments are presents' do
@@ -660,6 +659,123 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
     it 'raises an error' do
       expect { template_processing_error }.to raise_error(RuntimeError, /Inconsistency detected on #{root_deployment_name}:.*/)
+    end
+  end
+
+  context 'when a bosh is already precompiled' do
+    subject { TemplateProcessor.new root_deployment_name, config, processor_context }
+
+    let(:root_deployment_name) { 'child-root-depls' }
+    let(:loaded_config) do
+      my_config_yaml = <<~YAML
+          offline-mode:
+            stemcells: true
+          precompile-mode: true
+          #{root_deployment_name}:
+            precompile:
+              depends-on: [parent-root-deployment]
+      YAML
+      YAML.safe_load(my_config_yaml)
+    end
+    let(:processor_context) do
+      { depls: root_deployment_name,
+        root_deployments: [root_deployment_name, 'parent-root-deployment'],
+        bosh_cert: bosh_cert,
+        multi_root_dependencies: multi_root_dependencies,
+        multi_root_ci_deployments: multi_root_ci_deployments,
+        git_submodules: git_submodules,
+        config: loaded_config,
+        ops_automation_path: ops_automation_path }
+    end
+    let(:multi_root_dependencies) do
+      deps_yaml = <<~YAML
+        parent-root-deployment:
+          bui:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              route-registrar-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/route-registrar-boshrelease
+                sha1: xxxddffrpofkldkng654654d8f97g 
+                version: '3'
+              haproxy-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/haproxy-boshrelease
+                version: 8.0.12
+                my_custom_field: 12
+            bosh-deployment:
+              active: true
+            status: enabled
+        #{root_deployment_name}:
+          bosh-bats:
+            status: disabled
+            stemcells:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            bosh-deployment: {}
+            releases:
+              bosh:
+                base_location: https://github.com/
+                repository: cloudfoundry/bosh
+                version: 271.0.0
+          shield-expe:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            bosh-deployment:
+              active: true
+            status: enabled
+          bui:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              route-registrar-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/route-registrar-boshrelease
+                version: '3'
+              haproxy-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/haproxy-boshrelease
+                version: 8.0.12
+            bosh-deployment:
+              active: true
+            status: enabled
+      YAML
+      YAML.safe_load(deps_yaml)
+    end
+    let(:generated_pipeline) do
+      pipeline_template = @processed_template[File.join(@pipelines_dir, @template_pipeline_name)]
+      generated_pipeline_path = File.join(@pipelines_output_dir, pipeline_template)
+      YAML.load_file(generated_pipeline_path, aliases: true)
+    end
+
+    before(:context) do
+      @output_dir = Dir.mktmpdir('generated-pipelines')
+      @pipelines_output_dir = File.join(@output_dir, 'pipelines')
+      @template_pipeline_name = 'bosh-precompile-pipeline.yml.erb'
+      @pipelines_dir = Dir.mktmpdir('pipeline-templates')
+
+      FileUtils.copy("concourse/pipelines/template/#{@template_pipeline_name}", @pipelines_dir)
+    end
+
+    after(:context) do
+      FileUtils.rm_rf(@output_dir)
+      FileUtils.rm_rf(@pipelines_dir)
+    end
+
+    before do
+      @processed_template = subject.process(@pipelines_dir + '/*')
+    end
+
+    let(:expected_jobs) { %W[compile-and-export-bosh compile-and-export-cf-routing-release init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name} push-boshreleases upload-stemcell-to-director upload-stemcell-to-s3] }
+
+    it 'compiles only bosh releases not compiled by parent root deployment' do
+      filtered_generated_jobs = generated_pipeline['jobs']&.flat_map { |job| job['name'] }
+      expect(filtered_generated_jobs).to match_array(expected_jobs)
     end
   end
 end
