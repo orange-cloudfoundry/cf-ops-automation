@@ -55,7 +55,7 @@ fi
 
 PIPELINE_FILE_PATH="${OUTPUT_DIR}/pipelines/${PIPELINE_NAME}-generated.yml"
 if [ ! -e "${PIPELINE_FILE_PATH}" ]; then
-    echo "SKipping ${PIPELINE_FILE_PATH} does not exit"
+    echo "Skipping ${PIPELINE_FILE_PATH} does not exit"
     exit
 fi
 PIPELINE_PUBLIC_NAME="${PREFIX}${PIPELINE_NAME}-generated"
