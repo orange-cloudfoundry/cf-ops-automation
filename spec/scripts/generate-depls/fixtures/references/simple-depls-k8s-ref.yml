@@ -286,7 +286,7 @@ jobs:
         - |
           echo "trigger-job -j $BUILD_PIPELINE_NAME/deploy-k8s-sample" >> result-dir/flight-plan
       params:
-        BUILD_PIPELINE_NAME: simple-depls-bosh-generated
+        BUILD_PIPELINE_NAME: simple-depls-k8s-generated
   - task: fly-into-concourse
     input_mapping: {fly-cmd: trigger-simple-depls-plan}
     output_mapping: {flight-report: concourse-simple-depls-trigger-report}
