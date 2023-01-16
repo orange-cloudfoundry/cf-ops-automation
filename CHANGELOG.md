@@ -1,6 +1,15 @@
 # Changelog
 
-## [v6.0.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.2) (2022-12-20)
+## [v6.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.3) (2023-01-16)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.2...v6.0.3)
+
+**Merged pull requests:**
+
+- pipeline\(precompile\): fix already compile bosh release detection [\#409](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/409)
+- pipeline\(k8s\): fix re-trigger all jobs [\#408](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/408)
+
+## [v6.0.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.2) (2022-12-14)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.0...v6.0.2)
 
