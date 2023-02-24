@@ -337,7 +337,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         YAML.safe_load expected_yaml
       end
       let(:expected_push_stemcell_to_director_tasks) { %w[upload-to-director] }
-      let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases repackage-releases-fallback upload-repackaged-releases upload-to-director check-repackaging-errors] }
+      let(:expected_push_boshreleases_tasks) { %w[reformat-root-deployment-yml missing-s3-boshreleases repackage-releases repackage-releases-fallback upload-repackaged-releases upload-to-director-for-runtime-config check-repackaging-errors] }
 
       it 'generates s3 precompiled resources (ie use precompile bucket)' do
         s3_precompiled_boshreleases = generated_pipeline['resources'].select { |resource| resource['type'] == 's3' && resource['name'].start_with?('compiled-') }
@@ -427,7 +427,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
       let(:expected_push_stemcell_to_director_tasks) { %w[upload-to-director] }
       let(:expected_upload_stemcell_to_s3_tasks) { %w[upload-stemcells] }
-      let(:expected_push_boshreleases_tasks) { %w[repackage-releases repackage-releases-fallback upload-to-director check-repackaging-errors] }
+      let(:expected_push_boshreleases_tasks) { %w[repackage-releases repackage-releases-fallback upload-to-director-for-runtime-config check-repackaging-errors] }
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from path:((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz' }
 
       it 'generates s3 stemcell with pinned version' do

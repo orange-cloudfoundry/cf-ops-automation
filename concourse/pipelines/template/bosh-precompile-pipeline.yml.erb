@@ -301,7 +301,7 @@ jobs:
           ENDPOINT: ((s3-br-endpoint))
           SKIP_SSL_VERIFICATION: ((s3-br-skip-ssl-verification))
       <% end %>
-      - task: upload-to-director
+      - task: upload-to-director-for-runtime-config
         # this is required to manage runtime config bosh release upload
         attempts: <%= concourse_retry[:task] %>
         input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
