@@ -54,13 +54,30 @@
 == ==
   group stemcell online mode with precompile
     note over "precompile-pipeline", "bosh-pipeline": It makes sense only for COA CI, to be able to test precompile pipelines
-    autonumber
-     "bosh-pipeline" -> boshio: download stemcell
-     boshio --> "bosh-pipeline": stemcell.tgz
-     "precompile-pipeline" -> s3: upload stemcell
-     s3 --> "precompile-pipeline": done
-     "precompile-pipeline" -> bosh: upload stemcell
-     bosh --> "precompile-pipeline": done
-    end
+    group "Precompile-pipeline"
+        autonumber
+        group task download stemcell
+             "precompile-pipeline" -> boshio: download stemcell
+             boshio --> "precompile-pipeline": stemcell.tgz
+         end
+         group task download stemcell
+             "precompile-pipeline" -> bosh: upload stemcell if missing
+             bosh --> "precompile-pipeline": done
+         end
+
+     end
+
+    group "Bosh-Pipeline"
+        autonumber
+        group task download stemcell
+             "bosh-pipeline" -> boshio: download stemcell
+             boshio --> "bosh-pipeline": stemcell.tgz
+         end
+         group task download stemcell
+             "bosh-pipeline" -> bosh: upload stemcell if missing
+             bosh --> "bosh-pipeline": done
+         end
+
+     end
 
 @enduml
