@@ -484,6 +484,10 @@ The exact stemcell version (say `3586.25`) is used within a root-deployment as d
 
 See [github issues](https://github.com/orange-cloudfoundry/cf-ops-automation/issues).
 
+## Interns
+
+[Readme.md](docs/Readme.md)
+
 ## Running the Test Suite
 
 Prereqs:

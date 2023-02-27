@@ -1,0 +1,105 @@
+@startuml
+ actor DevOpsTeam as team
+
+ entity Git
+ box COA
+    participant "bosh-pipeline"
+    participant "precompile-pipeline"
+ end box
+
+ entity "Bosh Director" as bosh
+ entity "S3 Server" as s3
+ entity "Bosh IO" as boshio
+
+ team -> Git: update bosh-release
+ note right: bump bosh release version | add new bosh release
+ Git -> "bosh-pipeline": propagate changes
+ note right
+  Going through:
+    **sync-feature-branch** and **shared-control-plane-generated**
+ end note
+
+
+group prepare bosh releases (push-boshreleases step)
+     group when bosh-release offline mode
+         "bosh-pipeline" -> "bosh-pipeline": reformat-root-deployment-yml
+         "precompile-pipeline" -> "precompile-pipeline": reformat-root-deployment-yml
+         "bosh-pipeline" -> s3: missing-s3-boshreleases
+         "precompile-pipeline" -> s3: missing-s3-boshreleases
+     end group
+     "bosh-pipeline" -> "bosh-pipeline": repackage-releases
+     "precompile-pipeline" -> "precompile-pipeline": repackage-releases
+     "bosh-pipeline" -> "bosh-pipeline": repackage-releases-fallback
+     "precompile-pipeline" -> "precompile-pipeline": repackage-releases-fallback
+     group when bosh-release offline mode
+         "bosh-pipeline" -> s3: upload-repackaged-releases
+         "precompile-pipeline" -> s3: upload-repackaged-releases
+     end group
+
+     group when bosh-release offline mode disabled OR precompile disabled
+        "bosh-pipeline" -> bosh: upload-to-director
+     end group
+    "bosh-pipeline" -> "bosh-pipeline": check-repackaging-errors
+    "precompile-pipeline" -> bosh:  upload-to-director-for-runtime-config
+    "precompile-pipeline" -> "precompile-pipeline":  check-repackaging-errors
+end group
+
+    group precompile
+        loop for each bosh-release
+        "precompile-pipeline" -> bosh: deploy standalone release
+        bosh -> "precompile-pipeline": done
+        "precompile-pipeline" -> bosh: export release
+        bosh -> "precompile-pipeline": done
+        end
+
+    end
+
+ group deploy-<my_deployment>
+    note over "bosh-pipeline": does not include stemcell, neither bosh releases
+    loop for each deployment
+        "bosh-pipeline" -> bosh: deploy-<my_deployment> manifest
+        bosh -> "bosh-pipeline": done
+
+         group offline bosh-releases
+            loop for each boshrelease
+                bosh -> s3: download bosh-releases
+                s3 -> bosh: release.tgz
+            end
+
+         end group
+
+    end
+
+  end group
+== ==
+  group online bosh-releases mode with precompile
+    note over "precompile-pipeline", "bosh-pipeline": It makes sense only for COA CI, to be able to test precompile pipelines
+    autonumber
+    group prepare bosh releases (push-boshreleases step)
+     "bosh-pipeline" -> "bosh-pipeline": repackage-releases
+     "precompile-pipeline" -> "precompile-pipeline": repackage-releases
+     "bosh-pipeline" -> "bosh-pipeline": repackage-releases-fallback
+     "precompile-pipeline" -> "precompile-pipeline": repackage-releases-fallback
+
+    "bosh-pipeline" -> bosh: upload-to-director
+    bosh -> "bosh-pipeline": done
+    "bosh-pipeline" -> "bosh-pipeline": check-repackaging-errors
+    "precompile-pipeline" -> bosh:  upload-to-director-for-runtime-config
+    bosh -> "precompile-pipeline": done
+    "precompile-pipeline" -> "precompile-pipeline":  check-repackaging-errors
+    end group
+
+    loop for each bosh-release
+        "precompile-pipeline" -> bosh: deploy standalone release
+        bosh -> "precompile-pipeline": done
+        "precompile-pipeline" -> bosh: export release
+        bosh -> "precompile-pipeline": done
+    end
+
+    loop for each deployment
+        "bosh-pipeline" -> bosh: deploy manifest
+        bosh -> "bosh-pipeline": done
+    end
+  end
+
+@enduml
