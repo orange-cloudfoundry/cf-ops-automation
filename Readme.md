@@ -50,6 +50,7 @@
       * [Stemcell management](#stemcell-management)
 * [COA development](#coa-development)
    * [Status and roadmap](#status-and-roadmap)
+   * [Interns](#interns)
    * [Running the Test Suite](#running-the-test-suite)
    * [Generating pipelines locally and uploading a test version](#generating-pipelines-locally-and-uploading-a-test-version)
    * [Local terraform development](#local-terraform-development)
