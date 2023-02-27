@@ -1,6 +1,14 @@
 # Changelog
 
-## [v6.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.3) (2023-01-16)
+## [v6.0.4](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.4) (2023-02-27)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.3...v6.0.4)
+
+**Merged pull requests:**
+
+- pipeline\(precompile\): fix missing release upload without precompile [\#411](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/411)
+
+## [v6.0.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.3) (2023-01-13)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.2...v6.0.3)
 

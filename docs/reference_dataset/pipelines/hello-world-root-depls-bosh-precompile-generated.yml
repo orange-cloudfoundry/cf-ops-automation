@@ -160,7 +160,7 @@ jobs:
           ROOT_DEPLOYMENT_NAME: hello-world-root-depls
       - task: repackage-releases-fallback
         file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
-      - task: upload-to-director
+      - task: upload-to-director-for-runtime-config
         # this is required to manage runtime config bosh release upload
         attempts: 2
         input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
