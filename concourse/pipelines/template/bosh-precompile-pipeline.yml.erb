@@ -243,7 +243,6 @@ jobs:
 <% if uniq_releases.empty? && !precompile_pipeline_enabled %>
   - name: this-is-an-empty-pipeline
 <%else %>
-  <% if ! uniq_releases.empty? %>
   - name: push-boshreleases
     <% jobs['Utils'] << 'push-boshreleases' %>
     on_failure: *on_failure
@@ -348,7 +347,6 @@ jobs:
                   else
                     echo "No errors detected"
                   fi
-  <% end %>
   <% if offline_stemcells_enabled %>
   - name: upload-stemcell-to-s3
     <% jobs['Utils'] << 'upload-stemcell-to-s3' %>

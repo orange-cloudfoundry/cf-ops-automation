@@ -184,7 +184,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         YAML
         YAML.safe_load(my_config_yaml)
       end
-      let(:expected_jobs) { %W[init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name} upload-stemcell-to-director upload-stemcell-to-s3] }
+      let(:expected_jobs) { %W[init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name} push-boshreleases upload-stemcell-to-director upload-stemcell-to-s3] }
 
       it 'generates compile and export job for dependencies describe in disabled deployments' do
         filtered_generated_jobs = generated_pipeline['jobs']&.flat_map { |job| job['name'] }
