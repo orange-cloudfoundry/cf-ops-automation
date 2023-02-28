@@ -113,4 +113,3 @@ You can implement step definitions for undefined steps with these snippets:
 Given('Hello world generated pipelines from reference_dataset') do
   pending # Write code here that turns the phrase above into concrete actions
 end
-
