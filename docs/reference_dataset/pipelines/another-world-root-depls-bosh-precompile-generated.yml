@@ -83,6 +83,76 @@ resources:
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
 jobs:
+  - name: push-boshreleases
+    on_failure: *on_failure
+    plan:
+      - in_parallel:
+          - get: cf-ops-automation
+            params: { submodules: none }
+            trigger: true
+          - get : secrets-full-writer
+            params: { submodules: none }
+          - get: paas-templates-another-world-root-depls-limited
+            params: { submodules: none }
+            trigger: true
+      - task: repackage-releases
+        input_mapping: { templates-resource: paas-templates-another-world-root-depls-limited, secrets: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/repackage_boshreleases/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_TARGET: ((bosh-target))
+          BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
+          ROOT_DEPLOYMENT_NAME: another-world-root-depls
+      - task: repackage-releases-fallback
+        file:  cf-ops-automation/concourse/tasks/repackage_boshreleases_fallback/task.yml
+      - task: upload-to-director-for-runtime-config
+        # this is required to manage runtime config bosh release upload
+        attempts: 2
+        input_mapping: { releases-to-upload: repackaged-releases-fallback, config-resource: secrets-full-writer }
+        file:  cf-ops-automation/concourse/tasks/bosh_upload_releases/task.yml
+        params:
+          BOSH_CLIENT: ((bosh-username))
+          BOSH_CLIENT_SECRET: ((bosh-password))
+          BOSH_ENVIRONMENT: ((bosh-target))
+          BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
+      - task: check-repackaging-errors
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: orangecloudfoundry/curl-ssl
+              tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
+          inputs:
+            - name: repackaged-releases-fallback
+          run:
+            path: sh
+            args:
+              - -ec
+              - |
+                cd repackaged-releases-fallback
+                if [ -e fallback-fixes.yml ]; then
+                echo "=========================================================="
+                  echo "Dump fallback-fixes"
+                  cat fallback-fixes.yml
+                fi
+                echo "=========================================================="
+                  if [ -e fallback-errors.yml ]; then
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    echo "Dump fallback-errors"
+                    cat fallback-errors.yml
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    exit 1
+                  elif [ -e errors.yml ]; then
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    echo "Dump errors"
+                    cat errors.yml
+                    echo "/!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ /!\ "
+                    exit 1
+                  else
+                    echo "No errors detected"
+                  fi
   - name: upload-stemcell-to-director
     on_failure: *on_failure
     plan:
@@ -167,4 +237,5 @@ groups:
   - name: "utils"
     jobs:
       - init-concourse-boshrelease-and-stemcell-for-another-world-root-depls
+      - push-boshreleases
       - upload-stemcell-to-director

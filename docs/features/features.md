@@ -106,7 +106,7 @@ Feature: Terraform support for root deployment
 
 12 scenarios (10 undefined, 2 passed)
 32 steps (10 skipped, 10 undefined, 12 passed)
-0m3.052s
+0m1.233s
 
 You can implement step definitions for undefined steps with these snippets:
 
