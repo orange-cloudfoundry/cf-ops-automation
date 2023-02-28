@@ -1,5 +1,13 @@
 # Changelog
 
+## [v6.0.5](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.5) (2023-02-28)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.4...v6.0.5)
+
+**Fixed bugs:**
+
+- precompile pipeline manage bosh release defined in runtime config [\#412](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/412)
+
 ## [v6.0.4](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.4) (2023-02-27)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.3...v6.0.4)
