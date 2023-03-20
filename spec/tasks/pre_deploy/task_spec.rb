@@ -8,7 +8,7 @@ describe 'pre_deploy task' do
 
     it 'uses orangecloudfoundry bosh-cli-v2-cf-cli image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('orangecloudfoundry/bosh-cli-v2-cf-cli')
+      expect(docker_image_used).to match('elpaasoci/bosh-cli-v2-cf-cli')
     end
   end
 

@@ -120,8 +120,8 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: orangecloudfoundry/curl-ssl
-            tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
+            repository: elpaasoci/curl-ssl
+            tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
         inputs:
           - name: repackaged-releases-fallback
         run:

@@ -55,7 +55,7 @@ describe 'bosh_update_runtime_config task' do
 
     it 'uses alphagov bosh-cli-v2 image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('orangecloudfoundry/bosh-cli-v2')
+      expect(docker_image_used).to match('elpaasoci/bosh-cli-v2')
     end
   end
 end

@@ -13,15 +13,15 @@ class TaskSpecHelper
   end
 
   def self.orange_default_image_version
-    'daaa098ccf63a8460a8e88897faba9f8c3aeb79b'
+    '4a58b73ed465086e1d381f121072fe6e28d09a7d'
   end
 
   def self.governmentpaas_default_image_version
-    'daaa098ccf63a8460a8e88897faba9f8c3aeb79b'
+    '4a58b73ed465086e1d381f121072fe6e28d09a7d'
   end
 
   def self.spruce_image
-    'orangecloudfoundry/spruce'
+    'elpaasoci/spruce'
   end
 
   def self.spruce_image_version
@@ -29,7 +29,7 @@ class TaskSpecHelper
   end
 
   def self.curl_image
-    'orangecloudfoundry/curl-ssl'
+    'elpaasoci/curl-ssl'
   end
 
   def self.curl_image_version
@@ -37,7 +37,7 @@ class TaskSpecHelper
   end
 
   def self.git_image
-    'orangecloudfoundry/git-ssh'
+    'elpaasoci/git-ssh'
   end
 
   def self.git_image_version
@@ -45,7 +45,7 @@ class TaskSpecHelper
   end
 
   def self.bosh_cf_cli_image
-    'orangecloudfoundry/bosh-cli-v2-cf-cli'
+    'elpaasoci/bosh-cli-v2-cf-cli'
   end
 
   def self.bosh_cf_cli_image_version
@@ -53,7 +53,7 @@ class TaskSpecHelper
   end
 
   def self.bosh_cli_v2_image
-    'orangecloudfoundry/bosh-cli-v2'
+    'elpaasoci/bosh-cli-v2'
   end
 
   def self.bosh_cli_v2_image_version
@@ -61,7 +61,7 @@ class TaskSpecHelper
   end
 
   def self.k8s_tools_image
-    'orangecloudfoundry/k8s-tools'
+    'elpaasoci/k8s-tools'
   end
 
   def self.k8s_tools_image_version
@@ -69,7 +69,7 @@ class TaskSpecHelper
   end
 
   def self.cf_cli_image
-    'orangecloudfoundry/cf-cli'
+    'elpaasoci/cf-cli'
   end
 
   def self.cf_cli_image_version
@@ -77,7 +77,7 @@ class TaskSpecHelper
   end
 
   def self.spruce_image
-    'orangecloudfoundry/spruce'
+    'elpaasoci/spruce'
   end
 
   def self.spruce_image_version
@@ -97,7 +97,7 @@ class TaskSpecHelper
   end
 
   def self.terraform_image
-    'orangecloudfoundry/terraform'
+    'elpaasoci/terraform'
   end
 
   def self.terraform_image_version
@@ -105,7 +105,7 @@ class TaskSpecHelper
   end
 
   def self.pre_deploy_image
-    'orangecloudfoundry/bosh-cli-v2-cf-cli'
+    'elpaasoci/bosh-cli-v2-cf-cli'
   end
 
   def self.pre_deploy_image_version
@@ -113,7 +113,7 @@ class TaskSpecHelper
   end
 
   def self.awscli_image
-    'orangecloudfoundry/awscli'
+    'elpaasoci/awscli'
   end
 
   def self.awscli_image_version

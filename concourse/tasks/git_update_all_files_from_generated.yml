@@ -16,9 +16,9 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    # from https://hub.docker.com/r/orangecloudfoundry/git-ssh/tags
-    repository: orangecloudfoundry/git-ssh
-    tag: daaa098ccf63a8460a8e88897faba9f8c3aeb79b
+    # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
+    repository: elpaasoci/git-ssh
+    tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
 inputs:
   - name: reference-resource
   - name: generated-resource

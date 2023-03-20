@@ -117,13 +117,13 @@ function display_docker_tf_commands() {
     #echo "# Check current version of image into cf-ops-automation/concourse/tasks/terraform_apply_cloudfoundry.yml"
     #echo "TF_DOCKER_TAG=ad445d6b34dffeadb3c2b26a40dd71de73ec0686"
     export TF_DOCKER_TAG=latest
-    #echo "docker pull orangecloudfoundry/terraform:${TF_DOCKER_TAG}"
+    #echo "docker pull elpaasoci/terraform:${TF_DOCKER_TAG}"
 
-    echo "docker run     -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files orangecloudfoundry/terraform:${TF_DOCKER_TAG} terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/"
-    echo "docker run     -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files orangecloudfoundry/terraform:${TF_DOCKER_TAG} terraform plan -input=false ../spec-applied/"
+    echo "docker run     -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files elpaasoci/terraform:${TF_DOCKER_TAG} terraform init -input=false -upgrade -get-plugins=false -plugin-dir=/.terraform/plugins/linux_amd64 ../spec-applied/"
+    echo "docker run     -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files elpaasoci/terraform:${TF_DOCKER_TAG} terraform plan -input=false ../spec-applied/"
     echo "# debug if needed using shell"
-    echo "docker run -it -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files orangecloudfoundry/terraform:${TF_DOCKER_TAG} /bin/ash"
-    echo "docker run     -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files orangecloudfoundry/terraform:${TF_DOCKER_TAG} terraform apply -input=false -auto-approve ../spec-applied/"
+    echo "docker run -it -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files elpaasoci/terraform:${TF_DOCKER_TAG} /bin/ash"
+    echo "docker run     -v ${WORKDIR}/${DEV_ENV}:/mnt/workdir -w /mnt/workdir/generated-files elpaasoci/terraform:${TF_DOCKER_TAG} terraform apply -input=false -auto-approve ../spec-applied/"
 
 }
 
