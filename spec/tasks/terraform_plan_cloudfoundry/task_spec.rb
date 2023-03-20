@@ -2,7 +2,7 @@ require 'yaml'
 require 'tmpdir'
 
 describe 'terraform_plan_cloudfoundry task' do
-  EXPECTED_TERRAFORM_IMAGE_TAG = 'daaa098ccf63a8460a8e88897faba9f8c3aeb79b'.freeze
+  EXPECTED_TERRAFORM_IMAGE_TAG = '4a58b73ed465086e1d381f121072fe6e28d09a7d'.freeze
   EXPECTED_TERRAFORM_VERSION = '0.11.14'.freeze
   EXPECTED_PROVIDER_CLOUDFOUNDRY_VERSION = 'v0.11.2'.freeze
   SKIP_TMP_FILE_CLEANUP = false
@@ -12,7 +12,7 @@ describe 'terraform_plan_cloudfoundry task' do
 
     it 'uses official orange-cloudfoundry/terraform image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('orangecloudfoundry/terraform')
+      expect(docker_image_used).to match('elpaasoci/terraform')
     end
 
     it 'uses a tagged image' do

@@ -10,7 +10,7 @@ describe 'terraform_apply_cloudfoundry task' do
 
     it 'uses official orange-cloudfoundry/terraform image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('orangecloudfoundry/terraform')
+      expect(docker_image_used).to match('elpaasoci/terraform')
     end
 
     it 'uses a tagged image' do
