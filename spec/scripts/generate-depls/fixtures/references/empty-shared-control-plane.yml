@@ -21,8 +21,8 @@ resource_types:
   - name: concourse-pipeline
     type: registry-image
     source:
-      repository: orangecloudfoundry/concourse-pipeline-resource
-      tag: 6.5.0
+      repository: elpaasoci/concourse-pipeline-resource
+      tag: 7.8.2
 resources:
 - name: concourse-audit-trail
   icon: source-pull
