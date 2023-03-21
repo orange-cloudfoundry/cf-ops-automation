@@ -95,8 +95,8 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       - name: concourse-pipeline
         type: registry-image
         source:
-          repository: orangecloudfoundry/concourse-pipeline-resource
-          tag: 6.5.0
+          repository: elpaasoci/concourse-pipeline-resource
+          tag: 7.8.2
     YAML
     YAML.safe_load(resource_types_yaml)
   end
