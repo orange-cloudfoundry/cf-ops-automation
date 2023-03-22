@@ -11,8 +11,8 @@ resource_types:
   - name: git-branch-heads
     type: registry-image
     source:
-      repository: orangecloudfoundry/git-branch-heads-resource
-      tag: 1.1.0
+      repository: elpaasoci/git-branch-heads-resource
+      tag: 2.0.0
 
 resources:
 
@@ -54,6 +54,7 @@ resources:
     uri: ((paas-templates-uri))
     branches: [((paas-templates-reference-branch)), WIP-*,wip-*,feature-*, Feature-*]
     skip_ssl_verification: true
+    changed_only: true
 
 - name: cf-ops-automation
   icon: rocket
