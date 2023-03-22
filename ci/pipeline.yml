@@ -83,7 +83,7 @@ resources:
   icon: docker
   type: docker-image
   source:
-    repository: orangecloudfoundry/cf-ops-automation
+    repository: coabot/cf-ops-automation
     username: ((dockerhub-username))
     password: ((dockerhub-password))
     tag: develop-latest
@@ -92,7 +92,7 @@ resources:
   icon: docker
   type: docker-image
   source:
-    repository: orangecloudfoundry/cf-ops-automation
+    repository: coabot/cf-ops-automation
     username: ((dockerhub-username))
     password: ((dockerhub-password))
 
@@ -484,7 +484,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: orangecloudfoundry/cf-ops-automation
+              repository: coabot/cf-ops-automation
               tag: develop-latest
 
           inputs:
@@ -558,7 +558,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: orangecloudfoundry/cf-ops-automation
+              repository: coabot/cf-ops-automation
               tag: develop-latest
           inputs:
           - name: cf-ops-automation
@@ -606,7 +606,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: orangecloudfoundry/cf-ops-automation
+              repository: coabot/cf-ops-automation
               tag: develop-latest
           inputs:
           - name: cf-ops-automation

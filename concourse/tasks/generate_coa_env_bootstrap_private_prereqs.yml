@@ -16,7 +16,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: orangecloudfoundry/cf-ops-automation
+    repository: coabot/cf-ops-automation
 
 inputs:
 - name: cf-ops-automation

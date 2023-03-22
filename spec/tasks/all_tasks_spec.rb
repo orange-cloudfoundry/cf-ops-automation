@@ -38,7 +38,7 @@ describe 'all tasks' do
         TaskSpecHelper.spruce_image + ':' + TaskSpecHelper.spruce_image_version,
         TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_image_version,
         TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_slim_image_version,
-        "orangecloudfoundry/cf-ops-automation:latest",
+        "coabot/cf-ops-automation:latest",
         TaskSpecHelper.pre_deploy_image + ':' + TaskSpecHelper.pre_deploy_image_version,
         TaskSpecHelper.terraform_image + ':' + TaskSpecHelper.terraform_image_version,
         TaskSpecHelper.k8s_tools_image + ':' + TaskSpecHelper.k8s_tools_image_version,

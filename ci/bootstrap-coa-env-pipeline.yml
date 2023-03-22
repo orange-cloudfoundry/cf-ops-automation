@@ -3,7 +3,7 @@ resources:
 - name: cf-ops-automation-docker-image
   type: docker-image
   source:
-    repository: orangecloudfoundry/cf-ops-automation
+    repository: coabot/cf-ops-automation
     username: ((dockerhub-username))
     password: ((dockerhub-password))
 
