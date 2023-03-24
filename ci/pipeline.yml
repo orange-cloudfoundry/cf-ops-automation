@@ -191,6 +191,7 @@ jobs:
       attempts: 5
       params:
         build: cf-ops-automation-docker-image-source
+        tag_as_latest: true
       get_params: {skip_download: true}
   - name: unit-tests
     on_failure: *on_failure_alert
@@ -686,6 +687,7 @@ jobs:
           build: pr-develop
           tag: pr-develop/.git/resource/pr
           tag_prefix: PR-
+          tag_as_latest: true
         on_failure:
           *failed-pr
       - put: pr-develop
