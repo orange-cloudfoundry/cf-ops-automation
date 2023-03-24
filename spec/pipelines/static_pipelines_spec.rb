@@ -86,7 +86,8 @@ describe 'static concourse pipelines spec' do
     end
 
     it 'uses an existing image on docker hub' do
-      docker_images_from_resource_type.each do |image, files|
+      failed_images = []
+      docker_images_from_resource_type.each do |image, resource_name|
         puts "processing image #{image}"
         parsed_image = image.split(':')
         docker_image = parsed_image[0]
@@ -96,9 +97,10 @@ describe 'static concourse pipelines spec' do
           manifest = docker_registry.manifest(docker_image, docker_image_tag)
           expect(manifest).not_to be_empty
         rescue DockerRegistry2::NotFound => not_found
-          raise DockerRegistry2::NotFound, " #{image} used by #{files.to_s}"
+          failed_images << "#{docker_image}:#{docker_image_tag} (usage name #{resource_name.to_s})"
         end
       end
+      raise DockerRegistry2::NotFound, "Images not found: #{failed_images}" unless failed_images.empty?
     end
   end
 
