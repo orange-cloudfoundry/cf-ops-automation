@@ -12,7 +12,7 @@ resource_types:
     type: registry-image
     source:
       repository: elpaasoci/git-branch-heads-resource
-      tag: 2.0.0
+      tag: 2.0.1
 
 resources:
 

@@ -12,7 +12,7 @@ resource_types:
     type: registry-image
     source:
       repository: elpaasoci/git-branch-heads-resource
-      tag: 2.0.0
+      tag: 2.0.1
 
 resources:
 
@@ -54,7 +54,7 @@ resources:
     uri: ((paas-templates-uri))
     branches: [((paas-templates-reference-branch)), WIP-*,wip-*,feature-*, Feature-*]
     skip_ssl_verification: true
-    changed_only: true
+    changed_only: false
 
 - name: cf-ops-automation
   icon: rocket
