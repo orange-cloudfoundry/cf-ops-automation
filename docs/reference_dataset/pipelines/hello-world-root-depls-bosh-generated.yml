@@ -194,7 +194,7 @@ jobs:
           type: registry-image
           source:
             repository: elpaasoci/curl-ssl
-            tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+            tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
         inputs:
           - name: repackaged-releases-fallback
         run:
@@ -590,7 +590,7 @@ jobs:
         type: registry-image
         source:
           repository: elpaasoci/curl-ssl
-          tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
       inputs:
         - name: final-release-manifest
         - name: template-resource
@@ -752,7 +752,7 @@ jobs:
         type: registry-image
         source:
           repository: elpaasoci/curl-ssl
-          tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
       outputs:
         - name: result-dir
       run:
@@ -795,7 +795,7 @@ jobs:
         type: registry-image
         source:
           repository: elpaasoci/curl-ssl
-          tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
       outputs:
         - name: result-dir
       run:
