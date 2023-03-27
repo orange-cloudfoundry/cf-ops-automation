@@ -317,7 +317,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/curl-ssl
-              tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+              tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
           inputs:
             - name: repackaged-releases-fallback
           run:
@@ -451,7 +451,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+              tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
           inputs:
             - name: stemcell
           outputs:
@@ -482,7 +482,7 @@ jobs:
               type: registry-image
               source:
                 repository: elpaasoci/bosh-cli-v2
-                tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+                tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -516,7 +516,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+              tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
           inputs:
             - name: stemcell
             - name: secrets
@@ -551,7 +551,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+              tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
           inputs:
             - name: release
             - name: stemcell
@@ -612,7 +612,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+              tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
           inputs:
             - name: compiled-release
             - name: secrets
@@ -655,7 +655,7 @@ jobs:
           type: registry-image
           source:
             repository: elpaasoci/curl-ssl
-            tag: 4a58b73ed465086e1d381f121072fe6e28d09a7d
+            tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
         outputs:
           - name: result-dir
         run:

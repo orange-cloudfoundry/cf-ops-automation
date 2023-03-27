@@ -13,11 +13,11 @@ class TaskSpecHelper
   end
 
   def self.orange_default_image_version
-    '4a58b73ed465086e1d381f121072fe6e28d09a7d'
+    'e3520d05ad3ff8564810ba75f148d9426a7ebe8b'
   end
 
   def self.governmentpaas_default_image_version
-    '4a58b73ed465086e1d381f121072fe6e28d09a7d'
+    'e3520d05ad3ff8564810ba75f148d9426a7ebe8b'
   end
 
   def self.spruce_image
