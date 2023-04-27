@@ -1,8 +1,8 @@
 ---
-# When offline-mode is enabled, bytes are retrieved from an S3 compliant location, otherwise download from bosh-io
+# If offline mode is enabled, bytes are fetched from an S3-compatible location, otherwise they are downloaded from bosh-io.
 offline-mode:
-   boshreleases: false # Choose where boshreleases are downloaded from. Default: false
-   stemcells: false # Choose where stemcells are downloaded from. Default: true
+   boshreleases: false # Enable or disable boshreleases offline mode, thus its download location. Default: false (disabled)
+   stemcells: false # Enable or disable stemcells offline mode, thus its download location. Default: true (enabled)
 
 lock-releases: false # Default: false. See https://bosh.io/docs/locking-compiled-releases/
 # Shared pipelines configuration
@@ -59,4 +59,6 @@ default:
 #    parallel_execution_limit: 10 # Default: -1, ie unlimited
 #    serial_group_naming_strategy: SerialGroupMd5NamingStrategy #Default: SerialGroupRoundRobinNamingStrategy
 #  precompile:
-#    excluded_deployments: [] # Default: [] # List deployments to exclude from precompile. As precompile does not use secrets repository to determine enabled deployments, it might be convenient to exclude a deployment not enabled in secrets.
+#    excluded_deployments: [] # Default: [] # List of deployments to exclude from precompile. Since precompile does not use secrets repository to determine enabled deployments, it may be useful to exclude a deployment that is not enabled in secrets.
+#    disabled_compiled_download_url_deployments: [] # Default: [] - List of deployments to exclude from bosh manifest precompile patching
+#    disabled_compiled_download_url_deployments_prefix: [] # Default: [] - List of deployments prefix to exclude from bosh manifest precompile patching
