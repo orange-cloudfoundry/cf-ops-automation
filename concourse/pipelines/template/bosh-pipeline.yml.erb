@@ -10,7 +10,6 @@
     terraform_config_path = all_ci_deployments.dig(root_deployment_name, PipelineHelpers::TERRAFORM_CONFIG_DIRNAME_KEY, 'state_file_path')
     terraform_config_path_value = ", \"#{terraform_config_path}\""
   end
-
   disabled_deployments = all_dependencies.select do |_, deployment_info|
     deployment_info['status'] == 'disabled'
   end
@@ -32,14 +31,9 @@
   offline_boshreleases_enabled = config&.dig('offline-mode', 'boshreleases') && true
   lock_releases_enabled = config&.fetch('lock-releases', false) && true
   precompile_pipeline_enabled = config&.fetch('precompile-mode', true) && true
-  precompile_excluded_deployments = config&.dig(root_deployment_name,'precompile','excluded-deployments') || []
 
-  download_server_url = if offline_boshreleases_enabled
-                          # we expect s3-endpoint to end with '/'
-                          "((s3-#{precompile_pipeline_enabled ? "compiled-release" : "br" }-endpoint))((s3-#{ precompile_pipeline_enabled ? "compiled-release" : "br" }-bucket))"
-                        else
-                          "https://bosh.io/d/github.com/"
-                        end
+  disabled_compiled_download_url_deployments = config&.dig(root_deployment_name,'precompile','disabled_compiled_download_url_deployments') || []
+  disabled_compiled_download_url_deployments_prefix = config&.dig(root_deployment_name,'precompile','disabled_compiled_download_url_deployments_prefix') || []
 
   jobs = Hash.new {|h,k| h[k]=[]}
 
@@ -899,9 +893,19 @@ jobs:
       VERSIONS_FILE:  templates-resource/<%= root_deployment_name %>/root-deployment.yml
       MANIFEST_YAML_FILE: manifest-dir/interpolated-<%= name %>.yml
       DEPLOYMENT_NAME: <%= name %>
+      <%
+        deployment_precompile_enabled = precompile_pipeline_enabled && !disabled_compiled_download_url_deployments.include?(name)
+        disabled_compiled_download_url_deployments_prefix.each { |prefix | deployment_precompile_enabled = deployment_precompile_enabled && !name.start_with?(prefix) }
+        download_server_url = if offline_boshreleases_enabled
+                          # we expect s3-endpoint to end with '/'
+                          "((s3-#{deployment_precompile_enabled ? "compiled-release" : "br" }-endpoint))((s3-#{ deployment_precompile_enabled ? "compiled-release" : "br" }-bucket))"
+                        else
+                          "https://bosh.io/d/github.com/"
+                        end
+       %>
       DOWNLOAD_SERVER_URL: <%= download_server_url %>
       OFFLINE_MODE_ENABLED: <%= offline_boshreleases_enabled %>
-      PRECOMPILE_MODE_ENABLED: <%= precompile_pipeline_enabled %>
+      PRECOMPILE_MODE_ENABLED: <%= deployment_precompile_enabled %>
       LOCK_RELEASES: <%= lock_releases_enabled %>
   - put: <%= name %>-deployment
     attempts: <%= concourse_retry[:bosh_push] %>
