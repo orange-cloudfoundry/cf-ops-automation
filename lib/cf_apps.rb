@@ -1,8 +1,10 @@
 require 'yaml'
+require_relative 'coa_run_logger'
 
 class CfApps
   attr_reader :base_path, :root_deployment_name
 
+  include CoaRunLogger
   def initialize(path, root_deployment_name)
     @base_path = path
     @root_deployment_name = root_deployment_name
@@ -10,13 +12,13 @@ class CfApps
 
   def overview
     cf_apps = {}
-    puts "Path CF App: #{base_path}"
+    logger.info "Path CF App: #{base_path}"
 
     Dir[base_path].select { |file| File.directory? file }.each do |base_subdir|
       collect_cf_apps_details(base_subdir, cf_apps)
     end
 
-    puts "cf_apps: \n#{YAML.dump(cf_apps)}"
+    logger.debug "cf_apps: \n#{YAML.dump(cf_apps)}"
     cf_apps
   end
 
@@ -28,7 +30,7 @@ class CfApps
 
   def collect_cf_apps_details(base_subdir, cf_apps)
     subdir_name = File.basename(base_subdir)
-    puts "Processing CF App: #{subdir_name}"
+    logger.info "Processing CF App: #{subdir_name}"
 
     self.class.enable_cf_app_files(base_subdir).each do |enable_cf_app_file|
       load_cf_apps_details_from_file(cf_apps, enable_cf_app_file, base_subdir)
@@ -38,7 +40,7 @@ class CfApps
   end
 
   def load_cf_apps_details_from_file(cf_apps, file, subdir)
-    puts "Cf App detected: #{subdir} - #{file}"
+    logger.info "Cf App detected: #{subdir} - #{file}"
     dir = File.dirname(file)
     cf_apps_description = YAML.load_file(file, aliases: true)
 
@@ -48,7 +50,7 @@ class CfApps
   end
 
   def load_cf_app_details(cf_app_name, cf_app_details, file, dir, cf_apps)
-    puts "processing cf-app: #{cf_app_name} from #{file}"
+    logger.debug "processing cf-app: #{cf_app_name} from #{file}"
     raise "cannot process #{file}, an application named #{cf_app_name} already exists" if cf_apps.key?(cf_app_name)
 
     #   raise "#{dependency_file} - Invalid deployment: expected <#{dirname}> - Found <#{deployment_name}>" if deployment_name != dirname

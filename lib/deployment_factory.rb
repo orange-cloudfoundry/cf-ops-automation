@@ -1,9 +1,11 @@
 require_relative 'deployment'
 require_relative 'config'
+require_relative 'coa_run_logger'
 
 class DeploymentFactory
   attr_reader :version_reference, :root_deployment_name, :config
 
+  include CoaRunLogger
   def initialize(root_deployment_name, version_reference = {}, config = Config.new)
     @version_reference = {}
     @version_reference = version_reference unless version_reference.nil?
@@ -28,7 +30,7 @@ class DeploymentFactory
 
   def load_file(filename = '')
     validate_file(filename)
-    puts "DeploymentFactory - processing #{filename}"
+    logger.info "DeploymentFactory - processing #{filename}"
     deployment_name = File.dirname(filename)&.split(File::SEPARATOR)&.last
     yaml_file = YAML.load_file(filename, aliases: true) || {}
     load(deployment_name, yaml_file)
@@ -55,8 +57,8 @@ class DeploymentFactory
   def load_and_merge(deployment_dependencies_basename, deployment_dependencies_loaded, suffix)
     iaas_filename = "#{deployment_dependencies_basename}-#{suffix}.yml"
     iaas_loaded = File.exist?(iaas_filename) ? load_file(iaas_filename) : [Deployment.new('empty-deployment')]
-    puts "#{iaas_filename} content: #{iaas_loaded}"
-    puts "deployment_dependencies_loaded content: #{deployment_dependencies_loaded}"
+    logger.info "#{iaas_filename} content: #{iaas_loaded}"
+    logger.debug "deployment_dependencies_loaded content: #{deployment_dependencies_loaded}"
     merge(deployment_dependencies_loaded.first, iaas_loaded.first)
   end
 

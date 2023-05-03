@@ -1,10 +1,12 @@
 require 'yaml'
 require_relative 'active_support_copy_deep_merge'
+require_relative 'coa_run_logger'
 
 # This class add information defined in root_deployment_versions (from root-deployment.yml) to root deployment overview (from deployment-dependencies*.yml)
 class RootDeploymentOverviewEnhancer
   attr_reader :root_deployment_name, :root_deployment_overview, :root_deployment_versions
 
+  include CoaRunLogger
   def initialize(root_deployment_name, root_deployment_overview = {}, root_deployment_versions = {})
     @root_deployment_name = root_deployment_name
     @root_deployment_overview = root_deployment_overview
@@ -23,7 +25,7 @@ class RootDeploymentOverviewEnhancer
       update_releases(deployment_info)
     end
 
-    puts "Enhanced root deployment:\n #{overview.to_yaml}"
+    logger.debug "Enhanced root deployment:\n #{overview.to_yaml}"
     overview
   end
 

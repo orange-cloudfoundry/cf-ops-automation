@@ -1,8 +1,10 @@
 require 'yaml'
+require_relative 'coa_run_logger'
 
 class RootDeploymentVersion
   attr_reader :root_deployment_name, :versions
 
+  include CoaRunLogger
   ROOT_DEPLOYMENT_NAME = 'name'.freeze
   DEPRECATED_DEPLOYMENT_NAME = 'deployment-name'.freeze
   STEMCELL = 'stemcell'.freeze
@@ -13,7 +15,7 @@ class RootDeploymentVersion
   def initialize(root_deployment_name, versions)
     @root_deployment_name = root_deployment_name
     @versions = versions
-    puts '*' * 10 + "\nRootDeploymentVersion:\n#{versions.to_yaml}"
+    logger.info '*' * 10 + "\nRootDeploymentVersion:\n#{versions.to_yaml}"
     validate
   end
 
