@@ -638,6 +638,7 @@ jobs:
         params:
           IAAS_TYPE: ((iaas-type))
           PROFILES: ((profiles))
+          DEBUG: false
       - task: copy-and-format-pipelines
         config:
           platform: linux

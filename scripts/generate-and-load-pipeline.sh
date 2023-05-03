@@ -11,6 +11,7 @@ PAAS_TEMPLATES=${PAAS_TEMPLATES:-$(realpath ${COA_DIR}/../paas-templates)}
 OUTPUT_DIR=${OUTPUT_DIR:-$(realpath ${COA_DIR}/bootstrap-generated)}
 PIPELINE_NAME=${PIPELINE_NAME:-${DEPLS}-bosh}
 TEAM=${TEAM:-${DEPLS}}
+DEBUG=${DEBUG:-false}
 
 IAAS_TYPE_OPTION=""
 if [ -n "${IAAS_TYPE}" ]; then
@@ -27,11 +28,19 @@ if [ -n "${PIPELINE_FILTERS}" ]; then
   PIPELINE_FILTERS_OPTION="-i ${PIPELINE_FILTERS}"
 fi
 
+DEBUG_OPTIONS="--no-dump"
+if [ "${DEBUG}" = "true" ]
+then
+   echo "INFO: Enabling debug options: dump pipelines"
+   DEBUG_OPTIONS="--dump"
+else
+    echo "INFO: debug mode disabled"
+fi
 
 
 FLY_CMD=${FLY_CMD:=fly}
 FLY_TARGET=${FLY_TARGET:=int}
-${CURRENT_SCRIPT_DIR}/generate-depls.rb --depls "${DEPLS}" -p "${SECRETS}" -t "${PAAS_TEMPLATES}" -a "${COA_DIR}" -o "${OUTPUT_DIR}" ${IAAS_TYPE_OPTION} ${PROFILES_OPTION} --no-dump ${PIPELINE_FILTERS_OPTION}
+${CURRENT_SCRIPT_DIR}/generate-depls.rb --depls "${DEPLS}" -p "${SECRETS}" -t "${PAAS_TEMPLATES}" -a "${COA_DIR}" -o "${OUTPUT_DIR}" ${DEBUG_OPTIONS} ${IAAS_TYPE_OPTION} ${PROFILES_OPTION} --no-dump ${PIPELINE_FILTERS_OPTION}
 
 echo "Removing empty pipelines"
 set +e

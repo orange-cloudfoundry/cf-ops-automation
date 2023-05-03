@@ -14,6 +14,16 @@
 set -C
 set -o pipefail # error on first command failure when using pipe
 
+DEBUG_OPTIONS="--no-dump"
+if [ "${DEBUG}" = "true" ]
+then
+   echo "INFO: Enabling debug options: dump pipelines"
+   DEBUG_OPTIONS="--dump"
+else
+    echo "INFO: debug mode disabled"
+fi
+
+
 if [ -n "${PROFILES}" ]
 then
    echo "Profiles detected: ${PROFILES}"
@@ -53,7 +63,7 @@ cp -r templates/. result-dir
 cp -r scripts-resource/. result-dir
 cp -rf secrets/. result-dir
 cd result-dir
-./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse --iaas "${IAAS_TYPE}" ${PROFILES_OPTION} ${PIPELINES_RESTRICTIONS} > >(tee generate-depls.log) 2> >(tee -a error.log >&2) # tee generate-depls.log
+./scripts/generate-depls.rb --depls "${ROOT_DEPLOYMENT}" -t ../templates -p . -o concourse ${DEBUG_OPTIONS} --iaas "${IAAS_TYPE}" ${PROFILES_OPTION} ${PIPELINES_RESTRICTIONS} > >(tee generate-depls.log) 2> >(tee -a error.log >&2) # tee generate-depls.log
 if [ -s 'error.log' ]; then
     cat error.log
     exit 1

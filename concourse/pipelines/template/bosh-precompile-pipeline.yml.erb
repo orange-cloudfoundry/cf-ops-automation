@@ -47,7 +47,6 @@
   releases_per_root_deployments_reference = releases_per_root_deployments.dup
   releases_per_root_deployments.each do |root_depl, releases_info|
     depends_on = config&.dig(root_depl,'precompile', 'depends-on') || []
-    puts "#{root_depl} depends_on: #{depends_on}"
     releases_info.each do |release_name, details|
       already_defined = false
       depends_on.each do |depend_root_depl|

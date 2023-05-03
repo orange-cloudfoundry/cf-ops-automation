@@ -2,11 +2,19 @@ shared_examples 'a ConfigGetter' do |expected_key, intermediate_key = Config::CO
   let(:root_deployment_name) { 'root_deployment_sample_name' }
   let(:config_getter_subclass) { described_class.new(config, root_deployment_name) }
 
+  def config_builder(root_deployment_name, middle_key, final)
+    if middle_key.to_s.empty?
+      { root_deployment_name => final }
+    else
+      { root_deployment_name => { middle_key => final }}
+    end
+  end
+
   describe '.extract' do
     let(:extracted_value) { config_getter_subclass.extract(root_deployment_name) }
 
     context 'when config contains expected key' do
-      let(:config) { { root_deployment_name => { intermediate_key => { expected_key => expected_grabbed_value } } } }
+      let(:config) { config_builder(root_deployment_name, intermediate_key, {expected_key => expected_grabbed_value} ) }
       let(:expected_grabbed_value) { 7 }
 
       it 'returns value found' do
@@ -15,7 +23,7 @@ shared_examples 'a ConfigGetter' do |expected_key, intermediate_key = Config::CO
     end
 
     context "when #{expected_key} key is missing" do
-      let(:config) { { root_deployment_name => { intermediate_key => { 'xxx' => 5 } } } }
+      let(:config) { config_builder(root_deployment_name, intermediate_key,{ 'xxx' => 5 }) }
 
       it 'returns nil' do
         expect(extracted_value).to be_nil
@@ -43,8 +51,8 @@ shared_examples 'a ConfigGetter' do |expected_key, intermediate_key = Config::CO
     let(:expected_root_deployment_overriden_value) { 'my_rdo_value' }
     let(:expected_default_overriden_value) { 'my_default_value' }
     let(:expected_undefined_value) { config_getter_subclass.default_value }
-    let(:root_deployment_config_override) { { root_deployment_name => { intermediate_key => { expected_key => expected_root_deployment_overriden_value } } } }
-    let(:default_config_override) { { Config::CONFIG_DEFAULT_KEY => { intermediate_key => { expected_key => expected_default_overriden_value } } } }
+    let(:root_deployment_config_override) { config_builder( root_deployment_name, intermediate_key, { expected_key => expected_root_deployment_overriden_value }) }
+    let(:default_config_override) { config_builder(Config::CONFIG_DEFAULT_KEY, intermediate_key, { expected_key => expected_default_overriden_value }) }
     let(:retrieved_value) { config_getter_subclass.get }
     let(:is_overriden) { config_getter_subclass.overridden? }
 

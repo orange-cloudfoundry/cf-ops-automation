@@ -27,3 +27,4 @@ params:
   PIPELINE_TYPE:
   PROFILES:
   PROFILES_AUTOSORT: true
+  DEBUG: false

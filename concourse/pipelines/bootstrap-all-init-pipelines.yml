@@ -255,6 +255,7 @@ jobs:
     params:
       IAAS_TYPE: ((iaas-type))
       PIPELINE_TYPE: control-plane
+      DEBUG: true
   - task: set-control-plane
     input_mapping: {scripts-resource: cf-ops-automation,templates-resource: paas-templates-full,secrets-resource: secrets-full, pipelines-resource: all-pipelines}
     file: cf-ops-automation/concourse/tasks/bootstrap_shared_pipelines.yml
