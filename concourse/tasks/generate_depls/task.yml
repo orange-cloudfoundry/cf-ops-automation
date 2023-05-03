@@ -30,3 +30,4 @@ params:
   EXCLUDE_PIPELINES:
   PROFILES:
   PROFILES_AUTOSORT: true
+  DEBUG: false

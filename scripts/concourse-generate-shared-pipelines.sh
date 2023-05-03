@@ -7,12 +7,14 @@ DEBUG=${DEBUG:=false}
 usage(){
     echo "$0" 1>&2
     echo -e "No parameter supported. Use environment variables:" 1>&2
+    echo -e "\t DEBUG: [true|false] display generated pipelines. DEFAULT: false " 1>&2
     echo -e "\t IAAS_TYPE: iaas to target. NO DEFAULT VALUE" 1>&2
+    echo -e "\t OUTPUT_DIR: pipeline generation directory. DEFAULT: [./bootstrap-generated] " 1>&2
+    echo -e "\t PIPELINE_TYPE: only generate this pipeline. DEFAULT: ALL_PIPELINES " 1>&2
     echo -e "\t PROFILES: profiles to apply. NO DEFAULT VALUE" 1>&2
     echo -e "\t SECRETS: path to secrets directory. DEFAULT: $SECRETS " 1>&2
     echo -e "\t TEMPLATES: path to paas-templates directory. DEFAULT: $TEMPLATES " 1>&2
-    echo -e "\t OUTPUT_DIR: pipeline generation directory. DEFAULT: [./bootstrap-generated] " 1>&2
-    echo -e "\t PIPELINE_TYPE: only generate this pipeline. DEFAULT: ALL_PIPELINES " 1>&2
+
     exit 1
 }
 
@@ -27,6 +29,15 @@ then
     SCRIPT_DIR=..
 fi
 ROOT_DIR=${CURRENT_SCRIPT_DIR%scripts}
+
+DEBUG_OPTIONS="--no-dump"
+if [ "${DEBUG}" = "true" ]
+then
+   echo "INFO: Enabling debug options: dump pipelines"
+   DEBUG_OPTIONS="--dump"
+else
+    echo "INFO: debug mode disabled"
+fi
 
 set +e
 SECRET_DIR=$(readlink -e ${SECRETS})
@@ -61,6 +72,6 @@ else
 fi
 
 echo "Generating shared pipelines using secrets in $SECRET_DIR to ${OUTPUT_DIR}/pipelines for ${IAAS_TYPE} (Iaas Type), with profiles: [${PROFILES}]"
-"${CURRENT_SCRIPT_DIR}/generate-depls.rb" -p "${SECRET_DIR}" -o "${OUTPUT_DIR}" -t "${TEMPLATES}" --iaas "${IAAS_TYPE}" ${PROFILES_AUTOSORT_OPTION} --profiles "${PROFILES}" --no-dump ${PIPELINES_RESTRICTION}
+"${CURRENT_SCRIPT_DIR}/generate-depls.rb" -p "${SECRET_DIR}" -o "${OUTPUT_DIR}" -t "${TEMPLATES}" ${DEBUG_OPTIONS} --iaas "${IAAS_TYPE}" ${PROFILES_AUTOSORT_OPTION} --profiles "${PROFILES}" --no-dump ${PIPELINES_RESTRICTION}
 echo "Shared pipelines generated into ${OUTPUT_DIR}/pipelines"
 

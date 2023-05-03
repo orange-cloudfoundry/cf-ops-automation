@@ -10,6 +10,7 @@
   concourse_retry = configurer.concourse_retry
   jobs = Hash.new {|h,k| h[k]=[]}
   control_plane_jobs = []
+  coa_debug_mode = configurer.coa_debug_mode.get
 %>
 ---
 display:
@@ -308,6 +309,7 @@ jobs:
         params:
           IAAS_TYPE: ((iaas-type))
           PROFILES: ((profiles))
+          DEBUG: <%= coa_debug_mode %>
       - task: copy-and-format-pipelines
         config:
           platform: linux
