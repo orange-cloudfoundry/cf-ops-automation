@@ -108,8 +108,8 @@ describe 'BoshPipelineTemplateProcessing' do
     [
       { 'name' => 'my-root-depls',
         'jobs' => [ '*' ]},
-      { 'name' => 'deploy-b', 'jobs' => ['deploy-bui'] },
-      { 'name' => 'deploy-s', 'jobs' => ['deploy-shield-expe', 'run-errand-shield-expe-automated-smoke-tests', 'run-errand-shield-expe-import', 'run-manual-errand-shield-expe-manual-import', 'run-manual-errand-shield-expe-my-smoke-tests' ] },
+      { 'name' => 'deploy-b', 'jobs' => ['deploy-b*'] },
+      { 'name' => 'deploy-s', 'jobs' => ['deploy-s*', 'run-errand-s*', 'run-manual-errand-s*' ] },
       { 'name' => 'utils',
         'jobs' =>
         ['approve-and-delete-disabled-deployments',

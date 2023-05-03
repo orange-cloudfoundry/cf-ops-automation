@@ -11,11 +11,14 @@ require_relative './cf_apps'
 require_relative './root_deployment'
 require_relative './root_deployment_version'
 require_relative './root_deployment_overview_enhancer'
+require_relative 'coa_run_logger'
+
 
 class PipelineGenerator
   attr_reader :options, :warnings
   attr_accessor :erb_context
 
+  include CoaRunLogger
   alias :ctxt :erb_context
 
   BOSH_CERT_LOCATIONS = {
@@ -58,6 +61,7 @@ class PipelineGenerator
 
   def display_warnings
     puts warnings.join("\n") + "\n"
+    logger.warn { warnings.join("\n") + "\n" }
   end
 
   private
@@ -128,9 +132,10 @@ class PipelineGenerator
   def display_template_procession_messages(processed_template_count)
     if processed_template_count.positive?
       puts "#{processed_template_count} concourse pipeline templates were processed"
+      logger.info "#{processed_template_count} concourse pipeline templates were processed"
     else
-      puts "ERROR: no concourse pipeline templates found in #{options.ops_automation}/concourse/pipelines/template/"
-      puts 'ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/concourse/pipelines/template/'
+      logger.error "ERROR: no concourse pipeline templates found in #{options.ops_automation}/concourse/pipelines/template/"
+      logger.error 'ERROR: use -a option to set cf-ops-automation root dir <AUTOMATION_ROOT_DIR>/concourse/pipelines/template/'
       false
     end
 

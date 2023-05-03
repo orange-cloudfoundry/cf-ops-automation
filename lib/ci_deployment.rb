@@ -1,9 +1,11 @@
 require 'yaml'
+require_relative 'coa_run_logger'
 
 class CiDeployment
   attr_reader :base_path
   attr_accessor :content
 
+  include CoaRunLogger
   def initialize(path)
     @base_path = path
     @content = {}
@@ -34,13 +36,13 @@ class CiDeployment
   #       ops-depls-cf-apps-generated:
 
   def overview
-    puts "Path CI deployment overview: #{base_path}"
+    logger.info "Path CI deployment overview: #{base_path}"
 
     Dir[base_path].select { |file| File.directory? file }.each do |path|
       load_ci_deployment_from_dir(path)
     end
 
-    puts "ci_deployment loaded: \n#{YAML.dump(content)}"
+    logger.debug "ci_deployment loaded: \n#{YAML.dump(content)}"
     content
   end
 
@@ -66,7 +68,7 @@ class CiDeployment
 
   def load_ci_deployment_from_dir(path)
     dir_basename = File.basename(path)
-    puts "Processing #{dir_basename}"
+    logger.debug "Processing #{dir_basename}"
 
     Dir[path + '/ci-deployment-overview.yml'].each do |deployment_file|
       load_ci_deployment_from_file(deployment_file, dir_basename)
@@ -74,7 +76,7 @@ class CiDeployment
   end
 
   def load_ci_deployment_from_file(deployment_file, dir_basename)
-    puts "CI deployment detected in #{dir_basename}"
+    logger.info "CI deployment detected in #{dir_basename}"
 
     deployment = YAML.load_file(deployment_file, aliases: true)
     raise "#{deployment} - Invalid deployment: expected 'ci-deployment' key as yaml root" unless deployment && deployment['ci-deployment']
@@ -105,7 +107,7 @@ class CiDeployment
     deployment_details['pipelines'].each do |pipeline_name, pipeline_details|
       next unless pipeline_details
       unless pipeline_details_config_file?(pipeline_details)
-        puts "Generating default value for key config_file in #{pipeline_name}"
+        logger.debug "Generating default value for key config_file in #{pipeline_name}"
         pipeline_details['config_file'] = "concourse/pipelines/#{pipeline_name}.yml"
       end
     end

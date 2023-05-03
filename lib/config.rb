@@ -2,6 +2,7 @@ require 'yaml'
 require 'fileutils'
 require_relative 'active_support_copy_deep_merge'
 require_relative 'extended_config'
+require_relative 'coa_run_logger'
 
 # Manage configuration shared by root-deployments. A public config file can be overridden by a private config file and
 # an extended configuration (based on environment variables)
@@ -33,6 +34,7 @@ class Config
 
   attr_reader :loaded_config
 
+  include CoaRunLogger
   def initialize(public_yaml_location = '', private_yaml_location = '', extended_config = ExtendedConfigBuilder.new.build)
     @public_yaml = public_yaml_location
     @private_yaml = private_yaml_location
@@ -65,7 +67,7 @@ class Config
     @loaded_config = @loaded_config.deep_merge(public_config) unless public_config.nil?
     @loaded_config = @loaded_config.deep_merge(private_config) unless private_config.nil?
     override_with_extended_config
-    puts "Loaded config: #{@loaded_config.to_yaml}"
+    logger.info "Loaded config: #{@loaded_config.to_yaml}"
     self
   end
 

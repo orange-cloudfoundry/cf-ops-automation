@@ -1,10 +1,12 @@
 require 'yaml'
 require_relative 'deployment_factory'
 require_relative './deployment_deployers_config'
+require_relative 'coa_run_logger'
 
 class RootDeployment
   attr_reader :root_deployment_name, :dependency_root_path, :enable_deployment_root_path, :excluded_file, :fail_on_inconsistency
 
+  include CoaRunLogger
   ENABLE_DEPLOYMENT_FILENAME = 'enable-deployment.yml'.freeze
   DEFAULT_EXCLUDE = %w[secrets cf-apps-deployments terraform-config template].freeze
 
@@ -24,13 +26,13 @@ class RootDeployment
     dependencies = {}
     select_deployment_scan_files&.each do |enable_deployment_path|
       dirname = enable_deployment_path.split(File::SEPARATOR).last
-      puts "Processing #{dirname}"
+      logger.info "Processing #{dirname}"
       deployers_config = create_deployment_deployer_config(dirname, deployment_factory, enable_deployment_path)
       deployment = load_deployment_config_files(dirname, deployers_config, enable_deployment_path)
       dependencies[deployment.name] = deployment.details
     end
 
-    puts "Dependencies loaded: \n#{YAML.dump(dependencies)}"
+    logger.debug "Dependencies loaded: \n#{YAML.dump(dependencies)}"
     dependencies
   end
 
@@ -54,7 +56,7 @@ class RootDeployment
     if File.exist?(enable_deployment_file)
       deployers_config.load_configs
     else
-      puts "Deployment #{deployment_name} is inactive, ignoring inconsistencies."
+      logger.info "Deployment #{deployment_name} is inactive, ignoring inconsistencies."
       begin
         deployers_config.load_configs.disable
       rescue RuntimeError => e
@@ -67,7 +69,7 @@ class RootDeployment
 
   def select_deployment_scan_files
     enable_deployment_scan = File.join(@enable_deployment_root_path, @root_deployment_name, '/*')
-    puts "Path deployment overview: #{enable_deployment_scan}"
+    logger.debug "Path deployment overview: #{enable_deployment_scan}"
 
     Dir[enable_deployment_scan]&.select do |file|
       File.directory?(file) && !@excluded_file.include?(file.split(File::SEPARATOR).last)

@@ -1,10 +1,11 @@
 require_relative 'deployment_factory'
-
+require_relative 'coa_run_logger'
 #
 # This class creates a list of deployer used by a deployment
 class DeploymentDeployersConfig
   attr_reader :deployment_name, :public_base_location, :private_base_location, :fail_on_inconsistency
 
+  include CoaRunLogger
   DEPLOYMENT_DEPENDENCIES_FILENAME = 'deployment-dependencies.yml'.freeze
   CONCOURSE_CONFIG_DIRNAME = 'concourse-pipeline-config'.freeze
   TERRAFORM_CONFIG_DIRNAME = 'terraform-config'.freeze
@@ -39,7 +40,7 @@ class DeploymentDeployersConfig
   end
 
   def load_bosh_config(deployment_details)
-    puts "Looking for bosh deployment files for #{@deployment_name}"
+    logger.info { "Looking for bosh deployment files for #{@deployment_name}" }
     dependency_filename = File.join(@public_base_location, DEPLOYMENT_DEPENDENCIES_FILENAME)
     return unless File.exist?(dependency_filename)
 
@@ -58,7 +59,7 @@ class DeploymentDeployersConfig
   end
 
   def load_kubernetes_config(deployment_details)
-    puts "Checking #{File.join(@public_base_location, KUBERNETES_CONFIG_DIRNAME)}"
+    logger.debug { "Checking #{File.join(@public_base_location, KUBERNETES_CONFIG_DIRNAME)}" }
     deployment_details['kubernetes'] = activate if Dir.exist? File.join(@public_base_location, KUBERNETES_CONFIG_DIRNAME)
   end
 
