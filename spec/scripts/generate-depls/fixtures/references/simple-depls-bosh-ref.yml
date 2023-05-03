@@ -1,6 +1,8 @@
 
 ---
 meta:
+  vars:
+    - &custom_ca_cert "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
   tasks:
     - &on_failure
       put: failure-alert
@@ -9,6 +11,41 @@ meta:
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
+    - &curl_ssl_image
+      type: registry-image
+      source:
+        repository: elpaasoci/curl-ssl
+        tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+    - &generate_coa_ops_and_vars_files |
+        mkdir -p result-dir/operators
+        mkdir -p result-dir/vars
+        find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
+        find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+        echo "Generating '0-coa-templates-reference-operators.yml'"
+        {
+          echo '- type: replace'
+          echo '  path: /tags?/coa-templates-commit-id?'
+          echo '  value: "((''coa-templates-commit-id))"'
+          echo '- type: replace'
+          echo '  path: /tags?/coa-templates-commit-author?'
+          echo '  value: "((''coa-templates-commit-author))"'
+        } > result-dir/operators/0-coa-templates-reference-operators.yml
+        echo "Done - file '0-coa-templates-reference-operators.yml'"
+        echo "Generating '0-coa-templates-reference-vars.yml'"
+        {
+          echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
+          echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
+        } > result-dir/vars/0-coa-templates-reference-vars.yml
+        echo "Done - file '0-coa-templates-reference-vars.yml'"
+        echo "Generating '0-coa-metadata-vars.yml'"
+        {
+          echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
+          echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
+          echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
+          echo 'iaas_type: "'"${IAAS_TYPE}"'"'
+          echo 'profiles: "'"${PROFILES}"'"'
+        } > result-dir/vars/0-coa-metadata-vars.yml
+        echo "Done - file '0-coa-metadata-vars.yml'"
 display:
   background_image: ((background-image-url))
 resource_types:
@@ -112,7 +149,7 @@ resources:
     client: ((bosh-username))
     client_secret: "((bosh-password))"
     deployment: ntp-with-scan
-    ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
+    ca_cert: *custom_ca_cert
 - name: paas-templates-zookeeper-without-scan
   icon: home-edit
   type: git
@@ -129,7 +166,7 @@ resources:
     client: ((bosh-username))
     client_secret: "((bosh-password))"
     deployment: zookeeper-without-scan
-    ca_cert: "-----BEGIN CERTIFICATE-----\nMIIDXDCCAkSgAwIBAgIBATANBgkqhkiG9w0BAQsFADA/MRMwEQYKCZImiZPyLGQB\nGRYDY29tMRYwFAYKCZImiZPyLGQBGRYGb3JhbmdlMRAwDgYDVQQDDAdUZXN0IENB\nMB4XDTE4MDUwODE0MzcwN1oXDTIwMDUwNzE0MzcwN1owPzETMBEGCgmSJomT8ixk\nARkWA2NvbTEWMBQGCgmSJomT8ixkARkWBm9yYW5nZTEQMA4GA1UEAwwHVGVzdCBD\nQTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALBLNz1HSlkLUMk6PsYU\nRjPhYi4f1hlDhl1nx/uuObqaePY8neGF8XGUhzc4mnV3DRik4Ufi99t5Ib2xKdv2\nrbl3dSrSfkOTUngAGlKb5WHy2t36gcH6XhY96qAKzeuvWvXPkik6RKmIUh6HuHF0\n47ApkVpauCKWhJibTjsJ1CSEf4lGrBJG9EyEz0fAvsWwySWgDhWbG90WNUPAwChB\n8t3h7WHNXTcriMPth4FIjCgEEde9Xa6r6pCrDFQfLBwy8fJK0cMDjWrGgo8VPHre\n1eXhiSCHowZG7WEM6ikjqeck00cvskzKWNnvgXK5K4wATjynsNJnpd+88cOt7efb\nEQECAwEAAaNjMGEwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMCAQYwHQYD\nVR0OBBYEFAdQsPXMlmEL7xVLP7E+cESV9qYTMB8GA1UdIwQYMBaAFAdQsPXMlmEL\n7xVLP7E+cESV9qYTMA0GCSqGSIb3DQEBCwUAA4IBAQAQWsP6GjMQhWWohODsNbuq\nG3lxTAIX04kNqXduUL1reO7BbzkBqJP9zbIjfOJra7wNyBHRTP4s2AX/ccvgvUp9\n7OqidvwtDszCBzK1an+0i0F5fn4g8WpRFhWq2OeT65PM058RhjpfvVvYYRGM3a7Z\ni1cJQPgqju6WY5esFEQHyQwR+XpL20h38IkurhQ//HzNUboZjoefCfI1bvDFbPY7\nX0YYYuNm3QGmtI2nei8X0rnnM+nE0G/6nMmFT8p9OkYLxA1FiIuGYajaHLhzgkvM\ntdn1DdO4SqwyR+lVlyUC3c4dPzLUpqpXgLSjgl5PiYD8il+PgAoBwM9mwoda5rC2\n-----END CERTIFICATE-----\n"
+    ca_cert: *custom_ca_cert
 - name: secrets-simple-depls-trigger
   icon: source-commit
   type: git
@@ -198,11 +235,7 @@ jobs:
     - task: check-repackaging-errors
       config:
         platform: linux
-        image_resource:
-          type: registry-image
-          source:
-            repository: elpaasoci/curl-ssl
-            tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+        image_resource: *curl_ssl_image
         inputs:
           - name: repackaged-releases-fallback
         run:
@@ -549,11 +582,7 @@ jobs:
     output_mapping: {result-dir: ops-and-vars-files}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+      image_resource: *curl_ssl_image
       inputs:
         - name: final-release-manifest
         - name: template-resource
@@ -563,36 +592,7 @@ jobs:
         path: sh
         args:
         - -ec
-        - |
-          mkdir -p result-dir/operators
-          mkdir -p result-dir/vars
-          find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
-          find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-          echo "Generating '0-coa-templates-reference-operators.yml'"
-          {
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-commit-id?'
-            echo '  value: "((''coa-templates-commit-id))"'
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-commit-author?'
-            echo '  value: "((''coa-templates-commit-author))"'
-          } > result-dir/operators/0-coa-templates-reference-operators.yml
-          echo "Done - file '0-coa-templates-reference-operators.yml'"
-          echo "Generating '0-coa-templates-reference-vars.yml'"
-          {
-            echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
-            echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
-          } > result-dir/vars/0-coa-templates-reference-vars.yml
-          echo "Done - file '0-coa-templates-reference-vars.yml'"
-          echo "Generating '0-coa-metadata-vars.yml'"
-          {
-            echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
-            echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
-            echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
-            echo 'iaas_type: "'"${IAAS_TYPE}"'"'
-            echo 'profiles: "'"${PROFILES}"'"'
-          } > result-dir/vars/0-coa-metadata-vars.yml
-          echo "Done - file '0-coa-metadata-vars.yml'"
+        - *generate_coa_ops_and_vars_files
       params:
         PROFILES: ((profiles))
         IAAS_TYPE: ((iaas-type))
@@ -785,11 +785,7 @@ jobs:
     output_mapping: {result-dir: ops-and-vars-files}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+      image_resource: *curl_ssl_image
       inputs:
         - name: final-release-manifest
         - name: template-resource
@@ -799,36 +795,7 @@ jobs:
         path: sh
         args:
         - -ec
-        - |
-          mkdir -p result-dir/operators
-          mkdir -p result-dir/vars
-          find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
-          find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-          echo "Generating '0-coa-templates-reference-operators.yml'"
-          {
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-commit-id?'
-            echo '  value: "((''coa-templates-commit-id))"'
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-commit-author?'
-            echo '  value: "((''coa-templates-commit-author))"'
-          } > result-dir/operators/0-coa-templates-reference-operators.yml
-          echo "Done - file '0-coa-templates-reference-operators.yml'"
-          echo "Generating '0-coa-templates-reference-vars.yml'"
-          {
-            echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
-            echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
-          } > result-dir/vars/0-coa-templates-reference-vars.yml
-          echo "Done - file '0-coa-templates-reference-vars.yml'"
-          echo "Generating '0-coa-metadata-vars.yml'"
-          {
-            echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
-            echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
-            echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
-            echo 'iaas_type: "'"${IAAS_TYPE}"'"'
-            echo 'profiles: "'"${PROFILES}"'"'
-          } > result-dir/vars/0-coa-metadata-vars.yml
-          echo "Done - file '0-coa-metadata-vars.yml'"
+        - *generate_coa_ops_and_vars_files
       params:
         PROFILES: ((profiles))
         IAAS_TYPE: ((iaas-type))
@@ -946,11 +913,7 @@ jobs:
     output_mapping: {result-dir: trigger-simple-depls-plan}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+      image_resource: *curl_ssl_image
       outputs:
         - name: result-dir
       run:
@@ -990,11 +953,7 @@ jobs:
     output_mapping: {result-dir: init-simple-depls-plan}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+      image_resource: *curl_ssl_image
       outputs:
         - name: result-dir
       run:
@@ -1022,10 +981,10 @@ groups:
     - "*"
 - name: deploy-n
   jobs:
-    - deploy-ntp-with-scan
+    - deploy-n*
 - name: deploy-z
   jobs:
-    - deploy-zookeeper-without-scan
+    - deploy-z*
 - name: utils
   jobs:
     - cancel-all-bosh-tasks
