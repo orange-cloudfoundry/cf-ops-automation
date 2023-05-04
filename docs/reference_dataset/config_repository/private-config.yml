@@ -1,4 +1,9 @@
 ---
+# Log configuration is only available in private-config.yml
+log:
+  output: STDOUT # Use stdout to have log displayed in concourse, instead of a file. Default: File
+  # level: Debug # We don't need to customize this value, as it is set to debug by default. Valid values: Debug, Info, Warn and Error
+  date-format: "-" # Disable date as we already have a timestamp in concourse. Default: "%Y-%m-%dT%H:%M:%S.%6N"
 # you can override values from template_repository/shared-config.yml
 #offline-mode:
 #   boshreleases: false # Default: false

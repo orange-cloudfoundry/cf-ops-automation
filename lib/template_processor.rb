@@ -4,10 +4,12 @@ require 'ostruct'
 require 'fileutils'
 require_relative 'pipeline_helpers'
 require_relative 'active_support_deep_dup'
+require_relative 'coa_run_logger'
 
 class TemplateProcessor
   attr_reader :root_deployment_name, :config, :context
 
+  include CoaRunLogger
   def initialize(root_deployment_name, config = { dump_output: true, output_path: '/tmp' }, context = {})
     @root_deployment_name = root_deployment_name
     @context = context
@@ -50,11 +52,11 @@ class TemplateProcessor
     #   raise NameError, "#{filename}: #{name_error}"
   end
 
-  def write_pipeline_content_in_file(output, pipeline_name)
-    puts "Pipeline name #{pipeline_name}"
+  def write_pipeline_content_in_file(output, pipeline_filename)
+    puts "Generating pipeline. Filename: #{pipeline_filename}"
     target_dir = File.join(config[:output_path], 'pipelines')
     FileUtils.mkdir_p target_dir unless Dir.exist?(target_dir)
-    pipeline = File.new(File.join(target_dir, pipeline_name), 'w')
+    pipeline = File.new(File.join(target_dir, pipeline_filename), 'w')
     pipeline << output
     pipeline.close
     pipeline
@@ -87,7 +89,7 @@ class TemplateProcessor
     @context&.deep_dup&.each do |k, v|
       new_binding.local_variable_set k.to_sym, v
     end
-    puts "Local var: #{new_binding.local_variables}"
+    logger.debug { "Local var: #{new_binding.local_variables}" }
     new_binding
   end
 end
