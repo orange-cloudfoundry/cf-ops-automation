@@ -12,6 +12,7 @@ bin/
 .bundle/
 out/
 log/
+*.log
 coverage/
 
 spec/tasks/git_reset_wip/reference-resource/
