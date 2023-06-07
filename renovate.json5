@@ -7,12 +7,10 @@
     ":rebaseStalePrs"
   ],
   "github-actions": {
-    // We use dependabot for this
     enabled: false
   },
   bundler: {
-    // We use dependabot for this
-    enabled: false
+    enabled: true
   },
   baseBranches: [
     "develop"
@@ -33,14 +31,19 @@
     },
     {
       matchDepNames: ["paas-docker-cloudfoundry-tools"],
-      branchTopic: "{{{depNameSanitized}}}-commit-id"
+      branchTopic: "{{{depNameSanitized}}}-commit-id", // branch name will be: renovate/paas-docker-cloudfoundry-tools-commit-id
+      // chore(deps): update paas-docker-cloudfoundry-tools commit-id to dbc8760 #420
+      // default value for commitMessage: "{{{commitMessagePrefix}}} {{{commitMessageAction}}} {{{commitMessageTopic}}} {{{commitMessageExtra}}} {{{commitMessageSuffix}}}",
+      commitMessageTopic: "{{{depNameSanitized}}} commit-id",
+      customChangelogUrl: "https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools"
     }
   ],
-
   regexManagers: [
     {
       description: "Bump COA CI cli dependencies",
-      fileMatch: ["Dockerfile"],
+      fileMatch: [
+        "Dockerfile"
+      ],
       matchStrings: [
         // For dockerfile: https://regex101.com
         "datasource=(?<datasource>.+) depName=(?<depName>[\\w\\d\\//\\-\\_]+)( versioning=(?<versioning>.+))?\\nARG .+_VERSION=?\\\"?(?<currentValue>[\\w\\d\\/\\-\\.\\_]+)\\\"?"
