@@ -12,6 +12,9 @@
   bundler: {
     enabled: true
   },
+  terraform: {
+    enabled: false // as we don't really use real tf files, only place holder
+  },
   baseBranches: [
     "develop"
   ],
@@ -35,9 +38,35 @@
       // chore(deps): update paas-docker-cloudfoundry-tools commit-id to dbc8760 #420
       // default value for commitMessage: "{{{commitMessagePrefix}}} {{{commitMessageAction}}} {{{commitMessageTopic}}} {{{commitMessageExtra}}} {{{commitMessageSuffix}}}",
       commitMessageTopic: "{{{depNameSanitized}}} commit-id",
-      customChangelogUrl: "https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools"
+      prBodyNotes: ["https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools"]
+    },
+    {
+      matchDepNames: ["cloudfoundry/bosh-cli", "concourse/concourse"],
+      description: "Group docker images cli bump unless it is a major version",
+      groupName: "COA CI",
+      matchUpdateTypes: ["patch", "minor"]
+    },
+    {
+      description: "Group all gem bumps for dev and test dependencies, unless it is a major version",
+      matchDepNames: [
+        "docker_registry2",
+        "github_changelog_generator",
+        "rubocop-rspec",
+        "git",
+        "mdl",
+        "rake",
+        "reek",
+        "rubocop",
+        "cucumber",
+        "rspec",
+        "rspec-rerun",
+        "simplecov"
+      ],
+      groupName: "DevTest Tools",
+      matchUpdateTypes: ["patch", "minor"]
     }
   ],
+
   regexManagers: [
     {
       description: "Bump COA CI cli dependencies",
