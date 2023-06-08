@@ -28,6 +28,7 @@ RUN cd /usr/local && bundle install --retry 5
 ARG FLY_DOWNLOAD_URL="https://github.com/concourse/concourse/releases/download/v${CONCOURSE_VERSION}/fly-${CONCOURSE_VERSION}-linux-amd64.tgz"
 RUN echo "Prepare FLY downloading at $FLY_DOWNLOAD_URL"
 RUN curl --retry 30 -SL "$FLY_DOWNLOAD_URL" -o /tmp/fly.tgz \
+  && echo "Computed sha256sum: $(sha256sum /tmp/fly.tgz)" \
   && [ ${CONCOURSE_SHA256} = $(sha256sum /tmp/fly.tgz | cut -d' ' -f1) ] \
   && cd /tmp \
   && tar xzvf /tmp/fly.tgz \
@@ -42,6 +43,7 @@ RUN curl --retry 30 -SL "https://raw.githubusercontent.com/ekalinin/github-markd
 
 # Download BOSH v2 CLI
 RUN curl --retry 30 -SLo /usr/local/bin/bosh https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 \
+  && echo "Computed sha256sum: $(sha256sum /usr/local/bin/bosh)" \
   && echo "${BOSH_CLI_SHA256} */usr/local/bin/bosh" | shasum -a 256 -c - \
   && chmod +x /usr/local/bin/bosh
 
