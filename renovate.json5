@@ -44,7 +44,8 @@
       matchDepNames: ["cloudfoundry/bosh-cli", "concourse/concourse"],
       description: "Group docker images cli bump unless it is a major version",
       groupName: "COA CI",
-      matchUpdateTypes: ["patch", "minor"]
+      matchUpdateTypes: ["patch", "minor"],
+      addLabels: ["{{depName}}"]
     },
     {
       description: "Group all gem bumps for dev and test dependencies, unless it is a major version",
@@ -63,7 +64,8 @@
         "simplecov"
       ],
       groupName: "DevTest Tools",
-      matchUpdateTypes: ["patch", "minor"]
+      matchUpdateTypes: ["patch", "minor"],
+      addLabels: ["{{depName}}"]
     }
   ],
   prHourlyLimit: 1, // Only create one PR per hour to avoid CI overflow
