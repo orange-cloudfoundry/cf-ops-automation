@@ -66,7 +66,7 @@
       matchUpdateTypes: ["patch", "minor"]
     }
   ],
-
+  prHourlyLimit: 1, // Only create one PR per hour to avoid CI overflow
   regexManagers: [
     {
       description: "Bump COA CI cli dependencies",
