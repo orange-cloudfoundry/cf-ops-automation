@@ -5,11 +5,11 @@ LOG_LEVEL="${LOG_LEVEL:-debug}"
 RENOVATE_ENABLED_MANAGERS="${RENOVATE_ENABLED_MANAGERS:-""}"
 RENOVATE_INCLUDE_PATHS="${RENOVATE_INCLUDE_PATHS:-""}"
 if [ -z "$GITHUB_COM_TOKEN" ];then
-  echo -e "WARNING: missing GitHub token to allow github release version detection. Please set it before running this script, using \n export GITHUB_COM_TOKEN=\"xxx\""
+  echo -e "WARNING: missing GitHub token to allow github release version detection. Please set it before running this script, using \n export GITHUB_COM_TOKEN=\"GH-GH-GH-GH-GH-GH\""
   sleep 1
 fi
 if [ -z "$RENOVATE_BOT" ];then
-  echo -e "WARNING: missing Renovate Bot. Please set it before running this script, using \n export RENOVATE_BOT=\"xxx\""
+  echo -e "WARNING: missing Renovate Bot. Please set it before running this script, using \n export RENOVATE_BOT=\"RRRRRRR\""
   sleep 1
 fi
 echo "Set LOG_LEVEL to manage log level. Default 'debug'.Current Log level: <$LOG_LEVEL>"

@@ -33,8 +33,7 @@
     },
     {
       matchPackagePatterns: [".*"],
-      addLabels: ["{{datasource}}","{{depName}}"],
-      matchDatasources: ["!rubygems"]
+      addLabels: ["{{datasource}}","{{depName}}"]
     },
     {
       matchDepNames: ["paas-docker-cloudfoundry-tools"],
@@ -42,14 +41,18 @@
       // chore(deps): update paas-docker-cloudfoundry-tools commit-id to dbc8760 #420
       // default value for commitMessage: "{{{commitMessagePrefix}}} {{{commitMessageAction}}} {{{commitMessageTopic}}} {{{commitMessageExtra}}} {{{commitMessageSuffix}}}",
       commitMessageTopic: "{{{depNameSanitized}}} commit-id",
-      prBodyNotes: ["https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools"]
+      prBodyNotes: [
+        "paas-docker-cloudfoundry-tools repository: https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools",
+        "Commits diff list: https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools/compare/{{{currentDigestShort}}}...{{{newDigestShort}}} ",
+        "Diff: https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools/compare/{{{currentDigestShort}}}..{{{newDigestShort}}} "
+      ],
     },
     {
       matchDepNames: ["cloudfoundry/bosh-cli", "concourse/concourse"],
       description: "Group docker images cli bump unless it is a major version",
       groupName: "COA CI",
       matchUpdateTypes: ["patch", "minor"],
-      addLabels: ["{{depName}}"]
+      addLabels: ["{{groupName}}"]
     },
     {
       description: "Group all gem bumps for dev and test dependencies, unless it is a major version",
@@ -68,7 +71,8 @@
         "simplecov"
       ],
       groupName: "DevTest Tools",
-      matchUpdateTypes: ["patch", "minor"]
+      matchUpdateTypes: ["patch", "minor"],
+      addLabels: ["{{groupName}}"]
     }
   ],
   prHourlyLimit: 1, // Only create one PR per hour to avoid CI overflow
@@ -113,7 +117,26 @@
       packageNameTemplate: "https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools",
       datasourceTemplate: "git-refs",
       versioningTemplate: "git"
-    }
+    },
+//    {
+//      //description: "manage all docker images used by concourse. It will detect elpassoci images but shoud not be able to detect any version published",
+//      description: "manage ruby docker images used by concourse",
+//      fileMatch: [
+//        ".*/.*\\.erb",
+//        ".*/.*\\.y(a)?ml",
+//        "spec/lib/template_processor/.*_spec\\.rb",
+//        "spec/tasks/task_spec_helper.rb",
+//        ".*/task_spec.rb"
+//      ],
+//      matchStrings: [
+//        // For concourse based files (resources and tasks): https://regex101.com/r/6ia3o9/1
+//        // "\\{?\\s*repository: (?<depName>[\\d\\.\\w\\-\\_\\/]+)(\\n|,|\\n.*\\n)?\\s*tag: (\\'\\\")?(?<currentValue>[\\d\\.\\w\\-\\_]+)(\\'\\\")?(})?"
+//        "\\{?\\s*repository: library/ruby(\\n|,|\\n.*\\n)?\\s*tag: (\\'\\\")?(?<currentValue>[\\d\\.\\w\\-\\_]+)(\\'\\\")?(})?"
+//
+//      ],
+//      datasourceTemplate: "docker",
+//      depNameTemplate: "ruby"
+//    }
   ]
 }
 
