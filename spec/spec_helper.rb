@@ -169,7 +169,7 @@ RSpec.configure do |config|
   end
 
   def docker_registry_url
-    "https://#{docker_registry_hostname}/"
+    "https://#{docker_registry_hostname}"
   end
 
   def docker_registry

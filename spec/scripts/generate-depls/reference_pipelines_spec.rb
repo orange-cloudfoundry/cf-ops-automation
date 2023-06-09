@@ -47,10 +47,11 @@ describe 'reference concourse pipelines spec' do
         docker_image_tag = parsed_image[1]
         puts "searching for #{docker_image}:#{docker_image_tag}"
         begin
+          # RestClient.log = STDOUT # uncomment to enable rest client output
           manifest = docker_registry.manifest(docker_image, docker_image_tag)
           expect(manifest).not_to be_empty
           rescue DockerRegistry2::NotFound => not_found
-            raise DockerRegistry2::NotFound, " #{image} used by #{files}"
+            raise DockerRegistry2::NotFound, " #{image} used by #{files} from #{docker_registry_url}"
         end
       end
     end
