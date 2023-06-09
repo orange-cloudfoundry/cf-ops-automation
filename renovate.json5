@@ -18,6 +18,9 @@
   baseBranches: [
     "develop"
   ],
+  ruby: {
+    rangeStrategy: "bump"
+  },
   packageRules: [
     {
       description: "@o-orand assignments",
@@ -30,7 +33,8 @@
     },
     {
       matchPackagePatterns: [".*"],
-      addLabels: ["{{datasource}}","{{depName}}"]
+      addLabels: ["{{datasource}}","{{depName}}"],
+      matchDatasources: ["!rubygems"]
     },
     {
       matchDepNames: ["paas-docker-cloudfoundry-tools"],
@@ -64,8 +68,7 @@
         "simplecov"
       ],
       groupName: "DevTest Tools",
-      matchUpdateTypes: ["patch", "minor"],
-      addLabels: ["{{depName}}"]
+      matchUpdateTypes: ["patch", "minor"]
     }
   ],
   prHourlyLimit: 1, // Only create one PR per hour to avoid CI overflow
