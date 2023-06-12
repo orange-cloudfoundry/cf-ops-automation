@@ -17,7 +17,7 @@ image_resource:
   type: registry-image
   source:
     repository: elpaasoci/bosh-cli-v2
-    tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+    tag: 4c45660b9ad1193873b4d59b61678354ee225321
 inputs:
   - name: scripts-resource
   - name: templates
