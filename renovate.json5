@@ -72,7 +72,10 @@
       ],
       groupName: "DevTest Tools",
       matchUpdateTypes: ["patch", "minor"],
-      addLabels: ["{{groupName}}"]
+      addLabels: ["{{groupName}}"],
+      schedule: [
+        "after 8am on the first day of the month"
+      ]
     }
   ],
   prHourlyLimit: 1, // Only create one PR per hour to avoid CI overflow
