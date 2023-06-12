@@ -10,7 +10,7 @@ group :development do
   gem 'mdl', '~>0.12.0'
   gem 'rake', '~>13.0.6'
   gem 'reek', '~> 6.1.4'
-  gem 'rubocop', '~> 1.52.0'
+  gem 'rubocop', '~> 1.52.1'
   gem 'rubocop-rspec', '~> 2.22'
 end
 
