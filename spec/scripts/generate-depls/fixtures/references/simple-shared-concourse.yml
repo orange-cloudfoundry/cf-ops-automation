@@ -164,7 +164,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/git-ssh
-              tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+              tag: 4c45660b9ad1193873b4d59b61678354ee225321
           outputs:
             - name: success-tag
           run:
@@ -188,7 +188,7 @@ jobs:
         type: registry-image
         source:
           repository: elpaasoci/git-ssh
-          tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+          tag: 4c45660b9ad1193873b4d59b61678354ee225321
       inputs:
         - name: concourse-micro-success
           optional: true

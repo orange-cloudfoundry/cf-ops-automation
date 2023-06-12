@@ -15,7 +15,7 @@ meta:
       type: registry-image
       source:
         repository: elpaasoci/curl-ssl
-        tag: e3520d05ad3ff8564810ba75f148d9426a7ebe8b
+        tag: 4c45660b9ad1193873b4d59b61678354ee225321
     - &generate_coa_ops_and_vars_files |
         mkdir -p result-dir/operators
         mkdir -p result-dir/vars
