@@ -17,7 +17,7 @@ image_resource:
   type: registry-image
   source:
     repository: elpaasoci/awscli
-    tag: 4c45660b9ad1193873b4d59b61678354ee225321
+    tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
 inputs:
   - name: templates-resource
 outputs:

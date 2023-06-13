@@ -703,7 +703,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/curl-ssl
-              tag: 4c45660b9ad1193873b4d59b61678354ee225321
+              tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
           inputs:
             - name: concourse-micro
           run:
@@ -853,7 +853,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/curl-ssl
-              tag: 4c45660b9ad1193873b4d59b61678354ee225321
+              tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
           inputs:
             - name: config-resource
           run:
@@ -880,7 +880,7 @@ jobs:
                 source:
                   # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
                   repository: elpaasoci/git-ssh
-                  tag: 4c45660b9ad1193873b4d59b61678354ee225321
+                  tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
               outputs:
                 - name: success-tag
               run:
@@ -905,7 +905,7 @@ jobs:
             source:
               # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
               repository: elpaasoci/git-ssh
-              tag: 4c45660b9ad1193873b4d59b61678354ee225321
+              tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
           inputs:
             - name: concourse-micro-success
               optional: true
@@ -972,7 +972,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/git-ssh
-              tag: 4c45660b9ad1193873b4d59b61678354ee225321
+              tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
           inputs:
             - name: secrets-writer
           outputs:
@@ -1016,7 +1016,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/git-ssh
-              tag: 4c45660b9ad1193873b4d59b61678354ee225321
+              tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
           inputs:
             - name: paas-templates-full
           outputs:

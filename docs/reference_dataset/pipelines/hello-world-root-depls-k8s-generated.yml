@@ -276,7 +276,7 @@ jobs:
         type: registry-image
         source:
           repository: elpaasoci/curl-ssl
-          tag: 4c45660b9ad1193873b4d59b61678354ee225321
+          tag: 02815308241e3dc79c43a07ea39e9794bf8f3a31
       outputs:
         - name: result-dir
       run:
