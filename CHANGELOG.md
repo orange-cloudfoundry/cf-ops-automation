@@ -1,12 +1,38 @@
 # Changelog
 
-## [v6.0.5](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.5) (2023-02-28)
+## [v6.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.0) (2023-06-13)
 
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.4...v6.0.5)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.5...v6.1.0)
+
+**Implemented enhancements:**
+
+- Rework logging mechanisms [\#417](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/417)
+- pipeline\(bosh\): fine grain management of compiled download url [\#416](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/416)
 
 **Fixed bugs:**
 
 - precompile pipeline manage bosh release defined in runtime config [\#412](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/412)
+
+**Miscellaneous:**
+
+- Update COA CI env [\#415](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/415)
+
+**Closed issues:**
+
+- Contact SNCF [\#394](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/394)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency rubocop to '~\> 1.52.1' [\#430](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/430)
+- chore\(deps\): update devtest tools [\#429](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/429)
+- chore\(deps\): update devtest tools [\#428](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/428)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.2.3 [\#427](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/427)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to 4c45660 [\#420](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/420)
+- move to elpaasoci based images [\#414](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/414)
+
+## [v6.0.5](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.5) (2023-02-28)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.4...v6.0.5)
 
 ## [v6.0.4](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.0.4) (2023-02-27)
 

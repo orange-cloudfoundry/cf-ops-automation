@@ -1,6 +1,8 @@
 
 ---
 meta:
+  vars:
+    - &custom_ca_cert 
   tasks:
     - &on_failure
       put: failure-alert
@@ -9,6 +11,41 @@ meta:
         text: Failed to run [[$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME ($BUILD_NAME)]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME)].
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
+    - &curl_ssl_image
+      type: registry-image
+      source:
+        repository: elpaasoci/curl-ssl
+        tag: 4c45660b9ad1193873b4d59b61678354ee225321
+    - &generate_coa_ops_and_vars_files |
+        mkdir -p result-dir/operators
+        mkdir -p result-dir/vars
+        find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
+        find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
+        echo "Generating '0-coa-templates-reference-operators.yml'"
+        {
+          echo '- type: replace'
+          echo '  path: /tags?/coa-templates-commit-id?'
+          echo '  value: "((''coa-templates-commit-id))"'
+          echo '- type: replace'
+          echo '  path: /tags?/coa-templates-commit-author?'
+          echo '  value: "((''coa-templates-commit-author))"'
+        } > result-dir/operators/0-coa-templates-reference-operators.yml
+        echo "Done - file '0-coa-templates-reference-operators.yml'"
+        echo "Generating '0-coa-templates-reference-vars.yml'"
+        {
+          echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
+          echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
+        } > result-dir/vars/0-coa-templates-reference-vars.yml
+        echo "Done - file '0-coa-templates-reference-vars.yml'"
+        echo "Generating '0-coa-metadata-vars.yml'"
+        {
+          echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
+          echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
+          echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
+          echo 'iaas_type: "'"${IAAS_TYPE}"'"'
+          echo 'profiles: "'"${PROFILES}"'"'
+        } > result-dir/vars/0-coa-metadata-vars.yml
+        echo "Done - file '0-coa-metadata-vars.yml'"
 display:
   background_image: ((background-image-url))
 resource_types:
@@ -105,7 +142,7 @@ resources:
     client: ((bosh-username))
     client_secret: "((bosh-password))"
     deployment: bosh-deployment-sample
-    ca_cert: 
+    ca_cert: *custom_ca_cert
 - name: secrets-hello-world-root-depls-trigger
   icon: source-commit
   type: git
@@ -190,11 +227,7 @@ jobs:
     - task: check-repackaging-errors
       config:
         platform: linux
-        image_resource:
-          type: registry-image
-          source:
-            repository: elpaasoci/curl-ssl
-            tag: 4c45660b9ad1193873b4d59b61678354ee225321
+        image_resource: *curl_ssl_image
         inputs:
           - name: repackaged-releases-fallback
         run:
@@ -586,11 +619,7 @@ jobs:
     output_mapping: {result-dir: ops-and-vars-files}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: 4c45660b9ad1193873b4d59b61678354ee225321
+      image_resource: *curl_ssl_image
       inputs:
         - name: final-release-manifest
         - name: template-resource
@@ -600,36 +629,7 @@ jobs:
         path: sh
         args:
         - -ec
-        - |
-          mkdir -p result-dir/operators
-          mkdir -p result-dir/vars
-          find final-release-manifest/ -name "*-operators.yml" -type f -exec cp {} result-dir/operators \;
-          find final-release-manifest/ -name "*-vars.yml" -type f -exec cp {} result-dir/vars \;
-          echo "Generating '0-coa-templates-reference-operators.yml'"
-          {
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-commit-id?'
-            echo '  value: "((''coa-templates-commit-id))"'
-            echo '- type: replace'
-            echo '  path: /tags?/coa-templates-commit-author?'
-            echo '  value: "((''coa-templates-commit-author))"'
-          } > result-dir/operators/0-coa-templates-reference-operators.yml
-          echo "Done - file '0-coa-templates-reference-operators.yml'"
-          echo "Generating '0-coa-templates-reference-vars.yml'"
-          {
-            echo 'coa-templates-commit-id: "'"$(cat  template-resource/.git/ref)"'"'
-            echo 'coa-templates-commit-author: "'"$(cat template-resource/.git/committer)"'"'
-          } > result-dir/vars/0-coa-templates-reference-vars.yml
-          echo "Done - file '0-coa-templates-reference-vars.yml'"
-          echo "Generating '0-coa-metadata-vars.yml'"
-          {
-            echo 'paas_templates_commit_id: "'"$(cat  template-resource/.git/ref)"'"'
-            echo 'coa_root_deployment_name: "'"${ROOT_DEPLOYMENT_NAME}"'"'
-            echo 'coa_deployment_name: "'"${DEPLOYMENT_NAME}"'"'
-            echo 'iaas_type: "'"${IAAS_TYPE}"'"'
-            echo 'profiles: "'"${PROFILES}"'"'
-          } > result-dir/vars/0-coa-metadata-vars.yml
-          echo "Done - file '0-coa-metadata-vars.yml'"
+        - *generate_coa_ops_and_vars_files
       params:
         PROFILES: ((profiles))
         IAAS_TYPE: ((iaas-type))
@@ -748,11 +748,7 @@ jobs:
     output_mapping: {result-dir: trigger-hello-world-root-depls-plan}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: 4c45660b9ad1193873b4d59b61678354ee225321
+      image_resource: *curl_ssl_image
       outputs:
         - name: result-dir
       run:
@@ -791,11 +787,7 @@ jobs:
     output_mapping: {result-dir: init-hello-world-root-depls-plan}
     config:
       platform: linux
-      image_resource:
-        type: registry-image
-        source:
-          repository: elpaasoci/curl-ssl
-          tag: 4c45660b9ad1193873b4d59b61678354ee225321
+      image_resource: *curl_ssl_image
       outputs:
         - name: result-dir
       run:
@@ -964,7 +956,7 @@ groups:
     - "*"
 - name: deploy-b
   jobs:
-    - deploy-bosh-deployment-sample
+    - deploy-b*
 - name: terraform
   jobs:
     - approve-and-enforce-terraform-consistency
