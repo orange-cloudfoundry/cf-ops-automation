@@ -25,53 +25,53 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
   let(:root_deployment_versions) { {} }
   let(:multi_root_dependencies) do
     deps_yaml = <<~YAML
-    #{root_deployment_name}:
-      bosh-bats:
-        status: disabled
-        stemcells:
-          bosh-openstack-kvm-ubuntu-bionic-go_agent:
-        bosh-deployment: {}
-        releases:
-          bosh:
-            base_location: https://github.com/
-            repository: cloudfoundry/bosh
-            version: 271.0.0
-      maria-db:
-        status: disabled
-      shield-expe:
-        stemcells:
-          bosh-openstack-kvm-ubuntu-bionic-go_agent:
-        releases:
-          cf-routing-release:
-            base_location: https://bosh.io/d/github.com/
-            repository: cloudfoundry-incubator/cf-routing-release
-            version: 0.169.0
-        errands:
-            import:
-            smoke-tests:
-              display-name: automated-smoke-tests
-        manual-errands:
-            manual-import:
-            manual-smoke-tests:
-              display-name: my-smoke-tests
-        bosh-deployment:
-          active: true
-        status: enabled
-      bui:
-        stemcells:
-          bosh-openstack-kvm-ubuntu-bionic-go_agent:
-        releases:
-          route-registrar-boshrelease:
-            base_location: https://bosh.io/d/github.com/
-            repository: cloudfoundry-community/route-registrar-boshrelease
-            version: '3'
-          haproxy-boshrelease:
-            base_location: https://bosh.io/d/github.com/
-            repository: cloudfoundry-community/haproxy-boshrelease
-            version: 8.0.12
-        bosh-deployment:
-          active: true
-        status: enabled
+      #{root_deployment_name}:
+        bosh-bats:
+          status: disabled
+          stemcells:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
+          bosh-deployment: {}
+          releases:
+            bosh:
+              base_location: https://github.com/
+              repository: cloudfoundry/bosh
+              version: 271.0.0
+        maria-db:
+          status: disabled
+        shield-expe:
+          stemcells:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
+          releases:
+            cf-routing-release:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-incubator/cf-routing-release
+              version: 0.169.0
+          errands:
+              import:
+              smoke-tests:
+                display-name: automated-smoke-tests
+          manual-errands:
+              manual-import:
+              manual-smoke-tests:
+                display-name: my-smoke-tests
+          bosh-deployment:
+            active: true
+          status: enabled
+        bui:
+          stemcells:
+            bosh-openstack-kvm-ubuntu-bionic-go_agent:
+          releases:
+            route-registrar-boshrelease:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-community/route-registrar-boshrelease
+              version: '3'
+            haproxy-boshrelease:
+              base_location: https://bosh.io/d/github.com/
+              repository: cloudfoundry-community/haproxy-boshrelease
+              version: 8.0.12
+          bosh-deployment:
+            active: true
+          status: enabled
     YAML
     YAML.safe_load(deps_yaml)
   end
@@ -171,11 +171,11 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
 
     before do
-      @processed_template = subject.process(@pipelines_dir + '/*')
+      @processed_template = subject.process("#{@pipelines_dir}/*")
     end
 
     context 'when precompile is enabled without bosh deployment' do
-      let(:multi_root_dependencies) { {root_deployment_name => {} } }
+      let(:multi_root_dependencies) { { root_deployment_name => {} } }
       let(:loaded_config) do
         my_config_yaml = <<~YAML
           offline-mode:
@@ -193,8 +193,8 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
 
     context 'when disabled deployments are presents' do
-      let(:expected_compiled_exported_deployments) { %W[compile-and-export-bosh compile-and-export-route-registrar-boshrelease compile-and-export-haproxy-boshrelease compile-and-export-cf-routing-release] }
-      let(:expected_uploaded_deployments) { %W[upload-compiled-bosh upload-compiled-route-registrar-boshrelease upload-compiled-haproxy-boshrelease upload-compiled-cf-routing-release] }
+      let(:expected_compiled_exported_deployments) { %w[compile-and-export-bosh compile-and-export-route-registrar-boshrelease compile-and-export-haproxy-boshrelease compile-and-export-cf-routing-release] }
+      let(:expected_uploaded_deployments) { %w[upload-compiled-bosh upload-compiled-route-registrar-boshrelease upload-compiled-haproxy-boshrelease upload-compiled-cf-routing-release] }
 
       it 'generates compile and export job for dependencies describe in disabled deployments' do
         filtered_generated_jobs = generated_pipeline['jobs'].select { |job| job['name']&.start_with?('compile-and-export') }.flat_map { |job| job['name'] }
@@ -208,8 +208,8 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
 
     context 'when deployments are excluded' do
-      let(:expected_compiled_exported_deployments) { %W[compile-and-export-bosh compile-and-export-route-registrar-boshrelease compile-and-export-haproxy-boshrelease compile-and-export-cf-routing-release] }
-      let(:expected_uploaded_deployments) { %W[upload-compiled-bosh upload-compiled-route-registrar-boshrelease upload-compiled-haproxy-boshrelease upload-compiled-cf-routing-release] }
+      let(:expected_compiled_exported_deployments) { %w[compile-and-export-bosh compile-and-export-route-registrar-boshrelease compile-and-export-haproxy-boshrelease compile-and-export-cf-routing-release] }
+      let(:expected_uploaded_deployments) { %w[upload-compiled-bosh upload-compiled-route-registrar-boshrelease upload-compiled-haproxy-boshrelease upload-compiled-cf-routing-release] }
       let(:loaded_config) do
         my_config_yaml = <<~YAML
           offline-mode:
@@ -372,7 +372,6 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         expect(s3_job).not_to be_empty
       end
 
-
       it 'generates push-boshreleases tasks' do
         push_boshreleases_job_tasks = generated_pipeline['jobs']
           .select { |job| job['name'] == "push-boshreleases" }
@@ -380,7 +379,6 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
           .flat_map { |step| step['task'] }.compact
         expect(push_boshreleases_job_tasks).to match(expected_push_boshreleases_tasks)
       end
-
 
       it 'generates init-concourse-boshrelease-and-stemcell-for-ops-depls' do
         expected_init_version = expected_boshreleases.values.flat_map { |get_version| "path:#{get_version}" }
@@ -391,9 +389,15 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
           .flat_map { |task| task['config']['run']['args'] }
         expect(init_args[1]).to include(*expected_init_version)
       end
+      it 'generates a deployment name with "precompile" prefix' do
+        expected_resource_name = expected_boshreleases.keys.flat_map { |name| "precompile-#{name}-deployment" }.sort
+        precompile_resource_names = generated_pipeline['resources']
+          .select { |resource| resource['name'].start_with?("precompile-") && resource['type'] == "bosh-deployment-v2"}
+          .flat_map { |resource| resource['name'] }
+          .sort
+        expect(precompile_resource_names).to match(expected_resource_name)
+      end
     end
-
-
 
     context 'when online boshreleases and offline stemcells are used' do
       let(:loaded_config) do
@@ -502,27 +506,28 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
         YAML.safe_load expected_yaml
       end
       let(:expected_stemcell_upload_task) do
-        [{ "task"=>"download-stemcell",
-           "attempts"=>2,
-           "file"=>"cf-ops-automation/concourse/tasks/download_stemcell/task.yml",
-           "input_mapping"=>{"templates-resource"=>"paas-templates-my-root-depls-limited"},
-           "output_mapping"=>{"stemcell"=>"((stemcell-main-name))"},
-           "params"=>
-                 {"STEMCELL_BASE_LOCATION"=>"https://bosh.io/d/stemcells",
-                       "STEMCELL_MAIN_NAME"=>"((stemcell-main-name))",
-                       "STEMCELL_PREFIX"=>"((stemcell-name-prefix))",
-                  "VERSIONS_FILE"=>"templates-resource/my-root-depls/root-deployment.yml"}
-          },
-         {"task"=>"upload-to-director",
-         "file"=>"cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml",
-         "input_mapping"=> {"config-resource"=>"secrets-full-writer", "stemcell"=>"((stemcell-main-name))"},
-         "attempts" => 2,
-         "params"=>
-            {"BOSH_CA_CERT"=> "config-resource/shared/certs/internal_paas-ca/server-ca.crt",
-             "BOSH_CLIENT"=>"((bosh-username))",
-             "BOSH_CLIENT_SECRET"=>"((bosh-password))",
-             "BOSH_ENVIRONMENT"=>"((bosh-target))"}
-       }]
+        [{ "task" => "download-stemcell",
+           "attempts" => 2,
+           "file" => "cf-ops-automation/concourse/tasks/download_stemcell/task.yml",
+           "input_mapping" => {"templates-resource"=>"paas-templates-my-root-depls-limited"},
+           "output_mapping" => {"stemcell"=>"((stemcell-main-name))"},
+           "params" =>
+                 {"STEMCELL_BASE_LOCATION" => "https://bosh.io/d/stemcells",
+                  "STEMCELL_MAIN_NAME" => "((stemcell-main-name))",
+                  "STEMCELL_PREFIX" => "((stemcell-name-prefix))",
+                  "VERSIONS_FILE" => "templates-resource/my-root-depls/root-deployment.yml"}
+         },
+         {"task" => "upload-to-director",
+          "file" => "cf-ops-automation/concourse/tasks/bosh_upload_stemcell/task.yml",
+          "input_mapping" => {"config-resource"=>"secrets-full-writer", "stemcell"=>"((stemcell-main-name))"},
+          "attempts" => 2,
+          "params" =>
+            {"BOSH_CA_CERT" => "config-resource/shared/certs/internal_paas-ca/server-ca.crt",
+             "BOSH_CLIENT" => "((bosh-username))",
+             "BOSH_CLIENT_SECRET" => "((bosh-password))",
+             "BOSH_ENVIRONMENT" => "((bosh-target))"}
+         }
+        ]
       end
       let(:expected_stemcell_init) { 'echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan' }
       let(:expected_stemcell_get_step) { { "get" => "((stemcell-main-name))", "trigger" => true, "attempts" => 2 } }
@@ -548,7 +553,6 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
           .select { |job| job['name'] == "upload-stemcell-to-s3" }
         expect(s3_job).to be_empty
       end
-
 
       it 'generates step upload-stemcell-to-director' do
         upload_task = generated_pipeline['jobs']
@@ -616,37 +620,37 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
 
     let(:multi_root_dependencies) do
       deps_yaml = <<~YAML
-      #{root_deployment_name}:
-        shield-expe:
-          stemcells:
-            bosh-openstack-kvm-ubuntu-bionic-go_agent:
-          releases:
-            cf-routing-release:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-incubator/cf-routing-release
-              version: 0.169.0
-          bosh-deployment:
-            active: true
-          status: enabled
-        bui:
-          stemcells:
-            bosh-openstack-kvm-ubuntu-bionic-go_agent:
-          releases:
-            cf-routing-release:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-community/route-registrar-boshrelease
-              version: '3'
-            haproxy-boshrelease:
-              base_location: https://bosh.io/d/github.com/
-              repository: cloudfoundry-community/haproxy-boshrelease
-              version: 8.0.12
-          bosh-deployment:
-            active: true
-          status: enabled
+        #{root_deployment_name}:
+          shield-expe:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-incubator/cf-routing-release
+                version: 0.169.0
+            bosh-deployment:
+              active: true
+            status: enabled
+          bui:
+            stemcells:
+              bosh-openstack-kvm-ubuntu-bionic-go_agent:
+            releases:
+              cf-routing-release:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/route-registrar-boshrelease
+                version: '3'
+              haproxy-boshrelease:
+                base_location: https://bosh.io/d/github.com/
+                repository: cloudfoundry-community/haproxy-boshrelease
+                version: 8.0.12
+            bosh-deployment:
+              active: true
+            status: enabled
       YAML
       YAML.safe_load(deps_yaml)
     end
-    let(:template_processing_error) { subject.process(@pipelines_dir + '/*') }
+    let(:template_processing_error) { subject.process("#{@pipelines_dir}/*" ) }
 
     before(:context) do
       @output_dir = Dir.mktmpdir('generated-pipelines')
@@ -662,18 +666,18 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     end
   end
 
-  context 'when a bosh is already precompiled' do
+  context 'when a bosh release is already precompiled' do
     subject { TemplateProcessor.new root_deployment_name, config, processor_context }
 
     let(:root_deployment_name) { 'child-root-depls' }
     let(:loaded_config) do
       my_config_yaml = <<~YAML
-          offline-mode:
-            stemcells: true
-          precompile-mode: true
-          #{root_deployment_name}:
-            precompile:
-              depends-on: [parent-root-deployment]
+        offline-mode:
+          stemcells: true
+        precompile-mode: true
+        #{root_deployment_name}:
+          precompile:
+            depends-on: [parent-root-deployment]
       YAML
       YAML.safe_load(my_config_yaml)
     end
@@ -697,7 +701,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
               route-registrar-boshrelease:
                 base_location: https://bosh.io/d/github.com/
                 repository: cloudfoundry-community/route-registrar-boshrelease
-                sha1: xxxddffrpofkldkng654654d8f97g 
+                sha1: xxxddffrpofkldkng654654d8f97g
                 version: '3'
               haproxy-boshrelease:
                 base_location: https://bosh.io/d/github.com/
@@ -752,6 +756,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
       generated_pipeline_path = File.join(@pipelines_output_dir, pipeline_template)
       YAML.load_file(generated_pipeline_path, aliases: true)
     end
+    let(:expected_jobs) { %W[compile-and-export-bosh compile-and-export-cf-routing-release init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name} push-boshreleases upload-stemcell-to-director upload-stemcell-to-s3] }
 
     before(:context) do
       @output_dir = Dir.mktmpdir('generated-pipelines')
@@ -770,8 +775,6 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
     before do
       @processed_template = subject.process(@pipelines_dir + '/*')
     end
-
-    let(:expected_jobs) { %W[compile-and-export-bosh compile-and-export-cf-routing-release init-concourse-boshrelease-and-stemcell-for-#{root_deployment_name} push-boshreleases upload-stemcell-to-director upload-stemcell-to-s3] }
 
     it 'compiles only bosh releases not compiled by parent root deployment' do
       filtered_generated_jobs = generated_pipeline['jobs']&.flat_map { |job| job['name'] }
