@@ -13,13 +13,13 @@ cat <<EOF > /etc/rc.local
 # By default this script does nothing.
 
 iptables -t nat -F
-iptables -t nat -A POSTROUTING -o eth0 -s ${vpc_paas_cidr} -j SNAT --to ${natgw_private_ip}
+iptables -t nat -A POSTROUTING -o eth0 -s ${vpc_coa_cidr} -j SNAT --to ${natgw_private_ip}
 
 exit 0
 EOF
 
 iptables -t nat -F
-iptables -t nat -A POSTROUTING -o eth0 -s ${vpc_paas_cidr} -j SNAT --to ${natgw_private_ip}
+iptables -t nat -A POSTROUTING -o eth0 -s ${vpc_coa_cidr} -j SNAT --to ${natgw_private_ip}
 echo "net.ipv4.ip_forward = 1" >> /etc/sysctl.conf
 
 sysctl -p
