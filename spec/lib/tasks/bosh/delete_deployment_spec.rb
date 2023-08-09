@@ -43,14 +43,14 @@ describe Tasks::Bosh::DeleteDeployment do
         let(:expected_result) { delete_deployment_response }
 
         before do
-          allow(Open3).to receive(:capture3).with(cmd_env, "bosh delete-deployment --json --non-interactive -d #{my_deployment_name}").
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh delete-deployment --json --non-interactive -d #{my_deployment_name} --force").
             and_return([delete_deployment_json_response, nil, process_status_zero])
         end
 
         it "executes a bosh command" do
           expect(command_output).to match(expected_result)
 
-          expect(Open3).to have_received(:capture3).with(cmd_env, "bosh delete-deployment --json --non-interactive -d #{my_deployment_name}")
+          expect(Open3).to have_received(:capture3).with(cmd_env, "bosh delete-deployment --json --non-interactive -d #{my_deployment_name} --force")
         end
       end
 
@@ -59,7 +59,7 @@ describe Tasks::Bosh::DeleteDeployment do
         let(:stdout) { "o" }
 
         before do
-          allow(Open3).to receive(:capture3).with(cmd_env, "bosh delete-deployment --json --non-interactive -d #{my_deployment_name}").once.
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh delete-deployment --json --non-interactive -d #{my_deployment_name} --force").once.
               and_return([stdout, stderr, process_status_one])
         end
 
