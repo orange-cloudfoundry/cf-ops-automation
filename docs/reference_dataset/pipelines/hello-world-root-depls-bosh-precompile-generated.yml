@@ -82,14 +82,14 @@ resources:
       paths: ["hello-world-root-depls/root-deployment.yml"]
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
-  - name: nginx-deployment
+  - name: precompile-nginx-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: nginx-deployment
+      deployment: precompile-nginx-deployment
       ca_cert: 
   - name: nginx
     type: git
@@ -100,14 +100,14 @@ resources:
       skip_ssl_verification: false
     #    access_token: ((bot-github-access-token))
     version: { ref: ((releases.nginx.version)) }
-  - name: ntp-deployment
+  - name: precompile-ntp-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: ntp-deployment
+      deployment: precompile-ntp-deployment
       ca_cert: 
   - name: ntp
     type: git
@@ -118,14 +118,14 @@ resources:
       skip_ssl_verification: false
     #    access_token: ((bot-github-access-token))
     version: { ref: ((releases.ntp.version)) }
-  - name: vault-deployment
+  - name: precompile-vault-deployment
     icon: cube-send
     type: bosh-deployment-v2
     source:
       target: ((bosh-target))
       client: ((bosh-username))
       client_secret: "((bosh-password))"
-      deployment: vault-deployment
+      deployment: precompile-vault-deployment
       ca_cert: 
   - name: vault
     type: git
@@ -282,8 +282,8 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "ntp-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"ntp-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp", "version"=>"4.2.8p13"}]}'
+            MANIFEST_NAME: "precompile-ntp-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"precompile-ntp-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp", "version"=>"4.2.8p13"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -311,10 +311,10 @@ jobs:
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-      - put: ntp-deployment
+      - put: precompile-ntp-deployment
         attempts: 2
         params:
-          manifest: final-release-manifest/ntp-deployment.yml
+          manifest: final-release-manifest/precompile-ntp-deployment.yml
           cleanup: true
       - task: compile-and-export-ntp
         attempts: 2
@@ -333,26 +333,41 @@ jobs:
           outputs:
             - name: exported-release
           run:
-            path: sh
+            path: bash
             args:
               - -ec
               - |
+                set -o pipefail
                 STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
-                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+                TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
+                if ! bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release --tty|tee exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log;then
+                  BLOBSTORE_ERROR_COUNT=$(grep -i error|grep -i "blobstore" exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log |wc -l)
+                  if [ $BLOBSTORE_ERROR_COUNT -gt 0 ];then
+                    echo "COA - Blobstore error detected, cleaning deployment and release"
+                    bosh delete-deployment --non-interactive
+                    bosh delete-release ${RELEASE_NAME}/${RELEASE_VERSION} --non-interactive
+                  else
+                   echo "" # new line
+                   echo "COA - No blobstore error detected, retry without cleaning."
+                  fi
+                  exit 1
+                else
+                  echo "" # new line
+                  echo "COA - Bosh export-release successful"
+                fi
           params:
-            BOSH_DEPLOYMENT: ntp-deployment
+            BOSH_DEPLOYMENT: precompile-ntp-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: ntp
             RELEASE_VERSION: ((releases.ntp.version))
-      - put: ntp-deployment
+      - put: precompile-ntp-deployment
         params:
-          manifest: final-release-manifest/ntp-deployment.yml.yml
           delete:
             enabled: true
             force: true
@@ -397,8 +412,8 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "nginx-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.21.6"}]}'
+            MANIFEST_NAME: "precompile-nginx-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"precompile-nginx-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"nginx", "version"=>"1.21.6"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -426,10 +441,10 @@ jobs:
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-      - put: nginx-deployment
+      - put: precompile-nginx-deployment
         attempts: 2
         params:
-          manifest: final-release-manifest/nginx-deployment.yml
+          manifest: final-release-manifest/precompile-nginx-deployment.yml
           cleanup: true
       - task: compile-and-export-nginx
         attempts: 2
@@ -448,26 +463,41 @@ jobs:
           outputs:
             - name: exported-release
           run:
-            path: sh
+            path: bash
             args:
               - -ec
               - |
+                set -o pipefail
                 STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
-                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+                TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
+                if ! bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release --tty|tee exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log;then
+                  BLOBSTORE_ERROR_COUNT=$(grep -i error|grep -i "blobstore" exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log |wc -l)
+                  if [ $BLOBSTORE_ERROR_COUNT -gt 0 ];then
+                    echo "COA - Blobstore error detected, cleaning deployment and release"
+                    bosh delete-deployment --non-interactive
+                    bosh delete-release ${RELEASE_NAME}/${RELEASE_VERSION} --non-interactive
+                  else
+                   echo "" # new line
+                   echo "COA - No blobstore error detected, retry without cleaning."
+                  fi
+                  exit 1
+                else
+                  echo "" # new line
+                  echo "COA - Bosh export-release successful"
+                fi
           params:
-            BOSH_DEPLOYMENT: nginx-deployment
+            BOSH_DEPLOYMENT: precompile-nginx-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: nginx
             RELEASE_VERSION: ((releases.nginx.version))
-      - put: nginx-deployment
+      - put: precompile-nginx-deployment
         params:
-          manifest: final-release-manifest/nginx-deployment.yml.yml
           delete:
             enabled: true
             force: true
@@ -512,8 +542,8 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "vault-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.6"}]}'
+            MANIFEST_NAME: "precompile-vault-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"precompile-vault-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"vault", "version"=>"1.1.6"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -541,10 +571,10 @@ jobs:
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-      - put: vault-deployment
+      - put: precompile-vault-deployment
         attempts: 2
         params:
-          manifest: final-release-manifest/vault-deployment.yml
+          manifest: final-release-manifest/precompile-vault-deployment.yml
           cleanup: true
       - task: compile-and-export-vault
         attempts: 2
@@ -563,26 +593,41 @@ jobs:
           outputs:
             - name: exported-release
           run:
-            path: sh
+            path: bash
             args:
               - -ec
               - |
+                set -o pipefail
                 STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
-                bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release
+                TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
+                if ! bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release --tty|tee exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log;then
+                  BLOBSTORE_ERROR_COUNT=$(grep -i error|grep -i "blobstore" exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log |wc -l)
+                  if [ $BLOBSTORE_ERROR_COUNT -gt 0 ];then
+                    echo "COA - Blobstore error detected, cleaning deployment and release"
+                    bosh delete-deployment --non-interactive
+                    bosh delete-release ${RELEASE_NAME}/${RELEASE_VERSION} --non-interactive
+                  else
+                   echo "" # new line
+                   echo "COA - No blobstore error detected, retry without cleaning."
+                  fi
+                  exit 1
+                else
+                  echo "" # new line
+                  echo "COA - Bosh export-release successful"
+                fi
           params:
-            BOSH_DEPLOYMENT: vault-deployment
+            BOSH_DEPLOYMENT: precompile-vault-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
             RELEASE_NAME: vault
             RELEASE_VERSION: ((releases.vault.version))
-      - put: vault-deployment
+      - put: precompile-vault-deployment
         params:
-          manifest: final-release-manifest/vault-deployment.yml.yml
           delete:
             enabled: true
             force: true

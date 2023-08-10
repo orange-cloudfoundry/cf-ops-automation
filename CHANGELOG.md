@@ -1,5 +1,22 @@
 # Changelog
 
+## [v6.1.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.1) (2023-08-10)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.0...v6.1.1)
+
+**Implemented enhancements:**
+
+- pipeline\(precompile\): detect blobstore related errors [\#435](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/435)
+
+**Fixed bugs:**
+
+- pipeline\(precompile\): refine blobstore related error detection [\#437](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/437)
+- feature\(easily-identify-precompile-deployments\): restore this feature [\#436](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/436)
+
+**Merged pull requests:**
+
+- chore\(deps\): update devtest tools [\#434](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/434)
+
 ## [v6.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.0) (2023-06-13)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.0.5...v6.1.0)
