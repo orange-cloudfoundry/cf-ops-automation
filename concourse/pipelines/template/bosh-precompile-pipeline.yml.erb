@@ -40,19 +40,22 @@
         end
       end
     end
-# Psych.dump
   raise "Inconsistency detected on #{root_deployment_name}: #{releases_inconsistencies[root_deployment_name].to_yaml}" if releases_inconsistencies[root_deployment_name].size >0
 
   uniq_releases_per_root_deployments = Hash.new { |h, k| h[k] = {} }
   releases_per_root_deployments_reference = releases_per_root_deployments.dup
   releases_per_root_deployments.each do |root_depl, releases_info|
     depends_on = config&.dig(root_depl,'precompile', 'depends-on') || []
+    disabled_cached_releases = config&.dig(root_depl,'precompile', 'disabled-cached-releases') || []
     releases_info.each do |release_name, details|
       already_defined = false
-      depends_on.each do |depend_root_depl|
-        details_from_parent = releases_per_root_deployments_reference&.dig(depend_root_depl, release_name)
-        standardized_parent_details = extract_repo_and_version(details_from_parent);
-        already_defined = already_defined || standardized_parent_details == extract_repo_and_version(details)
+      use_cached_release = disabled_cached_releases.include?(release_name)
+      unless use_cached_release
+        depends_on.each do |depend_root_depl|
+          details_from_parent = releases_per_root_deployments_reference&.dig(depend_root_depl, release_name)
+          standardized_parent_details = extract_repo_and_version(details_from_parent)
+          already_defined = already_defined || standardized_parent_details == extract_repo_and_version(details)
+        end
       end
       uniq_releases_per_root_deployments[root_depl][release_name] = details unless already_defined
     end
@@ -244,6 +247,7 @@ jobs:
 <%else %>
   - name: push-boshreleases
     <% jobs['Utils'] << 'push-boshreleases' %>
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
@@ -349,6 +353,7 @@ jobs:
   <% if offline_stemcells_enabled %>
   - name: upload-stemcell-to-s3
     <% jobs['Utils'] << 'upload-stemcell-to-s3' %>
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
@@ -380,6 +385,7 @@ jobs:
 
   - name: upload-stemcell-to-director
     <% jobs['Utils'] << 'upload-stemcell-to-director' %>
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
