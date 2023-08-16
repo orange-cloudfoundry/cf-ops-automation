@@ -126,6 +126,7 @@ resources:
     version: { ref: v((releases.zookeeper_boshrelease.version)) }
 jobs:
   - name: push-boshreleases
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
@@ -196,6 +197,7 @@ jobs:
                     echo "No errors detected"
                   fi
   - name: upload-stemcell-to-s3
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
@@ -223,6 +225,7 @@ jobs:
           STEMCELL_BASE_LOCATION: https://bosh.io/d/stemcells
           VERSIONS_FILE: templates-resource/simple-depls/root-deployment.yml
   - name: upload-stemcell-to-director
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:

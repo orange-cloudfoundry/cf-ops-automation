@@ -62,3 +62,4 @@ default:
 #    excluded_deployments: [] # Default: [] # List of deployments to exclude from precompile. Since precompile does not use secrets repository to determine enabled deployments, it may be useful to exclude a deployment that is not enabled in secrets.
 #    disabled_compiled_download_url_deployments: [] # Default: [] - List of deployments to exclude from bosh manifest precompile patching
 #    disabled_compiled_download_url_deployments_prefix: [] # Default: [] - List of deployments prefix to exclude from bosh manifest precompile patching
+#    disabled-cached-releases: [] # Default: [] - List of bosh releases to compile on local bosh director, even when compiled
