@@ -1,5 +1,13 @@
 # Changelog
 
+## [v6.1.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.2) (2023-08-17)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.1...v6.1.2)
+
+**Implemented enhancements:**
+
+- pipeline\(precompile\): allow configuration to force local compilation on bosh director [\#438](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/438)
+
 ## [v6.1.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.1) (2023-08-10)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.0...v6.1.1)

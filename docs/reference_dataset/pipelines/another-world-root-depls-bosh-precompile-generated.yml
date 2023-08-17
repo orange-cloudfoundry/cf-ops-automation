@@ -84,6 +84,7 @@ resources:
       skip_ssl_verification: true
 jobs:
   - name: push-boshreleases
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
@@ -154,6 +155,7 @@ jobs:
                     echo "No errors detected"
                   fi
   - name: upload-stemcell-to-director
+    serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
