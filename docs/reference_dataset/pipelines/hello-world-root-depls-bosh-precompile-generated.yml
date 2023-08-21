@@ -346,7 +346,7 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
                 if ! bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release --tty|tee exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log;then
-                  BLOBSTORE_ERROR_COUNT=$(grep -i error|grep -i "blobstore" exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log |wc -l)
+                  BLOBSTORE_ERROR_COUNT=$(grep -i error exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log|grep -i "blobstore"|wc -l)
                   if [ $BLOBSTORE_ERROR_COUNT -gt 0 ];then
                     echo "COA - Blobstore error detected, cleaning deployment and release"
                     bosh delete-deployment --non-interactive
@@ -476,7 +476,7 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
                 if ! bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release --tty|tee exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log;then
-                  BLOBSTORE_ERROR_COUNT=$(grep -i error|grep -i "blobstore" exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log |wc -l)
+                  BLOBSTORE_ERROR_COUNT=$(grep -i error exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log|grep -i "blobstore"|wc -l)
                   if [ $BLOBSTORE_ERROR_COUNT -gt 0 ];then
                     echo "COA - Blobstore error detected, cleaning deployment and release"
                     bosh delete-deployment --non-interactive
@@ -606,7 +606,7 @@ jobs:
                 echo "Exporting ${RELEASE_NAME}/${RELEASE_VERSION} - ${STEMCELL_OS}/${STEMCELL_VERSION}"
                 TIMESTAMP=$(date +'%Y-%m-%d-%H-%M-%S')
                 if ! bosh export-release "${RELEASE_NAME}/${RELEASE_VERSION}" "${STEMCELL_OS}/${STEMCELL_VERSION}" --dir=exported-release --tty|tee exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log;then
-                  BLOBSTORE_ERROR_COUNT=$(grep -i error|grep -i "blobstore" exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log |wc -l)
+                  BLOBSTORE_ERROR_COUNT=$(grep -i error exported-release/${RELEASE_NAME}-${RELEASE_VERSION}-${TIMESTAMP}.log|grep -i "blobstore"|wc -l)
                   if [ $BLOBSTORE_ERROR_COUNT -gt 0 ];then
                     echo "COA - Blobstore error detected, cleaning deployment and release"
                     bosh delete-deployment --non-interactive
