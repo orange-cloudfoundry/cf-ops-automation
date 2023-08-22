@@ -1,5 +1,13 @@
 # Changelog
 
+## [v6.1.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.3) (2023-08-22)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.2...v6.1.3)
+
+**Fixed bugs:**
+
+- Properly detect errors in precompile pipelines [\#439](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/439)
+
 ## [v6.1.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.2) (2023-08-16)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.1...v6.1.2)
