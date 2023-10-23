@@ -1,3 +1,0 @@
-- type: replace
-  path: /releases/-
-  value: {name: ntp, version: (( ntp_release_version ))}

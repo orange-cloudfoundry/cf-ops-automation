@@ -5,6 +5,6 @@ deployment:
       nginx:
         base_location: https://bosh.io/d/github.com/
         repository: cloudfoundry-community/nginx-release
-      ntp:
+      cron:
         base_location: https://bosh.io/d/github.com/
-        repository: cloudfoundry-community/ntp-release
+        repository: cloudfoundry-community/cron-boshrelease
