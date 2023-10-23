@@ -12,10 +12,10 @@ releases:
     tag_prefix: '' # Optional - by default, COA assumes boshrelease tag starts with 'v'. Adjust using this prefix.
     github-release-name: '' # Optional - by default, COA uses "<name>-<version>.tgz" - Default: nil
 
-  ntp:
-    version: "4.2.8p13"
-    repository: cloudfoundry-community/ntp-release
-    tag_prefix: ''
+  cron:
+    version: "1.3.1"
+    repository: cloudfoundry-community/cron-boshrelease
+    tag_prefix: 'overridden-by-deployment-dependencies' # useless as it is the default value, just to illustrate it is possible to override tag prefix
 
   bosh-openstack-cpi:
     version: "46"

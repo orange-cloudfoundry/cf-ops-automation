@@ -53,7 +53,7 @@ module Coa
         "hello-world-root-depls-bosh-precompile-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
-            "compile-and-export-ntp" => {},
+            "compile-and-export-cron" => {},
             "compile-and-export-nginx" => {},
             "compile-and-export-vault" => {},
             "upload-stemcell-to-director" => {},

@@ -17,10 +17,10 @@ deployment:
     # bosh-release required. Don't set version here, set it in paas-template/root-deployment.yml
     releases:
       #ngnix should be defined here but as sample it is defined in deployment-dependencies-<IAAS_TYPE>.yml
-      ntp:
+      cron:
         base_location: https://github.com/
-        repository: cloudfoundry-community/ntp-release
-        tag_prefix: ''
+        repository: cloudfoundry-community/cron-boshrelease
+        tag_prefix: 'v' # This may override value defined in 'root-deployment.yml'
     errands: # errands to execute automatically after each deploy. Errand are executed one by one in random order.
       # errand-1:
         # display-name: my-custom-name   # => run-errand-bosh-deployment-sample-my-custom-name (ie: run-errand-<deployment-name>-<display-name>)

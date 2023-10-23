@@ -1,0 +1,3 @@
+- type: replace
+  path: /releases/-
+  value: {name: cron, version: (( cron_release_version ))}
