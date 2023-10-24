@@ -82,6 +82,24 @@ resources:
       paths: ["hello-world-root-depls/root-deployment.yml"]
       branch: ((paas-templates-precompile-branch))
       skip_ssl_verification: true
+  - name: precompile-cron-deployment
+    icon: cube-send
+    type: bosh-deployment-v2
+    source:
+      target: ((bosh-target))
+      client: ((bosh-username))
+      client_secret: "((bosh-password))"
+      deployment: precompile-cron-deployment
+      ca_cert: 
+  - name: cron
+    type: git
+    icon:  github-circle
+    source:
+      uri: https://github.com/cloudfoundry-community/cron-boshrelease
+      tag_filter: v((releases.cron.version))
+      skip_ssl_verification: false
+    #    access_token: ((bot-github-access-token))
+    version: { ref: v((releases.cron.version)) }
   - name: precompile-nginx-deployment
     icon: cube-send
     type: bosh-deployment-v2
@@ -100,24 +118,6 @@ resources:
       skip_ssl_verification: false
     #    access_token: ((bot-github-access-token))
     version: { ref: ((releases.nginx.version)) }
-  - name: precompile-ntp-deployment
-    icon: cube-send
-    type: bosh-deployment-v2
-    source:
-      target: ((bosh-target))
-      client: ((bosh-username))
-      client_secret: "((bosh-password))"
-      deployment: precompile-ntp-deployment
-      ca_cert: 
-  - name: ntp
-    type: git
-    icon:  github-circle
-    source:
-      uri: https://github.com/cloudfoundry-community/ntp-release
-      tag_filter: ((releases.ntp.version))
-      skip_ssl_verification: false
-    #    access_token: ((bot-github-access-token))
-    version: { ref: ((releases.ntp.version)) }
   - name: precompile-vault-deployment
     icon: cube-send
     type: bosh-deployment-v2
@@ -243,13 +243,13 @@ jobs:
           BOSH_CLIENT_SECRET: ((bosh-password))
           BOSH_ENVIRONMENT: ((bosh-target))
           BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-  - name: compile-and-export-ntp
+  - name: compile-and-export-cron
     serial_groups: [concurrent-group-0]
     serial: true
     on_failure: *on_failure
     plan:
       - in_parallel:
-          - get: ntp
+          - get: cron
             trigger: true
             attempts: 2
           - get: secrets-full-writer
@@ -258,7 +258,7 @@ jobs:
             passed: [ upload-stemcell-to-director ]
             trigger: true
             attempts: 2
-      - task: generate-ntp-deployment-manifest
+      - task: generate-cron-deployment-manifest
         input_mapping: {stemcell: ((stemcell-main-name))}
         output_mapping: {generated-files: final-release-manifest}
         config:
@@ -284,13 +284,13 @@ jobs:
                 ruby -ryaml -e 'ruby_manifest=eval(ENV["MANIFEST_CONTENT"]); ruby_manifest["stemcells"] = [ "alias" => "default", "os" => ENV["STEMCELL_OS"], "version" => "latest"];File.open(File.join("generated-files", ENV["MANIFEST_NAME"]), "w") { |file| file.write(ruby_manifest.to_yaml) }'
                 cat generated-files/${MANIFEST_NAME}
           params:
-            MANIFEST_NAME: "precompile-ntp-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"precompile-ntp-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp", "version"=>"4.2.8p13"}]}'
+            MANIFEST_NAME: "precompile-cron-deployment.yml"
+            MANIFEST_CONTENT: '{"name"=>"precompile-cron-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"cron", "version"=>"1.3.1"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
           attempts: 2
-          input_mapping: { releases-to-upload: ntp, config-resource: secrets-full-writer }
+          input_mapping: { releases-to-upload: cron, config-resource: secrets-full-writer }
           config:
             platform: linux
             image_resource:
@@ -313,15 +313,15 @@ jobs:
             BOSH_CLIENT_SECRET: ((bosh-password))
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CA_CERT: config-resource/shared/certs/internal_paas-ca/server-ca.crt
-      - put: precompile-ntp-deployment
+      - put: precompile-cron-deployment
         attempts: 2
         params:
-          manifest: final-release-manifest/precompile-ntp-deployment.yml
+          manifest: final-release-manifest/precompile-cron-deployment.yml
           cleanup: true
-      - task: compile-and-export-ntp
+      - task: compile-and-export-cron
         attempts: 2
         input_mapping: {secrets: secrets-full-writer, stemcell: ((stemcell-main-name))}
-        output_mapping: {exported-release: ntp-exported-release}
+        output_mapping: {exported-release: cron-exported-release}
         config:
           platform: linux
           image_resource:
@@ -361,14 +361,14 @@ jobs:
                   echo "COA - Bosh export-release successful"
                 fi
           params:
-            BOSH_DEPLOYMENT: precompile-ntp-deployment
+            BOSH_DEPLOYMENT: precompile-cron-deployment
             BOSH_ENVIRONMENT: ((bosh-target))
             BOSH_CLIENT: ((bosh-username))
             BOSH_CLIENT_SECRET: "((bosh-password))"
             BOSH_CA_CERT: secrets/shared/certs/internal_paas-ca/server-ca.crt
-            RELEASE_NAME: ntp
-            RELEASE_VERSION: ((releases.ntp.version))
-      - put: precompile-ntp-deployment
+            RELEASE_NAME: cron
+            RELEASE_VERSION: ((releases.cron.version))
+      - put: precompile-cron-deployment
         params:
           delete:
             enabled: true
@@ -664,8 +664,8 @@ jobs:
           args:
           - -ec
           - |
+            echo "check-resource -r $BUILD_PIPELINE_NAME/cron --from tag:v((releases.cron.version))" | tee -a result-dir/flight-plan
             echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from tag:((releases.nginx.version))" | tee -a result-dir/flight-plan
-            echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from tag:((releases.ntp.version))" | tee -a result-dir/flight-plan
             echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:v((releases.vault.version))" | tee -a result-dir/flight-plan
             echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
         params:
@@ -685,18 +685,20 @@ groups:
       - "*"
   - name: "releases"
     jobs:
+      - compile-and-export-cron
       - compile-and-export-nginx
-      - compile-and-export-ntp
       - compile-and-export-vault
   - name: "utils"
     jobs:
       - init-concourse-boshrelease-and-stemcell-for-hello-world-root-depls
       - push-boshreleases
       - upload-stemcell-to-director
+  - name: "c"
+    jobs:
+      - compile-and-export-cron
   - name: "n"
     jobs:
       - compile-and-export-nginx
-      - compile-and-export-ntp
   - name: "v"
     jobs:
       - compile-and-export-vault
