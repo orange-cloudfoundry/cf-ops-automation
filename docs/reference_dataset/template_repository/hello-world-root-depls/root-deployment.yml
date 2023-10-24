@@ -18,7 +18,7 @@ releases:
     tag_prefix: 'overridden-by-deployment-dependencies' # useless as it is the default value, just to illustrate it is possible to override tag prefix
 
   bosh-openstack-cpi:
-    version: "46"
+    version: "54"
     repository: cloudfoundry/bosh-openstack-cpi-release
 
   vault:
