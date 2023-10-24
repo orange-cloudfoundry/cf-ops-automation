@@ -166,6 +166,15 @@ resources:
     uri: ((paas-templates-uri))
     branch: pipeline-current-((paas-templates-branch))
     skip_ssl_verification: true
+- name: cron
+  type: git
+  icon:  github-circle
+  source:
+    uri: https://github.com/cloudfoundry-community/cron-boshrelease
+    tag_filter: v((releases.cron.version))
+    skip_ssl_verification: false
+#    access_token: ((bot-github-access-token))
+  version: { ref: v((releases.cron.version)) }
 - name: nginx
   type: git
   icon:  github-circle
@@ -175,15 +184,6 @@ resources:
     skip_ssl_verification: false
 #    access_token: ((bot-github-access-token))
   version: { ref: ((releases.nginx.version)) }
-- name: ntp
-  type: git
-  icon:  github-circle
-  source:
-    uri: https://github.com/cloudfoundry-community/ntp-release
-    tag_filter: ((releases.ntp.version))
-    skip_ssl_verification: false
-#    access_token: ((bot-github-access-token))
-  version: { ref: ((releases.ntp.version)) }
 - name: vault
   type: git
   icon:  github-circle
@@ -536,12 +536,12 @@ jobs:
     - get: cf-ops-automation
       params: { submodules: none, depth: 0 }
       trigger: true
-    - get: nginx
+    - get: cron
       trigger: true
       params:
         tarball: false
       attempts: 2
-    - get: ntp
+    - get: nginx
       trigger: true
       params:
         tarball: false
@@ -795,8 +795,8 @@ jobs:
         args:
         - -ec
         - |
+          echo "check-resource -r $BUILD_PIPELINE_NAME/cron --from tag:v((releases.cron.version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/nginx --from tag:((releases.nginx.version))" | tee -a result-dir/flight-plan
-          echo "check-resource -r $BUILD_PIPELINE_NAME/ntp --from tag:((releases.ntp.version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/vault --from tag:v((releases.vault.version))" | tee -a result-dir/flight-plan
           echo "check-resource -r $BUILD_PIPELINE_NAME/((stemcell-main-name)) --from version:((stemcell.version))" | tee -a result-dir/flight-plan
       params:

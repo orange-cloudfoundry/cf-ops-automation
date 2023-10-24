@@ -39,9 +39,9 @@ another-world-root-depls
 ├── another-bosh-deployment-sample
 │   ├── deployment-dependencies.yml
 │   └── template
-│       ├── adding-ntp-release-operators.yml
+│       ├── adding-cron-release-operators.yml
 │       ├── another-bosh-deployment-sample-tpl.yml
-│       ├── ntp-release-vars.yml
+│       ├── cron-release-vars.yml
 │       ├── openstack
 │       │   └── nginx-operators.yml
 │       ├── post-deploy.sh
