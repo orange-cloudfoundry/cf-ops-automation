@@ -1,5 +1,5 @@
 # ###################
-# This file list required keys. Thoses keys must be present, but values is ignored on CI enviroments
+# This file list required keys. Those keys must be present, but values is ignored on CI environments
 # EXCEPT for 's3-compiled-release-os' key
 # ###################
 pipeline_vars:
@@ -17,4 +17,4 @@ pipeline_vars:
   s3-compiled-release-secret-key: ""
   s3-compiled-release-endpoint: ""
   s3-compiled-release-skip-ssl-verification: false
-  s3-compiled-release-os: ubuntu-bionic
+  s3-compiled-release-os: ubuntu-jammy
