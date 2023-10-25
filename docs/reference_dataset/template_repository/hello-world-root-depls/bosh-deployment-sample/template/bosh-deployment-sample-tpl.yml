@@ -13,7 +13,7 @@ stemcells:
   version: latest
 
 instance_groups:
-- name: nginx
+- name: hello_world
   instances: (( grab secrets.nginx.instances )) # For complex sample of spruce usage, please see docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/generic-app_manifest-tpl.yml
   azs: [z1]
   vm_type: small
