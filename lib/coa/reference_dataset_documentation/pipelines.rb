@@ -32,6 +32,7 @@ module Coa
         command = "ruby #{PROJECT_ROOT_DIR}/scripts/generate-depls.rb #{output_option} "
         command += "#{config_option} #{templates_option} #{depls_option} #{iaas_type_option} #{profiles_option}"
 
+        puts "Executing: #{command}"
         puts`#{command}`
       end
 
