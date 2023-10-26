@@ -12,7 +12,7 @@ bosh:
           url: git+https://github.com/cppforlife/zookeeper-release
       stemcells:
         - alias: default
-          os: ubuntu-bionic
+          os: ubuntu-jammy
           version: latest
 
       update:
