@@ -23,7 +23,7 @@ class RepackageReleasesFallback
 
   def initialize(repackaged_error_filepath = "")
     @repackaged_errors = if File.exist?(repackaged_error_filepath)
-                           YAML.load_file(repackaged_error_filepath, aliases: true) || {}
+                           YAML.load_file(repackaged_error_filepath, aliases: true, permitted_classes: [Tasks::Bosh::BoshCliError]) || {}
                          else
                            {}
                          end
