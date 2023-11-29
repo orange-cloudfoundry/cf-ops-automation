@@ -45,6 +45,14 @@ describe RepackageReleasesFallback do
       it "creates an object with errors" do
         expect(repackage_releases_fallback.has_errors?).to be_truthy
       end
+      end
+
+    context "when bosh returns an errors" do
+      let(:repackaged_releases_path) { File.join(basedir, 'bosh_connection_refused') }
+
+      it "creates an object with errors" do
+        expect(repackage_releases_fallback.has_errors?).to be_truthy
+      end
     end
   end
 

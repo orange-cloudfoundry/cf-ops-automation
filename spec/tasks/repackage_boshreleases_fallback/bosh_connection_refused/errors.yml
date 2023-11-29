@@ -1,0 +1,20 @@
+---
+Bosh director: !ruby/exception:Tasks::Bosh::BoshCliError
+  message: |-
+    Stderr:
+    Stdout:
+    {
+        "Tables": null,
+        "Blocks": null,
+        "Lines": [
+            "Fetching info:\n  Performing request GET 'https://192.168.116.158:25555/info':\n    Performing GET request:\n      Retry: Get \"https://192.168.116.158:25555/info\": dial tcp 192.168.116.158:25555: connect: connection refused",
+            "Exit code 1"
+        ]
+    }
+  backtrace:
+    - "/tmp/build/22f65861/cf-ops-automation/lib/tasks/bosh/executor.rb:39:in `handle_bosh_cli_response'"
+    - "/tmp/build/22f65861/cf-ops-automation/lib/tasks/bosh/executor.rb:34:in `run_command'"
+    - "/tmp/build/22f65861/cf-ops-automation/lib/tasks/bosh/list_releases.rb:7:in `execute'"
+    - "/tmp/build/22f65861/cf-ops-automation/concourse/tasks/repackage_boshreleases/repackage_releases.rb:133:in `filter_releases'"
+    - "/tmp/build/22f65861/cf-ops-automation/concourse/tasks/repackage_boshreleases/repackage_releases.rb:32:in `process'"
+    - cf-ops-automation/concourse/tasks/repackage_boshreleases/run.rb:42:in `<main>'
