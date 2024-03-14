@@ -5,11 +5,11 @@ class TaskSpecHelper
   end
 
   def self.fly_image
-    'teliaoss/concourse-fly'
+    'elpaasoci/concourse-fly' #from https://github.com/telia-oss/concourse-images
   end
 
   def self.fly_image_version
-    '20210905'
+    '7.9.1'
   end
 
   def self.orange_default_image_version
