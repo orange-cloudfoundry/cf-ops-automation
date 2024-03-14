@@ -56,18 +56,18 @@ resource_types:
   - name: slack-notification
     type: registry-image
     source:
-      repository: cfcommunity/slack-notification-resource
+      repository: elpaasoci/slack-notification-resource
 
   - name: pull-request
     type: registry-image
     source:
-      repository: teliaoss/github-pr-resource
+      repository: elpaasoci/github-pr-resource
 
   - name: meta
     type: registry-image
     source:
-      repository: olhtbr/metadata-resource
-      tag: 2.0.1
+      repository: elpaasoci/metadata-resource
+      tag: 28e2ea555a3ea41605d954c12fdc10646b889e6d
 resources:
 - name: concourse-meta
   icon: file-document-box-search-outline

@@ -246,8 +246,8 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: teliaoss/concourse-fly
-            tag: "20210905"
+            repository: orange-cloudfoundry/concourse-fly
+            tag: "7.9.1"
         inputs:
           - name: selected-pipelines
         outputs:
@@ -316,8 +316,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: teliaoss/concourse-fly
-              tag: "20210905"
+              repository: orange-cloudfoundry/concourse-fly
+              tag: "7.9.1"
           inputs:
             - name: concourse-generated-pipeline
           outputs:
@@ -393,8 +393,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: teliaoss/concourse-fly
-              tag: '20210905'
+              repository: orange-cloudfoundry/concourse-fly
+              tag: '7.9.1'
           inputs:
             - name: concourse-micro
           outputs:
@@ -446,8 +446,8 @@ jobs:
   #        image_resource:
   #          type: registry-image
   #          source:
-  #            repository: teliaoss/concourse-fly
-  #            tag: '20210905'
+  #            repository: orange-cloudfoundry/concourse-fly
+  #            tag: '7.9.1'
   #        inputs:
   #          - name: concourse-micro-legacy
   #        outputs:
