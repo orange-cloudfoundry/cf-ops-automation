@@ -67,7 +67,7 @@ resource_types:
     type: registry-image
     source:
       repository: elpaasoci/metadata-resource
-      tag: 28e2ea555a3ea41605d954c12fdc10646b889e6d
+      tag: 2.0.3-orange
 resources:
 - name: concourse-meta
   icon: file-document-box-search-outline
