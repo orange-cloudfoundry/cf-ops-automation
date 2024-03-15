@@ -5,11 +5,11 @@ class TaskSpecHelper
   end
 
   def self.fly_image
-    'elpaasoci/concourse-fly' #from https://github.com/telia-oss/concourse-images
+    'elpaasoci/concourse-fly' #from https://github.com/orange-cloudfoundry/concourse-images
   end
 
   def self.fly_image_version
-    '7.9.1'
+    '7ce5aa85675911e224c72a3d410fd63d93be1442' # ie '7.9.1'
   end
 
   def self.orange_default_image_version

@@ -246,8 +246,8 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: orange-cloudfoundry/concourse-fly
-            tag: "7.9.1"
+            repository: elpaasoci/concourse-fly
+            tag: "7ce5aa85675911e224c72a3d410fd63d93be1442"
         inputs:
           - name: selected-pipelines
         outputs:
@@ -316,8 +316,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: orange-cloudfoundry/concourse-fly
-              tag: "7.9.1"
+              repository: elpaasoci/concourse-fly
+              tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
           inputs:
             - name: concourse-generated-pipeline
           outputs:
@@ -393,8 +393,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: orange-cloudfoundry/concourse-fly
-              tag: '7.9.1'
+              repository: elpaasoci/concourse-fly
+              tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
           inputs:
             - name: concourse-micro
           outputs:
@@ -446,8 +446,8 @@ jobs:
   #        image_resource:
   #          type: registry-image
   #          source:
-  #            repository: orange-cloudfoundry/concourse-fly
-  #            tag: '7.9.1'
+  #            repository: elpaasoci/concourse-fly
+  #            tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
   #        inputs:
   #          - name: concourse-micro-legacy
   #        outputs:

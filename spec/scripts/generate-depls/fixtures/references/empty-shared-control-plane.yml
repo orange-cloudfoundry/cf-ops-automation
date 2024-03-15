@@ -131,7 +131,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/concourse-fly
-              tag: '7.9.1'
+              tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
           inputs:
             - name: concourse-micro
           outputs:
@@ -182,7 +182,7 @@ jobs:
   #          type: registry-image
   #          source:
   #            repository: elpaasoci/concourse-fly
-  #            tag: '7.9.1'
+  #            tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
   #        inputs:
   #          - name: concourse-micro-legacy
   #        outputs:
