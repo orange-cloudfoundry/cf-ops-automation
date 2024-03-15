@@ -93,8 +93,8 @@ describe 'BoshPipelineTemplateProcessing' do
       - name: bosh-errand
         type: registry-image
         source:
-          repository: cfcommunity/bosh2-errand-resource
-          tag: v0.1.2
+          repository: elpaasoci/bosh2-errand-resource
+          tag: v0.1.2-orange
       - name: meta
         type: registry-image
         source:
