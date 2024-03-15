@@ -68,7 +68,7 @@ describe TemplateProcessor do
           'resource_types' => [
             {  'name' => 'slack-notification',
                'type' => 'docker-image',
-               'source' => { 'repository' => 'cfcommunity/slack-notification-resource' } }
+               'source' => { 'repository' => 'elpaasoci/slack-notification-resource' } }
           ],
           'resources' => [],
           'jobs' => [
@@ -110,7 +110,7 @@ describe TemplateProcessor do
             - name: slack-notification
               type: registry-image
               source:
-                repository: cfcommunity/slack-notification-resource
+                repository: elpaasoci/slack-notification-resource
             resources: []
             jobs:
             - name: "good"
