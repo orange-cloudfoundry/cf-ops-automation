@@ -5,8 +5,8 @@ module Coa
         name: slack-notification
         type: registry-image
         source:
-          repository: cfcommunity/slack-notification-resource
-          tag: v1.4.2
+          repository: elpaasoci/slack-notification-resource
+          tag: v1.7.0-orange
       meta:
         name: meta
         type: registry-image
