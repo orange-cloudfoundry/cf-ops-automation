@@ -96,7 +96,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
         type: registry-image
         source:
           repository: elpaasoci/concourse-pipeline-resource
-          tag: 7.8.2
+          tag: 7.9.1
     YAML
     YAML.safe_load(resource_types_yaml)
   end
