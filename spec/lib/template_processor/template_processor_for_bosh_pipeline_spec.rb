@@ -98,8 +98,8 @@ describe 'BoshPipelineTemplateProcessing' do
       - name: meta
         type: registry-image
         source:
-          repository: olhtbr/metadata-resource
-          tag: 2.0.1
+          repository: elpaasoci/metadata-resource
+          tag: 2.0.3-orange
 
     YAML
     YAML.safe_load(resource_types_yaml)
