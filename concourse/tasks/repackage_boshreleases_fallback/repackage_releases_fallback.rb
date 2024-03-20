@@ -15,6 +15,7 @@ require 'yaml'
 require 'fileutils'
 require 'open3'
 require 'open-uri'
+require_relative '../../../lib/tasks/bosh'
 
 # This class process boshrelease repackaging errors and try to get releases from bosh.io or github
 class RepackageReleasesFallback
