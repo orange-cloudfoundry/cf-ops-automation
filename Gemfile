@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.1.2'
+ruby '3.3.0'
 gem 'rhcl', '~> 0.1.0'
 
 group :development do
