@@ -1,2 +1,2 @@
 docker-image-repository: elpaasoci/bosh-cli-v2
-docker-image-tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+docker-image-tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6

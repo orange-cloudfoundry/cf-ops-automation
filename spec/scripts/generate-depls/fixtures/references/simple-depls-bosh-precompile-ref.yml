@@ -166,7 +166,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/curl-ssl
-              tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+              tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
           inputs:
             - name: repackaged-releases-fallback
           run:
@@ -270,7 +270,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+              tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
           inputs:
             - name: stemcell
           outputs:
@@ -300,7 +300,7 @@ jobs:
               type: registry-image
               source:
                 repository: elpaasoci/bosh-cli-v2
-                tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+                tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -331,7 +331,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+              tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
           inputs:
             - name: stemcell
             - name: secrets
@@ -400,7 +400,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+              tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
           inputs:
             - name: stemcell
           outputs:
@@ -430,7 +430,7 @@ jobs:
               type: registry-image
               source:
                 repository: elpaasoci/bosh-cli-v2
-                tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+                tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -461,7 +461,7 @@ jobs:
             type: registry-image
             source:
               repository: elpaasoci/bosh-cli-v2-cf-cli
-              tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+              tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
           inputs:
             - name: stemcell
             - name: secrets
@@ -529,7 +529,7 @@ jobs:
           type: registry-image
           source:
             repository: elpaasoci/curl-ssl
-            tag: bbe33e0f82a61bafa24a2c974b39bfa803a395b5
+            tag: 7253f58a1d8b36bf3754c07ecfe1c9e39aff1dc6
         outputs:
           - name: result-dir
         run:
