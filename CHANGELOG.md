@@ -1,12 +1,30 @@
 # Changelog
 
-## [v6.1.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.3) (2023-08-22)
+## [v6.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.2.0) (2024-05-14)
 
-[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.2...v6.1.3)
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.3...v6.2.0)
 
 **Fixed bugs:**
 
+- Precompile pipeline handle bosh error during push-bosh job in repackage-releases-fallback task [\#442](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/442)
 - Properly detect errors in precompile pipelines [\#439](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/439)
+
+**Miscellaneous:**
+
+- bump coa-ci to concourse 7.10 [\#441](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/441)
+
+**Merged pull requests:**
+
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to 0812269 [\#448](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/448)
+- switch to elpaasoci images [\#446](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/446)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to bbe33e0 [\#444](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/444)
+- tasks\(repackage\_boshreleases\_fallback\): fix deserialization [\#443](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/443)
+- chore\(deps\): update devtest tools [\#440](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/440)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to ee3c5be [\#433](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/433)
+
+## [v6.1.3](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.3) (2023-08-21)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.2...v6.1.3)
 
 ## [v6.1.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.1.2) (2023-08-16)
 
