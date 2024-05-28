@@ -15,9 +15,10 @@ else
   echo "ERROR: missing values-iaas-type.yml - '$BASE_TEMPLATE_DIR'/values-iaas-type.yml"
   exit 1
 fi
+grep "$IAAS_TYPE" "$BASE_TEMPLATE_DIR"/values-iaas-type.yml
 
 if [ -f "$BASE_TEMPLATE_DIR"/values-profile.yml ];then
-  echo "Values values available"
+  echo "values-profile available"
 else
   echo "ERROR: missing values-profile - '$BASE_TEMPLATE_DIR'/values-profile.yml"
   exit 1
