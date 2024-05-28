@@ -1,5 +1,5 @@
 # ###################
-# This file list required keys. Those keys must be present, but values is ignored on CI environments
+# This file list required keys. Those keys must be present, but values are ignored on CI environments
 # EXCEPT for 's3-compiled-release-os' key
 # ###################
 pipeline_vars:

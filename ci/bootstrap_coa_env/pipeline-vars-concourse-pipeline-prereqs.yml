@@ -1,5 +1,5 @@
 # ###################
-# This file list required keys. Thoses keys must be present, but values is ignored on CI enviroments
+# This file lists required keys. These keys must be present, but values are ignored in CI environments.
 # ###################
 pipeline_vars:
   coa-config-key: value-from-coa-config
