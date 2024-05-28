@@ -2,6 +2,7 @@ applications:
   - name: generic-app
     instances: (( grab secrets.generic-app.instances ))
     path: .
+    buildpack: staticfile_buildpack # to speedup cf push
 
     memory: (( grab secrets.an_undefined_key_in_secrets_yml || an_undefined_yml_key.fallback.value || "64M" )) # as no values are defined, spruce will use the 64M default value
     random-route: true
