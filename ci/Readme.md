@@ -22,16 +22,18 @@ It seems difficult to build a docker image once per PR:
  2. `Ship it`
 
 ## Resource usage overview
+web_vm_type: 1cpu-2g
+db_vm_type: 2cpu-8g
 
+worker_vm_type: 4cpu-8g
 ### current resource usage
-* coa-ci-inception    | s3.small.1   |
-* nginx               | s3.small.1   |
-* ntpd                | s3.small.1   |
-* zookeeper           | s3.small.1   |
-* git-server          | s3.small.1   |
-* web                 | s3.medium.2  |
-* db                  | s3.large.4   |
-* worker              | s3.large.4   |
-* worker              | s3.large.4   |
-* bosh                | s3.large.4   |
+* nginx               | 1cpu-1g   |
+* ntpd                | 1cpu-1g   |
+* zookeeper           | 1cpu-1g   |
+* git-server          | 1cpu-1g   |
+* web                 | 1cpu-2g   |
+* db                  | 2cpu-8g   |
+* worker              | 4cpu-8g   |
+* worker              | 4cpu-8g   |
+* bosh                | 4cpu-16g  | # oversize for our usage
 

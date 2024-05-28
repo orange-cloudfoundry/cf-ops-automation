@@ -7,7 +7,7 @@ git_server_manifest:
 
   instance_groups:
   - name: git-server
-    azs: [z1]
+    azs: [r1-z2]
     instances: 1
     jobs:
     - release: git-server

@@ -23,7 +23,7 @@ bosh:
 
       instance_groups:
         - name: zookeeper
-          azs: [z1]
+          azs: [r1-z2]
           instances: 1
           jobs:
             - name: zookeeper
@@ -34,8 +34,8 @@ bosh:
             - name: status
               release: zookeeper
               properties: {}
-          vm_type: small
+          vm_type: 1cpu-1g
           stemcell: default
           persistent_disk: 10240
           networks:
-            - name: concourse-bucc
+            - name: tf-net-coa-ci

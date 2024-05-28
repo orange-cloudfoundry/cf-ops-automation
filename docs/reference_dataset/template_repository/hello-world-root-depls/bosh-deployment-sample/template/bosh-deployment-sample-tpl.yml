@@ -15,12 +15,12 @@ stemcells:
 instance_groups:
 - name: hello_world
   instances: (( grab secrets.nginx.instances )) # For complex sample of spruce usage, please see docs/reference_dataset/template_repository/hello-world-root-depls/cf-apps-deployments/generic-app/template/generic-app_manifest-tpl.yml
-  azs: [z1]
-  vm_type: small
+  azs: [r1-z2]
+  vm_type: 1cpu-1g
   persistent_disk: 0
   stemcell: default
   networks:
-  - name: concourse-bucc
+  - name: tf-net-coa-ci
   jobs:
   - name: nginx
     release: nginx

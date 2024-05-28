@@ -1,0 +1,23 @@
+- type: replace
+  path: /instance_groups/name=hello_world/jobs/-
+  value:
+    name: cron
+    release: cron
+    properties:
+      cron:
+        entries:
+          - script:
+              name: demo.sh
+              contents: |
+                #!/bin/bash
+                dt=$(date +"%d/%m/%Y à %Hh%M")
+                echo "begin $dt"
+                echo "- Cron Boshrelease demo  "
+            log: /var/vcap/sys/log/cron/dummy-cron.log
+            lock: /var/vcap/sys/run/cron/dummy-cron.lock
+            day: '*'
+            hour: '8-18'
+            minute: '0'
+            month: '*'
+            user: root
+            wday: '*'

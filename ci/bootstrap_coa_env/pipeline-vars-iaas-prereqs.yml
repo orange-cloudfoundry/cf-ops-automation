@@ -3,8 +3,8 @@
 # EXCEPT for 'stemcell-main-name', 'iaas-type' keys
 # ###################
 pipeline_vars:
-  iaas-type: openstack
+  iaas-type: vsphere
   stemcell-name-prefix: ""
-  stemcell-main-name: bosh-openstack-kvm-ubuntu-jammy-go_agent
+  stemcell-main-name: bosh-vsphere-esxi-ubuntu-jammy-go_agent
   stemcell-version: "621.76"
   bosh-openstack-cpi-release-version: "39"
