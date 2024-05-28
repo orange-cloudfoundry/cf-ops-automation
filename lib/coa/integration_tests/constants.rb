@@ -47,7 +47,7 @@ module Coa
         "hello-world-root-depls-cf-apps-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
-            # "cf-push-generic-app" => {}
+            "cf-push-generic-app" => {}
           }
         },
         "hello-world-root-depls-bosh-precompile-generated" => {
