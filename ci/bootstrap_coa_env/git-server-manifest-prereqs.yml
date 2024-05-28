@@ -5,7 +5,7 @@ git_server_manifest:
     version: 3
   instance_groups:
   - name: git-server
-    azs: [z1]
+    azs: [r1-z2]
     instances: 1
     jobs:
     - release: git-server
@@ -17,11 +17,11 @@ git_server_manifest:
         - cf-ops-automation
         - k8s-configs
         - concourse-audit-trail
-    vm_type: small
+    vm_type: 1cpu-1g
     stemcell: default
     persistent_disk: 10_000
     networks:
-    - name: concourse-bucc
+    - name: tf-net-coa-ci
   stemcells:
   - alias: default
     os: ubuntu-jammy
