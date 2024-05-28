@@ -1,0 +1,4 @@
+#@data/values
+---
+iaas:
+  type: vsphere
