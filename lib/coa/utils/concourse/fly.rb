@@ -10,8 +10,8 @@ module Coa
           self.class.login(target: target, creds: creds, team: team)
         end
 
-        def destroy_pipeline(pipeline)
-          run "destroy-pipeline --pipeline #{pipeline} --non-interactive"
+        def destroy_pipeline(pipeline, options = {})
+          run "destroy-pipeline --pipeline #{pipeline} --non-interactive", options
         end
 
         def unpause_pipeline(pipeline)
@@ -69,9 +69,9 @@ module Coa
 
         private
 
-        def run(command)
+        def run(command, options = {})
           Coa::Utils::CommandRunner.
-            new("fly --target #{@target} #{command}").
+            new("fly --target #{@target} #{command}", options).
             execute
         end
       end
