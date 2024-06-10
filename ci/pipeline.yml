@@ -449,6 +449,7 @@ jobs:
           params:
             PREREQS_PATHS_RAW: "./prereqs/*.yml"
             COA_LOG_PATH: "../../../../coa-logs"
+            <<: *integration_tests_setup_pre_requisites_task_config_params
         on_failure:
           task: dump-coa-log-file
           image: cf-ops-automation-docker-image-develop
