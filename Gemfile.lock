@@ -101,8 +101,10 @@ GEM
     faraday-net_http (3.0.2)
     ffi (1.15.5)
     fiber-local (1.0.0)
-    git (1.19.1)
+    git (2.1.1)
+      activesupport (>= 5.0)
       addressable (~> 2.8)
+      process_executer (~> 1.1)
       rchardet (~> 1.8)
     github_changelog_generator (1.16.4)
       activesupport
@@ -150,6 +152,7 @@ GEM
     parser (3.3.1.0)
       ast (~> 2.4.1)
       racc
+    process_executer (1.1.0)
     protocol-hpack (1.4.2)
     protocol-http (0.24.1)
     protocol-http1 (0.15.0)
@@ -245,7 +248,7 @@ PLATFORMS
 DEPENDENCIES
   cucumber
   docker_registry2 (~> 1.18.0)
-  git (~> 1.19.1)
+  git (~> 2.1.1)
   github_changelog_generator (~> 1.16.4)
   mdl (~> 0.13.0)
   rake (~> 13.2.1)
