@@ -1,4 +1,4 @@
-FROM ruby:3.1.2
+FROM ruby:3.1.2 AS ci_image
 
 # 92c56cb432c5d86d8687d765bd6d0847dc80edfbab28a878a9c11eec9289b02d  fly-7.8.2-linux-amd64.tgz
 # 6cf7acfcde78a980339cba1534c01be28d360306e5c76c60c5546e3847434eb7  fly-7.9.1-linux-amd64.tgz
@@ -42,7 +42,7 @@ RUN curl --retry 30 -SL "https://raw.githubusercontent.com/ekalinin/github-markd
   && chmod a+x /usr/local/bin/gh-md-toc
 
 # Download BOSH v2 CLI
-RUN curl --retry 30 -SLo /usr/local/bin/bosh https://s3.amazonaws.com/bosh-cli-artifacts/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 \
+RUN curl --retry 30 -SLo /usr/local/bin/bosh https://github.com/cloudfoundry/bosh-cli/releases/download/v${BOSH_CLI_VERSION}/bosh-cli-${BOSH_CLI_VERSION}-linux-amd64 \
   && echo "Computed sha256sum: $(sha256sum /usr/local/bin/bosh)" \
   && echo "${BOSH_CLI_SHA256} */usr/local/bin/bosh" | shasum -a 256 -c - \
   && chmod +x /usr/local/bin/bosh
@@ -51,3 +51,10 @@ RUN curl --retry 30 -SLo /usr/local/bin/bosh https://s3.amazonaws.com/bosh-cli-a
 #   bundler => old binary
 #   bundle => latest binary
 RUN rm -f /usr/local/bundle/bin/bundler
+
+
+FROM ci_image as test_ci_image
+RUN bosh --version && fly --version && cc-test-reporter --version && gh-md-toc --version
+
+
+FROM ci_image
