@@ -103,7 +103,7 @@ jobs:
           type: registry-image
           source:
             repository: elpaasoci/git-ssh
-            tag: 08122693acec179b207390cd889600c8148c541c
+            tag: 3b099c3aa806646de2550f13fad8d1ecbdcf45e7
         platform: linux
         inputs:
           - name: paas-templates-features
@@ -200,7 +200,7 @@ jobs:
                 type: registry-image
                 source:
                   repository: elpaasoci/git-ssh
-                  tag: 08122693acec179b207390cd889600c8148c541c
+                  tag: 3b099c3aa806646de2550f13fad8d1ecbdcf45e7
               platform: linux
               inputs:
                 - name: rebased-wip
@@ -280,7 +280,7 @@ jobs:
                 type: registry-image
                 source:
                   repository: elpaasoci/git-ssh
-                  tag: 08122693acec179b207390cd889600c8148c541c
+                  tag: 3b099c3aa806646de2550f13fad8d1ecbdcf45e7
               platform: linux
               inputs:
                 - name: paas-templates-features-reseted
@@ -340,7 +340,7 @@ jobs:
           type: registry-image
           source:
             repository: elpaasoci/git-ssh
-            tag: 08122693acec179b207390cd889600c8148c541c
+            tag: 3b099c3aa806646de2550f13fad8d1ecbdcf45e7
         inputs:
           - name: reference-resource
           - name: cf-ops-automation
