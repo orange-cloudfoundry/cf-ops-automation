@@ -11,7 +11,7 @@ group :development do
   gem 'rake', '~>13.2.1'
   gem 'reek', '~> 6.3.0'
   gem 'rubocop', '~> 1.63.4'
-  gem 'rubocop-rspec', '~> 2.29', '>= 2.29.1'
+  gem 'rubocop-rspec', '~> 3.0', '>= 3.0.1'
 end
 
 group :test do
