@@ -50,12 +50,11 @@
     {
       matchDepNames: ["cloudfoundry/bosh-cli", "concourse/concourse"],
       description: "Group docker images cli bump unless it is a major version",
-      groupName: "COA CI",
       matchUpdateTypes: ["patch", "minor"],
-      addLabels: ["{{groupName}}"]
+      addLabels: ["COA CI"]
     },
     {
-      description: "Group all gem bumps for dev and test dependencies, unless it is a major version",
+      description: "Regroup tools used during Dev & Test",
       matchDepNames: [
         "docker_registry2",
         "github_changelog_generator",
@@ -70,15 +69,28 @@
         "rspec-rerun",
         "simplecov"
       ],
-      groupName: "DevTest Tools",
-      matchUpdateTypes: ["patch", "minor"],
-      addLabels: ["{{groupName}}"],
+      separateMajorMinor: true,
+      addLabels: ["DevTest Tools"],
+      schedule: [
+        "after 8am on the first day of the month"
+      ]
+    },
+    {
+      description: "Regroup tools related to rubocop",
+      matchDepNames: [
+        "rubocop-rspec",
+        "rubocop",
+      ],
+      groupName: "Rubocop-Tools",
+      addLabels: [
+        "Rubocop Tools"
+      ],
       schedule: [
         "after 8am on the first day of the month"
       ]
     }
   ],
-  prHourlyLimit: 1, // Only create one PR per hour to avoid CI overflow
+  prHourlyLimit: 2, // Only create one PR per hour to avoid CI overflow
   regexManagers: [
     {
       description: "Bump COA CI cli dependencies",
