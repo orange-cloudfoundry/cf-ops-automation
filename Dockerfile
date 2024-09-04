@@ -6,12 +6,12 @@ FROM ruby:3.1.2 AS ci_image
 # https://github.com/concourse/concourse/releases/
 # renovate: datasource=github-releases depName=concourse/concourse
 ARG CONCOURSE_VERSION=7.11.2
-ARG CONCOURSE_SHA256=1701337abe34796eb59c01a9c5505d956ecc08a094fcd1232efbc781e9ababf8
+ARG CONCOURSE_SHA256=0a318fe9df56d8299a8abd863aeb4e1e9632e6c91da92abef19984bd1910d8e2
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
-ARG BOSH_CLI_VERSION=7.6.1
-ARG BOSH_CLI_SHA256=39c6e447068fdf8b86d5519f3b3c922822b5c13ec1b58397938775288f7a10b6
+ARG BOSH_CLI_VERSION=7.7.1
+ARG BOSH_CLI_SHA256=ec3b3c08ceed19c812bd048d3c22831e0a50983a27bd334498b361c7d604246d
 
 RUN apt-get update && \
  apt-get -y install tree vim netcat dnsutils jq
@@ -53,7 +53,7 @@ RUN curl --retry 30 -SLo /usr/local/bin/bosh https://github.com/cloudfoundry/bos
 RUN rm -f /usr/local/bundle/bin/bundler
 
 
-FROM ci_image as test_ci_image
+FROM ci_image AS test_ci_image
 RUN bosh --version && fly --version && cc-test-reporter --version && gh-md-toc --version
 
 
