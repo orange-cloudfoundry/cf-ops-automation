@@ -10,7 +10,7 @@ ARG CONCOURSE_SHA256=0a318fe9df56d8299a8abd863aeb4e1e9632e6c91da92abef19984bd191
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
-ARG BOSH_CLI_VERSION=7.7.1
+ARG BOSH_CLI_VERSION=7.8.1
 ARG BOSH_CLI_SHA256=ec3b3c08ceed19c812bd048d3c22831e0a50983a27bd334498b361c7d604246d
 
 RUN apt-get update && \
