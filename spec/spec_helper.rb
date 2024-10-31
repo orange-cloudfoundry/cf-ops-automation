@@ -150,7 +150,7 @@ RSpec.configure do |config|
     target = 'cf-ops-automation'
     env_var = env.collect { |k, v| "#{k}=#{v}" }.join(' ')
     out, err, status = Open3.capture3("bash -o pipefail -c \"env #{env_var} #{fly_bin} --target #{target} #{arg}| tee /tmp/fly.log\"")
-    raise FlyExecuteError.new("Failed: env #{env_var} fly --target #{target} #{arg} | tee /tmp/fly.log\n  #{err unless err.empty? }", out, err, status) if !status.success? || !err.empty? #err =~ /error: websocket: bad handshake/
+    raise FlyExecuteError.new("Failed: env #{env_var} #{fly_bin} --target #{target} #{arg} | tee /tmp/fly.log\n  #{err unless err.empty? }", out, err, status) if !status.success? || !err.empty? #err =~ /error: websocket: bad handshake/
 
     out
   end
