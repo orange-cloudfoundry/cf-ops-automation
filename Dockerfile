@@ -6,7 +6,7 @@ FROM ruby:3.1.2 AS ci_image
 # https://github.com/concourse/concourse/releases/
 # renovate: datasource=github-releases depName=concourse/concourse
 ARG CONCOURSE_VERSION=7.12.0
-ARG CONCOURSE_SHA256=0a318fe9df56d8299a8abd863aeb4e1e9632e6c91da92abef19984bd1910d8e2
+ARG CONCOURSE_SHA256=de1865c3707066f7f18da2b4272e1ecbe0042d29f02e87844168b71d952fa484
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
