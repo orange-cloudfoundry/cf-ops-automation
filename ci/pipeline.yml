@@ -225,7 +225,7 @@ jobs:
             echo "Testing environment config:"
             echo "---------------------------"
             echo "System: $(uname -a)"
-            echo "fly $(fly --version)"
+            echo "Docker image fly $(fly --version)"
             ruby --version
             bundle --version
             bundle exec rspec --version
@@ -251,11 +251,13 @@ jobs:
             git config --global user.name "COA CI"
             echo "Running tests for $GIT_COMMIT_SHA@$GIT_BRANCH"
             fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
+            echo "Ensure local fly version is in sync with concourse"
+            fly -t cf-ops-automation sync
             echo "Setup Code Climate coverage"
             cc-test-reporter before-build
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
             echo "Sending coverage to Code Climate"
-            if [[ $(cc-test-reporter after-build) -eq 0 ]]; then
+            if [ $(cc-test-reporter after-build) -eq 0 ]; then
               echo "Failed to run cc-test-reporter. Re-launch in debug mode";
               echo "---------------------------"
               cc-test-reporter after-build -d;
