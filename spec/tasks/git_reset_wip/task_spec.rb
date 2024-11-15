@@ -60,7 +60,7 @@ describe 'git_reset_wip task' do
     end
   end
 
-  context 'when executed with master as base branch' do
+  context 'when executed with main as base branch' do
     before(:context) do
       @updated_git_resource = Dir.mktmpdir
 
@@ -68,15 +68,15 @@ describe 'git_reset_wip task' do
         '-i reference-resource=spec/tasks/git_reset_wip/reference-resource ' \
         "-o updated-git-resource=#{@updated_git_resource} ",
                         'GIT_BRANCH_FILTER' => '"unknown-branch"',
-                        'GIT_CHECKOUT_BRANCH' => 'master')
+                        'GIT_CHECKOUT_BRANCH' => 'main')
     end
 
     after(:context) do
       FileUtils.rm_rf @updated_git_resource
     end
 
-    it 'reset master branch' do
-      expect(@output).to include("Reset branch 'master'", "Your branch is up to date with 'origin/master'")
+    it 'reset main branch' do
+      expect(@output).to include("Reset branch 'main'", "Your branch is up to date with 'origin/main'")
     end
 
     it 'contains master.md file' do

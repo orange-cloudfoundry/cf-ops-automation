@@ -6,6 +6,7 @@ set -o pipefail
 FINAL_RELEASE_REPO="outdated-check"
 git config --global user.email "$GIT_USER_EMAIL"
 git config --global user.name "$GIT_USER_NAME"
+git config --global safe.directory '*'
 
 if [ "$SKIP_SSL_VERIFICATION" = "true" ]; then
   export GIT_SSL_NO_VERIFY=true

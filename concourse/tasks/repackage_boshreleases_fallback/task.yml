@@ -31,6 +31,7 @@ run:
       git config --global advice.detachedHead false
       git config --global user.email "$GIT_USER_EMAIL"
       git config --global user.name "$GIT_USER_NAME"
+      git config --global safe.directory '*'
       export REPACKAGED_RELEASES_PATH="${PWD}/repackaged-releases"
       export REPACKAGED_RELEASES_FALLBACK_PATH="${PWD}/repackaged-releases-fallback"
       ruby --version
