@@ -69,7 +69,7 @@ class TaskSpecHelper
   end
 
   def self.cf_cli_image
-    'elpaasoci/cf-cli'
+    'elpaasoci/bosh-cli-v2-cf-cli'
   end
 
   def self.cf_cli_image_version

@@ -6,9 +6,9 @@ describe 'post_deploy task' do
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/post_bosh_deploy.yml' }
 
-    it 'uses alphagov cf-cli image' do
+    it 'uses bosh-cli-v2-cf-cli image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
-      expect(docker_image_used).to match('elpaasoci/cf-cli')
+      expect(docker_image_used).to match('elpaasoci/bosh-cli-v2-cf-cli')
     end
   end
 
