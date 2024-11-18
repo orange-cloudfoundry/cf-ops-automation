@@ -103,7 +103,7 @@ describe 'bosh_update_CPI_config task' do
   context 'Pre-requisite' do
     let(:task) { YAML.load_file 'concourse/tasks/bosh_update_config/task.yml' }
 
-    it 'uses alphagov bosh-cli-v2 image' do
+    it 'uses bosh-cli-v2 image' do
       docker_image_used = task['image_resource']['source']['repository'].to_s
       expect(docker_image_used).to match('elpaasoci/bosh-cli-v2')
     end
