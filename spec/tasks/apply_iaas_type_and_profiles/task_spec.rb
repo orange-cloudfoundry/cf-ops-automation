@@ -19,6 +19,7 @@ describe 'apply_iaas_type_and_profiles task' do
 
       Dir.chdir(@templates_dir) do
         `git init .`
+        `git branch -m main`
         `git add .`
         `git commit -a -m"initial commit"`
         %w[commit_message commit_timestamp committer describe_ref ref short_ref].each do |filename|

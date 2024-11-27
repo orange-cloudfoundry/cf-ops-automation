@@ -34,7 +34,7 @@ describe 'all tasks' do
         TaskSpecHelper.curl_image + ':' + TaskSpecHelper.curl_image_version,
         TaskSpecHelper.git_image + ':' + TaskSpecHelper.git_image_version,
         TaskSpecHelper.bosh_cli_v2_image + ':' + TaskSpecHelper.bosh_cli_v2_image_version,
-        TaskSpecHelper.cf_cli_image + ':' + TaskSpecHelper.cf_cli_image_version,
+        #TaskSpecHelper.cf_cli_image + ':' + TaskSpecHelper.cf_cli_image_version,
         TaskSpecHelper.spruce_image + ':' + TaskSpecHelper.spruce_image_version,
         TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_image_version,
         TaskSpecHelper.ruby_image + ':' + TaskSpecHelper.ruby_slim_image_version,
