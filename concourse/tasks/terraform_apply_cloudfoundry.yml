@@ -17,7 +17,7 @@ platform: linux
 image_resource:
   type: registry-image
   # Maintained in https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools
-  source: {repository: elpaasoci/terraform, tag: 08122693acec179b207390cd889600c8148c541c}
+  source: {repository: elpaasoci/terraform, tag: 4966e7c4847f39a6f349536c3a4f993b377e60c5}
 
 inputs:
   - name: secret-state-resource
