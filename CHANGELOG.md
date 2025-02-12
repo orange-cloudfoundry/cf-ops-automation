@@ -1,6 +1,24 @@
 # Changelog
 
-## [v6.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.2.0) (2024-05-14)
+## [v6.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.3.0) (2025-02-12)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.2.0...v6.3.0)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency concourse/concourse to v7.12.1 [\#466](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/466)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to 16d8df7 [\#464](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/464)
+- Include bosh cli in post deploy [\#463](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/463)
+- chore\(deps\): update dependency concourse/concourse to v7.12.0 [\#461](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/461)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.8.1 [\#460](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/460)
+- chore\(deps\): update rubocop-tools [\#458](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/458)
+- chore\(deps\): update dependency docker\_registry2 to '~\> 1.18.2' [\#457](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/457)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to 4966e7c [\#456](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/456)
+- chore\(deps\): update dependency concourse/concourse to v7.11.2 [\#455](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/455)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.6.1 [\#454](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/454)
+- chore\(ci\): adapt test to vsphere infra [\#450](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/450)
+
+## [v6.2.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.2.0) (2024-05-13)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.1.3...v6.2.0)
 

@@ -32,7 +32,7 @@ hello-world-root-depls
 │       └── spruce-file-sample-from-secrets.txt
 ├── ci-deployment-overview.yml
 ├── cloud-config.yml
-├── concourse-5
+├── coa-ci-concourse
 │   └── protect-deployment.yml
 ├── delete-sample-for-bosh-only
 │   └── secrets
@@ -89,10 +89,12 @@ hello-world-root-depls
 ├── bosh-deployment-sample
 │   ├── deployment-dependencies-openstack.yml
 │   ├── deployment-dependencies-vault-profile.yml
+│   ├── deployment-dependencies-vsphere.yml
 │   ├── deployment-dependencies.yml
 │   └── template
 │       ├── adding-cron-release-operators.yml
 │       ├── bosh-deployment-sample-tpl.yml
+│       ├── check-available-clis-during-deploy.sh
 │       ├── cron-release-vars.yml
 │       ├── openstack
 │       │   └── cron-job-configuration-operators.yml
@@ -100,9 +102,11 @@ hello-world-root-depls
 │       ├── pre-deploy.sh
 │       ├── releases-operators.yml -> ../../../shared-files/releases-operators.yml
 │       ├── update-operators.yml -> ../../../shared-files/cf-ops-automation-reference-dataset-submodule-sample/update-operators.yml
-│       └── vault-profile
-│           ├── adding-vault-release-operators.yml
-│           └── vault-release-vars.yml
+│       ├── vault-profile
+│       │   ├── adding-vault-release-operators.yml
+│       │   └── vault-release-vars.yml
+│       └── vsphere
+│           └── cron-job-configuration-operators.yml
 ├── cf-apps-deployments
 │   └── generic-app
 │       ├── deployment-dependencies.yml
@@ -129,10 +133,12 @@ hello-world-root-depls
 │       ├── post-deploy.sh
 │       ├── pre-deploy.sh
 │       ├── values.yml
-│       └── vault-profile
-│           ├── custom-dir
-│           │   └── vault-config.yml
-│           └── values-profile.yml
+│       ├── vault-profile
+│       │   ├── custom-dir
+│       │   │   └── vault-config.yml
+│       │   └── values-profile.yml
+│       └── vsphere
+│           └── values-iaas-type.yml
 ├── pipeline-sample
 │   ├── concourse-pipeline-config
 │   │   ├── docker-image-vars.yml
