@@ -13,7 +13,7 @@ credhub delete --name "/credhub-set-test"
 credhub set --type value --name "/coa-my-credhub-key" --value "This is my credhub value" # Used by 01-interpolate.sh and deleted in 02-deploy.sh
 
 #for artifact push to k8s
-kapp version
+#kapp version
 echo "Kubectl:"
 kubectl version --client -o=yaml
 echo "Helm: $(helm version --short)"
