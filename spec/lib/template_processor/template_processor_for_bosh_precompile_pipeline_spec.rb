@@ -93,12 +93,12 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
       - name: slack-notification
         type: registry-image
         source:
-          repository: elpaasoci/slack-notification-resource
+          repository: ((docker-registry-url))elpaasoci/slack-notification-resource
           tag: v1.7.0-orange
       - name: bosh-deployment-v2
         type: registry-image
         source:
-          repository: cloudfoundry/bosh-deployment-resource
+          repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
           tag: v2.12.0
     YAML
     YAML.safe_load(resource_types_yaml)

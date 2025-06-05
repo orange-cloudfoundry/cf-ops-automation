@@ -75,11 +75,11 @@ describe 'static concourse pipelines spec' do
       expect(invalid_resource_type).to be_empty
     end
 
-    it 'ensures registry-image resource-type does not override docker registry' do
+    it 'ensures registry-image resource-type overrides docker registry' do
       invalid_resource_type = []
       resource_types.select {|resource_type| resource_type.dig('type') == 'registry-image' }.each do |resource_type|
         docker_image_raw = resource_type['source']['repository'].to_s
-        invalid_resource_type << docker_image_raw if docker_image_raw.start_with?(DOCKER_REGISTRY_PREFIX)
+        invalid_resource_type << docker_image_raw unless docker_image_raw.start_with?(DOCKER_REGISTRY_PREFIX)
       end
 
       expect(invalid_resource_type).to be_empty

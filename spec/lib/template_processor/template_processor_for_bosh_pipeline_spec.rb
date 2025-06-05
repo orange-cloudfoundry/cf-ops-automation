@@ -83,22 +83,22 @@ describe 'BoshPipelineTemplateProcessing' do
       - name: slack-notification
         type: registry-image
         source:
-          repository: elpaasoci/slack-notification-resource
+          repository: ((docker-registry-url))elpaasoci/slack-notification-resource
           tag: v1.7.0-orange
       - name: bosh-deployment-v2
         type: registry-image
         source:
-          repository: cloudfoundry/bosh-deployment-resource
+          repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
           tag: v2.12.0
       - name: bosh-errand
         type: registry-image
         source:
-          repository: elpaasoci/bosh2-errand-resource
+          repository: ((docker-registry-url))elpaasoci/bosh2-errand-resource
           tag: v0.1.2-orange
       - name: meta
         type: registry-image
         source:
-          repository: elpaasoci/metadata-resource
+          repository: ((docker-registry-url))elpaasoci/metadata-resource
           tag: 2.0.3-orange
 
     YAML

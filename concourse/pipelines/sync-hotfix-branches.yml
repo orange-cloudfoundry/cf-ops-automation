@@ -5,13 +5,13 @@ resource_types:
   - name: slack-notification
     type: registry-image
     source:
-      repository: elpaasoci/slack-notification-resource
+      repository: ((docker-registry-url))elpaasoci/slack-notification-resource
       tag: v1.7.0-orange
 
   - name: git-branch-heads
     type: registry-image
     source:
-      repository: elpaasoci/git-branch-heads-resource
+      repository: ((docker-registry-url))elpaasoci/git-branch-heads-resource
       tag: 2.0.1
 
 resources:

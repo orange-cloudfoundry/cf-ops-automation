@@ -5,7 +5,7 @@ resource_types:
   - name: slack-notification
     type: registry-image
     source:
-      repository: elpaasoci/slack-notification-resource
+      repository: ((docker-registry-url))elpaasoci/slack-notification-resource
       tag: v1.7.0-orange
 
 resources:
@@ -89,7 +89,7 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: elpaasoci/bosh-cli-v2
+          repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
           tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
       inputs:
         - name: scripts-resource
@@ -184,7 +184,7 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: elpaasoci/curl-ssl
+          repository: ((docker-registry-url))elpaasoci/curl-ssl
           tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
       inputs:
       - name: concourse-teams
@@ -271,7 +271,7 @@ jobs:
       image_resource:
         type: registry-image
         source:
-          repository: elpaasoci/curl-ssl
+          repository: ((docker-registry-url))elpaasoci/curl-ssl
           tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
       inputs:
       - name: all-pipelines

@@ -15,12 +15,12 @@ resource_types:
 - name: slack-notification
   type: registry-image
   source:
-    repository: elpaasoci/slack-notification-resource
+    repository: ((docker-registry-url))elpaasoci/slack-notification-resource
     tag: v1.7.0-orange
 - name: bosh-deployment-v2
   type: registry-image
   source:
-    repository: cloudfoundry/bosh-deployment-resource
+    repository: ((docker-registry-url))cloudfoundry/bosh-deployment-resource
     tag: v2.12.0
 resources:
   - name: failure-alert
@@ -165,7 +165,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/curl-ssl
+              repository: ((docker-registry-url))elpaasoci/curl-ssl
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: repackaged-releases-fallback
@@ -269,7 +269,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/bosh-cli-v2-cf-cli
+              repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: stemcell
@@ -299,7 +299,7 @@ jobs:
             image_resource:
               type: registry-image
               source:
-                repository: elpaasoci/bosh-cli-v2
+                repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
                 tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
             inputs:
               - name: releases-to-upload
@@ -330,7 +330,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/bosh-cli-v2-cf-cli
+              repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: stemcell
@@ -399,7 +399,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/bosh-cli-v2-cf-cli
+              repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: stemcell
@@ -429,7 +429,7 @@ jobs:
             image_resource:
               type: registry-image
               source:
-                repository: elpaasoci/bosh-cli-v2
+                repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
                 tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
             inputs:
               - name: releases-to-upload
@@ -460,7 +460,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/bosh-cli-v2-cf-cli
+              repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: stemcell
@@ -528,7 +528,7 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: elpaasoci/curl-ssl
+            repository: ((docker-registry-url))elpaasoci/curl-ssl
             tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
         outputs:
           - name: result-dir

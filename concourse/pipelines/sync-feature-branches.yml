@@ -5,13 +5,13 @@ resource_types:
   - name: slack-notification
     type: registry-image
     source:
-      repository: elpaasoci/slack-notification-resource
+      repository: ((docker-registry-url))elpaasoci/slack-notification-resource
       tag: v1.7.0-orange
 
   - name: git-branch-heads
     type: registry-image
     source:
-      repository: elpaasoci/git-branch-heads-resource
+      repository: ((docker-registry-url))elpaasoci/git-branch-heads-resource
       tag: 328937aaa39f79661ce381295dd262d6803b0c8c
 
 resources:
@@ -102,7 +102,7 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: elpaasoci/git-ssh
+            repository: ((docker-registry-url))elpaasoci/git-ssh
             tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
         platform: linux
         inputs:
@@ -199,7 +199,7 @@ jobs:
               image_resource:
                 type: registry-image
                 source:
-                  repository: elpaasoci/git-ssh
+                  repository: ((docker-registry-url))elpaasoci/git-ssh
                   tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
               platform: linux
               inputs:
@@ -279,7 +279,7 @@ jobs:
               image_resource:
                 type: registry-image
                 source:
-                  repository: elpaasoci/git-ssh
+                  repository: ((docker-registry-url))elpaasoci/git-ssh
                   tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
               platform: linux
               inputs:
@@ -339,7 +339,7 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: elpaasoci/git-ssh
+            repository: ((docker-registry-url))elpaasoci/git-ssh
             tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
         inputs:
           - name: reference-resource

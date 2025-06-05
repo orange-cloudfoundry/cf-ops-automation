@@ -85,17 +85,17 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
       - name: slack-notification
         type: registry-image
         source:
-          repository: elpaasoci/slack-notification-resource
+          repository: ((docker-registry-url))elpaasoci/slack-notification-resource
           tag: v1.7.0-orange
       - name: concourse-5-pipeline
         type: registry-image
         source:
-          repository: concourse/concourse-pipeline-resource
+          repository: ((docker-registry-url))concourse/concourse-pipeline-resource
           tag: 5.0.0
       - name: concourse-pipeline
         type: registry-image
         source:
-          repository: elpaasoci/concourse-pipeline-resource
+          repository: ((docker-registry-url))elpaasoci/concourse-pipeline-resource
           tag: 7.9.1
     YAML
     YAML.safe_load(resource_types_yaml)
@@ -451,7 +451,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                     image_resource:
                       type: registry-image
                       source:
-                        repository: elpaasoci/git-ssh
+                        repository: ((docker-registry-url))elpaasoci/git-ssh
                         tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
                     outputs:
                       - name: success-tag
@@ -473,7 +473,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                       image_resource:
                         type: registry-image
                         source:
-                          repository: elpaasoci/git-ssh
+                          repository: ((docker-registry-url))elpaasoci/git-ssh
                           tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
                       outputs:
                         - name: success-tag

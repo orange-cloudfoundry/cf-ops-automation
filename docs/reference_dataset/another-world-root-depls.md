@@ -125,6 +125,13 @@ another-world-root-depls
 * another-world-root-depls-bosh-generated.yml
 * another-world-root-depls-k8s-generated.yml
 
+### docker-registry-url
+
+* another-world-root-depls-bosh-generated.yml
+* another-world-root-depls-bosh-precompile-generated.yml
+* another-world-root-depls-cf-apps-generated.yml
+* another-world-root-depls-k8s-generated.yml
+
 ### iaas-type
 
 * another-world-root-depls-bosh-generated.yml
@@ -232,6 +239,7 @@ another-world-root-depls
 * credhub-client
 * credhub-secret
 * credhub-server
+* docker-registry-url
 * iaas-type
 * paas-templates-branch
 * paas-templates-uri
@@ -258,6 +266,7 @@ another-world-root-depls
 * concourse-another-world-root-depls-password
 * concourse-another-world-root-depls-target
 * concourse-another-world-root-depls-username
+* docker-registry-url
 * paas-templates-precompile-branch
 * paas-templates-uri
 * secrets-branch
@@ -273,6 +282,7 @@ another-world-root-depls
 ### another-world-root-depls-cf-apps-generated.yml
 
 * background-image-url
+* docker-registry-url
 
 ### another-world-root-depls-k8s-generated.yml
 
@@ -283,6 +293,7 @@ another-world-root-depls
 * credhub-client
 * credhub-secret
 * credhub-server
+* docker-registry-url
 * iaas-type
 * k8s-configs-repository-branch
 * k8s-configs-repository-password

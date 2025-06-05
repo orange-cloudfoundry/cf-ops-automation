@@ -2,7 +2,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: elpaasoci/k8s-tools
+    repository: ((docker-registry-url))elpaasoci/k8s-tools
     tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
 inputs:
   - name: paas-templates-resource
