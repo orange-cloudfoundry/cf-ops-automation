@@ -56,17 +56,17 @@ resource_types:
   - name: slack-notification
     type: registry-image
     source:
-      repository: elpaasoci/slack-notification-resource
+      repository: ((docker-registry-url))elpaasoci/slack-notification-resource
 
   - name: pull-request
     type: registry-image
     source:
-      repository: elpaasoci/github-pr-resource
+      repository: ((docker-registry-url))elpaasoci/github-pr-resource
 
   - name: meta
     type: registry-image
     source:
-      repository: elpaasoci/metadata-resource
+      repository: ((docker-registry-url))elpaasoci/metadata-resource
       tag: 2.0.3-orange
 resources:
 - name: concourse-meta
@@ -383,7 +383,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/bosh-cli-v2
+              repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: cf-ops-automation
@@ -393,6 +393,7 @@ jobs:
             CREDHUB_SECRET: "((integration-test-prereqs.credhub.secret))"
             CREDHUB_CA_CERT: ((integration-test-prereqs.credhub.ca-cert))
             CREHUB_CONCOURSE_NAMESPACE: "/coa-ci"
+            DOCKER_REGISTRY_URL: ((integration-test-prereqs.docker-registry-url))
           run:
             path: /bin/bash
             args:
@@ -417,7 +418,7 @@ jobs:
                 CONCOURSE_TEAMS="main $CURRENT_TEAMS"
                 echo "Teams to process: ${CONCOURSE_TEAMS}"
                 for team in ${CONCOURSE_TEAMS};do
-                  credhub set --type value -n "${CREHUB_CONCOURSE_NAMESPACE}/${team}/docker-registry-url" -v "registry.hub.docker.com/"
+                  credhub set --type value -n "${CREHUB_CONCOURSE_NAMESPACE}/${team}/docker-registry-url" -v "$DOCKER_REGISTRY_URL"
                 done
 
       - task: upload-pipelines
@@ -487,7 +488,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: coabot/cf-ops-automation
+              repository: ((docker-registry-url))coabot/cf-ops-automation
               tag: develop-latest
 
           inputs:
@@ -561,7 +562,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: coabot/cf-ops-automation
+              repository: ((docker-registry-url))coabot/cf-ops-automation
               tag: develop-latest
           inputs:
           - name: cf-ops-automation
@@ -609,7 +610,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: coabot/cf-ops-automation
+              repository: ((docker-registry-url))coabot/cf-ops-automation
               tag: develop-latest
           inputs:
           - name: cf-ops-automation

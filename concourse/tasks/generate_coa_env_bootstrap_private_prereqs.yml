@@ -16,7 +16,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: coabot/cf-ops-automation
+    repository: ((docker-registry-url))coabot/cf-ops-automation
 
 inputs:
 - name: cf-ops-automation

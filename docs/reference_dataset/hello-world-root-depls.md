@@ -25,8 +25,8 @@ hello-world-root-depls
 │       └── secrets.yml
 ├── cf-apps-deployments
 │   └── generic-app
-│       ├── Readme.md
 │       ├── enable-cf-app.yml
+│       ├── Readme.md
 │       ├── secrets
 │       │   └── secrets.yml
 │       └── spruce-file-sample-from-secrets.txt
@@ -44,10 +44,10 @@ hello-world-root-depls
 ├── k8s-sample
 │   └── enable-deployment.yml
 ├── pipeline-sample
-│   ├── Readme.md
 │   ├── concourse-pipeline-config
 │   │   └── virtualbox
 │   ├── enable-deployment.yml
+│   ├── Readme.md
 │   └── secrets
 │       └── secrets.yml
 ├── runtime-config.yml
@@ -117,8 +117,8 @@ hello-world-root-depls
 │           ├── pre-cf-push.sh
 │           ├── spruce-file-sample-from-templates.txt
 │           └── static-app
-│               ├── Staticfile
-│               └── index.html
+│               ├── index.html
+│               └── Staticfile
 ├── hooks
 │   └── k8s
 │       └── deploy.sh
@@ -248,6 +248,13 @@ hello-world-root-depls
 * hello-world-root-depls-bosh-generated.yml
 * hello-world-root-depls-k8s-generated.yml
 
+### docker-registry-url
+
+* hello-world-root-depls-bosh-generated.yml
+* hello-world-root-depls-bosh-precompile-generated.yml
+* hello-world-root-depls-cf-apps-generated.yml
+* hello-world-root-depls-k8s-generated.yml
+
 ### iaas-type
 
 * hello-world-root-depls-bosh-generated.yml
@@ -369,6 +376,7 @@ hello-world-root-depls
 * credhub-client
 * credhub-secret
 * credhub-server
+* docker-registry-url
 * iaas-type
 * paas-templates-branch
 * paas-templates-uri
@@ -396,6 +404,7 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-password
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
+* docker-registry-url
 * paas-templates-precompile-branch
 * paas-templates-uri
 * secrets-branch
@@ -417,6 +426,7 @@ hello-world-root-depls
 * concourse-hello-world-root-depls-password
 * concourse-hello-world-root-depls-target
 * concourse-hello-world-root-depls-username
+* docker-registry-url
 * paas-templates-branch
 * paas-templates-uri
 * profiles
@@ -440,6 +450,7 @@ hello-world-root-depls
 * credhub-client
 * credhub-secret
 * credhub-server
+* docker-registry-url
 * iaas-type
 * k8s-configs-repository-branch
 * k8s-configs-repository-password

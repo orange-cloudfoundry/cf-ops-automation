@@ -74,7 +74,7 @@ describe 'all tasks' do
         docker_image = task.dig('image_resource', 'source', 'repository').to_s
         next if docker_image.empty? || task.dig('image_resource','type') != 'registry-image'
 
-        invalid_tasks[task_filename] = docker_image if docker_image.start_with?(DOCKER_REGISTRY_PREFIX)
+        invalid_tasks[task_filename] = docker_image unless docker_image.start_with?(DOCKER_REGISTRY_PREFIX)
       end
       expect(invalid_tasks).to be_empty
     end

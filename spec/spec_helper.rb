@@ -168,8 +168,14 @@ RSpec.configure do |config|
   end
 
   def docker_registry_hostname
-    'registry.hub.docker.com'
-    # 'index.docker.io/' # this is an alternate url
+    # begin
+    #   yaml_file = YAML.load_file(File.join(File.dirname(__FILE__), '..', 'ci', 'private.yml'), aliases: true) || {} # cannot skip tls cert !
+    # rescue
+    #   Errno::ENDENT
+    #   yaml_file = {}
+    # end
+    # yaml_file.dig(DOCKER_REGISTRY_VAR)
+    DOCKER_PUBLIC_REGISTRY
   end
 
   def docker_registry_url
@@ -188,5 +194,7 @@ RSpec.configure do |config|
     YAML.load_file(path, aliases: true)
   end
 
-  DOCKER_REGISTRY_PREFIX = "((docker-registry-url))".freeze
+  DOCKER_PUBLIC_REGISTRY = 'registry.hub.docker.com'.freeze # 'index.docker.io/' # this is an alternate url
+  DOCKER_REGISTRY_VAR = "docker-registry-url".freeze
+  DOCKER_REGISTRY_PREFIX = "((#{DOCKER_REGISTRY_VAR}))".freeze
 end

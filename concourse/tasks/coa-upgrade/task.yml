@@ -15,7 +15,7 @@
 platform: linux
 image_resource:
   type: registry-image
-  source: {repository: library/ruby, tag: 3.1.2}
+  source: {repository: ((docker-registry-url))library/ruby, tag: 3.1.2}
 inputs:
   - name: cf-ops-automation
   - name: templates

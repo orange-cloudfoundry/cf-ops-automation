@@ -5,13 +5,13 @@ module Coa
         name: slack-notification
         type: registry-image
         source:
-          repository: elpaasoci/slack-notification-resource
+          repository: ((docker-registry-url))elpaasoci/slack-notification-resource
           tag: v1.7.0-orange
       meta:
         name: meta
         type: registry-image
         source:
-          repository: elpaasoci/metadata-resource
+          repository: ((docker-registry-url))elpaasoci/metadata-resource
           tag: 2.0.3-orange
 
 

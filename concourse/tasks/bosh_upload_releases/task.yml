@@ -16,7 +16,7 @@ platform: linux
 image_resource:
   type: registry-image
   source:
-    repository: elpaasoci/bosh-cli-v2
+    repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
     tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
 inputs:
   - name: releases-to-upload

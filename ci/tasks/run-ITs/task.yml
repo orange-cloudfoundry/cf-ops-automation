@@ -15,7 +15,7 @@
 platform: linux
 image_resource:
   type: registry-image
-  source: {repository: coabot/cf-ops-automation, tag: develop-latest}
+  source: {repository: ((docker-registry-url))coabot/cf-ops-automation, tag: develop-latest}
 inputs:
   - name: cf-ops-automation
 outputs:

@@ -19,22 +19,22 @@ resource_types:
   - name: slack-notification
     type: registry-image
     source:
-      repository: elpaasoci/slack-notification-resource
+      repository: ((docker-registry-url))elpaasoci/slack-notification-resource
       tag: v1.7.0-orange
   - name: meta
     type: registry-image
     source:
-      repository: elpaasoci/metadata-resource
+      repository: ((docker-registry-url))elpaasoci/metadata-resource
       tag: 2.0.3-orange
   - name: concourse-5-pipeline
     type: registry-image
     source:
-      repository: concourse/concourse-pipeline-resource
+      repository: ((docker-registry-url))concourse/concourse-pipeline-resource
       tag: 5.0.0
   - name: concourse-pipeline
     type: registry-image
     source:
-      repository: elpaasoci/concourse-pipeline-resource
+      repository: ((docker-registry-url))elpaasoci/concourse-pipeline-resource
       tag: 7.9.1
 resources:
 - name: concourse-audit-trail
@@ -191,7 +191,7 @@ jobs:
         image_resource:
           type: registry-image
           source:
-              repository: library/ruby
+              repository: ((docker-registry-url))library/ruby
               tag: 3.1.2-slim
         inputs:
         - name: cf-ops-automation
@@ -246,7 +246,7 @@ jobs:
         image_resource:
           type: registry-image
           source:
-            repository: elpaasoci/concourse-fly
+            repository: ((docker-registry-url))elpaasoci/concourse-fly
             tag: "7ce5aa85675911e224c72a3d410fd63d93be1442"
         inputs:
           - name: selected-pipelines
@@ -316,7 +316,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/concourse-fly
+              repository: ((docker-registry-url))elpaasoci/concourse-fly
               tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
           inputs:
             - name: concourse-generated-pipeline
@@ -376,7 +376,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/curl-ssl
+              repository: ((docker-registry-url))elpaasoci/curl-ssl
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: concourse-micro
@@ -393,7 +393,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/concourse-fly
+              repository: ((docker-registry-url))elpaasoci/concourse-fly
               tag: 7ce5aa85675911e224c72a3d410fd63d93be1442
           inputs:
             - name: concourse-micro
@@ -532,7 +532,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/curl-ssl
+              repository: ((docker-registry-url))elpaasoci/curl-ssl
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: config-resource
@@ -559,7 +559,7 @@ jobs:
                 type: registry-image
                 source:
                   # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
-                  repository: elpaasoci/git-ssh
+                  repository: ((docker-registry-url))elpaasoci/git-ssh
                   tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
               outputs:
                 - name: success-tag
@@ -585,7 +585,7 @@ jobs:
             type: registry-image
             source:
               # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
-              repository: elpaasoci/git-ssh
+              repository: ((docker-registry-url))elpaasoci/git-ssh
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: concourse-micro-success
@@ -659,7 +659,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/git-ssh
+              repository: ((docker-registry-url))elpaasoci/git-ssh
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: secrets-writer
@@ -706,7 +706,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: elpaasoci/git-ssh
+              repository: ((docker-registry-url))elpaasoci/git-ssh
               tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
           inputs:
             - name: paas-templates-full
