@@ -118,9 +118,9 @@
         // template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config/docker-image-vars.yml
         "docker-image-tag:\\s*(\\'|\\\")?(?<currentDigest>.+)(\\'|\\\")?",
         // multi line *.yml
-        "source:.*\\n.*\\s*repository: elpaasoci\\/(cf-cli|curl-ssl|git-ssh|k8s-tools|terraform|bosh-cli-v2|spruce|spiff|awscli|bosh-cli-v2-cf-cli)\\n\\s*tag: (\\'\\\")?(?<currentDigest>.+)(\\'\\\")?",
-        // single line yml: https://regex101.com/r/YfHHox/1
-        "source:\\s*\\{\\s*repository: elpaasoci\\/(cf-cli|curl-ssl|git-ssh|k8s-tools|terraform|bosh-cli-v2|spruce|spiff|awscli|bosh-cli-v2-cf-cli),\\s*tag: (\\'\\\")?(?<currentDigest>.+)(\\'\\\")?}",
+        "source:.*\\n.*\\s*repository: (\(\(.*\)\))?elpaasoci\\/(cf-cli|curl-ssl|git-ssh|k8s-tools|terraform|bosh-cli-v2|spruce|spiff|awscli|bosh-cli-v2-cf-cli)\\n\\s*tag: (\\'\\\")?(?<currentDigest>.+)(\\'\\\")?",
+        // single line yml: https://regex101.com/r/YfHHox/2
+        "source:\\s*\\{\\s*repository: (\(\(.*\)\))?elpaasoci\\/(cf-cli|curl-ssl|git-ssh|k8s-tools|terraform|bosh-cli-v2|spruce|spiff|awscli|bosh-cli-v2-cf-cli),\\s*tag: (\\'\\\")?(?<currentDigest>.+)(\\'\\\")?}",
         // task_spec_helper.rb - https://regex101.com/r/STu3OF/1
         "def .+_default_image_version\\n\\s*\\'(?<currentDigest>.+)\\'",
         // TF image bump
