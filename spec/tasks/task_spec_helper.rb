@@ -89,7 +89,7 @@ class TaskSpecHelper
   end
 
   def self.ruby_image_version
-    '3.1.2'
+    '3.1.7'
   end
 
   def self.ruby_slim_image_version
