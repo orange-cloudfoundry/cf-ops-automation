@@ -438,7 +438,8 @@ jobs:
               - |
                 cd cf-ops-automation/
                 echo "Git configuration:"
-                git config -l
+                git --version
+                git --no-pager config -l
                 echo "========================"
                 echo "removing 'url.https://.insteadof' properties"
                 git config --unset url.https://.insteadof

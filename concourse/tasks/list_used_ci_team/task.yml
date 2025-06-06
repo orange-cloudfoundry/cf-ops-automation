@@ -2,7 +2,7 @@
 platform: linux
 image_resource:
   type: registry-image
-  source: {repository: ((docker-registry-url))library/ruby, tag: 3.1.2-slim}
+  source: {repository: ((docker-registry-url))library/ruby, tag: 3.1.7-slim}
 inputs:
   - name: secrets
   - name: cf-ops-automation

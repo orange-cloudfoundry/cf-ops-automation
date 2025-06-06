@@ -1,4 +1,4 @@
-FROM ruby:3.1.2 AS ci_image
+FROM ruby:3.1.7 AS ci_image
 
 # 92c56cb432c5d86d8687d765bd6d0847dc80edfbab28a878a9c11eec9289b02d  fly-7.8.2-linux-amd64.tgz
 # 6cf7acfcde78a980339cba1534c01be28d360306e5c76c60c5546e3847434eb7  fly-7.9.1-linux-amd64.tgz
@@ -15,7 +15,7 @@ ARG BOSH_CLI_VERSION=7.9.1
 ARG BOSH_CLI_SHA256=7f992ac1e2217b3dbecc9338861f1654f3425e339b68f6a72bc05195ebfecc00
 
 RUN apt-get update && \
- apt-get -y install tree vim netcat dnsutils jq
+ apt-get -y install tree vim netcat-traditional dnsutils jq
 
 # install cf-ops-automation Gemfile
 RUN gem update --system
