@@ -392,7 +392,7 @@ jobs:
             CREDHUB_CLIENT: ((integration-test-prereqs.credhub.client))
             CREDHUB_SECRET: "((integration-test-prereqs.credhub.secret))"
             CREDHUB_CA_CERT: ((integration-test-prereqs.credhub.ca-cert))
-            CREDHUB_CONCOURSE_NAMESPACE: "/coa-ci"
+            CREDHUB_CONCOURSE_NAMESPACE: "/coa-ci-concourse"
             DOCKER_REGISTRY_URL: ((integration-test-prereqs.docker-registry-url))
           run:
             path: /bin/bash
