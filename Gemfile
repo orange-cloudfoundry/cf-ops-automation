@@ -9,7 +9,7 @@ group :development do
   gem 'github_changelog_generator', '~> 1.16.4' # https://rubygems.org/gems/github_changelog_generator
   gem 'mdl', '~>0.13.0'
   gem 'rake', '~>13.2.1'
-  gem 'reek', '~> 6.3.0'
+  gem 'reek', '~> 6.5.0'
   gem 'rubocop', '~> 1.69.0'
   gem 'rubocop-rspec', '~> 2.31'
 end
