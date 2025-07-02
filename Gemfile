@@ -5,7 +5,7 @@ gem 'rhcl', '~> 0.1.0'
 
 group :development do
   gem 'docker_registry2', '~> 1.18.2' # https://rubygems.org/gems/docker_registry2
-  gem 'git', '~>1.19.1' # https://rubygems.org/gems/git
+  gem 'git', '~>3.1.1' # https://rubygems.org/gems/git
   gem 'github_changelog_generator', '~> 1.16.4' # https://rubygems.org/gems/github_changelog_generator
   gem 'mdl', '~>0.13.0'
   gem 'rake', '~>13.2.1'
