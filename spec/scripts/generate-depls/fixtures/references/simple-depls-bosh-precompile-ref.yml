@@ -288,7 +288,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "precompile-ntp_boshrelease-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"precompile-ntp_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"ntp_boshrelease", "version"=>"4"}]}'
+            MANIFEST_CONTENT: '{"name" => "precompile-ntp_boshrelease-deployment", "instance_groups" => [], "update" => {"canaries" => 1, "max_in_flight" => 1, "canary_watch_time" => "1000-90000", "update_watch_time" => "1000-90000"}, "releases" => [{"name" => "ntp_boshrelease", "version" => "4"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director
@@ -418,7 +418,7 @@ jobs:
                 cat generated-files/${MANIFEST_NAME}
           params:
             MANIFEST_NAME: "precompile-zookeeper_boshrelease-deployment.yml"
-            MANIFEST_CONTENT: '{"name"=>"precompile-zookeeper_boshrelease-deployment", "instance_groups"=>[], "update"=>{"canaries"=>1, "max_in_flight"=>1, "canary_watch_time"=>"1000-90000", "update_watch_time"=>"1000-90000"}, "releases"=>[{"name"=>"zookeeper_boshrelease", "version"=>"0.0.9"}]}'
+            MANIFEST_CONTENT: '{"name" => "precompile-zookeeper_boshrelease-deployment", "instance_groups" => [], "update" => {"canaries" => 1, "max_in_flight" => 1, "canary_watch_time" => "1000-90000", "update_watch_time" => "1000-90000"}, "releases" => [{"name" => "zookeeper_boshrelease", "version" => "0.0.9"}]}'
       - try:
           # this step may fail when boshrelease have been already uploaded to director with another sha1. Indeed, everytime we repackage a bosh release a new sha1 is produced
           task: upload-to-director

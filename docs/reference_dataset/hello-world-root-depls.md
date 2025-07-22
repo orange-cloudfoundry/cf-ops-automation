@@ -161,7 +161,7 @@ hello-world-root-depls
         └── terraform-tpl.tfvars.yml
 ```
 
-{:config_repo_name=>"config_repository", :template_repo_name=>"template_repository"}
+{config_repo_name: "config_repository", template_repo_name: "template_repository"}
 ## List of pipelines in which credentials appear for hello-world-root-depls
 
 ### background-image-url

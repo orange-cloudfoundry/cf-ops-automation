@@ -55,7 +55,7 @@ another-world-root-depls
     └── runtime-config-tpl.yml
 ```
 
-{:config_repo_name=>"config_repository", :template_repo_name=>"template_repository"}
+{config_repo_name: "config_repository", template_repo_name: "template_repository"}
 ## List of pipelines in which credentials appear for another-world-root-depls
 
 ### background-image-url

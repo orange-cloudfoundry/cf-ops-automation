@@ -1,7 +1,7 @@
 Feature: Cf application deployment support
   In order to know how to deploy a CF application
   As a paas-template user,
-  I want to know which environment varaiables are availlable
+  I want to know which environment variables are available
 
   Background:
     Given Hello world generated pipelines from reference_dataset
