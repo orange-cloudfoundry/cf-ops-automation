@@ -90,7 +90,7 @@ jobs:
         type: registry-image
         source:
           repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
-          tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+          tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
       inputs:
         - name: scripts-resource
         - name: secrets
@@ -185,7 +185,7 @@ jobs:
         type: registry-image
         source:
           repository: ((docker-registry-url))elpaasoci/curl-ssl
-          tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+          tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
       inputs:
       - name: concourse-teams
       outputs:
@@ -272,7 +272,7 @@ jobs:
         type: registry-image
         source:
           repository: ((docker-registry-url))elpaasoci/curl-ssl
-          tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+          tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
       inputs:
       - name: all-pipelines
       outputs:
