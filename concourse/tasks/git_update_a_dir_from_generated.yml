@@ -15,7 +15,7 @@
 platform: linux
 image_resource:
   type: registry-image
-  source: {repository: ((docker-registry-url))elpaasoci/git-ssh, tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc}
+  source: {repository: ((docker-registry-url))elpaasoci/git-ssh, tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1}
 inputs:
   - name: reference-resource
   - name: generated-resource
