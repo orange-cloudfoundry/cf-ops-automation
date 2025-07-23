@@ -132,7 +132,7 @@ describe RepackageReleases do
       context "when fail to clone postgres" do
         it "repackages other boshreleases (ie one without errors)" do
           expect { run_process }.to raise_error(RuntimeError) do |error|
-            expect(error.message).to eq('{"postgres"=>{"version"=>"1.17.2", "repository"=>"cloudfoundry/postgres-release", "tag_prefix"=>"v", "error"=>"Error xxx. Failed to clone \'postgres\' from \'https://my-private-github.com/cloudfoundry/postgres-release\'"}}')
+            expect(error.message).to eq('{"postgres" => {"version" => "1.17.2", "repository" => "cloudfoundry/postgres-release", "tag_prefix" => "v", "error" => "Error xxx. Failed to clone \'postgres\' from \'https://my-private-github.com/cloudfoundry/postgres-release\'"}}')
           end
 
           expect(File.read(File.join(repackaged_releases_path,'boshreleases-namespaces.csv'))).to eq("prometheus-270.11.0,cloudfoundry-community\nshield-8.6.3,starkandwayne\n")
@@ -190,7 +190,7 @@ describe RepackageReleases do
 
         it "raises an error" do
           expect { repackage_releases.process(repackaged_releases_path, base_git_clones_path, logs_path) }.
-            to raise_error(RuntimeError, /"Bosh director"=>#<Tasks::Bosh::BoshCliError: Stderr: \(Tasks::Bosh::BoshCliError\).*/)
+            to raise_error(RuntimeError, /"Bosh director" => #<Tasks::Bosh::BoshCliError:"Stderr: \(Tasks::Bosh::BoshCliError\).*/)
         end
       end
     end

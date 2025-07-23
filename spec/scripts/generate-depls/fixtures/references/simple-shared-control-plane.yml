@@ -703,7 +703,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/curl-ssl
-              tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+              tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
           inputs:
             - name: concourse-micro
           run:
@@ -853,7 +853,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/curl-ssl
-              tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+              tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
           inputs:
             - name: config-resource
           run:
@@ -880,7 +880,7 @@ jobs:
                 source:
                   # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
                   repository: ((docker-registry-url))elpaasoci/git-ssh
-                  tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+                  tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
               outputs:
                 - name: success-tag
               run:
@@ -905,7 +905,7 @@ jobs:
             source:
               # from https://hub.docker.com/r/elpaasoci/git-ssh/tags
               repository: ((docker-registry-url))elpaasoci/git-ssh
-              tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+              tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
           inputs:
             - name: concourse-micro-success
               optional: true
@@ -972,7 +972,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/git-ssh
-              tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+              tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
           inputs:
             - name: secrets-writer
           outputs:
@@ -1016,7 +1016,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/git-ssh
-              tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+              tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
           inputs:
             - name: paas-templates-full
           outputs:

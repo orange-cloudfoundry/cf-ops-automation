@@ -17,10 +17,10 @@ GEM
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
     ast (2.4.3)
-    async (2.26.0)
+    async (2.27.0)
       console (~> 1.29)
       fiber-annotation
-      io-event (~> 1.12)
+      io-event (~> 1.11)
       metrics (~> 0.12)
       traces (~> 0.15)
     async-http (0.89.0)
@@ -46,10 +46,11 @@ GEM
       concurrent-ruby
     concurrent-ruby (1.3.5)
     connection_pool (2.5.3)
-    console (1.32.0)
+    console (1.33.0)
       fiber-annotation
       fiber-local (~> 1.1)
       json
+    csv (3.3.5)
     cucumber (10.0.0)
       base64 (~> 0.2)
       builder (~> 3.2)
@@ -111,7 +112,7 @@ GEM
       dry-inflector (~> 1.0)
       dry-logic (~> 1.4)
       zeitwerk (~> 2.6)
-    faraday (2.13.3)
+    faraday (2.13.4)
       faraday-net_http (>= 2.0, < 3.5)
       json
       logger
@@ -119,7 +120,7 @@ GEM
       faraday (>= 0.8)
     faraday-net_http (3.4.1)
       net-http (>= 0.5.0)
-    ffi (1.17.2)
+    ffi (1.17.2-x86_64-linux-gnu)
     fiber-annotation (0.2.0)
     fiber-local (1.1.0)
       fiber-storage
@@ -144,9 +145,9 @@ GEM
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
     io-endpoint (0.15.2)
-    io-event (1.12.0)
+    io-event (1.12.1)
     io-stream (0.10.0)
-    json (2.13.0)
+    json (2.13.2)
     kramdown (2.5.1)
       rexml (>= 3.3.9)
     kramdown-parser-gfm (1.1.0)
@@ -160,11 +161,11 @@ GEM
       mixlib-cli (~> 2.1, >= 2.1.1)
       mixlib-config (>= 2.2.1, < 4)
       mixlib-shellout
-    metrics (0.12.2)
+    metrics (0.13.0)
     mime-types (3.7.0)
       logger
       mime-types-data (~> 3.2025, >= 3.2025.0507)
-    mime-types-data (3.2025.0715)
+    mime-types-data (3.2025.0729)
     mini_mime (1.1.5)
     minitest (5.25.5)
     mixlib-cli (2.1.8)
@@ -181,7 +182,7 @@ GEM
       faraday (>= 1, < 3)
       sawyer (~> 0.9)
     parallel (1.27.0)
-    parser (3.3.8.0)
+    parser (3.3.9.0)
       ast (~> 2.4.1)
       racc
     prism (1.4.0)
@@ -205,7 +206,7 @@ GEM
       parser (~> 3.3.0)
       rainbow (>= 2.0, < 4.0)
       rexml (~> 3.1)
-    regexp_parser (2.10.0)
+    regexp_parser (2.11.0)
     rest-client (2.1.0)
       http-accept (>= 1.7.0, < 2.0)
       http-cookie (>= 1.0.2, < 2.0)
@@ -260,7 +261,7 @@ GEM
     sys-uname (1.3.1)
       ffi (~> 1.1)
     tomlrb (2.0.3)
-    traces (0.15.2)
+    traces (0.16.2)
     track_open_instances (0.1.15)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
@@ -271,9 +272,10 @@ GEM
     zeitwerk (2.7.3)
 
 PLATFORMS
-  ruby
+  x86_64-linux
 
 DEPENDENCIES
+  csv
   cucumber
   docker_registry2 (~> 1.18.2)
   git (~> 4.0)
@@ -292,4 +294,4 @@ RUBY VERSION
    ruby 3.4.4p34
 
 BUNDLED WITH
-   2.3.20
+   2.7.0

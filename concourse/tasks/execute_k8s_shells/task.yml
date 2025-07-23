@@ -3,7 +3,7 @@ image_resource:
   type: registry-image
   source:
     repository: ((docker-registry-url))elpaasoci/k8s-tools
-    tag: 16d8df77e94455af3bccce2b058318fd3fd8b9bc
+    tag: c8fc149a9155a9c47ac2c50746a4a497f85fdbe1
 inputs:
   - name: paas-templates-resource
   - name: credentials-resource

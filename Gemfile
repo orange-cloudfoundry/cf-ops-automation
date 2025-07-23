@@ -19,4 +19,5 @@ group :test do
   gem 'rspec', '~> 3.13.0'
   gem 'rspec-rerun'
   gem 'simplecov', '~> 0.22.0'
+  gem 'csv' #required by ./spec/tasks/repackage_boshreleases_fallback/task_spec.rb and ruby 3.4.4
 end
