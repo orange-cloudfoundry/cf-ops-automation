@@ -16,7 +16,7 @@ shared_examples_for "an initiated and pushed repo" do |repo_path, repo_name|
       ["git config --local user.email 'coa_env_bootstrapper@example.com'", {}],
       ["git config --local user.name 'Fake User For COA Bootstrapper Pipeline'", {}],
       ["git remote add origin git://1.2.3.4/#{repo_name}", {}],
-      ["git add -A && git commit -m 'Commit from origin'", fail_silently: true],
+      ["git add -A && git commit -m Extracted\\ safe\\ message:\\ origin", fail_silently: true],
       ["git checkout master", {}],
       ["git push origin master --force", { profile: profile }]
     ]

@@ -1,4 +1,5 @@
 require 'securerandom'
+require 'shellwords'
 require_relative './errors'
 require_relative '../constants'
 
@@ -96,16 +97,17 @@ module Coa
         coa_submodule_path = "shared-files/cf-ops-automation-reference-dataset-submodule-sample"
         Dir.chdir repo_path do
           submodule_commit_reference = templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
-          reference_commit = run_cmd "git log -1 --oneline", fail_silently: true
+          reference_commit = run_cmd "git --no-pager log -1 --oneline --no-decorate --no-color|cut -c 1-150|tr '><|&' '____'", fail_silently: true
           reference_commit = reference_commit.gsub('[skip ci]', '')
           reference_commit = reference_commit.gsub('[ci skip]', '')
+          safe_commit = Shellwords.shellescape("Extracted safe message: #{reference_commit}")
           run_cmd "git init ."
           run_cmd "git config --local user.email 'coa_env_bootstrapper@example.com'"
           run_cmd "git config --local user.name 'Fake User For COA Bootstrapper Pipeline'"
           run_cmd "git remote remove origin" if remote_exists?("origin")
           run_cmd "git remote add origin git://#{server_ip}/#{repo_name}"
           create_git_submodule_from_templates_repo(coa_submodule_path, repo_path, submodule_commit_reference)
-          run_cmd "git add -A && git commit -m 'Commit from #{reference_commit}'", fail_silently: true
+          run_cmd "git add -A && git commit -m #{safe_commit}", fail_silently: true
           run_cmd "git checkout master"
           bosh_sourced_cmd "git push origin master --force" # not working with virtualbox? `bucc routes`
         end
