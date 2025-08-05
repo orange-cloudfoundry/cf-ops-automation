@@ -63,6 +63,7 @@ echo "setup OUTPUT K8S_GIT_REPO_PATH"
 git config --global advice.detachedHead false
 git config --global user.email "$GIT_USER_EMAIL"
 git config --global user.name "$GIT_USER_NAME"
+git config --global safe.directory '*'
 
 set -e
 
