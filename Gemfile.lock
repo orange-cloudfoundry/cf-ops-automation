@@ -282,7 +282,7 @@ DEPENDENCIES
   git (~> 4.0)
   github_changelog_generator (~> 1.16.4)
   mdl (~> 0.13.0)
-  ostruct (~> 0.6)
+  ostruct (~> 0.6, >= 0.6.3)
   rake (~> 13.3)
   reek (~> 6.5.0)
   rhcl (~> 0.1.0)
