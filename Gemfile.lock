@@ -286,7 +286,7 @@ DEPENDENCIES
   rake (~> 13.3)
   reek (~> 6.5.0)
   rhcl (~> 0.1.0)
-  rspec (~> 3.13.0)
+  rspec (~> 3.13.1)
   rspec-rerun
   rubocop (~> 1.78.0)
   rubocop-rspec (~> 3.6)
