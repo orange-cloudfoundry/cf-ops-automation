@@ -263,7 +263,7 @@ jobs:
   - task: generate-<%= name %>-manifest
     input_mapping:
       scripts-resource: cf-ops-automation
-      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{root_deployment_name}-#{name}", "secrets-full-writer") %>
       additional-resource: paas-templates-full
     output_mapping: {generated-files: pre-processed-manifest}
     file: cf-ops-automation/concourse/tasks/generate_manifest/task.yml
@@ -292,7 +292,7 @@ jobs:
   - task: execute-pre-deploy-shell
     input_mapping:
       paas-templates-resource: paas-templates-resolved
-      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{root_deployment_name}-#{name}", "secrets-full-writer") %>
     output_mapping: {result-dir: ignored-k8s-repo-pre-deploy}
     file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
     params:
@@ -308,7 +308,7 @@ jobs:
   - task: execute-shell
     input_mapping:
       paas-templates-resource: paas-templates-resolved
-      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{root_deployment_name}-#{name}", "secrets-full-writer") %>
     output_mapping: {result-dir: updated-k8s-repo}
     file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
     params:
@@ -330,7 +330,7 @@ jobs:
   - task: execute-post-deploy-shell
     input_mapping:
       paas-templates-resource: paas-templates-resolved
-      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{name}", "secrets-full-writer") %>
+      credentials-resource: <%= deployment_details.select_secrets_scan_repository("secrets-#{root_deployment_name}-#{name}", "secrets-full-writer") %>
       k8s-configs-repository: updated-k8s-repo
     output_mapping: {result-dir: ignored-k8s-repo-post-deploy}
     file: cf-ops-automation/concourse/tasks/execute_k8s_shells/task.yml
