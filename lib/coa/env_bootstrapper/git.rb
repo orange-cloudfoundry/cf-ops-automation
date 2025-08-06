@@ -97,7 +97,7 @@ module Coa
         coa_submodule_path = "shared-files/cf-ops-automation-reference-dataset-submodule-sample"
         Dir.chdir repo_path do
           submodule_commit_reference = templates_coa_reference_dataset_submodule_sha1(coa_submodule_path, repo_path)
-          reference_commit = run_cmd "git --no-pager log -1 --oneline --no-decorate --no-color|cut -c 1-150|tr '><|&' '____'", fail_silently: true
+          reference_commit = run_cmd "git --no-pager log -1 --oneline --no-decorate --no-color|cut -c 1-150", fail_silently: true
           reference_commit = reference_commit.gsub('[skip ci]', '')
           reference_commit = reference_commit.gsub('[ci skip]', '')
           safe_commit = Shellwords.shellescape("Extracted safe message: #{reference_commit}")
