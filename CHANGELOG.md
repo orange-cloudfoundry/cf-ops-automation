@@ -1,5 +1,23 @@
 # Changelog
 
+## [v6.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.4.0) (2025-08-28)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.3.0...v6.4.0)
+
+**Fixed bugs:**
+
+- Fix local secret scan on shared k8s [\#479](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/479)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency ostruct to '~\> 0.6', '\>= 0.6.3' [\#478](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/478)
+- chore\(deps\): update dependency git to '~\>4.0', '\>= 4.0.4' [\#476](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/476)
+- Feature bump to ruby 3.4.4 [\#475](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/475)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.9.8 [\#474](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/474)
+- allow usage of private docker registry in pipelines [\#473](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/473)
+- chore\(deps\): update dependency rspec to '~\> 3.13.1' [\#471](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/471)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.9.6 [\#462](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/462)
+
 ## [v6.3.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.3.0) (2025-02-12)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.2.0...v6.3.0)
