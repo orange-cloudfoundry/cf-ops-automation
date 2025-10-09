@@ -54,6 +54,11 @@
       addLabels: ["COA CI"]
     },
     {
+      matchManagers: ['regex'],
+      matchDepNames: ['cloudfoundry/bosh-linux-stemcell-builder'],
+      addLabels: ['type/bosh-stemcell', 'jammy']
+    },
+    {
       description: "Regroup tools used during Dev & Test",
       matchDepNames: [
         "docker_registry2",
@@ -132,6 +137,18 @@
       packageNameTemplate: "https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools",
       datasourceTemplate: "git-refs",
       versioningTemplate: "git"
+    },
+    {
+      description: 'bump of stemcell version within root-deployment.yaml: bosh stemcell hosted in bosh.io from github release tags. Not using github tags as they also include transient release candidates. matchStrings: https://regex101.com/r/3Gzhig/1 extracts: for bionic currentValue=1.174  expecting tag=ubuntu-bionic/v1.195 and extractVersionTemplate: https://regex101.com/r/ZrrDJ2/1 See regex doc at https://docs.renovatebot.com/modules/manager/regex/',
+      fileMatch: ['.+/reference_dataset/template_repository/hello-world-root-depls/root-deployment\\.yml$'],
+      matchStrings: [
+        "stemcell:\\n.*version: '(?<currentValue>[0-9.]+)'"
+      ],
+      depNameTemplate: 'cloudfoundry/bosh-linux-stemcell-builder',
+      datasourceTemplate: 'github-releases',
+      versioningTemplate: 'regex:(?<major>\\d+)\\.(?<minor>\\d+)$',
+
+      extractVersionTemplate: 'ubuntu-jammy\/v(?<version>.*)$'
     },
 //    {
 //      //description: "manage all docker images used by concourse. It will detect elpassoci images but shoud not be able to detect any version published",
