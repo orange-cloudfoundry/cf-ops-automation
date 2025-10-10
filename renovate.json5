@@ -54,6 +54,7 @@
       addLabels: ["COA CI"]
     },
     {
+      description: "Bosh stemcell available on bosh.io",
       matchManagers: ['regex'],
       matchDepNames: ['cloudfoundry/bosh-linux-stemcell-builder'],
       addLabels: ['type/bosh-stemcell', 'jammy']
