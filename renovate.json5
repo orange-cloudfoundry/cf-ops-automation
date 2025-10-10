@@ -139,10 +139,10 @@
       versioningTemplate: "git"
     },
     {
-      description: 'bump of stemcell version within root-deployment.yaml: bosh stemcell hosted in bosh.io from github release tags. Not using github tags as they also include transient release candidates. matchStrings: https://regex101.com/r/3Gzhig/1 extracts: for bionic currentValue=1.174  expecting tag=ubuntu-bionic/v1.195 and extractVersionTemplate: https://regex101.com/r/ZrrDJ2/1 See regex doc at https://docs.renovatebot.com/modules/manager/regex/',
-      fileMatch: ['.+/reference_dataset/template_repository/hello-world-root-depls/root-deployment\\.yml$'],
+      description: 'bump of stemcell version within root-deployment.yaml: bosh stemcell hosted in bosh.io from github release tags. Not using github tags as they also include transient release candidates. matchStrings: https://regex101.com/r/wokPwY/1 extracts: for bionic currentValue=1.174  expecting tag=ubuntu-bionic/v1.195 and extractVersionTemplate: https://regex101.com/r/ZrrDJ2/1 See regex doc at https://docs.renovatebot.com/modules/manager/regex/',
+      fileMatch: ['docs/reference_dataset/template_repository/hello-world-root-depls/root-deployment\\.yml$'],
       matchStrings: [
-        "stemcell:\\n.*version: '(?<currentValue>[0-9.]+)'"
+        "stemcell:\\n.*version: ['|\"](?<currentValue>[1-9.]+)['|\"]"
       ],
       depNameTemplate: 'cloudfoundry/bosh-linux-stemcell-builder',
       datasourceTemplate: 'github-releases',
