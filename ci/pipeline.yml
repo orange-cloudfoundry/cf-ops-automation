@@ -421,6 +421,27 @@ jobs:
                   credhub set --type value -n "${CREDHUB_CONCOURSE_NAMESPACE}/${team}/docker-registry-url" -v "$DOCKER_REGISTRY_URL"
                 done
 
+      - task: setup-pre-requisites-oci-registry
+        attempts: 1
+        image: cf-ops-automation-docker-image-develop
+        config: &integration_tests_setup_pre_requisites_oci_registry_task_config
+          platform: linux
+          inputs:
+            - name: cf-ops-automation
+          run:
+            path: /bin/bash
+            args:
+              - -ce
+              - |
+                echo "Setup pre-requisites for OCI registry"
+                cf-ops-automation/ci/scripts/deploy-bosh-releases.rb prereqs/bosh-deployment-manifest-prereqs.yml
+                echo "Setup DONE"
+          # it is not possible to include it as config param, otherwise we get an deserialization error
+          params:
+            OCI_REGISTRY_USERNAME: ((integration-test-prereqs.oci-registry.username))
+            OCI_REGISTRY_PASSWORD: ((integration-test-prereqs.oci-registry.password))
+            OCI_REGISTRY_URL: ((integration-test-prereqs.oci-registry.url))
+
       - task: upload-pipelines
         attempts: 2
         image: cf-ops-automation-docker-image-develop
@@ -817,6 +838,14 @@ jobs:
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: *integration_tests_setup_credhub_pre_requisites_task_config
+        on_failure:
+          in_parallel:
+            - *coa-failure-pr
+            - *coa-failure-it-pr
+      - task: setup-pre-requisites-oci-registry
+        attempts: 1
+        image: cf-ops-automation-docker-image-pr
+        config: *integration_tests_setup_pre_requisites_oci_registry_task_config
         on_failure:
           in_parallel:
             - *coa-failure-pr
