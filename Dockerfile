@@ -34,10 +34,19 @@ RUN curl --retry 30 -sSL "$FLY_DOWNLOAD_URL" -o /tmp/fly.tgz \
   && cd /tmp \
   && tar xzvf /tmp/fly.tgz \
   && mv /tmp/fly /usr/local/bin/fly \
-  && chmod +x /usr/local/bin/fly
+  && chmod +x /usr/local/bin/fly \
+  && rm -rf /tmp/fly*
 
-RUN curl --retry 30 -sSL "https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64" -o /usr/local/bin/cc-test-reporter \
-  && chmod a+x /usr/local/bin/cc-test-reporter
+
+ARG QLTY_INSTALL_URL="https://qlty-releases.s3.amazonaws.com/qlty"
+ARG QLTY_TARGET="x86_64-unknown-linux-gnu"
+RUN curl --retry 30 -sSL "$QLTY_INSTALL_URL/latest/qlty-$QLTY_TARGET.tar.xz" -o /tmp/qlty.tar.xz \
+  && cd /tmp \
+  && tar xJvf qlty.tar.xz \
+  && du -a /tmp \
+  && mv /tmp/qlty-$QLTY_TARGET/qlty /usr/local/bin/qlty \
+  && chmod a+x /usr/local/bin/qlty \
+  && rm -rf /tmp/qlty*
 
 RUN curl --retry 30 -sSL "https://raw.githubusercontent.com/ekalinin/github-markdown-toc/master/gh-md-toc" -o /usr/local/bin/gh-md-toc \
   && chmod a+x /usr/local/bin/gh-md-toc
@@ -55,7 +64,7 @@ RUN rm -f /usr/local/bundle/bin/bundler
 
 
 FROM ci_image AS test_ci_image
-RUN ruby --version && bosh --version && fly --version && cc-test-reporter --version && gh-md-toc --version
+RUN ruby --version && bosh --version && fly --version && qlty --version && gh-md-toc --version
 
 
 FROM ci_image

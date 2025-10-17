@@ -1,7 +1,7 @@
 # cf-ops-automation (COA)
 
-[![Maintainability](https://api.codeclimate.com/v1/badges/98afd0def1915fd16f71/maintainability)](https://codeclimate.com/github/orange-cloudfoundry/cf-ops-automation/maintainability)
-[![Test Coverage](https://api.codeclimate.com/v1/badges/98afd0def1915fd16f71/test_coverage)](https://codeclimate.com/github/orange-cloudfoundry/cf-ops-automation/test_coverage)
+[![Maintainability](https://qlty.sh/gh/orange-cloudfoundry/projects/cf-ops-automation/maintainability.svg)](https://qlty.sh/gh/orange-cloudfoundry/projects/cf-ops-automation)
+[![Code Coverage](https://qlty.sh/gh/orange-cloudfoundry/projects/cf-ops-automation/coverage.svg)](https://qlty.sh/gh/orange-cloudfoundry/projects/cf-ops-automation)
 [![Inline docs](http://inch-ci.org/github/orange-cloudfoundry/cf-ops-automation.svg?branch=develop&style=shields)](http://inch-ci.org/github/orange-cloudfoundry/cf-ops-automation)
 [![Docker Pull](https://img.shields.io/docker/pulls/coabot/cf-ops-automation.svg)](https://hub.docker.com/r/coabot/cf-ops-automation/)
 [![GitHub release](https://img.shields.io/github/release/orange-cloudfoundry/cf-ops-automation.svg)](https://github.com/orange-cloudfoundry/cf-ops-automation/releases)
