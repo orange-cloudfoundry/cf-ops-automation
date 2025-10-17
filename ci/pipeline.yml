@@ -229,7 +229,7 @@ jobs:
             ruby --version
             bundle --version
             bundle exec rspec --version
-            cc-test-reporter --version
+            qlty --version
             echo "---------------------------"
             echo "Setup Code Climate pre-requisites"
             cd ../concourse-meta
@@ -253,17 +253,16 @@ jobs:
             fly -t cf-ops-automation login -u ((concourse-username)) -p '((concourse-password))' -k -c ((concourse-url))
             echo "Ensure local fly version is in sync with concourse"
             fly -t cf-ops-automation sync
-            echo "Setup Code Climate coverage"
-            cc-test-reporter before-build
+            echo "Setup Qlty coverage"
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
-            echo "Sending coverage to Code Climate"
-            if [ $(cc-test-reporter after-build) -eq 0 ]; then
-              echo "Failed to run cc-test-reporter. Re-launch in debug mode";
+            echo "Sending coverage to Qlty"
+            if ! qlty coverage publish --tag unit; then
+              echo "Failed to run qlty. Re-launch in debug mode";
               echo "---------------------------"
-              cc-test-reporter after-build -d;
+              qlty coverage publish --tag unit --debug;
             fi
         params:
-          CC_TEST_REPORTER_ID: ((code-climate-test-reporter-id))
+          QLTY_COVERAGE_TOKEN: ((qlty-coverage_token))
           COVERAGE: true
           GIT_SHA_CMD: cat .git/ref
           GIT_BRANCH_CMD: echo "((cf-ops-automation-git-branch))"
