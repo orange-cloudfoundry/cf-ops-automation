@@ -231,7 +231,7 @@ jobs:
             bundle exec rspec --version
             qlty --version
             echo "---------------------------"
-            echo "Setup Code Climate pre-requisites"
+            echo "Setup Qlty pre-requisites"
             cd ../concourse-meta
             BUILD_TEAM=$(if [ -f build_team_name ];then cat build_team_name;fi)
             BUILD_PIPELINE=$(if [ -f build_pipeline_name ];then cat build_pipeline_name;fi)
@@ -256,10 +256,10 @@ jobs:
             echo "Setup Qlty coverage"
             bundle exec rspec --format documentation --format html --out ../test-reports/rspec-results.html
             echo "Sending coverage to Qlty"
-            if ! qlty coverage publish --tag unit; then
+            if ! qlty coverage publish --tag unit --override-branch "$GIT_BRANCH" --override-commit-sha "$GIT_COMMIT_SHA" --override-build-id "$BUILD_ID" coverage/.resultset.json; then
               echo "Failed to run qlty. Re-launch in debug mode";
               echo "---------------------------"
-              qlty coverage publish --tag unit --debug;
+              qlty coverage publish --tag unit --override-branch "$GIT_BRANCH" --override-commit-sha "$GIT_COMMIT_SHA" --override-build-id "$BUILD_ID" --debug coverage/.resultset.json;
             fi
         params:
           QLTY_COVERAGE_TOKEN: ((qlty-coverage_token))
