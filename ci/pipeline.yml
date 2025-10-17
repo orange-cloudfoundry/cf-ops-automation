@@ -433,7 +433,7 @@ jobs:
               - -ce
               - |
                 echo "Setup pre-requisites for OCI registry"
-                cf-ops-automation/ci/scripts/deploy-bosh-releases.rb prereqs/bosh-deployment-manifest-prereqs.yml
+                cf-ops-automation/ci/scripts/setup-oci-registry.sh
                 echo "Setup DONE"
           # it is not possible to include it as config param, otherwise we get an deserialization error
           params:
