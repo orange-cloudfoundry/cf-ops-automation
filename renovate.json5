@@ -57,7 +57,7 @@
       description: "Bosh stemcell available on bosh.io",
       matchManagers: ['regex'],
       matchDepNames: ['cloudfoundry/bosh-linux-stemcell-builder'],
-      matchCurrentAge: "> 2 months", // wait for 2 months before updating stemcell on COA-CI
+      matchCurrentAge: "> 1 months", // wait for 1 months before updating stemcell on COA-CI
       addLabels: ['type/bosh-stemcell', 'jammy']
     },
     {
