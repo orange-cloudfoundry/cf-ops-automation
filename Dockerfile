@@ -5,16 +5,16 @@ FROM ruby:3.4.4 AS ci_image
 # dd1e5f94214632a09ce07426c2392ab8803ae8b307c0ba5436239e9b67d01c52  fly-7.12.1-linux-amd64.tgz
 # https://github.com/concourse/concourse/releases/
 # renovate: datasource=github-releases depName=concourse/concourse
-ARG CONCOURSE_VERSION=7.12.1
-ARG CONCOURSE_SHA256=dd1e5f94214632a09ce07426c2392ab8803ae8b307c0ba5436239e9b67d01c52
+ARG CONCOURSE_VERSION=7.14.2
+ARG CONCOURSE_SHA256=a3b12d67f05d6328639c325ba48f94db7605adcd4a56bf7f3fddba25c36550fc
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
-ARG BOSH_CLI_VERSION=7.9.8
-ARG BOSH_CLI_SHA256=2e7384092d185a1c351f305cc12f35c8117023541d2a3c8a208eca7fbd12678f
+ARG BOSH_CLI_VERSION=7.9.13
+ARG BOSH_CLI_SHA256=45a90b63565fd929b9d642c879900bc476aa29a6a8fa2d91879621acbe473c48
 
 RUN apt-get update \
-    && apt-get -y install tree vim netcat-traditional dnsutils jq
+    && apt-get -y install --no-install-recommends tree vim netcat-traditional dnsutils jq
 
 # install cf-ops-automation Gemfile
 RUN gem update --system
