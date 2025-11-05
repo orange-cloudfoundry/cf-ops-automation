@@ -583,13 +583,17 @@ jobs:
             args:
               - -ec
               - |
+                echo "List release tgz (only one expected)"
+                ls -l release/*.tgz
+                echo "List stemcells (only one expected)"
+                ls -l stemcell/*.tgz
                 RELEASE_INFO=$(bosh inspect-local-release --json release/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export RELEASE_NAME=$(echo ${RELEASE_INFO} | jq -r '.["name"]')
                 export RELEASE_VERSION=$(echo ${RELEASE_INFO} | jq -r '.["version"]')
                 STEMCELL_INFO=$(bosh inspect-local-stemcell --json stemcell/*.tgz | jq '.Tables|.[0]|.Rows|.[0]')
                 export STEMCELL_OS=$(echo ${STEMCELL_INFO} | jq -r '.["os"]')
                 export STEMCELL_VERSION=$(echo ${STEMCELL_INFO} | jq -r '.["version"]')
-
+                echo "Generating tar name: ${RELEASE_NAME}-${RELEASE_VERSION}-${STEMCELL_OS}-${STEMCELL_VERSION}.tgz"
                 cp release/*.tgz result-dir/"${RELEASE_NAME}-${RELEASE_VERSION}-${STEMCELL_OS}-${STEMCELL_VERSION}.tgz"
       - put: compiled-<%= release %>
         attempts: <%= concourse_retry[:push] %>
