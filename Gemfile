@@ -17,7 +17,7 @@ end
 
 group :test do
   gem 'cucumber'
-  gem 'rspec', '~> 3.13.1'
+  gem 'rspec', '~> 3.13.2'
   gem 'rspec-rerun'
   gem 'simplecov', '~> 0.22.0'
   gem 'csv' #required by ./spec/tasks/repackage_boshreleases_fallback/task_spec.rb and ruby 3.4.4
