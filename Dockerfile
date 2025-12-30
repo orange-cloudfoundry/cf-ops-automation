@@ -10,8 +10,8 @@ ARG CONCOURSE_SHA256=a3b12d67f05d6328639c325ba48f94db7605adcd4a56bf7f3fddba25c36
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
-ARG BOSH_CLI_VERSION=7.9.13
-ARG BOSH_CLI_SHA256=45a90b63565fd929b9d642c879900bc476aa29a6a8fa2d91879621acbe473c48
+ARG BOSH_CLI_VERSION=7.9.15
+ARG BOSH_CLI_SHA256=f873260b221fa3d88e8a396df94d7382447c4f163edba483a1343d063582202b
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends tree vim netcat-traditional dnsutils jq
