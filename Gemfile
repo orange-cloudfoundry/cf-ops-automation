@@ -11,8 +11,8 @@ group :development do
   gem 'mdl', '~>0.15.0'
   gem 'rake', '~>13.3'
   gem 'reek', '~> 6.5.0'
-  gem 'rubocop', '~> 1.79.2'
-  gem 'rubocop-rspec', '~> 3.6'
+  gem 'rubocop', '~> 1.82.1'
+  gem 'rubocop-rspec', '~> 3.8'
 end
 
 group :test do
