@@ -6,7 +6,7 @@ gem 'ostruct', '~> 0.6', '>= 0.6.3'
 
 group :development do
   gem 'docker_registry2', '~> 1.18.2' # https://rubygems.org/gems/docker_registry2
-  gem 'git', '~>4.0', '>= 4.0.4' # https://rubygems.org/gems/git
+  gem 'git', '~>4.0', '>= 4.0.7' # https://rubygems.org/gems/git
   gem 'github_changelog_generator', '~> 1.16.4' # https://rubygems.org/gems/github_changelog_generator
   gem 'mdl', '~>0.15.0'
   gem 'rake', '~>13.3', '>= 13.3.1'
