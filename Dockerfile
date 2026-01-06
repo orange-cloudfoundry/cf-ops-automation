@@ -5,8 +5,8 @@ FROM ruby:3.4.4 AS ci_image
 # dd1e5f94214632a09ce07426c2392ab8803ae8b307c0ba5436239e9b67d01c52  fly-7.12.1-linux-amd64.tgz
 # https://github.com/concourse/concourse/releases/
 # renovate: datasource=github-releases depName=concourse/concourse
-ARG CONCOURSE_VERSION=7.14.2
-ARG CONCOURSE_SHA256=a3b12d67f05d6328639c325ba48f94db7605adcd4a56bf7f3fddba25c36550fc
+ARG CONCOURSE_VERSION=7.14.3
+ARG CONCOURSE_SHA256=b32f64e429e477fcfdcceb7c70a3378fee592377453106d944327cf87d78045e
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
