@@ -124,6 +124,7 @@ resources:
     endpoint: ((s3-stemcell-endpoint))
     skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
     skip_download: true
+    use_path_style: true
   version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz }
 - name: secrets-ntp-with-scan
   icon: source-merge

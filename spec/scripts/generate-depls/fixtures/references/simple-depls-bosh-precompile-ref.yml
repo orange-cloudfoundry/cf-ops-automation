@@ -71,6 +71,7 @@ resources:
       secret_access_key: ((s3-stemcell-secret-key))
       endpoint: ((s3-stemcell-endpoint))
       skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+      use_path_style: true
     version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz }
   - name: secrets-simple-depls-trigger
     icon: source-commit
