@@ -161,6 +161,7 @@ resources:
       secret_access_key: ((s3-stemcell-secret-key))
       endpoint: ((s3-stemcell-endpoint))
       skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+      use_path_style: true
     version: { path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz }
     <% else %>
     type: bosh-io-stemcell
@@ -212,6 +213,7 @@ resources:
       secret_access_key: ((s3-br-secret-key))
       endpoint: ((s3-br-endpoint))
       skip_ssl_verification: ((s3-br-skip-ssl-verification))
+      use_path_style: true
     version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version)).tgz }
   <% else %>
     type: git
@@ -236,6 +238,7 @@ resources:
       secret_access_key: ((s3-compiled-release-secret-key))
       endpoint: ((s3-compiled-release-endpoint))
       skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
+      use_path_style: true
     version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version))-((s3-compiled-release-os))-((stemcell.version)).tgz }
   <% end %>
 

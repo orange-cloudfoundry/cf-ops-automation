@@ -481,6 +481,7 @@ describe 'BoshPipelineTemplateProcessing' do
                 endpoint: ((s3-compiled-release-endpoint))
                 skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
                 skip_download: true
+                use_path_style: true
               version:
                 path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version))-((s3-compiled-release-os))-((stemcell.version)).tgz"
           YAML
@@ -576,6 +577,7 @@ describe 'BoshPipelineTemplateProcessing' do
                 endpoint: ((s3-br-endpoint))
                 skip_ssl_verification: ((s3-br-skip-ssl-verification))
                 skip_download: true
+                use_path_style: true
               version:
                 path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version)).tgz"
           YAML
@@ -612,6 +614,7 @@ describe 'BoshPipelineTemplateProcessing' do
               secret_access_key: ((s3-stemcell-secret-key))
               skip_download: true
               skip_ssl_verification: ((s3-stemcell-skip-ssl-verification))
+              use_path_style: true
             version:
               path: ((stemcell-name-prefix))((stemcell-main-name))/bosh-stemcell-((stemcell.version))-((stemcell-main-name)).tgz
         YAML
