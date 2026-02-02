@@ -1,6 +1,35 @@
 # Changelog
 
-## [v6.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.4.0) (2025-08-28)
+## [v6.5.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.5.0) (2026-02-02)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.4.0...v6.5.0)
+
+**Implemented enhancements:**
+
+- pipeline\(bosh-precompile\): add log to generate-xxx-name task [\#490](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/490)
+
+**Fixed bugs:**
+
+- pipeline\(bosh|precompile\): force usage of s3 path style [\#495](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/495)
+
+**Miscellaneous:**
+
+- chore\(ci\): bump fly to 7.14.2 and bosh cli to 7.9.13 [\#489](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/489)
+
+**Merged pull requests:**
+
+- chore\(deps\): update dependency mdl to '~\>0.15.0' [\#493](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/493)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.9.15 [\#492](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/492)
+- chore\(deps\): update dependency concourse/concourse to v7.14.3 [\#491](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/491)
+- chore\(deps\): update dependency rspec to '~\> 3.13.2' [\#488](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/488)
+- chore\(deps\): update dependency rake to '~\>13.3', '\>= 13.3.1' [\#487](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/487)
+- chore\(deps\): update dependency cloudfoundry/bosh-linux-stemcell-builder to v1.999 [\#486](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/486)
+- chore\(ci\): use dedicated oci registry [\#485](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/485)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to f511cd2 [\#483](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/483)
+- chore\(deps\): update rubocop-tools [\#482](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/482)
+- chore\(deps\): update dependency git to '~\>4.0', '\>= 4.0.7' [\#481](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/481)
+
+## [v6.4.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.4.0) (2025-08-06)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.3.0...v6.4.0)
 
