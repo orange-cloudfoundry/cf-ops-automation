@@ -375,6 +375,27 @@ jobs:
             BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
             BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
             BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
+      - task: check-ci-skip-pre-requisites
+        attempts: 1
+        image: cf-ops-automation-docker-image-develop
+        config:
+          platform: linux
+          inputs:
+            - name: cf-ops-automation
+          run:
+            path: /bin/bash
+            args:
+              - -c
+              - |
+                echo "Checking commit including skip ci"
+                cd cf-ops-automation
+                ci_skip_count=$(git log -1|grep -cE "ci skip|skip ci")
+                if [ "$ci_skip_count" -ne 0 ]; then
+                  echo "ERROR: Cannot execute tests when [ci skip|skip ci] is detected"
+                  exit 1
+                else 
+                  echo "No [ci skip|skip ci] detected, continuing !"
+                fi
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: &integration_tests_setup_credhub_pre_requisites_task_config
@@ -650,7 +671,7 @@ jobs:
               echo "Github changelog generator version: $(bundle exec github_changelog_generator --version)"
               bundle exec github_changelog_generator --no-author  -o ${OUTPUT_FILE} --header-label "**Release notes**" --future-release "v${RELEASE_VERSION}" --token $CHANGELOG_GITHUB_TOKEN --unreleased-only
               cd ${OUTPUT_DIR}
-              tar czvf cf-ops-automation.tgz ../cf-ops-automation
+#              tar czvf cf-ops-automation.tgz ../cf-ops-automation
           params:
             CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
       - put: gh-release
@@ -660,8 +681,8 @@ jobs:
           tag_prefix: v
           tag: version/version
           body: github-info/github_release.md
-          globs:
-           - github-info/cf-ops-automation.tgz
+#          globs:
+#           - github-info/cf-ops-automation.tgz
       - put: version
         attempts: 2
         params: {bump: patch}
