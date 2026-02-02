@@ -147,13 +147,14 @@ resources:
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
     paths: [ "Gemfile*", "Dockerfile" ]
 
-- name: gh-release
+- name: gh-release-draft
   icon: package-variant
   type: github-release
   source:
     owner: ((cf-ops-automation-git-hub-owner))
     repository: ((cf-ops-automation-git-hub-repository))
     access_token: ((cf-ops-automation-git-hub-token))
+    drafts: true
 
 
 #- name: coa-ci-secrets
@@ -671,18 +672,42 @@ jobs:
               echo "Github changelog generator version: $(bundle exec github_changelog_generator --version)"
               bundle exec github_changelog_generator --no-author  -o ${OUTPUT_FILE} --header-label "**Release notes**" --future-release "v${RELEASE_VERSION}" --token $CHANGELOG_GITHUB_TOKEN --unreleased-only
               cd ${OUTPUT_DIR}
-#              tar czvf cf-ops-automation.tgz ../cf-ops-automation
+              tar czvf cf-ops-automation.tgz ../cf-ops-automation
           params:
             CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
-      - put: gh-release
+      - put: gh-release-draft
         attempts: 2
         params:
           name: version/version
           tag_prefix: v
           tag: version/version
           body: github-info/github_release.md
-#          globs:
-#           - github-info/cf-ops-automation.tgz
+          globs:
+           - github-info/cf-ops-automation.tgz
+      - task: promote-draft-to-final-release
+        attempts: 2
+        config:
+          platform: linux
+          image_resource:
+            type: registry-image
+            source:
+              repository: ((docker-registry-url))coabot/cf-ops-automation
+              tag: develop-latest
+          inputs:
+            - name: version
+          run:
+            path: /bin/bash
+            args:
+              - -ce
+              - |
+                RELEASE_VERSION=$(cat ./version/version)
+                gh release edit ${TAG_PREFIX}${RELEASE_VERSION} --draft=false
+          params:
+            TAG_PREFIX: v
+            GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"   # credential_leak_validated
+            GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"    # credential_leak_validated
+            GH_TOKEN: ((cf-ops-automation-git-hub-token)) # https://cli.github.com/manual/gh_help_environment: GH_TOKEN, GITHUB_TOKEN (in order of precedence): an authentication token that will be used when a command targets either
+            GH_REPO: orangecloudfoundry/cf-ops-automation # https://cli.github.com/manual/gh_help_environment: GH_REPO: specify the GitHub repository in the [HOST/]OWNER/REPO format for commands that otherwise operate on a local repository.
       - put: version
         attempts: 2
         params: {bump: patch}

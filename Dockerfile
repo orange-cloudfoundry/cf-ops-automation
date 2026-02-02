@@ -13,6 +13,10 @@ ARG CONCOURSE_SHA256=b32f64e429e477fcfdcceb7c70a3378fee592377453106d944327cf87d7
 ARG BOSH_CLI_VERSION=7.9.15
 ARG BOSH_CLI_SHA256=f873260b221fa3d88e8a396df94d7382447c4f163edba483a1343d063582202b
 
+# https://github.com/cli/cli/releases
+# renovate: datasource=github-releases depName=cli/cli
+ARG GH_CLI_VERSION=2.83.0
+
 RUN apt-get update \
     && apt-get -y install --no-install-recommends tree vim netcat-traditional dnsutils jq
 
@@ -55,6 +59,13 @@ RUN curl --retry 30 -sSLo /usr/local/bin/bosh https://github.com/cloudfoundry/bo
     && echo "${BOSH_CLI_SHA256} */usr/local/bin/bosh" | shasum -a 256 -c - \
     && chmod +x /usr/local/bin/bosh
 
+ARG GH_BASE_FILENAME="gh_${GH_CLI_VERSION}_linux_amd64"
+RUN curl --retry 30 -sSL "https://github.com/cli/cli/releases/download/v${GH_CLI_VERSION}/${GH_BASE_FILENAME}.tar.gz" -o /tmp/gh.tgz \
+    && tar xzvf /tmp/gh.tgz ${GH_BASE_FILENAME}/bin/gh \
+    && mv /tmp/${GH_BASE_FILENAME}/bin/gh /usr/local/bin/gh \
+    && chmod +x /usr/local/bin/gh \
+    && rm -rf /tmp/gh*
+
 # remove old version of bundler to avoid confusion between bundler and bundle cmd
 #   bundler => old binary
 #   bundle => latest binary
@@ -62,7 +73,7 @@ RUN rm -f /usr/local/bundle/bin/bundler
 
 
 FROM ci_image AS test_ci_image
-RUN ruby --version && bosh --version && fly --version && qlty --version && gh-md-toc --version
+RUN ruby --version && bosh --version && fly --version && qlty --version && gh-md-toc --version && gh version
 
 
 FROM ci_image
