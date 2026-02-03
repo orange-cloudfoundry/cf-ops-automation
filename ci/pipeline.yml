@@ -486,6 +486,24 @@ jobs:
                 echo "removing 'url.https://.insteadof' properties"
                 git config --unset url.https://.insteadof
                 cd ..
+#                git_server_ip=$(bosh vms -d git-server --json|jq -r .Tables[].Rows[].ips)
+#                mkdir empty-repo
+#                cd empty-repo
+#                git config --global user.email "coa-ci-bot@no-reply.orange.com"
+#                git config --global user.name "COA CI upload pipelines"
+#                touch reset-repo.marker
+#                git init .
+#                git add reset-repo.marker
+#                git commit -m"Integration Tests: reset git repo status by upload-pipelines"
+#                remotes=$(bosh interpolate --path /git_server_manifest/instance_groups/name=git-server/jobs/name=git-server/properties/repositories ../cf-ops-automation/ci/bootstrap_coa_env/git-server-manifest-prereqs.yml|cut -d' ' -f2)
+#                echo "Detected remotes repositories: "
+#                echo $remotes
+#                for r in $remotes;do
+#                echo "Resetting $r"
+#                git remote add "$r" git://$git_server_ip/$r
+#                git push -f "$r" master
+#                done
+#                cd ..
                 ruby ./cf-ops-automation/scripts/run_integration_tests.rb
                 status=$?
                 if [ -f ./coa-logs/stdout.log ];then
@@ -495,6 +513,7 @@ jobs:
           params:
             PREREQS_PATHS_RAW: "./prereqs/*.yml"
             COA_LOG_PATH: "../../../../coa-logs"
+            <<: *integration_tests_setup_pre_requisites_task_config_params
         on_failure:
           task: dump-coa-log-file
           image: cf-ops-automation-docker-image-develop
