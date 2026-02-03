@@ -1,6 +1,6 @@
 # Changelog
 
-## [v6.5.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.5.0) (2026-02-02)
+## [v6.5.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.5.0) (2026-01-30)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.4.0...v6.5.0)
 
