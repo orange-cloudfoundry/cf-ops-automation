@@ -15,7 +15,7 @@ ARG BOSH_CLI_SHA256=4b605e8d6325b417aa8dcfb14af0ec72036f9f361d0cd0cc0c4fab81af0a
 
 # https://github.com/cli/cli/releases
 # renovate: datasource=github-releases depName=cli/cli
-ARG GH_CLI_VERSION=2.83.0
+ARG GH_CLI_VERSION=2.86.0
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends tree vim netcat-traditional dnsutils jq
