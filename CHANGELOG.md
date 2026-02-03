@@ -1,5 +1,24 @@
 # Changelog
 
+## [v6.5.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.5.2) (2026-02-03)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.5.0...v6.5.2)
+
+**Implemented enhancements:**
+
+- Add support for TF automatic execution without manual approval supporting dev workflows [\#139](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/139)
+- Improve application of terraform specs and propagation of output to the pipeline [\#1](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/1)
+
+**Closed issues:**
+
+- terraform plan \(check-tf-consistency\) modification thresholds for on-demand services [\#235](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/235)
+- Add support to turn on terraform logs through TF\_LOG [\#39](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/39)
+
+**Merged pull requests:**
+
+- chore\(config\): migrate Renovate config [\#498](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/498)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.9.16 [\#496](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/496)
+
 ## [v6.5.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.5.0) (2026-01-30)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.4.0...v6.5.0)
@@ -249,10 +268,6 @@
 ## [v5.2.1](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v5.2.1) (2021-08-23)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v5.1.0...v5.2.1)
-
-**Implemented enhancements:**
-
-- Refactor offline bosh release management [\#264](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/264)
 
 **Miscellaneous:**
 
@@ -657,7 +672,6 @@
 
 - Bosh recreate is broken [\#205](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/205)
 - Deployment-dependencies per iaas\_type support is broken [\#204](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/204)
-- warning: inexact rename detection was skipped due to too many files. [\#203](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/203)
 - Errand jobs failed with ` no versions of image available` [\#199](https://github.com/orange-cloudfoundry/cf-ops-automation/issues/199)
 
 ## [v3.1.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v3.1.0) (2018-09-18)
