@@ -46,7 +46,10 @@
       matchDepNames: [
         'paas-docker-cloudfoundry-tools',
       ],
-      branchTopic: '{{{depNameSanitized}}}-commit-id',
+      branchTopic: '{{{depNameSanitized}}}-commit-id', // branch name will be: renovate/paas-docker-cloudfoundry-tools-commit-id
+      // chore(deps): update paas-docker-cloudfoundry-tools commit-id to dbc8760 #420
+      // default value for commitMessage: "{{{commitMessagePrefix}}} {{{commitMessageAction}}} {{{commitMessageTopic}}} {{{commitMessageExtra}}} {{{commitMessageSuffix}}}",
+
       commitMessageTopic: '{{{depNameSanitized}}} commit-id',
       prBodyNotes: [
         'paas-docker-cloudfoundry-tools repository: https://github.com/orange-cloudfoundry/paas-docker-cloudfoundry-tools',
@@ -121,7 +124,7 @@
       ],
     },
   ],
-  prHourlyLimit: 2,
+  prHourlyLimit: 2, // Only create one PR per hour to avoid CI overflow
   customManagers: [
     {
       customType: 'regex',
@@ -130,6 +133,7 @@
         '/Dockerfile/',
       ],
       matchStrings: [
+        // For dockerfile: https://regex101.com
         'datasource=(?<datasource>.+) depName=(?<depName>[\\w\\d\\//\\-\\_]+)( versioning=(?<versioning>.+))?\\nARG .+_VERSION=?\\"?(?<currentValue>[\\w\\d\\/\\-\\.\\_]+)\\"?',
       ],
       versioningTemplate: 'regex:(?<major>\\d+)\\.(?<minor>\\d+)\\.(?<patch>\\d+)?$',
@@ -145,11 +149,17 @@
         '/.*/task_spec.rb/',
       ],
       matchStrings: [
+        // For spec files: https://regex101.com/r/ifWHDK/2
         '.+_VERSION\\s*=\\s*[\\"\\\']?(?<currentDigest>[\\w\\d\\/\\-\\.\\_]+)?[\\"\\\']?\\s* #\\s*renovate: datasource=(?<datasource>github-releases) depName=(?<depName>[\\w\\d\\//\\-\\_]+)( versioning=(?<versioning>.+))?\\s*',
+        // template_repository/hello-world-root-depls/pipeline-sample/concourse-pipeline-config/docker-image-vars.yml
         'docker-image-tag:\\s*(\\\'|\\")?(?<currentDigest>.+)(\\\'|\\")?',
+        // multi line *.yml
         'source:.*\\n.*\\s*repository: (((.*)))?elpaasoci\\/(cf-cli|curl-ssl|git-ssh|k8s-tools|terraform|bosh-cli-v2|spruce|spiff|awscli|bosh-cli-v2-cf-cli)\\n\\s*tag: (\\\'\\")?(?<currentDigest>.+)(\\\'\\")?',
+        // single line yml: https://regex101.com/r/YfHHox/2
         'source:\\s*\\{\\s*repository: (((.*)))?elpaasoci\\/(cf-cli|curl-ssl|git-ssh|k8s-tools|terraform|bosh-cli-v2|spruce|spiff|awscli|bosh-cli-v2-cf-cli),\\s*tag: (\\\'\\")?(?<currentDigest>.+)(\\\'\\")?}',
+        // task_spec_helper.rb - https://regex101.com/r/STu3OF/1
         "def .+_default_image_version\\n\\s*\\'(?<currentDigest>.+)\\'",
+        // TF image bump
         "EXPECTED_TERRAFORM_IMAGE_TAG\\s*=\\s*'(?<currentDigest>.+)'(\\.freeze)?",
       ],
       currentValueTemplate: 'main-validated',
@@ -172,5 +182,24 @@
       versioningTemplate: 'regex:(?<major>\\d+)\\.(?<minor>\\d+)$',
       extractVersionTemplate: 'ubuntu-jammy/v(?<version>.*)$',
     },
+    //    {
+    //      //description: "manage all docker images used by concourse. It will detect elpassoci images but shoud not be able to detect any version published",
+    //      description: "manage ruby docker images used by concourse",
+    //      fileMatch: [
+    //        ".*/.*\\.erb",
+    //        ".*/.*\\.y(a)?ml",
+    //        "spec/lib/template_processor/.*_spec\\.rb",
+    //        "spec/tasks/task_spec_helper.rb",
+    //        ".*/task_spec.rb"
+    //      ],
+    //      matchStrings: [
+    //        // For concourse based files (resources and tasks): https://regex101.com/r/6ia3o9/1
+    //        // "\\{?\\s*repository: (?<depName>[\\d\\.\\w\\-\\_\\/]+)(\\n|,|\\n.*\\n)?\\s*tag: (\\'\\\")?(?<currentValue>[\\d\\.\\w\\-\\_]+)(\\'\\\")?(})?"
+    //        "\\{?\\s*repository: library/ruby(\\n|,|\\n.*\\n)?\\s*tag: (\\'\\\")?(?<currentValue>[\\d\\.\\w\\-\\_]+)(\\'\\\")?(})?"
+    //
+    //      ],
+    //      datasourceTemplate: "docker",
+    //      depNameTemplate: "ruby"
+    //    }
   ],
 }
