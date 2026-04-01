@@ -5,7 +5,7 @@ gem 'rhcl', '~> 0.1.0'
 gem 'ostruct', '~> 0.6', '>= 0.6.3'
 
 group :development do
-  gem 'docker_registry2', '~> 1.18.2' # https://rubygems.org/gems/docker_registry2
+  gem 'docker_registry2', '~> 1.19.0' # https://rubygems.org/gems/docker_registry2
   gem 'git', '~>4.0', '>= 4.0.7' # https://rubygems.org/gems/git
   gem 'github_changelog_generator', '~> 1.16.4' # https://rubygems.org/gems/github_changelog_generator
   gem 'mdl', '~>0.15.0'
