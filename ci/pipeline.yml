@@ -707,7 +707,7 @@ jobs:
             GIT_USER_NAME: "Orange Cloud Foundry SKC CI Server"   # credential_leak_validated
             GIT_USER_EMAIL: "codex.clara-cloud-ops@orange.com"    # credential_leak_validated
             GH_TOKEN: ((cf-ops-automation-git-hub-token)) # https://cli.github.com/manual/gh_help_environment: GH_TOKEN, GITHUB_TOKEN (in order of precedence): an authentication token that will be used when a command targets either
-            GH_REPO: orangecloudfoundry/cf-ops-automation # https://cli.github.com/manual/gh_help_environment: GH_REPO: specify the GitHub repository in the [HOST/]OWNER/REPO format for commands that otherwise operate on a local repository.
+            GH_REPO: orange-cloudfoundry/cf-ops-automation # https://cli.github.com/manual/gh_help_environment: GH_REPO: specify the GitHub repository in the [HOST/]OWNER/REPO format for commands that otherwise operate on a local repository.
       - put: version
         attempts: 2
         params: {bump: patch}
