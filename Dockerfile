@@ -72,7 +72,7 @@ RUN rm -f /usr/local/bundle/bin/bundler
 
 
 FROM ci_image AS test_ci_image
-RUN ruby --version && bosh --version && fly --version && qlty --version && gh-md-toc --version && gh version
+RUN ruby --version && bosh --version && fly --version && qlty --version && gh-md-toc --version && gh version && echo "=== CLI tests successful ==="
 
 
 FROM ci_image
