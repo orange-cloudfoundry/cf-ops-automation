@@ -16,9 +16,10 @@ jobs:
     permissions:
       contents: read
       statuses: write
+      packages: write
     env:
-      PR_TAG: PR-${{ github.event.pull_request.number }}
-      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_TAG: PR-${{ github.event.pull_request.number || github.run_number }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -46,13 +47,22 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Login to GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Build and push PR image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: coabot/cf-ops-automation:${{ env.PR_TAG }}
+          tags: |
+            coabot/cf-ops-automation:${{ env.PR_TAG }}
+            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -83,4 +93,5 @@ jobs:
               context: 'build-image',
               description: 'Failed to publish PR image'
             });
+
 
