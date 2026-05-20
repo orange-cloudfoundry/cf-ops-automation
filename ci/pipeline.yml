@@ -39,17 +39,6 @@ meta:
     params:
       path: cf-ops-automation
       status: pending
-  - &pending-pr
-    put: pr-develop
-    attempts: 2
-    params:
-      path: pr-develop
-      status: pending
-  - &failed-pr
-    put: pr-develop
-    params:
-      path: pr-develop
-      status: failure
 display:
   background_image: https://wallpapercave.com/download/pirate-flag-wallpapers-wp2022142
 resource_types:
@@ -138,15 +127,6 @@ resources:
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
     disable_forks: true
 
-- name: cf-ops-automation-docker-image-source
-  icon: github-circle
-  type: git
-  source:
-    uri: ((cf-ops-automation-git-uri))
-    branch: ((cf-ops-automation-git-branch))
-    skip_ssl_verification: ((cf-ops-automation-git-insecure))
-    paths: [ "Gemfile*", "Dockerfile" ]
-
 - name: gh-release-draft
   icon: package-variant
   type: github-release
@@ -180,20 +160,6 @@ jobs:
 #        var_files:
 #          - coa-ci-secrets/flexible-engine-env/credentials-fe-int.yml
 
-  - name: build-cached-image
-    serial: true
-    on_failure: *on_failure_alert
-    plan:
-    - get: cf-ops-automation
-      resource: ci-develop
-    - get: cf-ops-automation-docker-image-source
-      trigger: true
-    - put: cf-ops-automation-docker-image-develop
-      attempts: 5
-      params:
-        build: cf-ops-automation-docker-image-source
-        tag_as_latest: true
-      get_params: {skip_download: true}
   - name: unit-tests
     on_failure: *on_failure_alert
     serial: true
@@ -201,7 +167,6 @@ jobs:
     - in_parallel:
       - put: concourse-meta
       - get: cf-ops-automation-docker-image-develop
-        passed: [build-cached-image]
         trigger: true
       - get: cf-ops-automation
         resource: ci-develop
@@ -330,7 +295,6 @@ jobs:
           resource: ci-develop
           trigger: true
         - get: cf-ops-automation-docker-image-develop
-          passed: [build-cached-image]
           trigger: true
       - task: setup-pre-requisites
         attempts: 1
@@ -729,7 +693,7 @@ jobs:
         params:
           repository: cf-ops-automation
 
-  - name: pull-requests-build-cached-image
+  - name: pull-requests-unit-tests
     on_failure: &PR_on_failure_alert
       put: slack-alert
       params:
@@ -740,43 +704,13 @@ jobs:
         text_file: cf-ops-automation/.git/resource/url
         icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
         username: Concourse
-    plan:
-      - get: pr-develop
-        trigger: true
-        version: every
-      - *pending-pr
-      - put: pr-develop
-        params:
-          path: pr-develop
-          status: pending
-          context: build-image
-      - put: cf-ops-automation-docker-image-pr
-        attempts: 5
-        get_params: {skip_download: true}
-        params:
-          build: pr-develop
-          tag: pr-develop/.git/resource/pr
-          tag_prefix: PR-
-          tag_as_latest: true
-        on_failure:
-          *failed-pr
-      - put: pr-develop
-        params:
-          path: pr-develop
-          status: success
-          context: build-image
-
-  - name: pull-requests-unit-tests
-    on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - in_parallel:
         - put: concourse-meta
         - get: cf-ops-automation-docker-image-pr
-          passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
-          passed: [pull-requests-build-cached-image]
           resource: pr-develop
           trigger: true
           version: every
@@ -810,10 +744,8 @@ jobs:
     plan:
       - in_parallel:
         - get: cf-ops-automation-docker-image-pr
-          passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
-          passed: [pull-requests-build-cached-image]
           resource: pr-develop
           trigger: true
           version: every
@@ -853,10 +785,8 @@ jobs:
     plan:
       - in_parallel:
         - get: cf-ops-automation-docker-image-pr
-          passed: [pull-requests-build-cached-image]
           trigger: true
         - get: cf-ops-automation
-          passed: [pull-requests-build-cached-image]
           resource: pr-develop
           trigger: true
           version: every
@@ -968,7 +898,6 @@ groups:
       - patch
       - minor
       - major
-      - build-cached-image
       - unit-tests
       - acceptance-tests
       - integration-tests
@@ -979,7 +908,6 @@ groups:
 
   - name: pull-requests
     jobs:
-      - pull-requests-build-cached-image
       - pull-requests-unit-tests
       - pull-requests-acceptance-tests
       - pull-requests-integration-tests
