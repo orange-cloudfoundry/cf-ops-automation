@@ -548,6 +548,10 @@ jobs:
       - try:
           put: concourse-micro
           attempts: 3
+          inputs: # explicitly list artifacts to stream to put step
+            - config-resource
+            - concourse-pipeline-config
+            - templates-resource
           params:
             pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
           on_success:
@@ -571,6 +575,10 @@ jobs:
           on_failure:
             put: concourse-micro-legacy
             attempts: 3
+            inputs: # explicitly list artifacts to stream to put step
+              - config-resource
+              - concourse-pipeline-config
+              - templates-resource
             params:
               pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
             on_success:
