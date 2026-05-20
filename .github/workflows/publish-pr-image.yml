@@ -63,6 +63,7 @@ jobs:
           tags: |
             coabot/cf-ops-automation:${{ env.PR_TAG }}
             ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}
+            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -93,5 +94,6 @@ jobs:
               context: 'build-image',
               description: 'Failed to publish PR image'
             });
+
 
 

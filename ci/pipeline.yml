@@ -72,18 +72,18 @@ resources:
   icon: docker
   type: docker-image
   source:
-    repository: coabot/cf-ops-automation
-    username: ((dockerhub-username))
-    password: ((dockerhub-password))
+    repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-hub-token))
     tag: develop-latest
 
 - name: cf-ops-automation-docker-image-pr
   icon: docker
   type: docker-image
   source:
-    repository: coabot/cf-ops-automation
-    username: ((dockerhub-username))
-    password: ((dockerhub-password))
+    repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+    username: ((cf-ops-automation-git-username))
+    password: ((cf-ops-automation-git-hub-token))
 
 - name: version
   icon: tag-multiple
@@ -495,7 +495,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))coabot/cf-ops-automation
+              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
               tag: develop-latest
 
           inputs:
@@ -569,7 +569,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))coabot/cf-ops-automation
+              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
               tag: develop-latest
           inputs:
           - name: cf-ops-automation
@@ -617,7 +617,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))coabot/cf-ops-automation
+              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
               tag: develop-latest
           inputs:
           - name: cf-ops-automation
@@ -655,7 +655,7 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))coabot/cf-ops-automation
+              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
               tag: develop-latest
           inputs:
             - name: version
