@@ -11,7 +11,7 @@ jobs:
     permissions:
       packages: write
     steps:
-      - name: Delete old develop-* GHCR versions (keep last 10)
+      - name: Delete old develop-* GHCR versions (keep last 5)
         uses: actions/github-script@v9
         with:
           script: |
