@@ -65,6 +65,10 @@ RUN curl --retry 30 -sSL "https://github.com/cli/cli/releases/download/v${GH_CLI
     && chmod +x /usr/local/bin/gh \
     && rm -rf /tmp/gh*
 
+WORKDIR "/cf-ops-automation"
+# Include repository content in the image; exclusions are handled by .dockerignore.
+COPY . /cf-ops-automation
+
 # remove old version of bundler to avoid confusion between bundler and bundle cmd
 #   bundler => old binary
 #   bundle => latest binary
@@ -73,6 +77,7 @@ RUN rm -f /usr/local/bundle/bin/bundler
 
 FROM ci_image AS test_ci_image
 RUN ruby --version && bosh --version && fly --version && qlty --version && gh-md-toc --version && gh version && echo "=== CLI tests successful ==="
+RUN ls /cf-ops-automation && du -sh /cf-ops-automation && echo "=== CLI tests successful ==="
 
 
 FROM ci_image

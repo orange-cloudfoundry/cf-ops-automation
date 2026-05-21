@@ -494,7 +494,7 @@ See [github issues](https://github.com/orange-cloudfoundry/cf-ops-automation/iss
 Prereqs:
 
 * install ruby, gems and bundler (version >= 1.15.1):
-  * `gem install bundler`
+   * `gem install bundler`
 * install dependent gems: `bundle install --path vendor/bundle`
 
 If you are running the full test suite, some of the integration tests are dependent on the fly CLI.
@@ -512,6 +512,79 @@ After these are set up, you will be able to run the test suite via:
 ```sh
 bundler exec rspec
 ```
+
+## CI/CD Image Building and Testing Pipeline
+
+### Overview
+
+The cf-ops-automation project uses a two-stage CI/CD architecture:
+
+1. **GitHub Actions** — builds and publishes Docker images to GHCR
+2. **Concourse** — polls for new images and triggers test suites
+
+### Architecture Diagram
+
+```
+┌────────────────────────────────────────────────────────────┐
+│  GitHub Workflows (Image Building & Publishing)           │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  Develop Branch Workflow                                  │
+│  ─────────────────────────────────────────────────────    │
+│  - Trigger: push to develop (Dockerfile/Gemfile changes)  │
+│  - Build: docker build                                    │
+│  - Publish: ghcr.io/orange-cloudfoundry/cf-ops-automation │
+│    └─ develop-<commit-sha>                               │
+│    └─ (cleanup: keep last 5)                             │
+│                                                            │
+│  PR Workflows                                             │
+│  ─────────────────────────────────────────────────────    │
+│  - Trigger: pull_request events (non-fork only)           │
+│  - Build: docker build                                    │
+│  - Publish: ghcr.io/orange-cloudfoundry/cf-ops-automation │
+│    └─ PR-<number>-<commit-sha>       [immutable]          │
+│  - Status: set commit check `build-image`                 │
+│  - Cleanup: on PR close, delete all PR-<number> versions  │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│  GHCR (Container Registry)                               │
+├────────────────────────────────────────────────────────────┤
+│  - develop-a1b2c3d   [develop branch, commit a1b2c3]      │
+│  - develop-e5f6g7h   [develop branch, commit e5f6g7]      │
+│  - PR-42-d8e9f0a     [PR #42, commit d8e9f0a]             │
+│                                                            │
+└────────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌────────────────────────────────────────────────────────────┐
+│  Concourse Pipeline (Image Polling & Testing)            │
+├────────────────────────────────────────────────────────────┤
+│                                                            │
+│  Resource: cf-ops-automation-docker-image-develop        │
+│  ────────────────────────────────────────────────────    │
+│  - Type: registry-image                                  │
+│  - Polls: tag_regex: develop-.*                          │
+│  - On new tag: trigger unit-tests, integration-tests    │
+│  - On new tag: trigger acceptance-tests                 │
+│                                                           │
+│  Resource: cf-ops-automation-docker-image-pr            │
+│  ────────────────────────────────────────────────────    │
+│  - Type: registry-image                                  │
+│  - Polls: tag_regex: PR-.*                              │
+│  - On new tag: trigger PR unit/acceptance/integration   │
+│                                                           │
+└────────────────────────────────────────────────────────────┘
+```
+
+### Tagging Strategy
+
+| Image Type | Tag Pattern | Mutability | Use Case |
+|---|---|---|---|
+| **Develop** | `develop-<short-sha>` | Immutable | One image per commit; safe rollback/audit trail |
+| **PR** | `PR-<number>-<short-sha>` | Immutable | Traceability; matches exact commit in PR |
 
 ## Generating pipelines locally and uploading a test version
 

@@ -70,20 +70,21 @@ resources:
 
 - name: cf-ops-automation-docker-image-develop
   icon: docker
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+    repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
     username: ((cf-ops-automation-git-username))
     password: ((cf-ops-automation-git-hub-token))
-    tag: develop-latest
+    tag_regex: develop-.*
 
 - name: cf-ops-automation-docker-image-pr
   icon: docker
-  type: docker-image
+  type: registry-image
   source:
-    repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+    repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
     username: ((cf-ops-automation-git-username))
     password: ((cf-ops-automation-git-hub-token))
+    tag_regex: PR-.*
 
 - name: version
   icon: tag-multiple
@@ -495,8 +496,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
-              tag: develop-latest
+              repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+              tag_regex: develop-.*
 
           inputs:
           - name: cf-ops-automation
@@ -569,8 +570,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
-              tag: develop-latest
+              repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+              tag_regex: develop-.*
           inputs:
           - name: cf-ops-automation
           - name: version
@@ -617,8 +618,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
-              tag: develop-latest
+              repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+              tag_regex: develop-.*
           inputs:
           - name: cf-ops-automation
           - name: version
@@ -655,8 +656,8 @@ jobs:
           image_resource:
             type: registry-image
             source:
-              repository: ((docker-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
-              tag: develop-latest
+              repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+              tag_regex: develop-.*
           inputs:
             - name: version
           run:

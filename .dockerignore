@@ -1,0 +1,23 @@
+# VCS and editor metadata
+.idea/
+*.iml
+
+# Local dependency caches
+.bundle/
+
+# Build/test outputs
+coverage/
+log/
+*.log
+out/
+
+# Generated artifacts and temporary files
+bootstrap-generated/
+
+# Local binaries and archives not needed in the runtime image
+bin/
+bosh-cli-*-linux-amd64
+*.tgz
+*.tar.gz
+*.tar.xz
+

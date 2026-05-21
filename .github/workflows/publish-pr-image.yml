@@ -24,6 +24,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
+      - name: Compute short SHA
+        run: echo "SHORT_SHA=${PR_HEAD_SHA:0:7}" >> "$GITHUB_ENV"
+
       - name: Set build-image status to pending
         if: github.event_name != 'workflow_dispatch'
         uses: actions/github-script@v9
@@ -56,7 +59,7 @@ jobs:
           push: true
           tags: |
             ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}
-            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:latest
+            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}-${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

@@ -1,0 +1,61 @@
+name: Cleanup PR image
+
+on:
+  pull_request:
+    types:
+      - closed
+
+jobs:
+  cleanup:
+    if: github.event.pull_request.head.repo.fork == false
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    env:
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Delete GHCR versions for PR-${{ env.PR_NUMBER }}
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const packageName = 'cf-ops-automation';
+            const prNumber = process.env.PR_NUMBER;
+            const tagPrefix = `PR-${prNumber}`;
+
+            // List all versions (paginated)
+            const versions = await github.paginate(
+              github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg,
+              {
+                package_type: 'container',
+                package_name: packageName,
+                org: owner,
+                per_page: 100,
+              }
+            );
+
+            // Keep only versions whose tags all match this PR prefix
+            // (a version may carry both `PR-42` and `PR-42-abc1234`)
+            const toDelete = versions.filter(v => {
+              const tags = v.metadata?.container?.tags ?? [];
+              return tags.length > 0 &&
+                tags.every(t => t === tagPrefix || t.startsWith(`${tagPrefix}-`) );
+            });
+
+            if (toDelete.length === 0) {
+              console.log(`No GHCR versions found for ${tagPrefix}`);
+              return;
+            }
+
+            for (const version of toDelete) {
+              const tags = version.metadata?.container?.tags ?? [];
+              console.log(`Deleting version ${version.id} (tags: ${tags.join(', ')})`);
+              await github.rest.packages.deletePackageVersionForOrg({
+                package_type: 'container',
+                package_name: packageName,
+                org: owner,
+                package_version_id: version.id,
+              });
+            }
+            console.log(`Deleted ${toDelete.length} version(s) for ${tagPrefix}`);
+

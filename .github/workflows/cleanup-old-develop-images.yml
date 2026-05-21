@@ -1,0 +1,61 @@
+name: Cleanup old develop images
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    permissions:
+      packages: write
+    steps:
+      - name: Delete old develop-* GHCR versions (keep last 10)
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const packageName = 'cf-ops-automation';
+
+            // List all versions (paginated)
+            const versions = await github.paginate(
+              github.rest.packages.getAllPackageVersionsForPackageOwnedByOrg,
+              {
+                package_type: 'container',
+                package_name: packageName,
+                org: owner,
+                per_page: 100,
+              }
+            );
+
+            // Filter to only develop-* tags
+            const developVersions = versions.filter(v => {
+              const tags = v.metadata?.container?.tags ?? [];
+              return tags.some(t => t.startsWith('develop-'));
+            });
+
+            // Sort by created_at descending, keep last 5
+            developVersions.sort((a, b) => 
+              new Date(b.created_at) - new Date(a.created_at)
+            );
+
+            const toDelete = developVersions.slice(5);
+
+            if (toDelete.length === 0) {
+              console.log('No old develop versions to delete');
+              return;
+            }
+
+            for (const version of toDelete) {
+              const tags = version.metadata?.container?.tags ?? [];
+              console.log(`Deleting version ${version.id} (tags: ${tags.join(', ')})`);
+              await github.rest.packages.deletePackageVersionForOrg({
+                package_type: 'container',
+                package_name: packageName,
+                org: owner,
+                package_version_id: version.id,
+              });
+            }
+            console.log(`Deleted ${toDelete.length} old develop version(s), keeping latest 5`);
+
