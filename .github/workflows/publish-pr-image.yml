@@ -58,7 +58,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}
             ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}-${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -74,7 +73,7 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'success',
               context: 'build-image',
-              description: `Published ${process.env.PR_TAG}`
+              description: `Published ${process.env.PR_TAG}-${{ env.SHORT_SHA }}`
             });
 
       - name: Set build-image status to failure
@@ -88,7 +87,7 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'failure',
               context: 'build-image',
-              description: 'Failed to publish PR image'
+              description: 'Failed to publish PR image ${process.env.PR_TAG}-${{ env.SHORT_SHA }}'
             });
 
 
