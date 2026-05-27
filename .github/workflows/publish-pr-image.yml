@@ -23,7 +23,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
+        with:
+          fetch-depth: 0
       - name: Compute short SHA
         run: echo "SHORT_SHA=${PR_HEAD_SHA:0:7}" >> "$GITHUB_ENV"
 
