@@ -164,7 +164,7 @@ jobs:
           type: registry-image
           source:
               repository: ((docker-registry-url))library/ruby
-              tag: 3.1.7-slim
+              tag: 3.4.9-slim
         inputs:
         - name: cf-ops-automation
         - name: config
@@ -285,7 +285,7 @@ jobs:
           type: registry-image
           source:
               repository: ((docker-registry-url))library/ruby
-              tag: 3.1.7-slim
+              tag: 3.4.9-slim
         inputs:
         - name: cf-ops-automation
         - name: config
@@ -406,7 +406,7 @@ jobs:
           type: registry-image
           source:
               repository: ((docker-registry-url))library/ruby
-              tag: 3.1.7-slim
+              tag: 3.4.9-slim
         inputs:
         - name: cf-ops-automation
         - name: config
@@ -527,7 +527,7 @@ jobs:
           type: registry-image
           source:
               repository: ((docker-registry-url))library/ruby
-              tag: 3.1.7-slim
+              tag: 3.4.9-slim
         inputs:
         - name: cf-ops-automation
         - name: config
@@ -868,6 +868,10 @@ jobs:
       - try:
           put: concourse-micro
           attempts: 3
+          inputs: # explicitly list artifacts to stream to put step
+            - config-resource
+            - concourse-pipeline-config
+            - templates-resource
           params:
             pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
           on_success:
@@ -891,6 +895,10 @@ jobs:
           on_failure:
             put: concourse-micro-legacy
             attempts: 3
+            inputs: # explicitly list artifacts to stream to put step
+              - config-resource
+              - concourse-pipeline-config
+              - templates-resource
             params:
               pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
             on_success:

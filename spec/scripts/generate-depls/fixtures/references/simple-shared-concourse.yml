@@ -153,6 +153,7 @@ jobs:
   - try:
       put: concourse-for-simple-depls
       attempts: 3
+      inputs: all # will stream all artifacts
       params:
         pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
       on_success:
@@ -175,6 +176,7 @@ jobs:
       on_failure:
         put: concourse-legacy-for-simple-depls
         attempts: 3
+        inputs: all # will stream all artifacts
         params:
           pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
         on_success:
