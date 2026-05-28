@@ -512,8 +512,6 @@ jobs:
       trigger: true
     - get: ntp_boshrelease
       trigger: true
-      params:
-        tarball: false
       attempts: 4
     - get: secrets-ntp-with-scan
       params: { submodules: none, depth: 0 }
@@ -718,8 +716,6 @@ jobs:
       trigger: true
     - get: zookeeper_boshrelease
       trigger: true
-      params:
-        tarball: false
       attempts: 4
     - get: paas-templates-zookeeper-without-scan
       trigger: true

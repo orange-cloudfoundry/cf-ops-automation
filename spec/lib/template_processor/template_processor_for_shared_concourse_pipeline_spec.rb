@@ -441,6 +441,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
             - try:
                 put: concourse-for-#{root_deployment_name}
                 attempts: 3
+                inputs: all
                 params:
                   pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
                 on_success:
@@ -463,6 +464,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                 on_failure:
                   put: concourse-legacy-for-#{root_deployment_name}
                   attempts: 3
+                  inputs: all
                   params:
                     pipelines_file: concourse-pipeline-config/pipelines-definitions.yml
                   on_success:
