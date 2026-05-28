@@ -1,7 +1,48 @@
 ---
 meta:
-  tasks:
-  - &on_failure_alert
+  # Consolidated base config for PR status update tasks (5+ lines, reusable pattern)
+  pr_status_update_config: &pr_status_update_config
+    platform: linux
+    inputs:
+    - name: cf-ops-automation
+    - name: cf-ops-automation-image
+    - name: concourse-meta
+    params:
+    run:
+      path: /bin/bash
+      args:
+        - -ce
+        - |
+          if [ "$SKIP_PR_STATUS" = "true" ]; then
+            echo "Skipping PR status update (SKIP_PR_STATUS=true)"
+            exit 0
+          fi
+          cd concourse-meta
+            BUILD_TEAM=$(if [ -f build_team_name ];then cat build_team_name;fi)
+            BUILD_PIPELINE=$(if [ -f build_pipeline_name ];then cat build_pipeline_name;fi)
+            BUILD_JOB=$(if [ -f build_job_name ];then cat build_job_name;fi)
+            BUILD_ID=$(if [ -f build_id ];then cat build_id;fi)
+            BUILD_NAME=$(if [ -f build_name ];then cat build_name;fi)
+            ATC_EXTERNAL_URL=$(if [ -f atc_external_url ];then cat atc_external_url;fi)
+            BUILD_INFO=$(echo "$BUILD_TEAM/$BUILD_PIPELINE/$BUILD_JOB/$BUILD_NAME - $BUILD_ID")
+          cd ..
+          export CI_NAME=${BUILD_INFO}
+          export CI_BUILD_ID=${BUILD_ID}
+          export CI_BUILD_URL=$ATC_EXTERNAL_URL/builds/${BUILD_ID}          
+          PR_NUMBER=$(cat cf-ops-automation-image/tag|cut -d'-' -f2)
+          cd cf-ops-automation
+          COMMIT_SHA=$(git log --format="%H" -1)
+          echo "Updating commit $COMMIT_SHA (PR $PR_NUMBER) status to $STATUS with context: $CONTEXT"
+          ci/update-github-commit-status.sh -c $COMMIT_SHA -i $CI_BUILD_URL -s $STATUS -x $CONTEXT
+
+  # Consolidated PR status update common parameters (5+ lines, reusable pattern)
+  pr_status_update_params: &pr_status_update_params
+    GH_TOKEN: ((cf-ops-automation-git-hub-token))
+    GH_REPO: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
+    SKIP_PR_STATUS: "false"
+
+  # Consolidated on_failure handler for standard jobs
+  on_failure_alert: &on_failure_alert
     put: slack-alert
     params:
       channel: ((slack-channel))
@@ -11,34 +52,152 @@ meta:
       text_file: cf-ops-automation/.git/ref
       icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
       username: Concourse
+
+  # Consolidated PR on_failure handler with PR-specific slack message pattern (5+ lines)
+  PR_on_failure_alert: &PR_on_failure_alert
+    put: slack-alert
+    params:
+      channel: ((slack-channel))
+      text: |
+        $TEXT_FILE_CONTENT
+        Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
+      text_file: cf-ops-automation/.git/resource/url
+      icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
+      username: Concourse
+
+  # All PR status update task variants now reference consolidated configs via anchors
+  tasks:
+  - &update-status-success
+    task: update-status-success
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
+    params:
+      <<: *pr_status_update_params
+      STATUS: success
+      CONTEXT: "concourse-ci/status"
+
   - &coa-failure-pr
-    put: pr-develop
+    task: update-pr-status-failure
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
     params:
-      path: cf-ops-automation
-      status: failure
+      <<: *pr_status_update_params
+      STATUS: failure
+      CONTEXT: "concourse-ci/status"
+
   - &coa-failure-acceptance-pr
-    put: pr-develop
+    task: update-pr-status-failure
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
     params:
-      path: cf-ops-automation
-      status: failure
-      context: acceptance-tests
+      <<: *pr_status_update_params
+      STATUS: failure
+      CONTEXT: concourse-ci/acceptance-tests
+
   - &coa-failure-it-pr
-    put: pr-develop
+    task: update-pr-status-failure
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
     params:
-      path: cf-ops-automation
-      status: failure
-      context: integration-tests
+      <<: *pr_status_update_params
+      STATUS: failure
+      CONTEXT: concourse-ci/integration-tests
+
   - &coa-failure-ut-pr
-    put: pr-develop
+    task: update-pr-status-failure
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
     params:
-      path: cf-ops-automation
-      status: failure
-      context: unit-tests
-  - &coa-pending-pr
-    put: pr-develop
+      <<: *pr_status_update_params
+      STATUS: failure
+      CONTEXT: concourse-ci/unit-tests
+
+  - &coa-pending-unit-tests
+    task: update-pr-status-pending
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
     params:
-      path: cf-ops-automation
-      status: pending
+      <<: *pr_status_update_params
+      STATUS: pending
+      CONTEXT: "concourse-ci/unit-tests"
+  - &coa-pending-integration-tests
+    task: update-pr-status-pending
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
+    params:
+      <<: *pr_status_update_params
+      STATUS: pending
+      CONTEXT: "concourse-ci/integration-tests"
+  - &coa-pending-acceptance-tests
+    task: update-pr-status-pending
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
+    params:
+      <<: *pr_status_update_params
+      STATUS: pending
+      CONTEXT: "concourse-ci/acceptance-tests"
+
+  - &coa-success-unit-tests
+    task: update-status-success-uts
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
+    params:
+      <<: *pr_status_update_params
+      STATUS: success
+      CONTEXT: "concourse-ci/unit-tests"
+
+  - &coa-success-acceptance-tests
+    task: update-pr-status-success-ats
+    image: cf-ops-automation-image
+    config:
+      <<: *pr_status_update_config
+    params:
+      <<: *pr_status_update_params
+      STATUS: success
+      CONTEXT: "concourse-ci/acceptance-tests"
+  - &coa-success-integration-tests
+    task: update-pr-status-success-its
+    image: cf-ops-automation-image
+    config: *pr_status_update_config
+    params:
+      GH_TOKEN: ((cf-ops-automation-git-hub-token))
+      GH_REPO: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
+      STATUS: success
+      CONTEXT: concourse-ci/integration-tests
+      SKIP_PR_STATUS: "false"
+
+  - &extract-cf-ops-automation-git-from-image
+    task: extract-cf-ops-automation-git-from-image
+    image: cf-ops-automation-image
+    config:
+      platform: linux
+      inputs:
+        - name: cf-ops-automation-image
+      outputs:
+        - name: cf-ops-automation
+      run:
+        path: /bin/bash
+        args:
+          - -ce
+          - |
+            git clone cf-ops-automation-image/rootfs/cf-ops-automation
+            pushd cf-ops-automation-image/rootfs/cf-ops-automation
+            echo "=== Git logs from COA image ==="
+            git --no-pager log -5 --oneline
+            popd
+            pushd cf-ops-automation
+            echo "=== Git logs EXTRACTED from COA image ==="
+            git --no-pager log -5 --oneline
+
 display:
   background_image: https://wallpapercave.com/download/pirate-flag-wallpapers-wp2022142
 resource_types:
@@ -72,20 +231,22 @@ resources:
   icon: docker
   type: registry-image
   source:
-    repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+    repository: ghcr.io/orange-cloudfoundry/cf-ops-automation
     username: ((cf-ops-automation-git-username))
     password: ((cf-ops-automation-git-hub-token))
     tag_regex: develop-.*
+    # registry_mirror cannot be used as ghcr.io contains a registry hostname, so we skip harbor to avoid detection issues with new version
 
 - name: cf-ops-automation-docker-image-pr
   icon: docker
   type: registry-image
   source:
-    repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
+    repository: ghcr.io/orange-cloudfoundry/cf-ops-automation
     username: ((cf-ops-automation-git-username))
     password: ((cf-ops-automation-git-hub-token))
-    tag_regex: PR-.*
-
+    tag_regex: PR-.*-
+#    registry_mirror:
+#      host: ((ghcr-registry-url))ghcr.io
 - name: version
   icon: tag-multiple
   type: semver
@@ -118,16 +279,6 @@ resources:
     branch: master
     skip_ssl_verification: ((cf-ops-automation-git-insecure))
 
-- name: pr-develop
-  icon: source-pull
-  type: pull-request
-  source:
-    repository: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
-    access_token: ((cf-ops-automation-git-hub-token))
-    base_branch: develop
-    skip_ssl_verification: ((cf-ops-automation-git-insecure))
-    disable_forks: true
-
 - name: gh-release-draft
   icon: package-variant
   type: github-release
@@ -137,13 +288,6 @@ resources:
     access_token: ((cf-ops-automation-git-hub-token))
     drafts: true
 
-
-#- name: coa-ci-secrets
-#  type: git
-#  source:
-#    uri: ((coa-ci-secrets-git-uri))
-#    username: ((coa-ci-secrets-git-username))
-#    password: ((coa-ci-secrets-git-password))
 
 jobs:
 #  - name: auto-update-pipeline
@@ -167,14 +311,16 @@ jobs:
     plan:
     - in_parallel:
       - put: concourse-meta
-      - get: cf-ops-automation-docker-image-develop
-        trigger: true
       - get: cf-ops-automation
         resource: ci-develop
         trigger: true
+      - get: cf-ops-automation-image
+        resource: cf-ops-automation-docker-image-develop
+        trigger: true
+    - *coa-pending-unit-tests
     - task: run-tests
       attempts: 2
-      image: cf-ops-automation-docker-image-develop
+      image: cf-ops-automation-image
       timeout: 30m
       config: &unit_tests_config
         platform: linux
@@ -233,23 +379,26 @@ jobs:
           COVERAGE: true
           GIT_SHA_CMD: cat .git/ref
           GIT_BRANCH_CMD: echo "((cf-ops-automation-git-branch))"
+    - *coa-success-unit-tests
 
   - name: acceptance-tests
     on_failure: *on_failure_alert
     serial: true
     plan:
       - in_parallel:
-        - get: cf-ops-automation-docker-image-develop
-          passed: [unit-tests, integration-tests]
-          trigger: true
-        - get: version
+        - put: concourse-meta
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-develop
           passed: [unit-tests, integration-tests]
+          trigger: true
+        - get: version
+      - *coa-pending-acceptance-tests
       - task: run-acceptance-tests
         attempts: 2
-        image: cf-ops-automation-docker-image-develop
+        image: cf-ops-automation-image
         timeout: 30m
         config: &acceptance_tests_config
           platform: linux
@@ -266,7 +415,7 @@ jobs:
               export CUCUMBER_PUBLISH_QUIET=true
               bundle exec cucumber
       - task: ensure-changelog-is-working
-        image: cf-ops-automation-docker-image-develop
+        image: cf-ops-automation-image
         config: &changelog_working
           platform: linux
           inputs:
@@ -284,6 +433,7 @@ jobs:
                 cat CHANGELOG.md
           params:
             CHANGELOG_GITHUB_TOKEN: ((cf-ops-automation-git-hub-token))
+      - *coa-success-acceptance-tests
 
 
   - name: integration-tests
@@ -292,14 +442,18 @@ jobs:
     serial: true
     plan:
       - in_parallel:
+        - put: concourse-meta
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
-        - get: cf-ops-automation-docker-image-develop
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-develop
           trigger: true
+      - *coa-pending-integration-tests
       - task: setup-pre-requisites
         attempts: 1
-        image: cf-ops-automation-docker-image-develop
+#        image: cf-ops-automation-docker-image-develop
+        image: cf-ops-automation-image
         config: &integration_tests_setup_pre_requisites_task_config
           platform: linux
           inputs:
@@ -312,7 +466,7 @@ jobs:
             - -ce
             - |
               echo "Setup pre-requisites"
-              cp -v cf-ops-automation/ci/bootstrap_coa_env/*-prereqs.yml  prereqs/
+              cp -v $COA_BASE_DIR/cf-ops-automation/ci/bootstrap_coa_env/*-prereqs.yml  prereqs/
               echo "  bot-github-access-token: ((cf-ops-automation-git-hub-token))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-webhook: ((slack-webhook))" >> prereqs/pipeline-vars-prereqs.yml
               echo "  slack-channel: ((slack-channel))" >> prereqs/pipeline-vars-prereqs.yml
@@ -341,9 +495,11 @@ jobs:
             BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
             BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
             BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
+            COA_BASE_DIR: "" #cf-ops-automation-image/rootfs
       - task: check-ci-skip-pre-requisites
         attempts: 1
-        image: cf-ops-automation-docker-image-develop
+#        image: cf-ops-automation-docker-image-develop
+        image: cf-ops-automation-image
         config:
           platform: linux
           inputs:
@@ -373,6 +529,7 @@ jobs:
               tag: f511cd287c4c4fc66aeac5286b88c37e56899496
           inputs:
             - name: cf-ops-automation
+
           params:
             CREDHUB_SERVER: ((integration-test-prereqs.credhub.server))
             CREDHUB_CLIENT: ((integration-test-prereqs.credhub.client))
@@ -409,7 +566,8 @@ jobs:
 
       - task: setup-pre-requisites-oci-registry
         attempts: 1
-        image: cf-ops-automation-docker-image-develop
+#        image: cf-ops-automation-docker-image-develop
+        image: cf-ops-automation-image
         config: &integration_tests_setup_pre_requisites_oci_registry_task_config
           platform: linux
           inputs:
@@ -430,7 +588,8 @@ jobs:
 
       - task: upload-pipelines
         attempts: 2
-        image: cf-ops-automation-docker-image-develop
+#        image: cf-ops-automation-docker-image-develop
+        image: cf-ops-automation-image
         config: &integration_tests_upload-pipelines_task_config
           platform: linux
           inputs:
@@ -462,7 +621,8 @@ jobs:
             COA_LOG_PATH: "../../../../coa-logs"
         on_failure:
           task: dump-coa-log-file
-          image: cf-ops-automation-docker-image-develop
+#          image: cf-ops-automation-docker-image-develop
+          image: cf-ops-automation-image
           config:
             platform: linux
             inputs:
@@ -477,6 +637,8 @@ jobs:
                   else
                     echo "Sorry, no logfile found :-("
                   fi
+      - *coa-success-integration-tests
+
   - name: update-documentation
     on_failure: *on_failure_alert
     serial: true
@@ -487,7 +649,6 @@ jobs:
           trigger: true
           passed: [acceptance-tests]
         - get: cf-ops-automation-docker-image-develop
-          trigger: true
           passed: [acceptance-tests]
 
       - task: generate-living-documentation
@@ -530,6 +691,7 @@ jobs:
         params:
           repository: cf-ops-automation-living-documentation
           rebase: true
+      - *update-status-success
 
 
   - name: merge-to-master
@@ -695,35 +857,19 @@ jobs:
           repository: cf-ops-automation
 
   - name: pull-requests-unit-tests
-    on_failure: &PR_on_failure_alert
-      put: slack-alert
-      params:
-        channel: ((slack-channel))
-        text: |
-          $TEXT_FILE_CONTENT
-          Failed to run <$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME|$BUILD_PIPELINE_NAME/$BUILD_JOB_NAME/$BUILD_NAME>
-        text_file: cf-ops-automation/.git/resource/url
-        icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-        username: Concourse
+    on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - in_parallel:
         - put: concourse-meta
-        - get: cf-ops-automation-docker-image-pr
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-pr
           trigger: true
-        - get: cf-ops-automation
-          resource: pr-develop
-          trigger: true
-          version: every
-      - *coa-pending-pr
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: pending
-          context: unit-test
+      - *extract-cf-ops-automation-git-from-image
+      - *coa-pending-unit-tests
       - task: test-pr
         attempts: 2
-        image: cf-ops-automation-docker-image-pr
+        image: cf-ops-automation-image
         timeout: 30m
         config: *unit_tests_config
         params:
@@ -733,33 +879,23 @@ jobs:
           in_parallel:
             - *coa-failure-pr
             - *coa-failure-ut-pr
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: success
-          context: unit-test
+      - *coa-success-unit-tests
 
   - name: pull-requests-acceptance-tests
     on_failure: *PR_on_failure_alert
     serial: true
     plan:
       - in_parallel:
-        - get: cf-ops-automation-docker-image-pr
-          trigger: true
-        - get: cf-ops-automation
-          resource: pr-develop
-          trigger: true
-          version: every
-        - get: version
-      - *coa-pending-pr
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: pending
-          context: acceptance-tests
+          - put: concourse-meta
+          - get: cf-ops-automation-image
+            resource: cf-ops-automation-docker-image-pr
+            trigger: true
+          - get: version
+      - *extract-cf-ops-automation-git-from-image
+      - *coa-pending-acceptance-tests
       - task: acceptance-test-pr
         attempts: 2
-        image: cf-ops-automation-docker-image-pr
+        image: cf-ops-automation-image
         timeout: 30m
         config: *acceptance_tests_config
         on_failure:
@@ -767,17 +903,13 @@ jobs:
             - *coa-failure-pr
             - *coa-failure-acceptance-pr
       - task: ensure-changelog-is-working
-        image: cf-ops-automation-docker-image-pr
+        image: cf-ops-automation-image
         config: *changelog_working
         on_failure:
           in_parallel:
             - *coa-failure-pr
             - *coa-failure-acceptance-pr
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: success
-          context: acceptance-tests
+      - *coa-success-acceptance-tests
 
   - name: pull-requests-integration-tests
     on_failure: *PR_on_failure_alert
@@ -785,20 +917,15 @@ jobs:
     serial: true
     plan:
       - in_parallel:
-        - get: cf-ops-automation-docker-image-pr
+        - put: concourse-meta
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-pr
           trigger: true
-        - get: cf-ops-automation
-          resource: pr-develop
-          trigger: true
-          version: every
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: pending
-          context: integration-tests
+      - *extract-cf-ops-automation-git-from-image
+      - *coa-pending-integration-tests
       - task: setup-pre-requisites
         attempts: 1
-        image: cf-ops-automation-docker-image-pr
+        image: cf-ops-automation-image
         config: *integration_tests_setup_pre_requisites_task_config
         on_failure:
           in_parallel:
@@ -806,11 +933,6 @@ jobs:
             - *coa-failure-it-pr
         # it is not possible to include it as config param, otherwise we get an deserialization error
         params: *integration_tests_setup_pre_requisites_task_config_params
-#          INTEGRATION_TEST_PREREQS: ((integration-test-prereqs))
-#          BOSH_ENVIRONMENT: ((integration-test-prereqs.bosh.bosh_environment))
-#          BOSH_CLIENT: ((integration-test-prereqs.bosh.bosh_client))
-#          BOSH_CLIENT_SECRET: "((integration-test-prereqs.bosh.bosh_client_secret))"
-#          BOSH_CA_CERT: ((integration-test-prereqs.bosh.bosh_ca_cert))
       - task: setup-credhub-pre-requisites
         attempts: 1
         config: *integration_tests_setup_credhub_pre_requisites_task_config
@@ -820,7 +942,7 @@ jobs:
             - *coa-failure-it-pr
       - task: setup-pre-requisites-oci-registry
         attempts: 1
-        image: cf-ops-automation-docker-image-pr
+        image: cf-ops-automation-image
         config: *integration_tests_setup_pre_requisites_oci_registry_task_config
         on_failure:
           in_parallel:
@@ -828,39 +950,22 @@ jobs:
             - *coa-failure-it-pr
       - task: upload-pipelines
         attempts: 2
-        image: cf-ops-automation-docker-image-pr
+        image: cf-ops-automation-image
         config: *integration_tests_upload-pipelines_task_config
         on_failure:
           in_parallel:
             - *coa-failure-pr
             - *coa-failure-it-pr
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: success
-          context: integration-tests
+      - *coa-success-integration-tests
 
   - name: pull-requests-success
     plan:
       - in_parallel:
-        - get: cf-ops-automation
-          resource: pr-develop
+        - put:  concourse-meta
+        - get: cf-ops-automation-docker-image-pr
           trigger: true
-#          version: every
           passed: [pull-requests-unit-tests, pull-requests-integration-tests,pull-requests-acceptance-tests]
-      - put: pr-develop
-        params:
-          path: cf-ops-automation
-          status: success
-      - put: slack-alert
-        params:
-          channel: ((slack-channel))
-          text: |
-            $TEXT_FILE_CONTENT
-            Pull request successfully ran tests :<$ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/>
-          text_file: cf-ops-automation/.git/resource/url
-          icon_url: http://cl.ly/image/3e1h0H3H2s0P/concourse-logo.png
-          username: Concourse
+      - *update-status-success
 
   - name: major
     on_failure: *on_failure_alert

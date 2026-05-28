@@ -3,10 +3,14 @@ OWNER=${OWNER:-orange-cloudfoundry}
 REPO=${REPO:-cf-ops-automation}
 
 PR_STATUS="error"
+CONTEXT="concourse-ci/status"
+CI_URL=""
 usage(){
- echo "$0 -c <commit_sha1> [-s <PR-Status>]"
+ echo "$0 -c <commit_sha1> [-s <PR-Status>] [-c <Context>] [-i <CI_URL>]"
  echo "  -c|--commit: commit_sha1"
  echo "  -s|--status: status to set. Default: $PR_STATUS"
+ echo "  -x|--context: context to set. Default: $CONTEXT"
+ echo "  -i|--ci-url: context to set. Default: $CI_URL"
  exit 1
 }
 
@@ -18,6 +22,12 @@ while [ "$#" -gt 0 ] ; do
       shift ; shift ;;
     "-s"|"--status")
         PR_STATUS="$2"
+        shift ; shift ;;
+    "-i"|"--ci-url")
+        CI_URL="$2"
+        shift ; shift ;;
+    "-x"|"--context")
+        CONTEXT="$2"
         shift ; shift ;;
     *) usage ;;
   esac
@@ -40,5 +50,7 @@ gh api --method POST \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   /repos/$OWNER/$REPO/statuses/$REF \
   -f state="$PR_STATUS" \
-  -f description="Manual update! Set to $PR_STATUS" \
-  -f context='concourse-ci/status'
+  -f description="CI update ($REF) - Set to $PR_STATUS" \
+  -f target_url="$CI_URL" \
+  -f context=$CONTEXT
+
