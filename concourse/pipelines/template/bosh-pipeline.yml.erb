@@ -764,8 +764,6 @@ jobs:
   <% deployment_details.releases.each do |release, _info| %>
     - get: <%= release %>
       trigger: true
-      params:
-        <%= "tarball: false" unless offline_boshreleases_enabled %>
       attempts: <%= concourse_retry[:pull] %>
   <% end %>
   <% if deployment_details.local_deployment_secrets_scan? %>
