@@ -8,6 +8,11 @@ on:
       - reopened
       - ready_for_review
   workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to build'
+        required: true
+        type: number
 
 jobs:
   publish:
@@ -18,15 +23,18 @@ jobs:
       statuses: write
       packages: write
     env:
-      PR_TAG: PR-${{ github.event.pull_request.number || github.run_number }}
+      PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
+      PR_TAG: PR-${{ github.event.pull_request.number || inputs.pr_number }}
       PR_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
-      - name: Checkout
+      - name: Checkout PR head
         uses: actions/checkout@v6
         with:
+          ref: refs/pull/${{ env.PR_NUMBER }}/head
           fetch-depth: 0
+
       - name: Compute short SHA
-        run: echo "SHORT_SHA=${PR_HEAD_SHA:0:7}" >> "$GITHUB_ENV"
+        run: echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
 
       - name: Set build-image status to pending
         if: github.event_name != 'workflow_dispatch'
@@ -39,7 +47,8 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'pending',
               context: 'build-image',
-              description: 'Building PR docker image'
+              description: 'Building PR docker image',
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
 
       - name: Set up Docker Buildx
@@ -53,6 +62,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push PR image
+        id: build
         uses: docker/build-push-action@v7
         with:
           context: .
@@ -74,7 +84,8 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'success',
               context: 'build-image',
-              description: `Published ${process.env.PR_TAG}-${{ env.SHORT_SHA }}`
+              description: `Published ${process.env.PR_TAG}-${process.env.SHORT_SHA}`,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/pkgs/container/cf-ops-automation`
             });
 
       - name: Set build-image status to failure
@@ -88,8 +99,6 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'failure',
               context: 'build-image',
-              description: 'Failed to publish PR image ${process.env.PR_TAG}-${{ env.SHORT_SHA }}'
+              description: `Failed to publish ${process.env.PR_TAG}-${process.env.SHORT_SHA}`,
+              target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
-
-
-
