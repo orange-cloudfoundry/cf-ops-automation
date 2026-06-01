@@ -4,6 +4,11 @@ on:
   push:
     branches:
       - develop
+    paths:
+      - Dockerfile
+      - Gemfile
+      - Gemfile.lock
+      - .github/workflows/publish-develop-image.yml
   workflow_dispatch:
 
 jobs:
