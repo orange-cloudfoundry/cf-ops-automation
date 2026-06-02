@@ -644,22 +644,19 @@ jobs:
     serial: true
     plan:
       - in_parallel:
+        - put: concourse-meta
         - get: cf-ops-automation
           resource: ci-develop
           trigger: true
           passed: [acceptance-tests]
-        - get: cf-ops-automation-docker-image-develop
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-develop
           passed: [acceptance-tests]
 
       - task: generate-living-documentation
+        image: cf-ops-automation-image
         config:
           platform: linux
-          image_resource:
-            type: registry-image
-            source:
-              repository: ((ghcr-registry-url))ghcr.io/orange-cloudfoundry/cf-ops-automation
-              tag_regex: develop-.*
-
           inputs:
           - name: cf-ops-automation
           outputs:
@@ -704,7 +701,8 @@ jobs:
           resource: ci-develop
           trigger: true
           passed: [update-documentation]
-        - get: cf-ops-automation-docker-image-develop
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-develop
           passed: [update-documentation]
       - put: ci-master
         params:

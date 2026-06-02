@@ -50,7 +50,7 @@ gh api --method POST \
   -H "X-GitHub-Api-Version: 2022-11-28" \
   /repos/$OWNER/$REPO/statuses/$REF \
   -f state="$PR_STATUS" \
-  -f description="CI update ($REF) - Set to $PR_STATUS" \
+  -f description="CI update ($REF): $PR_STATUS" \
   -f target_url="$CI_URL" \
   -f context=$CONTEXT
 
