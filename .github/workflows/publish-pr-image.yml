@@ -1,4 +1,4 @@
-name: Publish PR image
+name: "Build & Publish COA image based on PRs"
 
 on:
   pull_request:
@@ -16,6 +16,7 @@ on:
 
 jobs:
   publish:
+    name: "Build with source and publish on GHCR"
     if: github.event_name == 'workflow_dispatch' || github.event.pull_request.head.repo.fork == false
     runs-on: ubuntu-latest
     permissions:
