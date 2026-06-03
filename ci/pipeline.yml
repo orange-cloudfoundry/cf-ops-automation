@@ -70,6 +70,7 @@ meta:
   - &update-status-success
     task: update-status-success
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -80,6 +81,7 @@ meta:
   - &coa-failure-pr
     task: update-pr-status-failure
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -90,6 +92,7 @@ meta:
   - &coa-failure-acceptance-pr
     task: update-pr-status-failure
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -100,6 +103,7 @@ meta:
   - &coa-failure-it-pr
     task: update-pr-status-failure
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -110,6 +114,7 @@ meta:
   - &coa-failure-ut-pr
     task: update-pr-status-failure
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -120,6 +125,7 @@ meta:
   - &coa-pending-unit-tests
     task: update-unit-tests-status-pending
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -129,6 +135,7 @@ meta:
   - &coa-pending-integration-tests
     task: update-integration-tests-status-pending
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -138,6 +145,7 @@ meta:
   - &coa-pending-acceptance-tests
     task: update-acceptance-tests-status-pending
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -148,6 +156,7 @@ meta:
   - &coa-success-unit-tests
     task: update-status-success-uts
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -158,6 +167,7 @@ meta:
   - &coa-success-acceptance-tests
     task: update-pr-status-success-ats
     image: cf-ops-automation-image
+    attempts: 3
     config:
       <<: *pr_status_update_config
     params:
@@ -168,6 +178,7 @@ meta:
     task: update-pr-status-success-its
     image: cf-ops-automation-image
     config: *pr_status_update_config
+    attempts: 3
     params:
       GH_TOKEN: ((cf-ops-automation-git-hub-token))
       GH_REPO: ((cf-ops-automation-git-hub-owner))/((cf-ops-automation-git-hub-repository))
@@ -178,6 +189,7 @@ meta:
   - &extract-cf-ops-automation-git-from-image
     task: extract-cf-ops-automation-git-from-image
     image: cf-ops-automation-image
+    attempts: 3
     config:
       platform: linux
       inputs:
