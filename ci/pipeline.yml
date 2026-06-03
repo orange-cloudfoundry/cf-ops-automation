@@ -118,7 +118,7 @@ meta:
       CONTEXT: concourse-ci/unit-tests
 
   - &coa-pending-unit-tests
-    task: update-pr-status-pending
+    task: update-unit-tests-status-pending
     image: cf-ops-automation-image
     config:
       <<: *pr_status_update_config
@@ -127,7 +127,7 @@ meta:
       STATUS: pending
       CONTEXT: "concourse-ci/unit-tests"
   - &coa-pending-integration-tests
-    task: update-pr-status-pending
+    task: update-integration-tests-status-pending
     image: cf-ops-automation-image
     config:
       <<: *pr_status_update_config
@@ -136,7 +136,7 @@ meta:
       STATUS: pending
       CONTEXT: "concourse-ci/integration-tests"
   - &coa-pending-acceptance-tests
-    task: update-pr-status-pending
+    task: update-acceptance-tests-status-pending
     image: cf-ops-automation-image
     config:
       <<: *pr_status_update_config
@@ -854,6 +854,19 @@ jobs:
         params:
           repository: cf-ops-automation
 
+  - name: pull-requests-start
+    plan:
+      - in_parallel:
+          - put:  concourse-meta
+          - get: cf-ops-automation-image
+            resource: cf-ops-automation-docker-image-pr
+            version: every
+            trigger: true
+      - *extract-cf-ops-automation-git-from-image
+      - *coa-pending-unit-tests
+      - *coa-pending-integration-tests
+      - *coa-pending-acceptance-tests
+
   - name: pull-requests-unit-tests
     on_failure: *PR_on_failure_alert
     serial: true
@@ -862,6 +875,8 @@ jobs:
         - put: concourse-meta
         - get: cf-ops-automation-image
           resource: cf-ops-automation-docker-image-pr
+          passed: [ pull-requests-start ]
+          version: every
           trigger: true
       - *extract-cf-ops-automation-git-from-image
       - *coa-pending-unit-tests
@@ -887,6 +902,8 @@ jobs:
           - put: concourse-meta
           - get: cf-ops-automation-image
             resource: cf-ops-automation-docker-image-pr
+            passed: [pull-requests-start]
+            version: every
             trigger: true
           - get: version
       - *extract-cf-ops-automation-git-from-image
@@ -918,6 +935,8 @@ jobs:
         - put: concourse-meta
         - get: cf-ops-automation-image
           resource: cf-ops-automation-docker-image-pr
+          passed: [pull-requests-start]
+          version: every
           trigger: true
       - *extract-cf-ops-automation-git-from-image
       - *coa-pending-integration-tests
@@ -960,9 +979,11 @@ jobs:
     plan:
       - in_parallel:
         - put:  concourse-meta
-        - get: cf-ops-automation-docker-image-pr
+        - get: cf-ops-automation-image
+          resource: cf-ops-automation-docker-image-pr
           trigger: true
           passed: [pull-requests-unit-tests, pull-requests-integration-tests,pull-requests-acceptance-tests]
+      - *extract-cf-ops-automation-git-from-image
       - *update-status-success
 
   - name: major
@@ -1012,6 +1033,7 @@ groups:
 
   - name: pull-requests
     jobs:
+      - pull-requests-start
       - pull-requests-unit-tests
       - pull-requests-acceptance-tests
       - pull-requests-integration-tests
