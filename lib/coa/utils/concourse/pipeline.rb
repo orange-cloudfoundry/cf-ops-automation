@@ -35,8 +35,8 @@ module Coa
           fly.set_pipeline(name, options)
         end
 
-        def destroy
-          fly.destroy_pipeline(name)
+        def destroy(options)
+          fly.destroy_pipeline(name, options)
         end
 
         def trigger_and_watch_jobs
@@ -60,7 +60,7 @@ module Coa
           def destroy(pipeline_list, concourse)
             pipeline_list.each do |name, attributes|
               pipeline = new_from_hash(name: name, attributes: attributes, concourse: concourse)
-              pipeline.destroy
+              pipeline.destroy(fail_silently: true)
             end
           end
 
