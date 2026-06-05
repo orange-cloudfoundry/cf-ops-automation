@@ -1,4 +1,4 @@
-name: Publish develop image
+name: "Build & Publish COA image based on develop"
 
 on:
   push:
@@ -8,11 +8,11 @@ on:
       - Dockerfile
       - Gemfile
       - Gemfile.lock
-      - .github/workflows/publish-develop-image.yml
   workflow_dispatch:
 
 jobs:
   publish:
+    name: "Build with source and publish on GHCR"
     runs-on: ubuntu-latest
     permissions:
       contents: read
