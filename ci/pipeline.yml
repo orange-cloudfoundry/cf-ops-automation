@@ -338,6 +338,7 @@ jobs:
         platform: linux
         inputs:
         - name: cf-ops-automation
+        - name: cf-ops-automation-image
         - name: concourse-meta
         outputs:
         - name: test-reports
@@ -898,8 +899,8 @@ jobs:
         timeout: 30m
         config: *unit_tests_config
         params:
-          GIT_SHA_CMD: cat .git/resource/head_sha
-          GIT_BRANCH_CMD: cat .git/resource/head_name
+          GIT_SHA_CMD: git log --format="%H" -1
+          GIT_BRANCH_CMD: cat ../cf-ops-automation-image/tag
         on_failure:
           in_parallel:
             - *coa-failure-pr
