@@ -34,6 +34,10 @@ meta:
           COMMIT_SHA=$(git log --format="%H" -1)
           echo "Updating commit $COMMIT_SHA (PR $PR_NUMBER) status to $STATUS with context: $CONTEXT"
           ci/update-github-commit-status.sh -c $COMMIT_SHA -i $CI_BUILD_URL -s $STATUS -x $CONTEXT
+          echo ""
+          echo "======= PR Summary ======="
+          gh pr view --json title,number "$PR_NUMBER" | jq -r '(.number| tostring) + ": " + (.title | tostring)'
+
 
   # Consolidated PR status update common parameters (5+ lines, reusable pattern)
   pr_status_update_params: &pr_status_update_params
