@@ -52,10 +52,9 @@ describe 'generate-depls' do
 
       it 'generates shared pipelines' do
         stdout, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb")
-        expect(stdout).to include('3 concourse pipeline templates were processed').and \
+        expect(stdout).to include('2 concourse pipeline templates were processed').and \
                           include('shared-control-plane-generated.yml seems a valid Yaml file').and \
-                          include('shared-concourse-generated.yml seems a valid Yaml file').and \
-                          include('shared-kubernetes-generated.yml seems a valid Yaml file')
+                          include('shared-concourse-generated.yml seems a valid Yaml file')
       end
 
       it 'no error message expected' do
@@ -69,10 +68,9 @@ describe 'generate-depls' do
 
       it 'generates shared pipelines' do
         stdout, = Open3.capture3("#{ci_path}/scripts/generate-depls.rb #{options}")
-        expect(stdout).to include('3 concourse pipeline templates were processed').and \
+        expect(stdout).to include('2 concourse pipeline templates were processed').and \
                           include('shared-control-plane-generated.yml seems a valid Yaml file').and \
-                          include('shared-concourse-generated.yml seems a valid Yaml file').and \
-                          include('shared-kubernetes-generated.yml seems a valid Yaml file')
+                          include('shared-concourse-generated.yml seems a valid Yaml file')
       end
 
       it 'no error message expected' do
@@ -185,9 +183,6 @@ describe 'generate-depls' do
           it_behaves_like 'pipeline checker', 'shared-concourse-generated.yml', 'empty-shared-concourse.yml'
         end
 
-        context 'when k8s shared pipeline is checked' do
-          it_behaves_like 'pipeline checker', 'shared-kubernetes-generated.yml', 'empty-shared-kubernetes.yml'
-        end
       end
     end
   end

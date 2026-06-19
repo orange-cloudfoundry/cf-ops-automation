@@ -37,7 +37,7 @@ describe 'generating new reference' do
       let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
 
       it 'process all pipelines' do
-        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+        expect(@stdout_str).to include("2 concourse pipeline templates were processed")
       end
 
       it 'does not display an error message' do
@@ -74,7 +74,7 @@ describe 'generating new reference' do
       let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
 
       it 'process all pipelines' do
-        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+        expect(@stdout_str).to include("2 concourse pipeline templates were processed")
       end
 
       it 'does not display an error message' do
@@ -102,7 +102,7 @@ describe 'generating new reference' do
       let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump #{include_exclude_pipelines}" }
 
       it 'process all pipelines' do
-        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+        expect(@stdout_str).to include("2 concourse pipeline templates were processed")
       end
 
       it 'does not display an error message' do
@@ -136,7 +136,7 @@ describe 'generating new reference' do
       let(:options) { "--automation-path #{ci_path} -o #{output_path} -t #{templates_path} --profiles ntp-profile -p #{secrets_path} --iaas #{iaas_type} --no-dump" }
 
       it 'process all pipelines' do
-        expect(@stdout_str).to include("3 concourse pipeline templates were processed")
+        expect(@stdout_str).to include("2 concourse pipeline templates were processed")
       end
 
       it 'does not display an error message' do

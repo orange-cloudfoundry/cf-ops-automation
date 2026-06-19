@@ -37,13 +37,6 @@ module Coa
             "deploy-concourse-pipeline-sample-pipeline" => {}
           }
         },
-        "shared-kubernetes-generated" => {
-          "team" => "main",
-          "jobs" => {
-            "deploy-k8s-sample-hello-world-root-depls" => {},
-            "execute-deploy-script-hello-world-root-depls" => {}
-          }
-        },
         "hello-world-root-depls-cf-apps-generated" => {
           "team" => "hello-world-root-depls",
           "jobs" => {
