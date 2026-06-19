@@ -36,25 +36,9 @@ jobs:
 
       - name: Compute short SHA
         run: |
+          SHORT_SHA="$(git rev-parse --short HEAD)"
           echo "This is short sha #$SHORT_SHA for PR #$PR_NUMBER"
-          echo "SHORT_SHA=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
-
-      - name: Compute workflow run count
-        env:
-          GH_TOKEN: ${{ github.token }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          WORKFLOW_NAME: "${{ github.workflow }}"
-          REPO_OWNER: ${{ github.repository_owner }}
-          REPO_NAME: ${{ github.event.repository.name }}
-        run: |
-          # Count completed runs for this PR
-          RUN_COUNT=$(gh api \
-            -H "Accept: application/vnd.github+json" \
-            "/repos/$REPO_OWNER/$REPO_NAME/actions/runs" \
-            --jq "[.workflow_runs[] | select(.event==\"pull_request\" and .name==\"$WORKFLOW_NAME\" and .pull_requests[0].number==$PR_NUMBER)] | length")
-   
-          echo "This is run #$RUN_COUNT for PR #$PR_NUMBER"
-          echo "RUN_COUNT=$RUN_COUNT" >> "$GITHUB_ENV"
+          echo "SHORT_SHA=$SHORT_SHA" >> "$GITHUB_ENV"
 
       - name: Set build-image status to pending
         if: github.event_name != 'workflow_dispatch'
@@ -67,7 +51,7 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'pending',
               context: 'build-image',
-              description: 'Building PR docker image',
+              description: 'Building PR docker image (RN: ${context.runNumber}- SHA: ${process.env.SHORT_SHA})',
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
 
@@ -89,7 +73,7 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}-${{env.RUN_COUNT}}-${{ env.SHORT_SHA }}
+            ghcr.io/${{ github.repository_owner }}/cf-ops-automation:${{ env.PR_TAG }}-RN-${{ github.run_number }}-${{ env.SHORT_SHA }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -104,7 +88,7 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'success',
               context: 'build-image',
-              description: `Published ${process.env.PR_TAG}-${process.env.RUN_COUNT}-${process.env.SHORT_SHA}`,
+              description: `Published ${process.env.PR_TAG}-RN-${context.runNumber}-${process.env.SHORT_SHA}`,
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/pkgs/container/cf-ops-automation`
             });
 
@@ -119,6 +103,6 @@ jobs:
               sha: process.env.PR_HEAD_SHA,
               state: 'failure',
               context: 'build-image',
-              description: `Failed to publish ${process.env.PR_TAG}-${process.env.RUN_COUNT}-${process.env.SHORT_SHA}`,
+              description: `Failed to publish ${process.env.PR_TAG}-RN-${context.runNumber}-${process.env.SHORT_SHA}`,
               target_url: `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`
             });
