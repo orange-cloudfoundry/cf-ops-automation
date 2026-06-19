@@ -871,18 +871,18 @@ jobs:
         params:
           repository: cf-ops-automation
 
-  - name: pull-requests-start
-    plan:
-      - in_parallel:
-          - put:  concourse-meta
-          - get: cf-ops-automation-image
-            resource: cf-ops-automation-docker-image-pr
-            version: every
-            trigger: true
-      - *extract-cf-ops-automation-git-from-image
-      - *coa-pending-unit-tests
-      - *coa-pending-integration-tests
-      - *coa-pending-acceptance-tests
+#  - name: pull-requests-start
+#    plan:
+#      - in_parallel:
+#          - put:  concourse-meta
+#          - get: cf-ops-automation-image
+#            resource: cf-ops-automation-docker-image-pr
+#            version: every
+#            trigger: true
+#      - *extract-cf-ops-automation-git-from-image
+#      - *coa-pending-unit-tests
+#      - *coa-pending-integration-tests
+#      - *coa-pending-acceptance-tests
 
   - name: pull-requests-unit-tests
     on_failure: *PR_on_failure_alert
@@ -892,7 +892,7 @@ jobs:
         - put: concourse-meta
         - get: cf-ops-automation-image
           resource: cf-ops-automation-docker-image-pr
-          passed: [ pull-requests-start ]
+#          passed: [ pull-requests-start ]
           version: every
           trigger: true
       - *extract-cf-ops-automation-git-from-image
@@ -919,7 +919,7 @@ jobs:
           - put: concourse-meta
           - get: cf-ops-automation-image
             resource: cf-ops-automation-docker-image-pr
-            passed: [pull-requests-start]
+#            passed: [pull-requests-start]
             version: every
             trigger: true
           - get: version
@@ -952,7 +952,7 @@ jobs:
         - put: concourse-meta
         - get: cf-ops-automation-image
           resource: cf-ops-automation-docker-image-pr
-          passed: [pull-requests-start]
+#          passed: [pull-requests-start]
           version: every
           trigger: true
       - *extract-cf-ops-automation-git-from-image
@@ -1050,7 +1050,7 @@ groups:
 
   - name: pull-requests
     jobs:
-      - pull-requests-start
+#      - pull-requests-start
       - pull-requests-unit-tests
       - pull-requests-acceptance-tests
       - pull-requests-integration-tests
