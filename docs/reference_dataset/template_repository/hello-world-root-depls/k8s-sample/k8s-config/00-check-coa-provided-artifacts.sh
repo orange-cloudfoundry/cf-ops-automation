@@ -18,7 +18,6 @@ echo "Kubectl:"
 kubectl version --client -o=yaml
 echo "Helm: $(helm version --short)"
 
-kuttl -v
 git --version
 
 #env var gives COA deployment name
