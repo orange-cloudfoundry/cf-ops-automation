@@ -352,6 +352,7 @@ jobs:
           args:
           - -ce
           - |
+            DOCKER_CUSTOM_REGISTRY=""
             echo "Testing environment config:"
             echo "---------------------------"
             echo "System: $(uname -a)"
@@ -360,6 +361,11 @@ jobs:
             bundle --version
             bundle exec rspec --version
             qlty --version
+            echo "DOCKER_CUSTOM_REGISTRY: $DOCKER_CUSTOM_REGISTRY"
+            echo "---------------------------"
+            echo "Setup Docker REGISTRY"
+            export DOCKER_CUSTOM_REGISTRY=$(ruby -ryaml -e 'puts YAML.safe_load_file("ci/private.yml", aliases: true)["unit-test-prereqs"]["docker-registry-url"]')
+            echo "DOCKER_CUSTOM_REGISTRY: $DOCKER_CUSTOM_REGISTRY"
             echo "---------------------------"
             echo "Setup Qlty pre-requisites"
             cd ../concourse-meta
@@ -392,6 +398,7 @@ jobs:
               qlty coverage publish --tag unit --override-branch "$GIT_BRANCH" --override-commit-sha "$GIT_COMMIT_SHA" --override-build-id "$BUILD_ID" --debug coverage/.resultset.json;
             fi
         params:
+          UNIT_TEST_PREREQS: ((unit-test-prereqs))
           QLTY_COVERAGE_TOKEN: ((qlty-coverage_token))
           COVERAGE: true
           GIT_SHA_CMD: cat .git/ref
