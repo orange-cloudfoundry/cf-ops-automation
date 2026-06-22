@@ -175,7 +175,8 @@ RSpec.configure do |config|
     #   yaml_file = {}
     # end
     # yaml_file.dig(DOCKER_REGISTRY_VAR)
-    DOCKER_PUBLIC_REGISTRY
+    ENV['DOCKER_CUSTOM_REGISTRY'].to_s.empty? ? DOCKER_PUBLIC_REGISTRY : ENV['DOCKER_CUSTOM_REGISTRY']
+
   end
 
   def docker_registry_url
