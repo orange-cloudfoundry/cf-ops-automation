@@ -11,7 +11,7 @@ ARG CONCOURSE_SHA256=4d643abab57b15e1c608b43d18e52291b78aaee65b76f877c669979dd09
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
 ARG BOSH_CLI_VERSION=7.10.6
-ARG BOSH_CLI_SHA256=e9847375ba5397589e7b070305defc70321ad0e62d18b67a70a330efcab6e526
+ARG BOSH_CLI_SHA256=5a37b97085ad2656984a4ec15d051b4e0ebd3262a9f55d844daf01b46b90f268
 
 # https://github.com/cli/cli/releases
 # renovate: datasource=github-releases depName=cli/cli
