@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-ruby '3.4.9'
+ruby '4.0.5'
 gem 'rhcl', '~> 0.1.0'
 gem 'ostruct', '~> 0.6', '>= 0.6.3'
 
