@@ -538,18 +538,12 @@ jobs:
       trigger: true
     - get: cron
       trigger: true
-      params:
-        tarball: false
       attempts: 2
     - get: nginx
       trigger: true
-      params:
-        tarball: false
       attempts: 2
     - get: vault
       trigger: true
-      params:
-        tarball: false
       attempts: 2
     - get: secrets-bosh-deployment-sample
       params: { submodules: none, depth: 0 }

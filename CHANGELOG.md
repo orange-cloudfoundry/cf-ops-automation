@@ -1,5 +1,32 @@
 # Changelog
 
+## [v7.0.0](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v7.0.0) (2026-07-02)
+
+[Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.5.2...v7.0.0)
+
+**Merged pull requests:**
+
+- Cleanup k8s shared pipelines [\#518](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/518)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.10.6 [\#517](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/517)
+- chore\(deps\): update dependency cli/cli to v2.95.0 [\#516](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/516)
+- chore\(deps\): update dependency concourse/concourse to v8.2.4 [\#515](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/515)
+- chore\(deps\): update dependency cli/cli to v2.94.0 [\#514](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/514)
+- chore\(deps\): update dependency cloudfoundry/bosh-linux-stemcell-builder to v1.1234 [\#513](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/513)
+- tune coa ci build pipeline [\#512](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/512)
+- chore\(deps\): update dependency mdl to '~\>0.16.0' [\#511](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/511)
+- chore\(deps\): update dependency concourse/concourse to v8.2.3 [\#510](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/510)
+- pipeline\(control-plane\): explicitly list artifacts to stream to put step [\#509](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/509)
+- chore\(deps\): update dependency rake to '~\>13.4', '\>= 13.4.2' [\#508](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/508)
+- chore\(deps\): update dependency github\_changelog\_generator to '~\> 1.18.0' [\#507](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/507)
+- chore\(deps\): update dependency docker\_registry2 to '~\> 1.19.0' [\#506](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/506)
+- chore\(deps\): update dependency cloudfoundry/bosh-linux-stemcell-builder to v1.1218 [\#505](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/505)
+- chore\(deps\): update paas-docker-cloudfoundry-tools commit-id to 6031305 [\#504](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/504)
+- chore\(deps\): update rubocop-tools [\#503](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/503)
+- chore\(deps\): update dependency git to '~\>4.3', '\>= 4.3.2' [\#502](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/502)
+- chore\(deps\): update dependency cloudfoundry/bosh-cli to v7.10.5 [\#501](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/501)
+- chore\(deps\): update dependency cli/cli to v2.93.0 [\#500](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/500)
+- chore\(deps\): update dependency concourse/concourse to v8 [\#499](https://github.com/orange-cloudfoundry/cf-ops-automation/pull/499)
+
 ## [v6.5.2](https://github.com/orange-cloudfoundry/cf-ops-automation/tree/v6.5.2) (2026-02-03)
 
 [Full Changelog](https://github.com/orange-cloudfoundry/cf-ops-automation/compare/v6.5.0...v6.5.2)
