@@ -43,9 +43,9 @@ GEM
     benchmark (0.5.0)
     bigdecimal (3.3.1)
     builder (3.3.0)
-    chef-utils (18.10.17)
+    chef-utils (18.11.11)
       concurrent-ruby
-    concurrent-ruby (1.3.7)
+    concurrent-ruby (1.3.8)
     connection_pool (2.5.5)
     console (1.36.0)
       fiber-annotation
@@ -156,7 +156,7 @@ GEM
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     logger (1.7.0)
-    mdl (0.16.0)
+    mdl (0.17.0)
       kramdown (~> 2.5)
       kramdown-parser-gfm (~> 1.1)
       mixlib-cli
@@ -272,7 +272,7 @@ DEPENDENCIES
   docker_registry2 (~> 1.19.0)
   git (~> 4.3, >= 4.3.2)
   github_changelog_generator (~> 1.18.0)
-  mdl (~> 0.16.0)
+  mdl (~> 0.17.0)
   ostruct (~> 0.6, >= 0.6.3)
   rake (~> 13.4, >= 13.4.2)
   reek (~> 6.5.0)
