@@ -156,12 +156,13 @@ GEM
     language_server-protocol (3.17.0.6)
     lint_roller (1.1.0)
     logger (1.7.0)
-    mdl (0.17.0)
+    mdl (0.18.1)
       kramdown (~> 2.5)
       kramdown-parser-gfm (~> 1.1)
       mixlib-cli
       mixlib-config
       mixlib-shellout
+      uri
     metrics (0.15.0)
     mini_mime (1.1.5)
     minitest (5.27.0)
@@ -273,7 +274,7 @@ DEPENDENCIES
   docker_registry2 (~> 1.19.0)
   git (~> 4.3, >= 4.3.2)
   github_changelog_generator (~> 1.18.0)
-  mdl (~> 0.17.0)
+  mdl (~> 0.18.1)
   ostruct (~> 0.6, >= 0.6.3)
   rake (~> 13.4, >= 13.4.2)
   reek (~> 6.5.0)
