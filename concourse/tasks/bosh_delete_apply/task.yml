@@ -17,7 +17,7 @@ image_resource:
   type: registry-image
   source:
     repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
-    tag: 6031305bac1fd9e312162e19874bb872c5315ca1
+    tag: f18117b78f0b55344946f3c4f837ad0efdb45d68
 inputs:
   - name: scripts-resource
   - name: config-resource
