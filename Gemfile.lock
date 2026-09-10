@@ -129,10 +129,10 @@ GEM
     fiber-local (1.1.0)
       fiber-storage
     fiber-storage (1.0.1)
-    git (5.1.0)
+    git (5.5.0)
       activesupport (>= 5.0)
       addressable (~> 2.8)
-      process_executer (~> 4.0)
+      process_executer (~> 4.1)
       rchardet (~> 1.9)
     github_changelog_generator (1.18.0)
       activesupport
@@ -185,7 +185,7 @@ GEM
       ast (~> 2.4.1)
       racc
     prism (1.9.0)
-    process_executer (4.0.4)
+    process_executer (4.1.1)
       track_open_instances (~> 0.1)
     protocol-hpack (1.5.1)
     protocol-http (0.62.2)
@@ -274,7 +274,7 @@ DEPENDENCIES
   csv
   cucumber
   docker_registry2 (~> 1.19.0)
-  git (~> 5.1)
+  git (~> 5.5)
   github_changelog_generator (~> 1.18.0)
   mdl (~> 0.18.1)
   ostruct (~> 0.6, >= 0.6.3)
