@@ -1,4 +1,4 @@
-FROM ruby:3.4.9 AS ci_image
+FROM ruby:3.4.11 AS ci_image
 
 # 4d643abab57b15e1c608b43d18e52291b78aaee65b76f877c669979dd09c28cd  fly-8.2.4-linux-amd64.tgz
 # 0b5f660b10e1655cbde4f25d6e1683815f0e5e66983b3f77576591e73a800f43  fly-8.3.0-linux-amd64.tgz
