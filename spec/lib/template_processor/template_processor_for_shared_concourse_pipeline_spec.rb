@@ -453,7 +453,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                       type: registry-image
                       source:
                         repository: ((docker-registry-url))elpaasoci/git-ssh
-                        tag: 6031305bac1fd9e312162e19874bb872c5315ca1
+                        tag: f18117b78f0b55344946f3c4f837ad0efdb45d68
                     outputs:
                       - name: success-tag
                     run:
@@ -476,7 +476,7 @@ describe 'ConcoursePipelineTemplateProcessing (ie: concourse-pipeline.yml.erb)' 
                         type: registry-image
                         source:
                           repository: ((docker-registry-url))elpaasoci/git-ssh
-                          tag: 6031305bac1fd9e312162e19874bb872c5315ca1
+                          tag: f18117b78f0b55344946f3c4f837ad0efdb45d68
                       outputs:
                         - name: success-tag
                       run:
