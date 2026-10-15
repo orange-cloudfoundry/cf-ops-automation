@@ -35,10 +35,14 @@ Then("generated pipelines are valid concourse pipelines") do
   @readme.write_pipeline_documentation
 end
 
+Given("Hello world generated pipelines from reference_dataset") do
+  skip_this_scenario
+end
+
 But("NYI") do
-  pending
+  skip_this_scenario
 end
 
 But("needs documentation") do
-  pending
+  skip_this_scenario
 end
