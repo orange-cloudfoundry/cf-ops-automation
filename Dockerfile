@@ -3,10 +3,11 @@ FROM ruby:3.4.11 AS ci_image
 # 4d643abab57b15e1c608b43d18e52291b78aaee65b76f877c669979dd09c28cd  fly-8.2.4-linux-amd64.tgz
 # 0b5f660b10e1655cbde4f25d6e1683815f0e5e66983b3f77576591e73a800f43  fly-8.3.0-linux-amd64.tgz
 # 16efe4b0945d936b7669147b5beef4140c7e22b990d3776ddc08d63225c243e1  fly-8.3.1-linux-amd64.tgz
+# ed4c96660a922f8154121aaac95c7ff20990cc216cbc3823d76c2026de773f2a  fly-8.3.2-linux-amd64.tgz
 # https://github.com/concourse/concourse/releases/
 # renovate: datasource=github-releases depName=concourse/concourse
 ARG CONCOURSE_VERSION=8.3.2
-ARG CONCOURSE_SHA256=16efe4b0945d936b7669147b5beef4140c7e22b990d3776ddc08d63225c243e1  
+ARG CONCOURSE_SHA256=ed4c96660a922f8154121aaac95c7ff20990cc216cbc3823d76c2026de773f2a
 
 # https://github.com/cloudfoundry/bosh-cli/releases
 # renovate: datasource=github-releases depName=cloudfoundry/bosh-cli
