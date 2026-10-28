@@ -20,6 +20,7 @@ resources:
     endpoint: (( grab secrets.s3-br-endpoint ))
     use_path_style: true
     skip_ssl_verification: (( grab secrets.s3-br-skip-ssl-verification ))
+    skip_s3_checksums: (( grab secrets.s3-br-skip-checksums))
 - name: (( concat "latest-" secrets.release-name "-s3" ))
   type: s3
   source:
@@ -30,6 +31,7 @@ resources:
     secret_access_key: (( grab secrets.s3-br-secret-key ))
     endpoint: (( grab secrets.s3-br-endpoint ))
     skip_ssl_verification: (( grab secrets.s3-br-skip-ssl-verification ))
+    skip_s3_checksums: (( grab secrets.s3-br-skip-checksums ))
     use_path_style: true
 jobs:
 - name: (( concat "upload-" secrets.release-name "-" secrets.release-version "-boshrelease-to-s3" ))
