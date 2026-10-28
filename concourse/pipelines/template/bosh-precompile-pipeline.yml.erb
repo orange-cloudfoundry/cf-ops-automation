@@ -214,6 +214,7 @@ resources:
       endpoint: ((s3-br-endpoint))
       skip_ssl_verification: ((s3-br-skip-ssl-verification))
       use_path_style: true
+      skip_s3_checksums: ((s3-br-skip-checksums))
     version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version)).tgz }
   <% else %>
     type: git
@@ -238,6 +239,7 @@ resources:
       secret_access_key: ((s3-compiled-release-secret-key))
       endpoint: ((s3-compiled-release-endpoint))
       skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
+      skip_s3_checksums: ((s3-compiled-release-skip-checksums))
       use_path_style: true
     version: { path: <%= info['repository']&.split('/')&.first %>/<%= release %>-((releases.<%= release %>.version))-((s3-compiled-release-os))-((stemcell.version)).tgz }
   <% end %>

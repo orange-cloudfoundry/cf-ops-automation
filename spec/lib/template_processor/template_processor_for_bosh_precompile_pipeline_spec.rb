@@ -297,6 +297,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
                 secret_access_key: ((s3-compiled-release-secret-key))
                 endpoint: ((s3-compiled-release-endpoint))
                 skip_ssl_verification: ((s3-compiled-release-skip-ssl-verification))
+                skip_s3_checksums: ((s3-compiled-release-skip-checksums))
                 use_path_style: true
               version:
                 path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version))-((s3-compiled-release-os))-((stemcell.version)).tgz"
@@ -318,6 +319,7 @@ describe 'BoshPrecompilePipelineTemplateProcessing' do
                 secret_access_key: ((s3-br-secret-key))
                 endpoint: ((s3-br-endpoint))
                 skip_ssl_verification: ((s3-br-skip-ssl-verification))
+                skip_s3_checksums: ((s3-br-skip-checksums))
                 use_path_style: true
               version:
                 path: "#{br_repo}/#{br_name}-((releases.#{br_name}.version)).tgz"
