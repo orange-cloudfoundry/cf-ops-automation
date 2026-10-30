@@ -8,7 +8,7 @@ module Tasks
 
     BOSH_CONTENT = %w[tasks deployments].freeze
 
-    # this class helps interacting with BOSH. It is a base class, with a child per bosh command
+    # this class helps interact with BOSH. It is a base class, with a child per bosh command
     class Executor
       def execute
         raise "Should be overridden !"
@@ -35,8 +35,14 @@ module Tasks
           JSON.parse(stdout)
         end
 
+        # AWS SDK (used by bosh CLI S3 blobstore) writes harmless DEBUG logs on stderr
+        IGNORED_STDERR_PATTERN = %r{\ASDK \d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} DEBUG }
+
         def handle_bosh_cli_response(stdout, stderr, status)
-          raise BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}" if (!stderr.nil? && !stderr.empty?) || status.exitstatus != 0
+          relevant_stderr = stderr.to_s.lines.reject { |line| line.strip.empty? || line.match?(IGNORED_STDERR_PATTERN) }
+          return if relevant_stderr.empty? && status.exitstatus.zero?
+
+          raise BoshCliError, "Stderr:\n#{stderr}\nStdout:\n#{stdout}"
         end
 
         def check_environment
@@ -64,7 +70,7 @@ module Tasks
           File.join(output_result_resource, "error.log")
         end
 
-        # This method helps us adding BOSH_ENVIRONMENT to the shell environment
+        # This method helps us add BOSH_ENVIRONMENT to the shell environment
         def cmd_env
           @cmd_env ||=
             begin

@@ -112,6 +112,28 @@ describe Tasks::Bosh::Executor do
         end
       end
 
+      context "when stderr only contains AWS SDK debug logs" do
+        before do
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh create-release --json").
+            and_return([tasks_json, "SDK 2026/10/28 00:00:00 DEBUG Response has no supported checksum. Not validating response payload.\n", process_status_zero])
+        end
+
+        it "does not raise" do
+          expect(described_class.run_command("bosh create-release --json")).to match(loaded_json)
+        end
+      end
+
+      context "when stderr contains other messages with a zero exit status" do
+        before do
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh create-release --json").
+            and_return([tasks_json, "something unexpected", process_status_zero])
+        end
+
+        it "raises" do
+          expect { described_class.run_command("bosh create-release --json") }.to raise_error(Tasks::Bosh::BoshCliError)
+        end
+      end
+
       context "when a CLI command fails" do
         let(:stderr) { "e" }
         let(:stdout) { "o" }
