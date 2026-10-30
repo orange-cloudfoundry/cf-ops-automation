@@ -111,6 +111,25 @@ describe Tasks::Bosh::CreateRelease do
         end
       end
 
+      context "when a CLI command succeeds but writes AWS SDK debug logs to stderr" do
+        let(:sdk_debug_stderr) do
+          <<~STDERR
+            SDK 2026/10/29 09:23:19 DEBUG Response has no supported checksum. Not validating response payload.
+            SDK 2026/10/29 09:23:19 DEBUG Response has no supported checksum. Not validating response payload.
+            SDK 2026/10/29 09:23:20 DEBUG Response has no supported checksum. Not validating response payload.
+          STDERR
+        end
+
+        before do
+          allow(Open3).to receive(:capture3).with(cmd_env, "bosh --non-interactive --json create-release --dir='/tmp/my-workdir/ntp-release' --final --tarball='/tmp/releases/ntp-4.2.8p11.tgz' /tmp/my-workdir/ntp-release/releases/ntp/ntp-4.2.8p11.yml")
+            .and_return([create_release_json, sdk_debug_stderr, process_status_zero])
+        end
+
+        it "does not fail and returns the parsed release" do
+          expect(described_class.new.execute(name: 'ntp', version: '4.2.8p11', dir: '/tmp/my-workdir/ntp-release', tarball_path: '/tmp/releases')).to match(loaded_json)
+        end
+      end
+
       context "when a CLI command fails" do
         let(:stderr) { "e" }
         let(:stdout) { "o" }
