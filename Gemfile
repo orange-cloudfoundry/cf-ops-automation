@@ -6,7 +6,7 @@ gem 'ostruct', '~> 0.6', '>= 0.6.3'
 
 group :development do
   gem 'docker_registry2', '~> 1.19.0' # https://rubygems.org/gems/docker_registry2
-  gem 'git', '~>5.6' # https://rubygems.org/gems/git
+  gem 'git', '~>5.7', '>= 5.7.1' # https://rubygems.org/gems/git
   gem 'github_changelog_generator', '~> 1.18.0' # https://rubygems.org/gems/github_changelog_generator
   gem 'faraday-retry', '~> 2.4' # retry middleware for github_changelog_generator on transient GitHub connection errors
   gem 'mdl', '~>0.18.1'
