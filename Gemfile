@@ -11,7 +11,7 @@ group :development do
   gem 'faraday-retry', '~> 2.4' # retry middleware for github_changelog_generator on transient GitHub connection errors
   gem 'mdl', '~>0.18.1'
   gem 'rake', '~>13.4', '>= 13.4.2'
-  gem 'reek', '~> 6.5.0'
+  gem 'reek', '~> 6.6.0'
   gem 'rubocop', '~> 1.91.0'
   gem 'rubocop-rspec', '~> 3.10', '>= 3.10.2'
 end
