@@ -325,7 +325,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/curl-ssl
-              tag: bb0e4241da5694d15dd972157bbc7d9491052679
+              tag: 7796cb90981c5181794ce79846958495b4ac3d38
           inputs:
             - name: repackaged-releases-fallback
           run:
@@ -461,7 +461,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
-              tag: bb0e4241da5694d15dd972157bbc7d9491052679
+              tag: 7796cb90981c5181794ce79846958495b4ac3d38
           inputs:
             - name: stemcell
           outputs:
@@ -492,7 +492,7 @@ jobs:
               type: registry-image
               source:
                 repository: ((docker-registry-url))elpaasoci/bosh-cli-v2
-                tag: bb0e4241da5694d15dd972157bbc7d9491052679
+                tag: 7796cb90981c5181794ce79846958495b4ac3d38
             inputs:
               - name: releases-to-upload
               - name: config-resource
@@ -526,7 +526,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
-              tag: bb0e4241da5694d15dd972157bbc7d9491052679
+              tag: 7796cb90981c5181794ce79846958495b4ac3d38
           inputs:
             - name: stemcell
             - name: secrets
@@ -577,7 +577,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
-              tag: bb0e4241da5694d15dd972157bbc7d9491052679
+              tag: 7796cb90981c5181794ce79846958495b4ac3d38
           inputs:
             - name: release
             - name: stemcell
@@ -641,7 +641,7 @@ jobs:
             type: registry-image
             source:
               repository: ((docker-registry-url))elpaasoci/bosh-cli-v2-cf-cli
-              tag: bb0e4241da5694d15dd972157bbc7d9491052679
+              tag: 7796cb90981c5181794ce79846958495b4ac3d38
           inputs:
             - name: compiled-release
             - name: secrets
@@ -684,7 +684,7 @@ jobs:
           type: registry-image
           source:
             repository: ((docker-registry-url))elpaasoci/curl-ssl
-            tag: bb0e4241da5694d15dd972157bbc7d9491052679
+            tag: 7796cb90981c5181794ce79846958495b4ac3d38
         outputs:
           - name: result-dir
         run:
