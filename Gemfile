@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 ruby '3.4.11'
 gem 'rhcl', '~> 0.1.0'
 gem 'ostruct', '~> 0.6', '>= 0.6.3'
+gem "openssl", "~> 3.3"
 
 group :development do
   gem 'docker_registry2', '~> 1.19.0' # https://rubygems.org/gems/docker_registry2
